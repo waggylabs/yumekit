@@ -370,6 +370,7 @@
     --component-tab-gap-large: var(--spacing-large);
     --component-tab-gap-medium: var(--spacing-small);
     --component-tab-gap-small: var(--spacing-2x-small);
+    --component-tab-content-padding: var(--spacing-large);
     --component-tab-padding-large: var(--spacing-2x-large);
     --component-tab-padding-medium: var(--spacing-large);
     --component-tab-padding-small: var(--spacing-small);

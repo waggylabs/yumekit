@@ -190,7 +190,7 @@ export class YumeTabs extends HTMLElement {
                 z-index: 0;
                 border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
                 border-radius: var(--component-tab-border-radius-outer);
-                padding: var(--spacing-large);
+                padding: var(--component-tab-content-padding);
                 background: var(--component-tabs-background);
             }
             :host([position="top"])    .tabpanel { border-top-left-radius: 0; }
