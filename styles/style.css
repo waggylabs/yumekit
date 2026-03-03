@@ -3,18 +3,6 @@ body {
     margin: 0;
     padding: 0;
     font-family: var(--font-family-header, "Lexend", sans-serif);
-    font-weight: 300;
     color: var(--base-content--, #000);
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-a,
-label {
-    font-weight: 600;
+    font-weight: 300;
 }

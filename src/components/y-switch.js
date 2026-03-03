@@ -75,6 +75,7 @@ class YumeSwitch extends HTMLElement {
     }
 
     labelTag(pos) {
+        if (this.getAttribute("label-display") === "false") return "";
         const labelPos = this.getAttribute("label-position");
         const shouldRender =
             (pos === "top" && (labelPos === "top" || labelPos === "left")) ||
@@ -169,13 +170,12 @@ class YumeSwitch extends HTMLElement {
     }
 
     updateLabelDisplay() {
-        const showLabels = this.getAttribute("label-display") !== "false";
         const showToggleLabels =
             this.hasAttribute("toggle-label") &&
             this.getAttribute("toggle-label") !== "false";
         this.style.setProperty(
             "--show-labels",
-            showLabels && showToggleLabels ? "flex" : "none",
+            showToggleLabels ? "flex" : "none",
         );
     }
 

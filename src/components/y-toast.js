@@ -72,6 +72,7 @@ export class YumeToast extends HTMLElement {
         toast.className = `toast color-${color}`;
         toast.setAttribute("role", "alert");
         toast.setAttribute("aria-live", "assertive");
+        toast.setAttribute("part", "toast");
 
         const bgVar = this._getColorBg(color);
         const resolvedBg = resolveCSSColor(bgVar, this);
@@ -82,11 +83,13 @@ export class YumeToast extends HTMLElement {
         if (icon) {
             const iconEl = document.createElement("i");
             iconEl.className = `toast-icon ${icon}`;
+            iconEl.setAttribute("part", "icon");
             toast.appendChild(iconEl);
         }
 
         const msg = document.createElement("span");
         msg.className = "toast-message";
+        msg.setAttribute("part", "message");
         msg.textContent = message;
         toast.appendChild(msg);
 

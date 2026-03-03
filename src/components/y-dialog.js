@@ -176,6 +176,7 @@ class YumeDialog extends HTMLElement {
 
         const header = document.createElement("div");
         header.className = "header";
+        header.setAttribute("part", "header");
 
         const headerContent = document.createElement("div");
         headerContent.className = "header-content";
@@ -195,10 +196,12 @@ class YumeDialog extends HTMLElement {
 
         const body = document.createElement("div");
         body.className = "body";
+        body.setAttribute("part", "body");
         body.innerHTML = `<slot name="body"></slot>`;
 
         const footer = document.createElement("div");
         footer.className = "footer";
+        footer.setAttribute("part", "footer");
         footer.innerHTML = `<slot name="footer"></slot>`;
 
         dialog.appendChild(header);

@@ -392,6 +392,7 @@ export class YumeAppbar extends HTMLElement {
         /* --- Header: logo + title --- */
         const header = document.createElement("div");
         header.className = "appbar-header";
+        header.setAttribute("part", "header");
 
         const headerContent = document.createElement("div");
         headerContent.className = "header-content";
@@ -416,6 +417,7 @@ export class YumeAppbar extends HTMLElement {
         /* --- Body: y-button nav items --- */
         const body = document.createElement("div");
         body.className = "appbar-body";
+        body.setAttribute("part", "body");
 
         const navItems = this.items;
         navItems.forEach((item) => {
@@ -475,6 +477,7 @@ export class YumeAppbar extends HTMLElement {
         /* --- Footer: slot + collapse toggle (vertical only) --- */
         const footer = document.createElement("div");
         footer.className = "appbar-footer";
+        footer.setAttribute("part", "footer");
 
         const footerSlot = document.createElement("slot");
         footerSlot.name = "footer";

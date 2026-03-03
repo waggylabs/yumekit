@@ -374,6 +374,7 @@ class YumeDrawer extends HTMLElement {
 
         const overlay = document.createElement("div");
         overlay.className = "overlay";
+        overlay.setAttribute("part", "overlay");
         overlay.addEventListener("click", () => this._onOverlayClick());
         this.shadowRoot.appendChild(overlay);
 
@@ -382,6 +383,7 @@ class YumeDrawer extends HTMLElement {
         panel.setAttribute("role", "dialog");
         panel.setAttribute("aria-modal", "true");
         panel.setAttribute("tabindex", "-1");
+        panel.setAttribute("part", "panel");
         panel.setAttribute("data-position", this.position);
 
         const handle = document.createElement("div");
@@ -396,14 +398,17 @@ class YumeDrawer extends HTMLElement {
 
         const header = document.createElement("div");
         header.className = "drawer-header";
+        header.setAttribute("part", "header");
         header.innerHTML = `<slot name="header"></slot>`;
 
         const body = document.createElement("div");
         body.className = "drawer-body";
+        body.setAttribute("part", "body");
         body.innerHTML = `<slot name="body"></slot>`;
 
         const footer = document.createElement("div");
         footer.className = "drawer-footer";
+        footer.setAttribute("part", "footer");
         footer.innerHTML = `<slot name="footer"></slot>`;
 
         content.appendChild(header);

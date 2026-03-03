@@ -152,11 +152,11 @@ export class YumeRadio extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
             <style>${style}</style>
-            <fieldset role="radiogroup">
+            <fieldset role="radiogroup" part="radio">
                 ${options
                     .map(
                         (opt, idx) => `
-                    <label>
+                    <label part="label">
                         <input
                             type="radio"
                             name="${name}"

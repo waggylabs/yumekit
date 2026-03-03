@@ -31,12 +31,12 @@ export class YumeTag extends HTMLElement {
         this.shadowRoot.innerHTML = "";
         this.shadowRoot.appendChild(style);
         this.shadowRoot.innerHTML += `
-            <span class="tag">
+            <span class="tag" part="tag">
                 <slot></slot>
                 ${
                     removable
                         ? `
-                    <button class="remove" aria-label="Remove tag">
+                    <button class="remove" part="remove" aria-label="Remove tag">
                         ${closeSvg}
                     </button>
                 `

@@ -190,7 +190,7 @@ export class YumeTabs extends HTMLElement {
                 z-index: 0;
                 border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
                 border-radius: var(--component-tab-border-radius-outer);
-                padding: var(--spacing-large);
+                padding: var(--component-tab-content-padding);
                 background: var(--component-tabs-background);
             }
             :host([position="top"])    .tabpanel { border-top-left-radius: 0; }
@@ -210,6 +210,7 @@ export class YumeTabs extends HTMLElement {
         const btn = document.createElement("button");
         btn.id = `tab-${tab.id}`;
         btn.setAttribute("role", "tab");
+        btn.setAttribute("part", "tab");
         btn.setAttribute("aria-selected", isActive);
         btn.setAttribute("aria-controls", `panel-${tab.id}`);
         btn.setAttribute("aria-disabled", isDisabled);
@@ -244,6 +245,7 @@ export class YumeTabs extends HTMLElement {
         panel.className = "tabpanel";
         panel.id = `panel-${this._activeTab}`;
         panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("part", "content");
         panel.setAttribute("aria-labelledby", `tab-${this._activeTab}`);
 
         const contentSlot = document.createElement("slot");
@@ -267,6 +269,7 @@ export class YumeTabs extends HTMLElement {
         const tablist = document.createElement("div");
         tablist.className = "tablist";
         tablist.setAttribute("role", "tablist");
+        tablist.setAttribute("part", "tablist");
         tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
         this.shadowRoot.appendChild(tablist);
 

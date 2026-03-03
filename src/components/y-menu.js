@@ -95,6 +95,7 @@ class YumeMenu extends HTMLElement {
             const li = document.createElement("li");
             li.className = "menuitem";
             li.setAttribute("role", "menuitem");
+            li.setAttribute("part", "menuitem");
             li.tabIndex = 0;
 
             const contentWrapper = document.createElement("span");
@@ -290,6 +291,7 @@ class YumeMenu extends HTMLElement {
         const rootUl = this._createMenuList(this.items);
         rootUl.classList.add("menu");
         rootUl.setAttribute("role", "menu");
+        rootUl.setAttribute("part", "menu");
         this.shadowRoot.appendChild(rootUl);
     }
 }
