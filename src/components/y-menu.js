@@ -240,8 +240,8 @@ class YumeMenu extends HTMLElement {
                 list-style: none;
                 margin: 0;
                 padding: 0;
-                background: var(--component-menu-background, #fff);
-                border: var(--component-menu-border-width, 1px) solid var(--component-menu-border-color, #ccc);
+                background: var(--component-menu-background, #0c0c0d);
+                border: var(--component-menu-border-width, 1px) solid var(--component-menu-border-color, #37383a);
                 border-radius: var(--component-menu-border-radius, 4px);
                 box-shadow: var(--component-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
                 min-width: 150px;
@@ -256,12 +256,12 @@ class YumeMenu extends HTMLElement {
                 align-items: center;
                 justify-content: space-between;
                 white-space: nowrap;
-                color: var(--component-menu-color, #000);
+                color: var(--component-menu-color, #f7f7fa);
                 font-size: var(--font-size-button, 1em);
             }
 
             li.menuitem:hover {
-                background: var(--component-menu-hover-background, #eee);
+                background: var(--component-menu-hover-background, #292a2b);
             }
 
             ul.submenu {

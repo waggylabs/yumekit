@@ -134,7 +134,7 @@ class YumeDialog extends HTMLElement {
                 border: none;
                 cursor: pointer;
                 padding: var(--spacing-x-small, 4px);
-                color: var(--component-dialog-color, #000);
+                color: var(--component-dialog-color, #f7f7fa);
                 font-size: 1.25em;
                 line-height: 1;
                 border-radius: var(--component-button-border-radius-outer, 4px);
@@ -143,7 +143,7 @@ class YumeDialog extends HTMLElement {
                 justify-content: center;
             }
             .close-btn:hover {
-                background: var(--component-dialog-hover-background, #eee);
+                background: var(--component-dialog-hover-background, #292a2b);
             }
             .close-btn:focus-visible {
                 outline: 2px solid var(--component-dialog-accent);

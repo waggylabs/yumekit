@@ -68,6 +68,11 @@
     --component-appbar-background: var(--base-background-component);
     --component-appbar-color: var(--base-content--);
     --component-appbar-border-color: var(--base-background-border);
+    --component-appbar-border-width: var(--component-sidebar-border-width);
+    --component-appbar-border-radius: var(--component-sidebar-border-radius);
+    --component-appbar-inner-border-width: var(
+        --component-sidebar-border-width
+    );
     --component-checkbox-background: var(--base-background-component);
     --component-checkbox-color: var(--base-content--);
     --component-checkbox-border-color: var(--base-content--);
@@ -77,6 +82,7 @@
     --component-dialog-border-color: var(--base-background-border);
     --component-dialog-hover-background: var(--base-background-hover);
     --component-dialog-accent: var(--primary-content--);
+    --component-dialog-shadow: var(--base-shadow);
     --component-drawer-background: var(--base-background-component);
     --component-drawer-color: var(--base-content--);
     --component-drawer-border-color: var(--base-background-border);
@@ -125,6 +131,8 @@
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-background-border);
     --component-tabs-accent: var(--primary-content--);
+    --component-tabs-font-family: var(--font-family-body);
+    --component-slider-width: 129px;
     --font-family-header: "Lexend", sans-serif;
     --font-family-body: "Lexend", sans-serif;
 }

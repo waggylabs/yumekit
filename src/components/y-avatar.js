@@ -68,8 +68,8 @@ export class YumeAvatar extends HTMLElement {
             width: 100%;
             height: 100%;
             border-radius: ${borderRadius};
-            background-color: var(--primary-content--, rgba(4, 134, 209, 1));
-            color: var(--primary-background-component, rgba(245, 250, 250, 1));
+            background-color: var(--primary-content--, #0576ff);
+            color: var(--primary-background-component, #0c0c0d);
             display: flex;
             align-items: center;
             justify-content: center;
