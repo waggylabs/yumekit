@@ -24,6 +24,8 @@ jobs:
     build-and-publish:
         needs: test
         runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.pkg.outputs.version }}
         permissions:
             contents: read
             id-token: write
@@ -33,7 +35,11 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  registry-url: "https://registry.npmjs.org"
+                  registry-url: https://registry.npmjs.org/
+
+            - name: Read package version
+              id: pkg
+              run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
 
             - run: npm ci
             - run: npm run build
@@ -68,14 +74,10 @@ jobs:
                   role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
                   aws-region: ${{ secrets.AWS_REGION }}
 
-            - name: Read package version
-              id: pkg
-              run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
-
             # Upload versioned copy
             - name: Deploy versioned to S3
               run: |
-                  aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }}/${{ steps.pkg.outputs.version }}/ \
+                  aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET }}/${{ needs.build-and-publish.outputs.version }}/ \
                     --delete --cache-control "public, max-age=31536000, immutable"
 
             # Upload "latest" copy

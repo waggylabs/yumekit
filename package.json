@@ -1,18 +1,25 @@
 {
     "name": "@studious-creative/yumekit",
-    "version": "0.1.0",
+    "version": "0.1.5",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
     "module": "dist/index.js",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
+            "types": "./dist/index.d.ts",
+            "module": "./dist/index.js",
             "import": "./dist/index.js",
             "default": "./dist/yumekit.min.js"
+        },
+        "./react": {
+            "types": "./dist/react.d.ts"
         },
         "./components/*": "./dist/components/*",
         "./styles/*": "./dist/styles/*"
     },
+    "sideEffects": true,
     "files": [
         "dist"
     ],
@@ -20,7 +27,7 @@
         "access": "public"
     },
     "scripts": {
-        "build": "rollup -c",
+        "build": "rollup -c && tsc",
         "prepublishOnly": "npm run build",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage"
     },
@@ -40,6 +47,7 @@
         "playwright": "^1.51.1",
         "prettier": "^3.5.3",
         "rollup": "^4.59.0",
-        "sinon": "^21.0.1"
+        "sinon": "^21.0.1",
+        "typescript": "^5.9.3"
     }
 }

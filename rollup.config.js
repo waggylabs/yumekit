@@ -2,6 +2,20 @@ import { readdirSync, mkdirSync, copyFileSync, existsSync } from "fs";
 import { join } from "path";
 import terser from "@rollup/plugin-terser";
 
+function cssString() {
+    return {
+        name: "css-string",
+        transform(code, id) {
+            if (id.endsWith(".css")) {
+                return {
+                    code: `export default ${JSON.stringify(code)};`,
+                    map: { mappings: "" },
+                };
+            }
+        },
+    };
+}
+
 const componentDir = "src/components";
 const componentFiles = readdirSync(componentDir).filter((f) =>
     f.endsWith(".js"),
@@ -26,6 +40,12 @@ function copyAssets() {
             for (const f of readdirSync("src/modules")) {
                 copyFileSync(join("src/modules", f), join(modulesOut, f));
             }
+            // root-level .d.ts type declaration files (e.g. react.d.ts)
+            for (const f of readdirSync("src").filter((f) =>
+                f.endsWith(".d.ts"),
+            )) {
+                copyFileSync(join("src", f), join("dist", f));
+            }
         },
     };
 }
@@ -38,7 +58,7 @@ export default [
             file: "dist/index.js",
             format: "esm",
         },
-        plugins: [copyAssets()],
+        plugins: [cssString(), copyAssets()],
     },
 
     // 2. IIFE bundle (CDN / <script> tag)
@@ -49,7 +69,7 @@ export default [
             format: "iife",
             name: "YumeKit",
         },
-        plugins: [terser()],
+        plugins: [cssString(), terser()],
     },
 
     // 3. Individual components
@@ -59,5 +79,6 @@ export default [
             file: `dist/components/${file}`,
             format: "esm",
         },
+        plugins: [cssString()],
     })),
 ];
