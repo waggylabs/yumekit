@@ -1,6 +1,6 @@
 {
     "name": "@studious-creative/yumekit",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
