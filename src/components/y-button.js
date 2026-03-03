@@ -331,6 +331,7 @@ export class YumeButton extends HTMLElement {
                 "--primary-background-component",
                 "--primary-background-hover",
                 "--primary-background-active",
+                "--primary-content-inverse",
             ],
             secondary: [
                 "--secondary-content--",
@@ -339,6 +340,7 @@ export class YumeButton extends HTMLElement {
                 "--secondary-background-component",
                 "--secondary-background-hover",
                 "--secondary-background-active",
+                "--secondary-content-inverse",
             ],
             base: [
                 "--base-content--",
@@ -347,6 +349,7 @@ export class YumeButton extends HTMLElement {
                 "--base-background-component",
                 "--base-background-hover",
                 "--base-background-active",
+                "--base-content-inverse",
             ],
             success: [
                 "--success-content--",
@@ -355,6 +358,7 @@ export class YumeButton extends HTMLElement {
                 "--success-background-component",
                 "--success-background-hover",
                 "--success-background-active",
+                "--success-content-inverse",
             ],
             error: [
                 "--error-content--",
@@ -363,6 +367,7 @@ export class YumeButton extends HTMLElement {
                 "--error-background-component",
                 "--error-background-hover",
                 "--error-background-active",
+                "--error-content-inverse",
             ],
             warning: [
                 "--warning-content--",
@@ -371,6 +376,7 @@ export class YumeButton extends HTMLElement {
                 "--warning-background-component",
                 "--warning-background-hover",
                 "--warning-background-active",
+                "--warning-content-inverse",
             ],
             help: [
                 "--help-content--",
@@ -379,6 +385,7 @@ export class YumeButton extends HTMLElement {
                 "--help-background-component",
                 "--help-background-hover",
                 "--help-background-active",
+                "--help-content-inverse",
             ],
         };
 
@@ -406,7 +413,7 @@ export class YumeButton extends HTMLElement {
             filled: {
                 "--background-color": `var(${colorVars[color][0]}, rgba(29,29,29,1))`,
                 "--border-color": `var(${colorVars[color][0]}, rgba(29,29,29,1))`,
-                "--text-color": `var(${colorVars[color][3]}, rgba(241,246,250,1))`,
+                "--text-color": `var(${colorVars[color][6]}, rgba(241,246,250,1))`,
             },
             flat: {
                 "--background-color": `var(${colorVars[color][3]},rgba(241,246,250,1))`,
@@ -427,7 +434,7 @@ export class YumeButton extends HTMLElement {
             );
             this.button.style.setProperty(
                 "--hover-text-color",
-                `var(${colorVars[color][3]}, rgba(241,246,250,1))`,
+                `var(${colorVars[color][6]}, rgba(241,246,250,1))`,
             );
             this.button.style.setProperty(
                 "--hover-border-color",
@@ -439,7 +446,7 @@ export class YumeButton extends HTMLElement {
             );
             this.button.style.setProperty(
                 "--focus-text-color",
-                `var(${colorVars[color][3]}, rgba(241,246,250,1))`,
+                `var(${colorVars[color][6]}, rgba(241,246,250,1))`,
             );
             this.button.style.setProperty(
                 "--focus-border-color",
@@ -451,7 +458,7 @@ export class YumeButton extends HTMLElement {
             );
             this.button.style.setProperty(
                 "--active-text-color",
-                `var(${colorVars[color][3]}, rgba(241,246,250,1))`,
+                `var(${colorVars[color][6]}, rgba(241,246,250,1))`,
             );
             this.button.style.setProperty(
                 "--active-border-color",
@@ -482,7 +489,7 @@ export class YumeButton extends HTMLElement {
             );
             this.button.style.setProperty(
                 "--active-text-color",
-                `var(${colorVars[color][3]}, rgba(241,246,250,1))`,
+                `var(${colorVars[color][6]}, rgba(241,246,250,1))`,
             );
 
             if (styleType === "outlined") {

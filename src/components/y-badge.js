@@ -39,17 +39,17 @@ export class YumeBadge extends HTMLElement {
         return this.getAttribute("value") || "";
     }
 
-    getBadgeColor(color) {
+    getBadgeColors(color) {
         const colorMap = {
-            primary: "var(--primary-content--)",
-            secondary: "var(--secondary-content--)",
-            base: "var(--base-content--)",
-            success: "var(--success-content--)",
-            warning: "var(--warning-content--)",
-            error: "var(--error-content--)",
-            help: "var(--help-content--)",
+            primary: ["var(--primary-content--)", "var(--primary-content-inverse)"],
+            secondary: ["var(--secondary-content--)", "var(--secondary-content-inverse)"],
+            base: ["var(--base-content--)", "var(--base-content-inverse)"],
+            success: ["var(--success-content--)", "var(--success-content-inverse)"],
+            warning: ["var(--warning-content--)", "var(--warning-content-inverse)"],
+            error: ["var(--error-content--)", "var(--error-content-inverse)"],
+            help: ["var(--help-content--)", "var(--help-content-inverse)"],
         };
-        return colorMap[color] || color;
+        return colorMap[color] || [color, "var(--neutral-white, #fff)"];
     }
 
     getBadgePosition(position, alignment) {
@@ -97,7 +97,7 @@ export class YumeBadge extends HTMLElement {
     }
 
     render() {
-        const badgeColor = this.getBadgeColor(this.color);
+        const [badgeColor, badgeTextColor] = this.getBadgeColors(this.color);
         const { fontSize, padding, minSize } = this.getSizeAttributes(
             this.size,
         );
@@ -118,7 +118,7 @@ export class YumeBadge extends HTMLElement {
                     position: ${hasTarget ? "absolute" : "static"};
                     ${hasTarget ? positionStyles : ""}
                     background: ${badgeColor};
-                    color: var(--base-background-component, #fff);
+                    color: ${badgeTextColor};
                     font-size: ${fontSize};
                     font-weight: bold;
                     padding: ${padding};

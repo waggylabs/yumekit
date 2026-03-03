@@ -66,40 +66,47 @@ export class YumeTag extends HTMLElement {
                 "--primary-content--",
                 "--primary-content-hover",
                 "--primary-background-component",
+                "--primary-content-inverse",
             ],
             secondary: [
                 "--secondary-content--",
                 "--secondary-content-hover",
                 "--secondary-background-component",
+                "--secondary-content-inverse",
             ],
             base: [
                 "--base-content--",
                 "--base-content-lighter",
                 "--base-background-component",
+                "--base-content-inverse",
             ],
             success: [
                 "--success-content--",
                 "--success-content-hover",
                 "--success-background-component",
+                "--success-content-inverse",
             ],
             error: [
                 "--error-content--",
                 "--error-content-hover",
                 "--error-background-component",
+                "--error-content-inverse",
             ],
             warning: [
                 "--warning-content--",
                 "--warning-content-hover",
                 "--warning-background-component",
+                "--warning-content-inverse",
             ],
             help: [
                 "--help-content--",
                 "--help-content-hover",
                 "--help-background-component",
+                "--help-content-inverse",
             ],
         };
 
-        const [content, hover, background] = vars[color] || vars.base;
+        const [content, hover, background, inverse] = vars[color] || vars.base;
 
         const borderRadius =
             shape === "round"
@@ -136,10 +143,10 @@ export class YumeTag extends HTMLElement {
             filled: `
                 .tag {
                     background: var(${content});
-                    color: var(${background});
+                    color: var(${inverse});
                 }
                 .remove {
-                    color: var(${background});
+                    color: var(${inverse});
                 }
             `,
             outlined: `
