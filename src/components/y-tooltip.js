@@ -232,7 +232,7 @@ export class YumeTooltip extends HTMLElement {
                 }
             </style>
             <slot class="trigger"></slot>
-            <div class="tooltip ${pos}" role="tooltip">${this.text}</div>
+            <div class="tooltip ${pos}" role="tooltip" part="tooltip">${this.text}</div>
         `;
     }
 }

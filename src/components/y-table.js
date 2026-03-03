@@ -232,8 +232,10 @@ export class YumeTable extends HTMLElement {
 
         const table = document.createElement("table");
         table.setAttribute("role", "grid");
+        table.setAttribute("part", "table");
 
         const thead = document.createElement("thead");
+        thead.setAttribute("part", "header");
         const headerRow = document.createElement("tr");
 
         columns.forEach((col) => {
@@ -279,8 +281,10 @@ export class YumeTable extends HTMLElement {
 
         rows.forEach((row) => {
             const tr = document.createElement("tr");
+            tr.setAttribute("part", "row");
             columns.forEach((col, colIdx) => {
                 const td = document.createElement("td");
+                td.setAttribute("part", "cell");
                 if (col.rowHeader || colIdx === 0) {
                     td.classList.add("row-header");
                 }
