@@ -19,6 +19,7 @@ export class YumeTheme extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this.shadowRoot.innerHTML = "<slot></slot>";
     }
 
     connectedCallback() {
@@ -62,10 +63,22 @@ export class YumeTheme extends HTMLElement {
     applyVariablesToHost(cssText) {
         const regex = /--([\w-]+):\s*([^;]+);/g;
         let match;
+        this._themeProps = [];
 
         while ((match = regex.exec(cssText)) !== null) {
-            this.style.setProperty(`--${match[1]}`, match[2].trim());
+            const prop = `--${match[1]}`;
+            this.style.setProperty(prop, match[2].trim());
+            this._themeProps.push(prop);
         }
+    }
+
+    clearThemeProperties() {
+        if (this._themeProps) {
+            for (const prop of this._themeProps) {
+                this.style.removeProperty(prop);
+            }
+        }
+        this._themeProps = [];
     }
 }
 

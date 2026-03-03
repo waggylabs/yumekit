@@ -6,6 +6,7 @@
     --base-background-border: var(--neutral-light-3);
     --base-background-active: var(--neutral-light-4);
     --base-content--: var(--neutral-dark-0);
+    --base-content-inverse: var(--neutral-white);
     --base-content-light: var(--neutral-dark-1);
     --base-content-lighter: var(--neutral-dark-3);
     --base-content-lightest: var(--neutral-dark-5);
@@ -16,6 +17,7 @@
     --primary-background-active: var(--blue-light-3);
     --primary-background-border: var(--blue-light-4);
     --primary-content--: var(--blue--);
+    --primary-content-inverse: var(--neutral-white);
     --primary-content-hover: var(--blue-dark-7);
     --primary-content-active: var(--blue-dark-6);
     --secondary-background-app: var(--teal-light-1);
@@ -24,6 +26,7 @@
     --secondary-background-border: var(--teal-light-3);
     --secondary-background-active: var(--teal-light-4);
     --secondary-content--: var(--teal--);
+    --secondary-content-inverse: var(--neutral-black);
     --secondary-content-hover: var(--teal-dark-7);
     --secondary-content-active: var(--teal-dark-6);
     --success-background-app: var(--green-light-1);
@@ -32,6 +35,7 @@
     --success-background-border: var(--green-light-3);
     --success-background-active: var(--green-light-4);
     --success-content--: var(--green--);
+    --success-content-inverse: var(--neutral-black);
     --success-content-hover: var(--green-dark-7);
     --success-content-active: var(--green-dark-6);
     --warning-background-app: var(--yellow-light-1);
@@ -40,6 +44,7 @@
     --warning-background-border: var(--yellow-light-3);
     --warning-background-active: var(--yellow-light-4);
     --warning-content--: var(--yellow--);
+    --warning-content-inverse: var(--neutral-black);
     --warning-content-hover: var(--yellow-dark-7);
     --warning-content-active: var(--yellow-dark-6);
     --error-background-app: var(--red-light-1);
@@ -48,6 +53,7 @@
     --error-background-border: var(--red-light-3);
     --error-background-active: var(--red-light-4);
     --error-content--: var(--red--);
+    --error-content-inverse: var(--neutral-white);
     --error-content-hover: var(--red-dark-7);
     --error-content-active: var(--red-dark-6);
     --help-background-app: var(--indigo-light-1);
@@ -56,11 +62,17 @@
     --help-background-active: var(--indigo-light-3);
     --help-background-border: var(--indigo-light-4);
     --help-content--: var(--indigo--);
+    --help-content-inverse: var(--neutral-white);
     --help-content-hover: var(--indigo-dark-7);
     --help-content-active: var(--indigo-dark-6);
     --component-appbar-background: var(--base-background-component);
     --component-appbar-color: var(--base-content--);
     --component-appbar-border-color: var(--base-background-border);
+    --component-appbar-border-width: var(--component-sidebar-border-width);
+    --component-appbar-border-radius: var(--component-sidebar-border-radius);
+    --component-appbar-inner-border-width: var(
+        --component-sidebar-border-width
+    );
     --component-checkbox-background: var(--base-background-component);
     --component-checkbox-color: var(--base-content--);
     --component-checkbox-border-color: var(--base-content--);
@@ -70,6 +82,7 @@
     --component-dialog-border-color: var(--base-background-border);
     --component-dialog-hover-background: var(--base-background-hover);
     --component-dialog-accent: var(--primary-content--);
+    --component-dialog-shadow: var(--base-shadow);
     --component-drawer-background: var(--base-background-component);
     --component-drawer-color: var(--base-content--);
     --component-drawer-border-color: var(--base-background-border);
@@ -118,6 +131,8 @@
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-background-border);
     --component-tabs-accent: var(--primary-content--);
+    --component-tabs-font-family: var(--font-family-body);
+    --component-slider-width: 129px;
     --font-family-header: "Lexend", sans-serif;
     --font-family-body: "Lexend", sans-serif;
 }

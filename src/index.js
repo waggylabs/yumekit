@@ -1,6 +1,9 @@
 import variablesCSS from "../styles/variables.css";
 
-if (typeof document !== "undefined" && !document.querySelector("[data-yumekit-vars]")) {
+if (
+    typeof document !== "undefined" &&
+    !document.querySelector("[data-yumekit-vars]")
+) {
     const style = document.createElement("style");
     style.setAttribute("data-yumekit-vars", "");
     style.textContent = variablesCSS;

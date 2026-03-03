@@ -251,8 +251,8 @@ class YumeDrawer extends HTMLElement {
 
             .drawer-panel {
                 position: absolute;
-                background: var(--component-drawer-background, #fff);
-                color: var(--component-drawer-color, #000);
+                background: var(--component-drawer-background, #0c0c0d);
+                color: var(--component-drawer-color, #f7f7fa);
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
                 overflow: hidden;
                 outline: none;
@@ -273,12 +273,12 @@ class YumeDrawer extends HTMLElement {
             .drawer-panel[data-position="left"] {
                 left: 0;
                 transform: translateX(-100%);
-                border-right: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #ccc);
+                border-right: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
             }
             .drawer-panel[data-position="right"] {
                 right: 0;
                 transform: translateX(100%);
-                border-left: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #ccc);
+                border-left: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
             }
 
             .drawer-panel[data-position="top"],
@@ -290,12 +290,12 @@ class YumeDrawer extends HTMLElement {
             .drawer-panel[data-position="top"] {
                 top: 0;
                 transform: translateY(-100%);
-                border-bottom: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #ccc);
+                border-bottom: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
             }
             .drawer-panel[data-position="bottom"] {
                 bottom: 0;
                 transform: translateY(100%);
-                border-top: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #ccc);
+                border-top: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
             }
 
             .drawer-panel.open { transform: translate(0, 0); }
@@ -332,7 +332,7 @@ class YumeDrawer extends HTMLElement {
                 flex-shrink: 0;
                 align-items: center;
                 justify-content: center;
-                color: var(--component-drawer-color, #999);
+                color: var(--component-drawer-color, #f7f7fa);
                 opacity: 0.6;
                 touch-action: none;         /* needed for pointer events */
                 user-select: none;
@@ -341,7 +341,7 @@ class YumeDrawer extends HTMLElement {
             .resize-handle:hover,
             .resize-handle:active {
                 opacity: 1;
-                background: var(--component-drawer-hover-background, rgba(128,128,128,0.15));
+                background: var(--component-drawer-hover-background, #292a2b);
             }
 
             .drawer-panel[data-position="left"] > .resize-handle,

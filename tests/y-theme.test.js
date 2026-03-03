@@ -122,13 +122,21 @@ describe("<y-theme>", () => {
             window.fetch = async (url) => {
                 const str = url.toString();
                 if (str.includes("custom.css"))
-                    return { text: async () => `:root { --custom-var: hotpink; }` };
+                    return {
+                        text: async () => `:root { --custom-var: hotpink; }`,
+                    };
                 if (str.includes("first.css"))
-                    return { text: async () => `:root { --theme-color: blue; }` };
+                    return {
+                        text: async () => `:root { --theme-color: blue; }`,
+                    };
                 if (str.includes("second.css"))
-                    return { text: async () => `:root { --theme-color: green; }` };
+                    return {
+                        text: async () => `:root { --theme-color: green; }`,
+                    };
                 if (str.includes("override.css"))
-                    return { text: async () => `:root { --override-var: purple; }` };
+                    return {
+                        text: async () => `:root { --override-var: purple; }`,
+                    };
                 return originalFetch(url);
             };
         });
@@ -146,7 +154,9 @@ describe("<y-theme>", () => {
                 () => el.style.getPropertyValue("--custom-var") === "hotpink",
             );
 
-            expect(el.style.getPropertyValue("--custom-var")).to.equal("hotpink");
+            expect(el.style.getPropertyValue("--custom-var")).to.equal(
+                "hotpink",
+            );
         });
 
         it("still applies base variables when using theme-path", async () => {
@@ -159,9 +169,9 @@ describe("<y-theme>", () => {
             );
 
             // variables.css is always bundled regardless of theme-path
-            expect(el.style.getPropertyValue("--spacing-medium").trim()).to.equal(
-                "8px",
-            );
+            expect(
+                el.style.getPropertyValue("--spacing-medium").trim(),
+            ).to.equal("8px");
         });
 
         it("updates when theme-path attribute changes", async () => {
@@ -179,7 +189,9 @@ describe("<y-theme>", () => {
                 () => el.style.getPropertyValue("--theme-color") === "green",
             );
 
-            expect(el.style.getPropertyValue("--theme-color")).to.equal("green");
+            expect(el.style.getPropertyValue("--theme-color")).to.equal(
+                "green",
+            );
         });
 
         it("theme-path takes priority over theme and mode attributes", async () => {
@@ -195,7 +207,9 @@ describe("<y-theme>", () => {
                 () => el.style.getPropertyValue("--override-var") === "purple",
             );
 
-            expect(el.style.getPropertyValue("--override-var")).to.equal("purple");
+            expect(el.style.getPropertyValue("--override-var")).to.equal(
+                "purple",
+            );
         });
 
         it("removing theme-path falls back to theme and mode attributes", async () => {
@@ -214,7 +228,9 @@ describe("<y-theme>", () => {
             el.removeAttribute("theme-path");
 
             await waitUntil(() =>
-                el.style.getPropertyValue("--base-background-app").includes("dark"),
+                el.style
+                    .getPropertyValue("--base-background-app")
+                    .includes("dark"),
             );
 
             expect(
@@ -237,9 +253,9 @@ describe("<y-theme>", () => {
             );
 
             // Base variables are still applied even though the theme failed
-            expect(el.style.getPropertyValue("--spacing-medium").trim()).to.equal(
-                "8px",
-            );
+            expect(
+                el.style.getPropertyValue("--spacing-medium").trim(),
+            ).to.equal("8px");
             // Only one <style> tag (variables only, no theme)
             expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
         });
