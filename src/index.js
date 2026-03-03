@@ -1,17 +1,14 @@
-<<<<<<< HEAD
-// Auto-inject default CSS custom-properties into the document so every
-// component works out-of-the-box — even without a <y-theme> wrapper.
-import "./modules/load-defaults.js";
-=======
 import variablesCSS from "../styles/variables.css";
 
-if (typeof document !== "undefined" && !document.querySelector("[data-yumekit-vars]")) {
+if (
+    typeof document !== "undefined" &&
+    !document.querySelector("[data-yumekit-vars]")
+) {
     const style = document.createElement("style");
     style.setAttribute("data-yumekit-vars", "");
     style.textContent = variablesCSS;
     document.head.appendChild(style);
 }
->>>>>>> main
 
 export * from "./components/y-appbar.js";
 export * from "./components/y-avatar.js";
