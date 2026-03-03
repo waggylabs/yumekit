@@ -3,26 +3,14 @@ import { YumeTheme } from "../src/components/y-theme.js";
 import "../src/components/y-theme.js";
 
 describe("<y-theme>", () => {
-    beforeEach(() => {
-        // Reset global flags between tests
-        YumeTheme.defaultVariablesLoaded = false;
-        YumeTheme.defaultVariablesCSS = "";
-    });
-
-    it("loads and applies default CSS variables", async () => {
+    it("loads and applies default CSS variables via link tag", async () => {
         const el = await fixture(html`<y-theme></y-theme>`);
 
-        await waitUntil(
-            () => YumeTheme.defaultVariablesLoaded,
-            "defaults not loaded"
-        );
-
-        expect(YumeTheme.defaultVariablesCSS).to.be.a("string").and.to.not.be
-            .empty;
-
-        // Check if any CSS variable was applied to host
-        const appliedVar = el.style.getPropertyValue("--font-family-body");
-        expect(appliedVar).to.be.a("string");
+        // The load-defaults module should have injected a <link> into <head>
+        const link = document.getElementById("yumekit-default-variables");
+        expect(link).to.exist;
+        expect(link.rel).to.equal("stylesheet");
+        expect(link.href).to.include("styles/variables.css");
     });
 
     it("applies variables from theme path", async () => {
@@ -31,9 +19,6 @@ describe("<y-theme>", () => {
 
         const originalFetch = window.fetch;
         window.fetch = async (url) => {
-            if (url.includes("styles/variables.css")) {
-                return { text: async () => `:root { --base-spacing: 8px; }` };
-            }
             if (url.includes("test-theme.css")) {
                 return { text: async () => mockThemeCSS };
             }
@@ -41,10 +26,12 @@ describe("<y-theme>", () => {
         };
 
         const el = await fixture(
-            html`<y-theme theme-path="test-theme.css"></y-theme>`
+            html`<y-theme theme-path="test-theme.css"></y-theme>`,
         );
 
-        await waitUntil(() => el.shadowRoot.querySelector("style"));
+        await waitUntil(
+            () => el.style.getPropertyValue("--custom-color") === "red",
+        );
 
         const appliedVar = el.style.getPropertyValue("--custom-color");
         expect(appliedVar).to.equal("red");
@@ -58,9 +45,6 @@ describe("<y-theme>", () => {
 
         const originalFetch = window.fetch;
         window.fetch = async (url) => {
-            if (url.includes("styles/variables.css")) {
-                return { text: async () => `:root { --font: sans-serif; }` };
-            }
             if (url.includes("first.css")) {
                 return { text: async () => mockFirst };
             }
@@ -71,16 +55,16 @@ describe("<y-theme>", () => {
         };
 
         const el = await fixture(
-            html`<y-theme theme-path="first.css"></y-theme>`
+            html`<y-theme theme-path="first.css"></y-theme>`,
         );
         await waitUntil(
-            () => el.style.getPropertyValue("--theme-color") === "blue"
+            () => el.style.getPropertyValue("--theme-color") === "blue",
         );
 
         el.setAttribute("theme-path", "second.css");
 
         await waitUntil(
-            () => el.style.getPropertyValue("--theme-color") === "green"
+            () => el.style.getPropertyValue("--theme-color") === "green",
         );
 
         window.fetch = originalFetch;
@@ -88,7 +72,7 @@ describe("<y-theme>", () => {
 
     it("renders slotted content", async () => {
         const el = await fixture(
-            html`<y-theme><div id="test-content">Hello</div></y-theme>`
+            html`<y-theme><div id="test-content">Hello</div></y-theme>`,
         );
 
         const slotted = el.querySelector("#test-content");
@@ -99,9 +83,6 @@ describe("<y-theme>", () => {
     it("applies different themes side-by-side without interference", async () => {
         const originalFetch = window.fetch;
         window.fetch = async (url) => {
-            if (url.includes("styles/variables.css")) {
-                return { text: async () => `:root { --font: Roboto; }` };
-            }
             if (url.includes("theme-a.css")) {
                 return { text: async () => `:root { --color-a: red; }` };
             }
@@ -122,10 +103,10 @@ describe("<y-theme>", () => {
         const themeB = wrapper.querySelector("#b");
 
         await waitUntil(
-            () => themeA.style.getPropertyValue("--color-a") === "red"
+            () => themeA.style.getPropertyValue("--color-a") === "red",
         );
         await waitUntil(
-            () => themeB.style.getPropertyValue("--color-b") === "blue"
+            () => themeB.style.getPropertyValue("--color-b") === "blue",
         );
 
         expect(themeA.style.getPropertyValue("--color-a")).to.equal("red");
@@ -140,9 +121,6 @@ describe("<y-theme>", () => {
     it("applies nested themes independently", async () => {
         const originalFetch = window.fetch;
         window.fetch = async (url) => {
-            if (url.includes("styles/variables.css")) {
-                return { text: async () => `:root { --spacing: 4px; }` };
-            }
             if (url.includes("outer.css")) {
                 return {
                     text: async () => `:root { --theme-depth: shallow; }`,
@@ -164,14 +142,14 @@ describe("<y-theme>", () => {
         const inner = el.querySelector("#inner");
 
         await waitUntil(
-            () => outer.style.getPropertyValue("--theme-depth") === "shallow"
+            () => outer.style.getPropertyValue("--theme-depth") === "shallow",
         );
         await waitUntil(
-            () => inner.style.getPropertyValue("--theme-depth") === "deep"
+            () => inner.style.getPropertyValue("--theme-depth") === "deep",
         );
 
         expect(outer.style.getPropertyValue("--theme-depth")).to.equal(
-            "shallow"
+            "shallow",
         );
         expect(inner.style.getPropertyValue("--theme-depth")).to.equal("deep");
 

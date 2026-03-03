@@ -1,7 +1,17 @@
-export class YumeTheme extends HTMLElement {
-    static defaultVariablesLoaded = false;
-    static defaultVariablesCSS = "";
+import "../modules/load-defaults.js";
 
+/**
+ * <y-theme> — optional wrapper that applies a theme-override stylesheet.
+ *
+ * Default CSS custom-properties (from styles/variables.css) are injected
+ * globally by load-defaults.js when the library is imported, so components
+ * work out-of-the-box without <y-theme>.  This element only needs to handle
+ * the *override* theme file (e.g. styles/blue-dark.css).
+ *
+ * Usage:
+ *   <y-theme theme-path="styles/blue-dark.css">…</y-theme>
+ */
+export class YumeTheme extends HTMLElement {
     static get observedAttributes() {
         return ["theme-path"];
     }
@@ -9,39 +19,20 @@ export class YumeTheme extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this.shadowRoot.innerHTML = "<slot></slot>";
     }
 
     connectedCallback() {
-        this.loadDefaultVariables().then(() => {
-            const themePath = this.getAttribute("theme-path");
+        const themePath = this.getAttribute("theme-path");
+        if (themePath) {
             this.loadTheme(themePath);
-        });
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === "theme-path" && oldValue !== newValue) {
             this.loadTheme(newValue);
         }
-    }
-
-    async loadDefaultVariables() {
-        if (!YumeTheme.defaultVariablesLoaded) {
-            try {
-                const variablesUrl = new URL(
-                    "styles/variables.css",
-                    document.baseURI,
-                );
-                const response = await fetch(variablesUrl.href);
-                YumeTheme.defaultVariablesCSS = await response.text();
-                YumeTheme.defaultVariablesLoaded = true;
-            } catch (e) {
-                console.error(
-                    "Failed to load default variables from styles/variables.css:",
-                    e,
-                );
-            }
-        }
-        return Promise.resolve();
     }
 
     async loadTheme(themePath) {
@@ -56,24 +47,33 @@ export class YumeTheme extends HTMLElement {
             }
         }
 
-        const combinedCSS = `
-        <style>
-          ${YumeTheme.defaultVariablesCSS}
-        </style>
-        ${themeCSS ? `<style>${themeCSS}</style>` : ""}
-      `;
-
-        this.shadowRoot.innerHTML = `${combinedCSS}<slot></slot>`;
-        this.applyVariablesToHost(YumeTheme.defaultVariablesCSS + themeCSS);
+        // Apply overrides as inline styles on the host so they inherit
+        // into child shadow DOMs, overriding the global :root defaults.
+        this.clearThemeProperties();
+        if (themeCSS) {
+            this.applyVariablesToHost(themeCSS);
+        }
     }
 
     applyVariablesToHost(cssText) {
         const regex = /--([\w-]+):\s*([^;]+);/g;
         let match;
+        this._themeProps = [];
 
         while ((match = regex.exec(cssText)) !== null) {
-            this.style.setProperty(`--${match[1]}`, match[2].trim());
+            const prop = `--${match[1]}`;
+            this.style.setProperty(prop, match[2].trim());
+            this._themeProps.push(prop);
         }
+    }
+
+    clearThemeProperties() {
+        if (this._themeProps) {
+            for (const prop of this._themeProps) {
+                this.style.removeProperty(prop);
+            }
+        }
+        this._themeProps = [];
     }
 }
 

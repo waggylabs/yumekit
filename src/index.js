@@ -1,3 +1,7 @@
+// Auto-inject default CSS custom-properties into the document so every
+// component works out-of-the-box — even without a <y-theme> wrapper.
+import "./modules/load-defaults.js";
+
 export * from "./components/y-appbar.js";
 export * from "./components/y-avatar.js";
 export * from "./components/y-badge.js";
