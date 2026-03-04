@@ -1,4 +1,4 @@
-import { fixture, html, expect, oneEvent, nextFrame } from "@open-wc/testing";
+import { fixture, html, expect, oneEvent, nextFrame, aTimeout } from "@open-wc/testing";
 import "../src/components/y-select.js";
 import "../src/components/y-tag.js"; // Needed for tag mode
 
@@ -83,6 +83,59 @@ describe("<y-select>", () => {
         tags = el.shadowRoot.querySelectorAll("y-tag");
         expect(tags.length).to.equal(1);
         expect(el.value).to.equal("banana");
+    });
+
+    it("opens dropdown on click", async () => {
+        const el = await fixture(
+            html`<y-select
+                options='[{"label":"Apple","value":"apple"}]'
+            ></y-select>`
+        );
+        const container = el.shadowRoot.querySelector(".select-container");
+        container.click();
+        await nextFrame();
+
+        const dropdown = el.shadowRoot.querySelector(".dropdown");
+        expect(dropdown.classList.contains("open")).to.be.true;
+    });
+
+    it("closes dropdown when clicking outside", async () => {
+        const el = await fixture(
+            html`<y-select
+                options='[{"label":"Apple","value":"apple"}]'
+            ></y-select>`
+        );
+        const container = el.shadowRoot.querySelector(".select-container");
+        container.click();
+        await nextFrame();
+
+        const dropdown = el.shadowRoot.querySelector(".dropdown");
+        expect(dropdown.classList.contains("open")).to.be.true;
+
+        document.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await nextFrame();
+
+        expect(dropdown.classList.contains("open")).to.be.false;
+    });
+
+    it("does not close dropdown on outside click when close-on-click-outside is false", async () => {
+        const el = await fixture(
+            html`<y-select
+                close-on-click-outside="false"
+                options='[{"label":"Apple","value":"apple"}]'
+            ></y-select>`
+        );
+        const container = el.shadowRoot.querySelector(".select-container");
+        container.click();
+        await nextFrame();
+
+        const dropdown = el.shadowRoot.querySelector(".dropdown");
+        expect(dropdown.classList.contains("open")).to.be.true;
+
+        document.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await nextFrame();
+
+        expect(dropdown.classList.contains("open")).to.be.true;
     });
 
     it("clears invalid state when value is set", async () => {

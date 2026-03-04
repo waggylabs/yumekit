@@ -180,7 +180,7 @@ export class YumeCheckbox extends HTMLElement {
                 border-color: var(--component-checkbox-border-color);
             }
 
-            :host([disabled]) .label {
+            :host([disabled]) [part="label"] {
                 opacity: 0.5;
             }
 
@@ -195,7 +195,7 @@ export class YumeCheckbox extends HTMLElement {
                 display: block;
             }
 
-            .label {
+            [part="label"] {
                 display: inline-flex;
                 align-items: center;
                 font-size: 0.9em;

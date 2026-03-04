@@ -1,4 +1,4 @@
-import { icons } from "../icons/registry.js";
+import { getIcon } from "../icons/registry.js";
 
 export class YumeIcon extends HTMLElement {
     static get observedAttributes() {
@@ -71,13 +71,20 @@ export class YumeIcon extends HTMLElement {
     }
 
     render() {
-        const svg = icons[this.name] || "";
+        const svg = getIcon(this.name);
         const sizeVal = this._getSize(this.size);
         const colorVal = this._getColor(this.color);
         const label = this.label;
-        const ariaAttrs = label
-            ? `role="img" aria-label="${label.replace(/"/g, "&quot;")}"`
-            : `aria-hidden="true"`;
+
+        if (label) {
+            this.setAttribute("role", "img");
+            this.setAttribute("aria-label", label);
+            this.removeAttribute("aria-hidden");
+        } else {
+            this.setAttribute("aria-hidden", "true");
+            this.removeAttribute("role");
+            this.removeAttribute("aria-label");
+        }
 
         this.shadowRoot.innerHTML = `
             <style>
@@ -90,15 +97,12 @@ export class YumeIcon extends HTMLElement {
                     color: ${colorVal};
                     line-height: 0;
                 }
-                .icon-wrapper {
-                    display: contents;
-                }
                 .icon-wrapper svg {
                     width: 100%;
                     height: 100%;
                 }
             </style>
-            <span class="icon-wrapper" part="icon" ${ariaAttrs}>${svg}</span>
+            <span class="icon-wrapper" part="icon">${svg}</span>
         `;
     }
 }

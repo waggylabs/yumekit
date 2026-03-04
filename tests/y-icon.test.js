@@ -1,4 +1,5 @@
 import { html, fixture, expect } from "@open-wc/testing";
+import "../src/icons/all.js";
 import "../src/components/y-icon.js";
 
 describe("YumeIcon", () => {
