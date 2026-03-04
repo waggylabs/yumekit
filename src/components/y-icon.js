@@ -118,6 +118,19 @@ function sanitizeSvg(raw) {
     return svg.outerHTML;
 }
 
+// Cache sanitized SVG markup per icon name to avoid repeated DOMParser + DOM-walk
+// on every render. The cache is naturally bounded by the number of registered icons.
+const sanitizedSvgCache = new Map();
+
+function getCachedSvg(name) {
+    if (sanitizedSvgCache.has(name)) {
+        return sanitizedSvgCache.get(name);
+    }
+    const result = sanitizeSvg(getIcon(name));
+    sanitizedSvgCache.set(name, result);
+    return result;
+}
+
 export class YumeIcon extends HTMLElement {
     static get observedAttributes() {
         return ["name", "size", "color", "label"];
@@ -189,7 +202,7 @@ export class YumeIcon extends HTMLElement {
     }
 
     render() {
-        const svg = sanitizeSvg(getIcon(this.name));
+        const svg = getCachedSvg(this.name);
         const sizeVal = this._getSize(this.size);
         const colorVal = this._getColor(this.color);
         const label = this.label;
