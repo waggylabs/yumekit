@@ -316,6 +316,7 @@ export class YumeSelect extends HTMLElement {
     }
 
     render() {
+        this.closeDropdown();
         this.applyStyles();
         this.shadowRoot.innerHTML = this.generateTemplate();
         this.queryRefs();

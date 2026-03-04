@@ -81,8 +81,6 @@ const ALLOWED_ATTRS = new Set([
     "rotate",
     "textlength",
     "lengthadjust",
-    "currentcolor",
-    "none",
     "display",
     "visibility",
     "color",
