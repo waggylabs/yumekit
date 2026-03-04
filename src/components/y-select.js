@@ -33,11 +33,9 @@ export class YumeSelect extends HTMLElement {
         }
         this.updateValidation();
         this._internals.setFormValue(this.value);
-        document.addEventListener("click", this._onDocumentClick, true);
     }
 
     disconnectedCallback() {
-        document.removeEventListener("click", this._onDocumentClick, true);
         this.closeDropdown();
     }
 
@@ -147,15 +145,18 @@ export class YumeSelect extends HTMLElement {
             this._onScrollOrResize = this._positionDropdown.bind(this);
             window.addEventListener("scroll", this._onScrollOrResize, true);
             window.addEventListener("resize", this._onScrollOrResize);
+            document.addEventListener("click", this._onDocumentClick, true);
         }
     }
 
     closeDropdown() {
-        this.dropdown.classList.remove("open");
-        this.selectContainer.classList.remove("open");
+        this.dropdown?.classList.remove("open");
+        this.selectContainer?.classList.remove("open");
+        document.removeEventListener("click", this._onDocumentClick, true);
         if (this._onScrollOrResize) {
             window.removeEventListener("scroll", this._onScrollOrResize, true);
             window.removeEventListener("resize", this._onScrollOrResize);
+            this._onScrollOrResize = null;
         }
     }
 
