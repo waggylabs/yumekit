@@ -14,6 +14,7 @@ export class YumeSelect extends HTMLElement {
             "placeholder",
             "options",
             "display-mode",
+            "close-on-click-outside",
         ];
     }
 
@@ -22,6 +23,7 @@ export class YumeSelect extends HTMLElement {
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
         this.selectedValues = new Set();
+        this._onDocumentClick = this._onDocumentClick.bind(this);
         this.render();
     }
 
@@ -31,6 +33,19 @@ export class YumeSelect extends HTMLElement {
         }
         this.updateValidation();
         this._internals.setFormValue(this.value);
+        document.addEventListener("click", this._onDocumentClick, true);
+    }
+
+    disconnectedCallback() {
+        document.removeEventListener("click", this._onDocumentClick, true);
+    }
+
+    _onDocumentClick(e) {
+        if (this.getAttribute("close-on-click-outside") === "false") return;
+        const path = e.composedPath();
+        if (!path.includes(this) && this.dropdown?.classList.contains("open")) {
+            this.closeDropdown();
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {

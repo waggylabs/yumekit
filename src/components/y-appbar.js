@@ -379,6 +379,7 @@ export class YumeAppbar extends HTMLElement {
 
         const bar = document.createElement("div");
         bar.className = `appbar ${isVertical ? "vertical" : "horizontal"}`;
+
         if (isCollapsed) bar.classList.add("collapsed");
         bar.setAttribute("role", "navigation");
         bar.style.setProperty("--_appbar-padding", cfg.padding);
@@ -399,6 +400,7 @@ export class YumeAppbar extends HTMLElement {
 
         const logoWrapper = document.createElement("div");
         logoWrapper.className = "logo-wrapper";
+
         const logoSlot = document.createElement("slot");
         logoSlot.name = "logo";
         logoWrapper.appendChild(logoSlot);
@@ -406,6 +408,7 @@ export class YumeAppbar extends HTMLElement {
 
         const titleWrapper = document.createElement("div");
         titleWrapper.className = "header-title";
+
         const titleSlot = document.createElement("slot");
         titleSlot.name = "title";
         titleWrapper.appendChild(titleSlot);

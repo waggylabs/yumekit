@@ -169,6 +169,21 @@ export class YumeCheckbox extends HTMLElement {
                 line-height: 0;
             }
 
+            :host([disabled]) .checkbox {
+                opacity: 0.5;
+                border-color: var(--component-checkbox-border-color);
+                background: var(--component-checkbox-disabled-background, var(--component-checkbox-background));
+                cursor: not-allowed;
+            }
+
+            :host([disabled]) .checkbox:hover {
+                border-color: var(--component-checkbox-border-color);
+            }
+
+            :host([disabled]) .label {
+                opacity: 0.5;
+            }
+
             .checkbox:hover {
                 border-color: var(--component-checkbox-accent);
             }
