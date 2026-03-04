@@ -206,9 +206,30 @@ class YumeMenu extends HTMLElement {
                 left = anchorRect.left - menuRect.width;
             }
             if (top + menuRect.height > vh) {
-                top = vh - menuRect.height - 10;
+                top = anchorRect.top - menuRect.height;
+            }
+        } else if (this.direction === "up") {
+            top = anchorRect.top - menuRect.height;
+            left = anchorRect.left;
+
+            if (top < 0) {
+                top = anchorRect.bottom;
+            }
+            if (left + menuRect.width > vw) {
+                left = vw - menuRect.width - 10;
+            }
+        } else if (this.direction === "left") {
+            top = anchorRect.top;
+            left = anchorRect.left - menuRect.width;
+
+            if (left < 0) {
+                left = anchorRect.right;
+            }
+            if (top + menuRect.height > vh) {
+                top = anchorRect.top - menuRect.height;
             }
         } else {
+            // "down" (default)
             top = anchorRect.bottom;
             left = anchorRect.left;
 
@@ -220,8 +241,8 @@ class YumeMenu extends HTMLElement {
             }
         }
 
-        top = Math.max(10, Math.min(top, vh - menuRect.height - 10));
-        left = Math.max(10, Math.min(left, vw - menuRect.width - 10));
+        top = Math.max(0, Math.min(top, vh - menuRect.height));
+        left = Math.max(0, Math.min(left, vw - menuRect.width));
 
         this.style.top = `${top}px`;
         this.style.left = `${left}px`;
@@ -269,7 +290,7 @@ class YumeMenu extends HTMLElement {
                 top: 0;
                 left: 100%;
                 display: none;
-                z-index: 1001;
+                z-index: var(--component-menu-z-index, 1001);
             }
 
             li.menuitem:hover > ul.submenu {

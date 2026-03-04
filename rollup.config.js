@@ -16,6 +16,20 @@ function cssString() {
     };
 }
 
+function svgString() {
+    return {
+        name: "svg-string",
+        transform(code, id) {
+            if (id.endsWith(".svg")) {
+                return {
+                    code: `export default ${JSON.stringify(code)};`,
+                    map: { mappings: "" },
+                };
+            }
+        },
+    };
+}
+
 const componentDir = "src/components";
 const componentFiles = readdirSync(componentDir).filter((f) =>
     f.endsWith(".js"),
@@ -58,27 +72,45 @@ export default [
             file: "dist/index.js",
             format: "esm",
         },
-        plugins: [cssString(), copyAssets()],
+        plugins: [cssString(), svgString(), copyAssets()],
     },
 
-    // 2. IIFE bundle (CDN / <script> tag)
+    // 2. IIFE bundle (CDN / <script> tag) — includes all icons
     {
-        input: "src/index.js",
+        input: "src/index.iife.js",
         output: {
             file: "dist/yumekit.min.js",
             format: "iife",
             name: "YumeKit",
         },
-        plugins: [cssString(), terser()],
+        plugins: [cssString(), svgString(), terser()],
     },
 
-    // 3. Individual components
+    // 3. Icon entrypoints
+    {
+        input: "src/icons/registry.js",
+        output: {
+            file: "dist/icons/registry.js",
+            format: "esm",
+        },
+        plugins: [],
+    },
+    {
+        input: "src/icons/all.js",
+        output: {
+            file: "dist/icons/all.js",
+            format: "esm",
+        },
+        plugins: [svgString()],
+    },
+
+    // 4. Individual components
     ...componentFiles.map((file) => ({
         input: `${componentDir}/${file}`,
         output: {
             file: `dist/components/${file}`,
             format: "esm",
         },
-        plugins: [cssString()],
+        plugins: [cssString(), svgString()],
     })),
 ];

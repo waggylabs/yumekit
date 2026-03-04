@@ -14,6 +14,7 @@ export class YumeSelect extends HTMLElement {
             "placeholder",
             "options",
             "display-mode",
+            "close-on-click-outside",
         ];
     }
 
@@ -22,6 +23,7 @@ export class YumeSelect extends HTMLElement {
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
         this.selectedValues = new Set();
+        this._onDocumentClick = this._onDocumentClick.bind(this);
         this.render();
     }
 
@@ -31,6 +33,18 @@ export class YumeSelect extends HTMLElement {
         }
         this.updateValidation();
         this._internals.setFormValue(this.value);
+    }
+
+    disconnectedCallback() {
+        this.closeDropdown();
+    }
+
+    _onDocumentClick(e) {
+        if (this.getAttribute("close-on-click-outside") === "false") return;
+        const path = e.composedPath();
+        if (!path.includes(this) && this.dropdown?.classList.contains("open")) {
+            this.closeDropdown();
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -131,15 +145,18 @@ export class YumeSelect extends HTMLElement {
             this._onScrollOrResize = this._positionDropdown.bind(this);
             window.addEventListener("scroll", this._onScrollOrResize, true);
             window.addEventListener("resize", this._onScrollOrResize);
+            document.addEventListener("click", this._onDocumentClick, true);
         }
     }
 
     closeDropdown() {
-        this.dropdown.classList.remove("open");
-        this.selectContainer.classList.remove("open");
+        this.dropdown?.classList.remove("open");
+        this.selectContainer?.classList.remove("open");
+        document.removeEventListener("click", this._onDocumentClick, true);
         if (this._onScrollOrResize) {
             window.removeEventListener("scroll", this._onScrollOrResize, true);
             window.removeEventListener("resize", this._onScrollOrResize);
+            this._onScrollOrResize = null;
         }
     }
 
@@ -299,6 +316,7 @@ export class YumeSelect extends HTMLElement {
     }
 
     render() {
+        this.closeDropdown();
         this.applyStyles();
         this.shadowRoot.innerHTML = this.generateTemplate();
         this.queryRefs();
@@ -372,7 +390,7 @@ export class YumeSelect extends HTMLElement {
 
             .dropdown {
                 position: fixed;
-                z-index: 9999;
+                z-index: var(--component-select-z-index, 6000);
                 background: var(--component-select-background);
                 border: var(--component-inputs-border-width) solid var(--component-select-border-color);
                 border-radius: var(--component-inputs-border-radius-outer);

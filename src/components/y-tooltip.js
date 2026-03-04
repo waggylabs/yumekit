@@ -142,7 +142,7 @@ export class YumeTooltip extends HTMLElement {
 
                 .tooltip {
                     position: absolute;
-                    z-index: 9999;
+                    z-index: var(--component-tooltip-z-index, 7000);
                     white-space: nowrap;
                     pointer-events: none;
                     opacity: 0;

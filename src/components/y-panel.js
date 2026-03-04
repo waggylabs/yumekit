@@ -71,7 +71,12 @@ export class YumePanel extends HTMLElement {
         if (!this._expanded) {
             const parentBar = this.closest("y-panelbar");
             if (parentBar && parentBar.hasAttribute("exclusive")) {
-                const siblingPanels = parentBar.querySelectorAll("y-panel");
+                const parent = this.parentElement;
+                const siblingPanels = parent
+                    ? Array.from(parent.children).filter(
+                          (el) => el.tagName === "Y-PANEL",
+                      )
+                    : [];
                 siblingPanels.forEach((panel) => {
                     if (panel !== this && panel.expanded) {
                         panel.collapse();
@@ -123,9 +128,19 @@ export class YumePanel extends HTMLElement {
     }
 
     updateChildState() {
-        const parentPanel = this.parentElement?.closest("y-panel");
-        const isChild = Boolean(parentPanel && parentPanel !== this);
-        this.setAttribute("data-is-child", isChild ? "true" : "false");
+        let depth = 0;
+        let el = this.parentElement;
+        while (el) {
+            const parent = el.closest("y-panel");
+            if (parent && parent !== this) {
+                depth++;
+                el = parent.parentElement;
+            } else {
+                break;
+            }
+        }
+        this.setAttribute("data-is-child", depth > 0 ? "true" : "false");
+        this.style.setProperty("--panel-depth", depth);
     }
 
     checkRouteMatch() {
@@ -141,7 +156,8 @@ export class YumePanel extends HTMLElement {
         const header = this.shadowRoot.querySelector(".header");
         if (!header) return;
 
-        header.addEventListener("click", () => {
+        header.addEventListener("click", (e) => {
+            e.stopPropagation();
             if (this.hasAttribute("href")) {
                 const href = this.getAttribute("href");
                 if (this.getAttribute("history") !== "false") {
@@ -251,7 +267,7 @@ export class YumePanel extends HTMLElement {
             }
 
             :host([data-is-child="true"]) .header {
-                padding-left: calc(var(--component-panelbar-padding, 4px) * 2);
+                padding-left: calc(var(--component-panelbar-padding, 4px) + (var(--panel-depth, 1) * var(--component-panelbar-indent, 16px)));
             }
 
             .header {

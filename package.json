@@ -1,6 +1,6 @@
 {
     "name": "@studious-creative/yumekit",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -17,6 +17,8 @@
             "types": "./dist/react.d.ts"
         },
         "./components/*": "./dist/components/*",
+        "./icons/all.js": "./dist/icons/all.js",
+        "./icons/registry.js": "./dist/icons/registry.js",
         "./styles/*": "./dist/styles/*"
     },
     "sideEffects": true,

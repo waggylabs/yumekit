@@ -160,7 +160,7 @@ export class YumeToast extends HTMLElement {
 
     _getPositionStyles() {
         const pos = this.position;
-        const base = `position: fixed; z-index: 10000; display: flex; flex-direction: column; gap: var(--spacing-small, 6px); pointer-events: none; max-width: 420px; min-width: 280px;`;
+        const base = `position: fixed; z-index: var(--component-toast-z-index, 9000); display: flex; flex-direction: column; gap: var(--spacing-small, 6px); pointer-events: none; max-width: 420px; min-width: 280px;`;
         const pad = `var(--component-toast-offset, var(--spacing-x-large, 16px))`;
 
         const map = {

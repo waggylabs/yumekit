@@ -104,7 +104,7 @@ class YumeDialog extends HTMLElement {
                 align-items: center;
                 justify-content: center;
                 background: rgba(0,0,0,0.5);
-                z-index: 1000;
+                z-index: var(--component-dialog-z-index, 1000);
             }
             :host([visible]) { display: flex; }
             .dialog {
