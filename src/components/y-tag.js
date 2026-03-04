@@ -2,7 +2,7 @@ import { close as closeSvg } from "../icons/index.js";
 
 export class YumeTag extends HTMLElement {
     static get observedAttributes() {
-        return ["removable", "color", "style-type", "shape"];
+        return ["removable", "color", "style-type", "shape", "size"];
     }
 
     constructor() {
@@ -24,9 +24,10 @@ export class YumeTag extends HTMLElement {
         const color = this.getAttribute("color") || "base";
         const styleType = this.getAttribute("style-type") || "filled";
         const shape = this.getAttribute("shape") || "square";
+        const size = this.getAttribute("size") || "medium";
 
         const style = document.createElement("style");
-        style.textContent = this.getStyle(color, styleType, shape);
+        style.textContent = this.getStyle(color, styleType, shape, size);
 
         this.shadowRoot.innerHTML = "";
         this.shadowRoot.appendChild(style);
@@ -60,7 +61,7 @@ export class YumeTag extends HTMLElement {
         }
     }
 
-    getStyle(color, styleType, shape) {
+    getStyle(color, styleType, shape, size) {
         const vars = {
             primary: [
                 "--primary-content--",
@@ -113,20 +114,44 @@ export class YumeTag extends HTMLElement {
                 ? "var(--component-tag-border-radius-circle)"
                 : "var(--component-tag-border-radius-square)";
 
+        const sizeConfig = {
+            small: {
+                height: "var(--component-tag-height-small, 22px)",
+                padding:
+                    "var(--component-tag-padding-small, var(--spacing-2x-small))",
+                fontSize: "var(--font-size-small, 0.8em)",
+            },
+            medium: {
+                height: "var(--component-tag-height-medium, 28px)",
+                padding:
+                    "var(--component-tag-padding-medium, var(--spacing-x-small))",
+                fontSize: "var(--font-size-label, 0.83em)",
+            },
+            large: {
+                height: "var(--component-tag-height-large, 38px)",
+                padding:
+                    "var(--component-tag-padding-large, var(--spacing-small))",
+                fontSize: "var(--font-size-paragraph, 1em)",
+            },
+        };
+        const cfg = sizeConfig[size] || sizeConfig.medium;
+
         const baseStyle = `
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body, sans-serif);
-                font-size: var(--font-size-label, 0.83em);
+                font-size: ${cfg.fontSize};
             }
             .tag {
                 display: inline-flex;
                 align-items: center;
                 gap: var(--spacing-2x-small);
-                padding: 0 var(--component-tag-padding-medium, var(--spacing-x-small));
+                height: ${cfg.height};
+                padding: 0 ${cfg.padding};
                 border: 1px solid transparent;
                 transition: background-color 0.2s, color 0.2s;
                 border-radius: ${borderRadius};
+                box-sizing: border-box;
             }
             .remove {
                 all: unset;

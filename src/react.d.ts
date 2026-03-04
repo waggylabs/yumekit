@@ -183,7 +183,7 @@ declare module "react" {
             }>;
             "y-tag": El<{
                 color?: string;
-                size?: string;
+                size?: "small" | "medium" | "large";
                 removable?: boolean | string;
                 "style-type"?: "filled" | "outlined" | "flat";
                 shape?: "square" | "round";
