@@ -17,9 +17,7 @@ describe("YumeIcon", () => {
     });
 
     it("renders empty when name is invalid", async () => {
-        const el = await fixture(
-            html`<y-icon name="nonexistent"></y-icon>`,
-        );
+        const el = await fixture(html`<y-icon name="nonexistent"></y-icon>`);
         const svg = el.shadowRoot.querySelector("svg");
         expect(svg).to.not.exist;
     });
@@ -34,7 +32,7 @@ describe("YumeIcon", () => {
         const el = await fixture(html`<y-icon name="star"></y-icon>`);
         expect(el.name).to.equal("star");
         expect(el.size).to.equal("medium");
-        expect(el.color).to.equal("base");
+        expect(el.color).to.equal("");
     });
 
     it("applies size attribute to host styles", async () => {
@@ -44,10 +42,8 @@ describe("YumeIcon", () => {
         const large = await fixture(
             html`<y-icon name="home" size="large"></y-icon>`,
         );
-        const smallStyle =
-            small.shadowRoot.querySelector("style").textContent;
-        const largeStyle =
-            large.shadowRoot.querySelector("style").textContent;
+        const smallStyle = small.shadowRoot.querySelector("style").textContent;
+        const largeStyle = large.shadowRoot.querySelector("style").textContent;
 
         expect(smallStyle).to.include("--component-icon-size-small");
         expect(largeStyle).to.include("--component-icon-size-large");
@@ -61,10 +57,10 @@ describe("YumeIcon", () => {
         expect(style).to.include("--primary-content--");
     });
 
-    it("applies base color by default", async () => {
+    it("inherits color by default", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("--base-content--");
+        expect(style).to.include("inherit");
     });
 
     it("supports all semantic colors", async () => {
@@ -113,13 +109,11 @@ describe("YumeIcon", () => {
 
     it("updates styles when size attribute changes", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
-        const styleBefore =
-            el.shadowRoot.querySelector("style").textContent;
+        const styleBefore = el.shadowRoot.querySelector("style").textContent;
         expect(styleBefore).to.include("--component-icon-size-medium");
 
         el.setAttribute("size", "large");
-        const styleAfter =
-            el.shadowRoot.querySelector("style").textContent;
+        const styleAfter = el.shadowRoot.querySelector("style").textContent;
         expect(styleAfter).to.include("--component-icon-size-large");
     });
 
@@ -137,15 +131,11 @@ describe("YumeIcon", () => {
         const wrapper = el.shadowRoot.querySelector(".icon-wrapper");
         el.setAttribute("size", "medium");
         // Same DOM node should still be there (no unnecessary re-render)
-        expect(el.shadowRoot.querySelector(".icon-wrapper")).to.equal(
-            wrapper,
-        );
+        expect(el.shadowRoot.querySelector(".icon-wrapper")).to.equal(wrapper);
     });
 
     it("supports hyphenated icon names", async () => {
-        const el = await fixture(
-            html`<y-icon name="arrow-right"></y-icon>`,
-        );
+        const el = await fixture(html`<y-icon name="arrow-right"></y-icon>`);
         const svg = el.shadowRoot.querySelector("svg");
         expect(svg).to.exist;
     });
@@ -162,9 +152,7 @@ describe("YumeIcon", () => {
             "chevron-down",
         ];
         for (const name of names) {
-            const el = await fixture(
-                html`<y-icon name="${name}"></y-icon>`,
-            );
+            const el = await fixture(html`<y-icon name="${name}"></y-icon>`);
             const svg = el.shadowRoot.querySelector("svg");
             expect(svg, `icon "${name}" should render an SVG`).to.exist;
         }
@@ -200,5 +188,57 @@ describe("YumeIcon", () => {
 
         el.color = "success";
         expect(el.getAttribute("color")).to.equal("success");
+    });
+
+    it("has no weight by default", async () => {
+        const el = await fixture(html`<y-icon name="home"></y-icon>`);
+        expect(el.weight).to.equal("");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.not.include("stroke-width");
+    });
+
+    it("applies thin weight", async () => {
+        const el = await fixture(
+            html`<y-icon name="home" weight="thin"></y-icon>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("stroke-width: 1 !important");
+    });
+
+    it("applies regular weight", async () => {
+        const el = await fixture(
+            html`<y-icon name="home" weight="regular"></y-icon>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("stroke-width: 1.5 !important");
+    });
+
+    it("applies thick weight", async () => {
+        const el = await fixture(
+            html`<y-icon name="home" weight="thick"></y-icon>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("stroke-width: 2 !important");
+    });
+
+    it("ignores unknown weight values", async () => {
+        const el = await fixture(
+            html`<y-icon name="home" weight="ultra"></y-icon>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.not.include("stroke-width");
+    });
+
+    it("updates styles when weight attribute changes", async () => {
+        const el = await fixture(html`<y-icon name="home"></y-icon>`);
+        el.setAttribute("weight", "thick");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("stroke-width: 2 !important");
+    });
+
+    it("weight property setter updates attribute", async () => {
+        const el = await fixture(html`<y-icon name="home"></y-icon>`);
+        el.weight = "thin";
+        expect(el.getAttribute("weight")).to.equal("thin");
     });
 });

@@ -1,4 +1,5 @@
 import variablesCSS from "../styles/variables.css";
+import "./icons/all.js";
 
 if (
     typeof document !== "undefined" &&
