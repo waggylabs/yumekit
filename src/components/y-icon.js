@@ -1,5 +1,20 @@
 import { getIcon } from "../icons/registry.js";
 
+function sanitizeSvg(raw) {
+    if (!raw) return "";
+    const doc = new DOMParser().parseFromString(raw, "image/svg+xml");
+    const svg = doc.querySelector("svg");
+    if (!svg) return "";
+    // Strip scripts and event handler attributes
+    for (const el of svg.querySelectorAll("script")) el.remove();
+    for (const el of svg.querySelectorAll("*")) {
+        for (const attr of [...el.attributes]) {
+            if (attr.name.startsWith("on")) el.removeAttribute(attr.name);
+        }
+    }
+    return svg.outerHTML;
+}
+
 export class YumeIcon extends HTMLElement {
     static get observedAttributes() {
         return ["name", "size", "color", "label"];
@@ -71,7 +86,7 @@ export class YumeIcon extends HTMLElement {
     }
 
     render() {
-        const svg = getIcon(this.name);
+        const svg = sanitizeSvg(getIcon(this.name));
         const sizeVal = this._getSize(this.size);
         const colorVal = this._getColor(this.color);
         const label = this.label;

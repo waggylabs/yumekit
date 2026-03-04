@@ -20,7 +20,6 @@ export * from "./components/y-dialog.js";
 export * from "./components/y-drawer.js";
 export * from "./components/y-icon.js";
 export { registerIcon, registerIcons, getIcon } from "./icons/registry.js";
-import "./icons/all.js";
 export * from "./components/y-input.js";
 export * from "./components/y-menu.js";
 export * from "./components/y-panel.js";

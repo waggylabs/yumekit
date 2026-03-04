@@ -75,9 +75,9 @@ export default [
         plugins: [cssString(), svgString(), copyAssets()],
     },
 
-    // 2. IIFE bundle (CDN / <script> tag)
+    // 2. IIFE bundle (CDN / <script> tag) — includes all icons
     {
-        input: "src/index.js",
+        input: "src/index.iife.js",
         output: {
             file: "dist/yumekit.min.js",
             format: "iife",
@@ -86,7 +86,25 @@ export default [
         plugins: [cssString(), svgString(), terser()],
     },
 
-    // 3. Individual components
+    // 3. Icon entrypoints
+    {
+        input: "src/icons/registry.js",
+        output: {
+            file: "dist/icons/registry.js",
+            format: "esm",
+        },
+        plugins: [],
+    },
+    {
+        input: "src/icons/all.js",
+        output: {
+            file: "dist/icons/all.js",
+            format: "esm",
+        },
+        plugins: [svgString()],
+    },
+
+    // 4. Individual components
     ...componentFiles.map((file) => ({
         input: `${componentDir}/${file}`,
         output: {

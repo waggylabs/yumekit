@@ -17,6 +17,8 @@
             "types": "./dist/react.d.ts"
         },
         "./components/*": "./dist/components/*",
+        "./icons/all.js": "./dist/icons/all.js",
+        "./icons/registry.js": "./dist/icons/registry.js",
         "./styles/*": "./dist/styles/*"
     },
     "sideEffects": true,

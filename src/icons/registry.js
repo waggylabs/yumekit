@@ -1,31 +1,28 @@
 /**
  * Icon registry — a runtime map of icon names to SVG markup strings.
  *
- * Consumers register only the icons they need for tree-shaking:
+ * Register only the icons you need for tree-shaking:
  *
- *   import { registerIcon } from "yumekit/icons/registry.js";
- *   import home from "yumekit/icons/home.svg";
- *   registerIcon("home", home);
+ *   import { registerIcon } from "@studious-creative/yumekit";
+ *   registerIcon("home", homeSvgString);
  *
- * Or register all bundled icons at once:
+ * Or register all bundled icons at once (separate import):
  *
- *   import "yumekit/icons/all.js";
+ *   import "@studious-creative/yumekit/icons/all.js";
  */
 
-const icons = {};
+const icons = new Map();
 
 export function registerIcon(name, svg) {
-    icons[name] = svg;
+    icons.set(name, svg);
 }
 
 export function registerIcons(entries) {
     for (const [name, svg] of Object.entries(entries)) {
-        icons[name] = svg;
+        icons.set(name, svg);
     }
 }
 
 export function getIcon(name) {
-    return icons[name] || "";
+    return icons.get(name) || "";
 }
-
-export { icons };

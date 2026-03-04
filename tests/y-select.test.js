@@ -1,4 +1,4 @@
-import { fixture, html, expect, oneEvent, nextFrame, aTimeout } from "@open-wc/testing";
+import { fixture, html, expect, nextFrame } from "@open-wc/testing";
 import "../src/components/y-select.js";
 import "../src/components/y-tag.js"; // Needed for tag mode
 
@@ -8,10 +8,10 @@ describe("<y-select>", () => {
             html`<y-select
                 placeholder="Choose"
                 options='[{"label":"Apple","value":"apple"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         expect(
-            el.shadowRoot.querySelector(".value-display").textContent.trim()
+            el.shadowRoot.querySelector(".value-display").textContent.trim(),
         ).to.equal("Choose");
     });
 
@@ -20,13 +20,13 @@ describe("<y-select>", () => {
             html`<y-select
                 placeholder="Choose"
                 options='[{"label":"Apple","value":"apple"}, {"label":"Banana","value":"banana"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         el.value = "banana";
         await nextFrame();
 
         expect(
-            el.shadowRoot.querySelector(".value-display").textContent.trim()
+            el.shadowRoot.querySelector(".value-display").textContent.trim(),
         ).to.equal("Banana");
     });
 
@@ -35,7 +35,7 @@ describe("<y-select>", () => {
             html`<y-select
                 multiple
                 options='[{"label":"Apple","value":"apple"}, {"label":"Banana","value":"banana"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         el.value = "apple,banana";
         await nextFrame();
@@ -50,7 +50,7 @@ describe("<y-select>", () => {
                 multiple
                 display-mode="tag"
                 options='[{"label":"Apple","value":"apple"}, {"label":"Banana","value":"banana"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         el.value = "apple,banana";
         await nextFrame();
@@ -65,7 +65,7 @@ describe("<y-select>", () => {
                 multiple
                 display-mode="tag"
                 options='[{"label":"Apple","value":"apple"}, {"label":"Banana","value":"banana"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         el.value = "apple,banana";
         await nextFrame();
@@ -89,7 +89,7 @@ describe("<y-select>", () => {
         const el = await fixture(
             html`<y-select
                 options='[{"label":"Apple","value":"apple"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         const container = el.shadowRoot.querySelector(".select-container");
         container.click();
@@ -103,7 +103,7 @@ describe("<y-select>", () => {
         const el = await fixture(
             html`<y-select
                 options='[{"label":"Apple","value":"apple"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         const container = el.shadowRoot.querySelector(".select-container");
         container.click();
@@ -123,7 +123,7 @@ describe("<y-select>", () => {
             html`<y-select
                 close-on-click-outside="false"
                 options='[{"label":"Apple","value":"apple"}]'
-            ></y-select>`
+            ></y-select>`,
         );
         const container = el.shadowRoot.querySelector(".select-container");
         container.click();
@@ -143,7 +143,7 @@ describe("<y-select>", () => {
             html`<y-select
                 required
                 options='[{"label":"Apple","value":"apple"}]'
-            ></y-select>`
+            ></y-select>`,
         );
 
         el.setAttribute("invalid", "");
