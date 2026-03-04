@@ -1,4 +1,5 @@
 import "../components/y-button.js";
+import "../components/y-icon.js";
 import "../components/y-menu.js";
 import {
     chevronRight,
@@ -437,10 +438,18 @@ export class YumeAppbar extends HTMLElement {
             btn.setAttribute("size", cfg.buttonSize);
 
             if (item.icon) {
-                const iconEl = document.createElement("span");
-                iconEl.slot = "left-icon";
-                iconEl.innerHTML = item.icon;
-                btn.appendChild(iconEl);
+                if (item.icon.trim().startsWith("<")) {
+                    const iconEl = document.createElement("span");
+                    iconEl.slot = "left-icon";
+                    iconEl.innerHTML = item.icon;
+                    btn.appendChild(iconEl);
+                } else {
+                    const iconEl = document.createElement("y-icon");
+                    iconEl.slot = "left-icon";
+                    iconEl.setAttribute("name", item.icon);
+                    iconEl.setAttribute("size", "small");
+                    btn.appendChild(iconEl);
+                }
             }
 
             if (item.text && !isCollapsed) {

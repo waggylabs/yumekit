@@ -1,4 +1,5 @@
 import { fixture, html, expect } from "@open-wc/testing";
+import "../src/icons/all.js";
 import "../src/components/y-appbar.js";
 
 describe("YumeAppbar", () => {
@@ -15,6 +16,19 @@ describe("YumeAppbar", () => {
         {
             text: "Settings",
             icon: '<svg width="16" height="16"><rect width="16" height="16"/></svg>',
+            children: [
+                { text: "Profile", href: "/settings/profile" },
+                { text: "Security", href: "/settings/security" },
+            ],
+        },
+    ];
+
+    const namedIconItems = [
+        { text: "Home", icon: "home", href: "/" },
+        { text: "Search", icon: "search" },
+        {
+            text: "Settings",
+            icon: "settings",
             children: [
                 { text: "Profile", href: "/settings/profile" },
                 { text: "Security", href: "/settings/security" },
@@ -330,5 +344,88 @@ describe("YumeAppbar", () => {
         const el = await fixture(html`<y-appbar></y-appbar>`);
         el.menuDirection = "down";
         expect(el.getAttribute("menu-direction")).to.equal("down");
+    });
+
+    // ── Icon name support ────────────────────────────────────────
+
+    it("renders y-icon elements when item.icon is a name string", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${namedIconItems}></y-appbar>
+        `);
+        const icons = el.shadowRoot.querySelectorAll(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icons.length).to.equal(3);
+    });
+
+    it("sets correct name attribute on y-icon from item.icon", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${namedIconItems}></y-appbar>
+        `);
+        const icons = el.shadowRoot.querySelectorAll(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icons[0].getAttribute("name")).to.equal("home");
+        expect(icons[1].getAttribute("name")).to.equal("search");
+        expect(icons[2].getAttribute("name")).to.equal("settings");
+    });
+
+    it("sets size='small' on y-icon elements", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${namedIconItems}></y-appbar>
+        `);
+        const icon = el.shadowRoot.querySelector(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icon.getAttribute("size")).to.equal("small");
+    });
+
+    it("assigns left-icon slot to y-icon elements", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${namedIconItems}></y-appbar>
+        `);
+        const icon = el.shadowRoot.querySelector(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icon.slot).to.equal("left-icon");
+    });
+
+    it("still renders raw SVG icons via span when icon starts with '<'", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${sampleItems}></y-appbar>
+        `);
+        const spans = el.shadowRoot.querySelectorAll(
+            '.appbar-body y-button span[slot="left-icon"]',
+        );
+        expect(spans.length).to.equal(3);
+        expect(spans[0].innerHTML).to.include("<svg");
+    });
+
+    it("does not create y-icon when item.icon is raw SVG", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${sampleItems}></y-appbar>
+        `);
+        const icons = el.shadowRoot.querySelectorAll(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icons.length).to.equal(0);
+    });
+
+    it("renders named icons in collapsed state", async () => {
+        const el = await fixture(html`
+            <y-appbar collapsed .items=${namedIconItems}></y-appbar>
+        `);
+        const icons = el.shadowRoot.querySelectorAll(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icons.length).to.equal(3);
+        expect(icons[0].getAttribute("name")).to.equal("home");
+    });
+
+    it("renders item without icon when icon property is absent", async () => {
+        const items = [{ text: "Plain" }];
+        const el = await fixture(html` <y-appbar .items=${items}></y-appbar> `);
+        const btn = el.shadowRoot.querySelector(".appbar-body y-button");
+        expect(btn.querySelector('[slot="left-icon"]')).to.be.null;
     });
 });
