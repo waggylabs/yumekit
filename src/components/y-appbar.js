@@ -154,7 +154,7 @@ export class YumeAppbar extends HTMLElement {
 
             :host([sticky]) {
                 position: sticky;
-                z-index: 100;
+                z-index: var(--component-appbar-z-index, 100);
             }
             :host([orientation="vertical"][sticky="start"]),
             :host(:not([orientation])[sticky="start"]) {

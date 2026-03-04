@@ -290,7 +290,7 @@ class YumeMenu extends HTMLElement {
                 top: 0;
                 left: 100%;
                 display: none;
-                z-index: 1001;
+                z-index: var(--component-menu-z-index, 1001);
             }
 
             li.menuitem:hover > ul.submenu {

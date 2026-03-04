@@ -387,7 +387,7 @@ export class YumeSelect extends HTMLElement {
 
             .dropdown {
                 position: fixed;
-                z-index: 9999;
+                z-index: var(--component-select-z-index, 6000);
                 background: var(--component-select-background);
                 border: var(--component-inputs-border-width) solid var(--component-select-border-color);
                 border-radius: var(--component-inputs-border-radius-outer);

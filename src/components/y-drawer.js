@@ -233,7 +233,7 @@ class YumeDrawer extends HTMLElement {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
                 display: none;
-                z-index: 10000;
+                z-index: var(--component-drawer-z-index, 5000);
             }
             :host([visible]) {
                 display: block;

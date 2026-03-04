@@ -288,14 +288,20 @@
 /* Components */
 
 :root {
+    /* appbar */
     --component-appbar-collapsed-width: 48px;
     --component-appbar-padding: var(--spacing-medium);
     --component-appbar-width: 240px;
+    --component-appbar-z-index: 100;
+
+    /* avatar */
     --component-avatar-border-radius-circle: var(--radii-full);
     --component-avatar-border-radius-square: var(--radii-small);
     --component-avatar-size-large: var(--sizing-large);
     --component-avatar-size-medium: var(--sizing-medium);
     --component-avatar-size-small: var(--sizing-small);
+
+    /* badge */
     --component-badge-border-radius-circle: var(--radii-full);
     --component-badge-border-radius-square: var(--radii-small);
     --component-badge-padding-large: var(--spacing-small);
@@ -304,46 +310,71 @@
     --component-badge-size-large: var(--sizing-medium);
     --component-badge-size-medium: var(--sizing-small);
     --component-badge-size-small: var(--sizing-2x-small);
+
+    /* button */
     --component-button-border-radius-inner: var(--radii-x-small);
     --component-button-border-radius-outer: var(--radii-small);
     --component-button-border-width: var(--border-thin);
     --component-button-border-width-2: var(--border-x-thin);
-    --component-button-border-width-2: var(--border-x-thin);
     --component-button-padding-large: var(--spacing-x-large);
     --component-button-padding-medium: var(--spacing-medium);
     --component-button-padding-small: var(--spacing-x-small);
+
+    /* card */
     --component-card-border-radius-inner: var(--radii-small);
     --component-card-border-radius-outer: var(--radii-medium);
     --component-card-border-width: var(--border-x-thin);
     --component-card-inner-border-width: var(--border-x-thin);
     --component-card-padding-inner: var(--spacing-medium);
     --component-card-padding-outer: var(--spacing-x-large);
+
+    /* checkbox */
     --component-checkbox-icon-size: var(--sizing-2x-small);
     --component-checkbox-size: var(--sizing-x-small);
+
+    /* dialog */
     --component-dialog-border-radius-inner: var(--radii-x-small);
     --component-dialog-border-radius-outer: var(--radii-small);
     --component-dialog-border-width: var(--border-x-thin);
     --component-dialog-inner-border-width: var(--border-x-thin);
     --component-dialog-padding: var(--spacing-medium);
+    --component-dialog-z-index: 1000;
+
+    /* drawer */
     --component-drawer-border-radius: var(--radii-small);
     --component-drawer-border-width: var(--border-x-thin);
     --component-drawer-handle-padding: var(--spacing-x-small);
     --component-drawer-handle-width: var(--spacing-x-small);
     --component-drawer-padding: var(--spacing-medium);
+    --component-drawer-z-index: 5000;
+
+    /* icon */
+    --component-icon-size-large: var(--spacing-4x-large);
+    --component-icon-size-medium: var(--spacing-2x-large);
+    --component-icon-size-small: var(--spacing-x-large);
+
+    /* inputs */
     --component-inputs-border-radius-inner: var(--radii-x-small);
     --component-inputs-border-radius-outer: var(--radii-small);
     --component-inputs-border-width: var(--border-thin);
     --component-inputs-padding-large: var(--spacing-x-large);
     --component-inputs-padding-medium: var(--spacing-medium);
     --component-inputs-padding-small: var(--spacing-x-small);
+
+    /* menu */
     --component-menu-border-radius: var(--radii-x-small);
     --component-menu-border-width: var(--border-x-thin);
     --component-menu-padding-horizontal: var(--spacing-small);
     --component-menu-padding-vertical: var(--spacing-x-small);
+    --component-menu-z-index: 1001;
+
+    /* panelbar */
     --component-panelbar-border-radius: var(--radii-x-small);
     --component-panelbar-border-width: var(--border-x-thin);
-    --component-panelbar-border-width: var(--border-x-thin);
+    --component-panelbar-indent: var(--spacing-x-large);
     --component-panelbar-padding: var(--spacing-medium);
+
+    /* progress */
     --component-progress-border-radius-inner: var(--radii-small);
     --component-progress-border-radius-outer: calc(var(--radii-small) + 4px);
     --component-progress-border-width: var(--border-x-thin);
@@ -351,35 +382,52 @@
     --component-progress-size-large: var(--sizing-large);
     --component-progress-size-medium: var(--sizing-medium);
     --component-progress-size-small: var(--sizing-small);
+
+    /* radio */
     --component-radio-dot-offset: var(--spacing-2x-small);
     --component-radio-dot-size: var(--spacing-medium);
     --component-radio-size: var(--sizing-2x-small);
+
+    /* select */
+    --component-select-z-index: 6000;
+
+    /* sidebar */
     --component-sidebar-border-radius: var(--radii-small);
     --component-sidebar-border-width: var(--border-x-thin);
+
+    /* slider */
     --component-slider-border-radius-inner: var(--radii-small);
     --component-slider-border-radius-outer: calc(var(--radii-small) + 4px);
     --component-slider-border-width: var(--border-x-thin);
     --component-slider-padding: var(--spacing-x-small);
     --component-slider-thumb-border-radius: var(--radii-x-small);
+
+    /* switch */
     --component-switch-border-radius: var(--radii-full);
     --component-switch-border-width: var(--border-x-thin);
     --component-switch-padding: var(--spacing-2x-small);
+
+    /* tab */
     --component-tab-border-radius-inner: var(--radii-x-small);
     --component-tab-border-radius-outer: var(--radii-small);
     --component-tab-border-width: var(--border-x-thin);
+    --component-tab-content-padding: var(--spacing-large);
     --component-tab-gap-large: var(--spacing-large);
     --component-tab-gap-medium: var(--spacing-small);
     --component-tab-gap-small: var(--spacing-2x-small);
-    --component-tab-content-padding: var(--spacing-large);
     --component-tab-padding-large: var(--spacing-2x-large);
     --component-tab-padding-medium: var(--spacing-large);
     --component-tab-padding-small: var(--spacing-small);
+
+    /* table */
     --component-table-border-radius: var(--radii-small);
     --component-table-border-width: var(--border-x-thin);
     --component-table-border-width-header: var(--border-thin);
     --component-table-padding-large: var(--spacing-large);
     --component-table-padding-medium: var(--spacing-medium);
     --component-table-padding-small: var(--spacing-small);
+
+    /* tag */
     --component-tag-border-radius-circle: var(--radii-full);
     --component-tag-border-radius-square: var(--radii-small);
     --component-tag-padding-large: var(--spacing-small);
@@ -388,13 +436,19 @@
     --component-tag-size-large: var(--sizing-large);
     --component-tag-size-medium: var(--sizing-medium);
     --component-tag-size-small: var(--sizing-small);
+
+    /* toast */
     --component-toast-border-radius: var(--radii-small);
     --component-toast-offset: var(--spacing-x-large);
     --component-toast-padding: var(--spacing-medium);
     --component-toast-padding-h: var(--spacing-x-large);
+    --component-toast-z-index: 9000;
+
+    /* tooltip */
     --component-tooltip-border-radius: var(--radii-small);
     --component-tooltip-padding: var(--spacing-x-small);
     --component-tooltip-padding-h: var(--spacing-medium);
+    --component-tooltip-z-index: 7000;
 }
 
 /* Default Theme (Blue Light) */
