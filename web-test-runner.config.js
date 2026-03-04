@@ -14,11 +14,25 @@ function cssStringPlugin() {
     };
 }
 
+function svgStringPlugin() {
+    return {
+        name: "svg-string",
+        transform(context) {
+            if (context.path.endsWith(".svg")) {
+                return {
+                    body: `export default ${JSON.stringify(context.body)};`,
+                    headers: { "content-type": "application/javascript" },
+                };
+            }
+        },
+    };
+}
+
 export default {
     nodeResolve: true,
     files: ["tests/**/*.test.js"],
     rootDir: ".",
     browserStartTimeout: 20000,
     browsers: [playwrightLauncher({ product: "chromium" })],
-    plugins: [cssStringPlugin()],
+    plugins: [cssStringPlugin(), svgStringPlugin()],
 };
