@@ -370,14 +370,34 @@ describe("YumeAppbar", () => {
         expect(icons[2].getAttribute("name")).to.equal("settings");
     });
 
-    it("sets size='small' on y-icon elements", async () => {
+    it("matches icon size to appbar size (default medium)", async () => {
         const el = await fixture(html`
             <y-appbar .items=${namedIconItems}></y-appbar>
         `);
         const icon = el.shadowRoot.querySelector(
             ".appbar-body y-button y-icon",
         );
+        expect(icon.getAttribute("size")).to.equal("medium");
+    });
+
+    it("scales icon size with appbar size='small'", async () => {
+        const el = await fixture(html`
+            <y-appbar size="small" .items=${namedIconItems}></y-appbar>
+        `);
+        const icon = el.shadowRoot.querySelector(
+            ".appbar-body y-button y-icon",
+        );
         expect(icon.getAttribute("size")).to.equal("small");
+    });
+
+    it("scales icon size with appbar size='large'", async () => {
+        const el = await fixture(html`
+            <y-appbar size="large" .items=${namedIconItems}></y-appbar>
+        `);
+        const icon = el.shadowRoot.querySelector(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icon.getAttribute("size")).to.equal("large");
     });
 
     it("assigns left-icon slot to y-icon elements", async () => {
@@ -388,6 +408,26 @@ describe("YumeAppbar", () => {
             ".appbar-body y-button y-icon",
         );
         expect(icon.slot).to.equal("left-icon");
+    });
+
+    it("exposes part='icon' on y-icon elements for external styling", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${namedIconItems}></y-appbar>
+        `);
+        const icon = el.shadowRoot.querySelector(
+            ".appbar-body y-button y-icon",
+        );
+        expect(icon.getAttribute("part")).to.equal("icon");
+    });
+
+    it("exposes part='icon' on raw SVG icon spans for external styling", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${sampleItems}></y-appbar>
+        `);
+        const span = el.shadowRoot.querySelector(
+            '.appbar-body y-button span[slot="left-icon"]',
+        );
+        expect(span.getAttribute("part")).to.equal("icon");
     });
 
     it("still renders raw SVG icons via span when icon starts with '<'", async () => {
@@ -427,5 +467,49 @@ describe("YumeAppbar", () => {
         const el = await fixture(html` <y-appbar .items=${items}></y-appbar> `);
         const btn = el.shadowRoot.querySelector(".appbar-body y-button");
         expect(btn.querySelector('[slot="left-icon"]')).to.be.null;
+    });
+
+    it("renders a named slot when item has a slot property", async () => {
+        const items = [{ text: "Custom", slot: "custom-item" }];
+        const el = await fixture(html`
+            <y-appbar .items=${items}>
+                <div slot="custom-item">Custom Content</div>
+            </y-appbar>
+        `);
+        const slot = el.shadowRoot.querySelector('slot[name="custom-item"]');
+        expect(slot).to.not.be.null;
+    });
+
+    it("shows slotted content when item.slot matches a light DOM element", async () => {
+        const items = [{ text: "Custom", slot: "custom-item" }];
+        const el = await fixture(html`
+            <y-appbar .items=${items}>
+                <span slot="custom-item" id="my-custom">My Widget</span>
+            </y-appbar>
+        `);
+        const slot = el.shadowRoot.querySelector('slot[name="custom-item"]');
+        const assigned = slot.assignedNodes();
+        expect(assigned.length).to.equal(1);
+        expect(assigned[0].textContent).to.equal("My Widget");
+    });
+
+    it("falls back to default button when item.slot is set but no light DOM element matches", async () => {
+        const items = [{ text: "Fallback", slot: "missing-slot" }];
+        const el = await fixture(html` <y-appbar .items=${items}></y-appbar> `);
+        const slot = el.shadowRoot.querySelector('slot[name="missing-slot"]');
+        expect(slot).to.not.be.null;
+        const btn = slot.querySelector("y-button");
+        expect(btn).to.not.be.null;
+        expect(btn.textContent).to.include("Fallback");
+    });
+
+    it("renders default button when item has no slot property", async () => {
+        const items = [{ text: "Normal" }];
+        const el = await fixture(html` <y-appbar .items=${items}></y-appbar> `);
+        const wrapper = el.shadowRoot.querySelector(".nav-item");
+        const btn = wrapper.querySelector("y-button");
+        expect(btn).to.not.be.null;
+        // No slot wrapper around the button
+        expect(wrapper.querySelector("slot")).to.be.null;
     });
 });

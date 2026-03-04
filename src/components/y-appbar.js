@@ -126,18 +126,21 @@ export class YumeAppbar extends HTMLElement {
                 collapsedWidth: "40px",
                 bodyGap: "2px",
                 buttonSize: "small",
+                iconSize: "small",
             },
             medium: {
                 padding: "var(--spacing-small, 6px)",
                 collapsedWidth: "52px",
                 bodyGap: "3px",
                 buttonSize: "medium",
+                iconSize: "medium",
             },
             large: {
                 padding: "var(--spacing-medium, 8px)",
                 collapsedWidth: "64px",
                 bodyGap: "4px",
                 buttonSize: "large",
+                iconSize: "large",
             },
         };
         const cfg = sizeConfig[size] || sizeConfig.medium;
@@ -252,7 +255,7 @@ export class YumeAppbar extends HTMLElement {
 
             .appbar.vertical .appbar-header {
                 border-bottom: var(--component-appbar-inner-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                padding-bottom: var(--_appbar-padding);
+                padding: var(--_appbar-padding);
                 margin-bottom: var(--_appbar-padding);
             }
             .appbar.vertical .appbar-footer {
@@ -263,7 +266,7 @@ export class YumeAppbar extends HTMLElement {
 
             .appbar.horizontal .appbar-header {
                 border-right: var(--component-appbar-inner-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                padding-right: var(--_appbar-padding);
+                padding: var(--_appbar-padding);
                 margin-right: var(--_appbar-padding);
             }
             .appbar.horizontal .appbar-footer {
@@ -415,7 +418,10 @@ export class YumeAppbar extends HTMLElement {
         titleWrapper.appendChild(titleSlot);
         headerContent.appendChild(titleWrapper);
 
+        const headerSlot = document.createElement("slot");
+        headerSlot.name = "header";
         header.appendChild(headerContent);
+        header.appendChild(headerSlot);
         bar.appendChild(header);
 
         /* --- Body: y-button nav items --- */
@@ -441,13 +447,15 @@ export class YumeAppbar extends HTMLElement {
                 if (item.icon.trim().startsWith("<")) {
                     const iconEl = document.createElement("span");
                     iconEl.slot = "left-icon";
+                    iconEl.setAttribute("part", "icon");
                     iconEl.innerHTML = item.icon;
                     btn.appendChild(iconEl);
                 } else {
                     const iconEl = document.createElement("y-icon");
                     iconEl.slot = "left-icon";
+                    iconEl.setAttribute("part", "icon");
                     iconEl.setAttribute("name", item.icon);
-                    iconEl.setAttribute("size", "small");
+                    iconEl.setAttribute("size", cfg.iconSize);
                     btn.appendChild(iconEl);
                 }
             }
@@ -470,7 +478,14 @@ export class YumeAppbar extends HTMLElement {
                 });
             }
 
-            wrapper.appendChild(btn);
+            if (item.slot) {
+                const slot = document.createElement("slot");
+                slot.name = item.slot;
+                slot.appendChild(btn);
+                wrapper.appendChild(slot);
+            } else {
+                wrapper.appendChild(btn);
+            }
 
             if (hasChildren) {
                 const menu = document.createElement("y-menu");
