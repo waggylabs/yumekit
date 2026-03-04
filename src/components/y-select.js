@@ -38,6 +38,7 @@ export class YumeSelect extends HTMLElement {
 
     disconnectedCallback() {
         document.removeEventListener("click", this._onDocumentClick, true);
+        this.closeDropdown();
     }
 
     _onDocumentClick(e) {

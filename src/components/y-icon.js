@@ -2,7 +2,7 @@ import { icons } from "../icons/registry.js";
 
 export class YumeIcon extends HTMLElement {
     static get observedAttributes() {
-        return ["name", "size", "color"];
+        return ["name", "size", "color", "label"];
     }
 
     constructor() {
@@ -40,6 +40,14 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("color", val);
     }
 
+    get label() {
+        return this.getAttribute("label") || "";
+    }
+    set label(val) {
+        if (val) this.setAttribute("label", val);
+        else this.removeAttribute("label");
+    }
+
     _getColor(color) {
         const map = {
             base: "var(--base-content--, #f7f7fa)",
@@ -66,6 +74,10 @@ export class YumeIcon extends HTMLElement {
         const svg = icons[this.name] || "";
         const sizeVal = this._getSize(this.size);
         const colorVal = this._getColor(this.color);
+        const label = this.label;
+        const ariaAttrs = label
+            ? `role="img" aria-label="${label.replace(/"/g, "&quot;")}"`
+            : `aria-hidden="true"`;
 
         this.shadowRoot.innerHTML = `
             <style>
@@ -86,7 +98,7 @@ export class YumeIcon extends HTMLElement {
                     height: 100%;
                 }
             </style>
-            <span class="icon-wrapper" part="icon">${svg}</span>
+            <span class="icon-wrapper" part="icon" ${ariaAttrs}>${svg}</span>
         `;
     }
 }
