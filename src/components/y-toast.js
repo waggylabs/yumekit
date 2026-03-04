@@ -48,7 +48,7 @@ export class YumeToast extends HTMLElement {
      * @param {string} [opts.color]  — base|primary|secondary|success|warning|error|help (default base).
      * @param {number} [opts.duration] — Override container-level duration for this toast.
      * @param {boolean} [opts.dismissible] — Show a close button (default true).
-     * @param {string} [opts.icon] — Optional Font Awesome class e.g. "fas fa-check".
+     * @param {string} [opts.icon] — Optional y-icon name e.g. "checkmark".
      * @returns {HTMLElement} The toast element (for manual removal).
      */
     show(opts = {}) {
@@ -81,8 +81,10 @@ export class YumeToast extends HTMLElement {
         toast.style.color = textColor;
 
         if (icon) {
-            const iconEl = document.createElement("i");
-            iconEl.className = `toast-icon ${icon}`;
+            const iconEl = document.createElement("y-icon");
+            iconEl.setAttribute("name", icon);
+            iconEl.setAttribute("size", "small");
+            iconEl.className = "toast-icon";
             iconEl.setAttribute("part", "icon");
             toast.appendChild(iconEl);
         }

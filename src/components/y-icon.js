@@ -133,7 +133,7 @@ function getCachedSvg(name) {
 
 export class YumeIcon extends HTMLElement {
     static get observedAttributes() {
-        return ["name", "size", "color", "label"];
+        return ["name", "size", "color", "label", "weight"];
     }
 
     constructor() {
@@ -165,10 +165,11 @@ export class YumeIcon extends HTMLElement {
     }
 
     get color() {
-        return this.getAttribute("color") || "base";
+        return this.getAttribute("color") || "";
     }
     set color(val) {
-        this.setAttribute("color", val);
+        if (val) this.setAttribute("color", val);
+        else this.removeAttribute("color");
     }
 
     get label() {
@@ -177,6 +178,14 @@ export class YumeIcon extends HTMLElement {
     set label(val) {
         if (val) this.setAttribute("label", val);
         else this.removeAttribute("label");
+    }
+
+    get weight() {
+        return this.getAttribute("weight") || "";
+    }
+    set weight(val) {
+        if (val) this.setAttribute("weight", val);
+        else this.removeAttribute("weight");
     }
 
     _getColor(color) {
@@ -201,10 +210,20 @@ export class YumeIcon extends HTMLElement {
         return map[size] || map.medium;
     }
 
+    _getWeight(weight) {
+        const map = {
+            thin: "1",
+            regular: "1.5",
+            thick: "2",
+        };
+        return map[weight] || "";
+    }
+
     render() {
         const svg = getCachedSvg(this.name);
         const sizeVal = this._getSize(this.size);
-        const colorVal = this._getColor(this.color);
+        const colorVal = this.color ? this._getColor(this.color) : "inherit";
+        const weightVal = this._getWeight(this.weight);
         const label = this.label;
 
         if (label) {
@@ -216,6 +235,11 @@ export class YumeIcon extends HTMLElement {
             this.removeAttribute("role");
             this.removeAttribute("aria-label");
         }
+
+        const weightCSS = weightVal
+            ? `.icon-wrapper svg,
+                .icon-wrapper svg * { stroke-width: ${weightVal} !important; }`
+            : "";
 
         this.shadowRoot.innerHTML = `
             <style>
@@ -232,6 +256,7 @@ export class YumeIcon extends HTMLElement {
                     width: 100%;
                     height: 100%;
                 }
+                ${weightCSS}
             </style>
             <span class="icon-wrapper" part="icon">${svg}</span>
         `;

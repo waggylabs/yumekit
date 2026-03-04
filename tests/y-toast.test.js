@@ -66,12 +66,13 @@ describe("YumeToast", () => {
 
     it("renders an icon when provided", async () => {
         const el = await fixture(html`<y-toast></y-toast>`);
-        el.show({ message: "With icon", icon: "fas fa-check" });
+        el.show({ message: "With icon", icon: "checkmark" });
         await aTimeout(50);
         const icon = el.shadowRoot.querySelector(".toast-icon");
         expect(icon).to.exist;
-        expect(icon.classList.contains("fas")).to.be.true;
-        expect(icon.classList.contains("fa-check")).to.be.true;
+        expect(icon.tagName.toLowerCase()).to.equal("y-icon");
+        expect(icon.getAttribute("name")).to.equal("checkmark");
+        expect(icon.getAttribute("size")).to.equal("small");
     });
 
     it("does not render icon when not provided", async () => {
