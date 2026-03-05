@@ -296,6 +296,28 @@ export class YumeProgress extends HTMLElement {
                 </div>
             </div>
         `;
+
+        this._autoHideHeader();
+    }
+
+    _autoHideHeader() {
+        const header = this.shadowRoot.querySelector(".progress-header");
+        const slot = header?.querySelector("slot");
+        if (!slot || !header) return;
+        const update = () => {
+            const hasContent = slot
+                .assignedNodes({ flatten: true })
+                .some(
+                    (n) =>
+                        !(
+                            n.nodeType === Node.TEXT_NODE &&
+                            n.textContent.trim() === ""
+                        ),
+                );
+            header.style.display = hasContent ? "" : "none";
+        };
+        slot.addEventListener("slotchange", update);
+        update();
     }
 }
 

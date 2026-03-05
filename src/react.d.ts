@@ -165,7 +165,6 @@ declare module "react" {
                 disabled?: boolean | string;
                 animate?: string;
                 "toggle-label"?: boolean | string;
-                "label-display"?: string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
                 color?: string;
                 size?: "small" | "medium" | "large";

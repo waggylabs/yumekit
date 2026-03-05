@@ -11,11 +11,11 @@ describe("<y-switch>", () => {
 
     it("reflects the 'checked' attribute and updates form value", async () => {
         const el = await fixture(
-            html`<y-switch checked name="test"></y-switch>`
+            html`<y-switch checked name="test"></y-switch>`,
         );
         expect(el.checked).to.be.true;
         expect(
-            el.shadowRoot.querySelector(".switch").getAttribute("aria-checked")
+            el.shadowRoot.querySelector(".switch").getAttribute("aria-checked"),
         ).to.equal("true");
         expect(el.value).to.equal("on");
     });
@@ -52,15 +52,22 @@ describe("<y-switch>", () => {
         expect(labelSlot).to.exist;
     });
 
-    it("supports label-display toggle", async () => {
+    it("hides label wrapper when no label content is slotted", async () => {
+        const el = await fixture(html`<y-switch></y-switch>`);
+        const labelSlot = el.shadowRoot.querySelector("slot[name='label']");
+        const wrapper = labelSlot?.closest(".label-wrapper");
+        expect(wrapper?.style.display).to.equal("none");
+    });
+
+    it("shows label wrapper when label content is slotted", async () => {
         const el = await fixture(html`
-            <y-switch label-display="false">
-                <span slot="on-label">Enabled</span>
-                <span slot="off-label">Disabled</span>
+            <y-switch label-position="right">
+                <span slot="label">Power</span>
             </y-switch>
         `);
-        const offLabel = el.shadowRoot.querySelector(".label-content");
-        expect(getComputedStyle(offLabel).display).to.equal("none");
+        const labelSlot = el.shadowRoot.querySelector("slot[name='label']");
+        const wrapper = labelSlot?.closest(".label-wrapper");
+        expect(wrapper?.style.display).to.not.equal("none");
     });
 
     it("participates in forms", async () => {
