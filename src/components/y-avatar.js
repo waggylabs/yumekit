@@ -1,6 +1,8 @@
+import { getColorVarPair } from "../modules/helpers.js";
+
 export class YumeAvatar extends HTMLElement {
     static get observedAttributes() {
-        return ["src", "alt", "size", "shape"];
+        return ["src", "alt", "size", "shape", "color"];
     }
 
     constructor() {
@@ -19,7 +21,9 @@ export class YumeAvatar extends HTMLElement {
         const src = this.getAttribute("src");
         const altRaw = this.getAttribute("alt") || "AN";
         const shape = this.getAttribute("shape") || "circle";
+        const color = this.getAttribute("color") || "primary";
         const borderRadius = `var(--component-avatar-border-radius-${shape}, 9999px)`;
+        const [bgColor, textColor] = getColorVarPair(color);
 
         let dimensions;
         const size = this.getAttribute("size") || "medium";
@@ -68,8 +72,8 @@ export class YumeAvatar extends HTMLElement {
             width: 100%;
             height: 100%;
             border-radius: ${borderRadius};
-            background-color: var(--primary-content--, #0576ff);
-            color: var(--primary-background-component, #0c0c0d);
+            background-color: ${bgColor};
+            color: ${textColor};
             display: flex;
             align-items: center;
             justify-content: center;

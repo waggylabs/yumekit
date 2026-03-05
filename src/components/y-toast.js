@@ -1,4 +1,4 @@
-import { resolveCSSColor, contrastTextColor } from "../modules/helpers.js";
+import { getColorVarPair } from "../modules/helpers.js";
 
 export class YumeToast extends HTMLElement {
     static get observedAttributes() {
@@ -74,11 +74,9 @@ export class YumeToast extends HTMLElement {
         toast.setAttribute("aria-live", "assertive");
         toast.setAttribute("part", "toast");
 
-        const bgVar = this._getColorBg(color);
-        const resolvedBg = resolveCSSColor(bgVar, this);
-        const textColor = contrastTextColor(resolvedBg);
-        toast.style.backgroundColor = bgVar;
-        toast.style.color = textColor;
+        const [bg, fg] = getColorVarPair(color);
+        toast.style.backgroundColor = bg;
+        toast.style.color = fg;
 
         if (icon) {
             const iconEl = document.createElement("y-icon");
@@ -175,20 +173,6 @@ export class YumeToast extends HTMLElement {
         };
 
         return map[pos] || map["bottom-right"];
-    }
-
-    // "base" inverts the page: light content on dark, dark on light.
-    _getColorBg(color) {
-        const map = {
-            base: "var(--base-content--, #fff)",
-            primary: "var(--primary-content--, #0070f3)",
-            secondary: "var(--secondary-content--, #6c757d)",
-            success: "var(--success-content--, #28a745)",
-            warning: "var(--warning-content--, #ffc107)",
-            error: "var(--error-content--, #dc3545)",
-            help: "var(--help-content--, #6f42c1)",
-        };
-        return map[color] || map.base;
     }
 
     render() {

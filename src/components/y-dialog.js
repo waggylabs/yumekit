@@ -208,6 +208,22 @@ class YumeDialog extends HTMLElement {
         dialog.appendChild(body);
         dialog.appendChild(footer);
         this.shadowRoot.appendChild(dialog);
+
+        // Hide slot containers that have no slotted content
+        const hideIfEmpty = (wrapper) => {
+            const slot = wrapper.querySelector("slot");
+            if (!slot) return;
+            const update = () => {
+                const hasContent =
+                    slot.assignedNodes({ flatten: true }).length > 0;
+                wrapper.style.display = hasContent ? "" : "none";
+            };
+            slot.addEventListener("slotchange", update);
+            update();
+        };
+        if (!this.closable) hideIfEmpty(header);
+        hideIfEmpty(body);
+        hideIfEmpty(footer);
     }
 }
 

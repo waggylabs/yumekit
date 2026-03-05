@@ -1,4 +1,4 @@
-import { resolveCSSColor, contrastTextColor } from "../modules/helpers.js";
+import { getColorVarPair } from "../modules/helpers.js";
 
 export class YumeTooltip extends HTMLElement {
     static get observedAttributes() {
@@ -76,9 +76,8 @@ export class YumeTooltip extends HTMLElement {
             this._visible = true;
             const tip = this.shadowRoot.querySelector(".tooltip");
             if (tip) {
-                const bg = this._getBg();
-                const resolvedBg = resolveCSSColor(bg, this);
-                tip.style.color = contrastTextColor(resolvedBg);
+                const [, fg] = getColorVarPair(this.color);
+                tip.style.color = fg;
                 tip.classList.add("visible");
             }
         }, this.delay);
@@ -109,24 +108,9 @@ export class YumeTooltip extends HTMLElement {
         }
     }
 
-    _getBg() {
-        const map = {
-            base: "var(--base-content--, #555)",
-            primary: "var(--primary-content--, #0070f3)",
-            secondary: "var(--secondary-content--, #6c757d)",
-            success: "var(--success-content--, #28a745)",
-            warning: "var(--warning-content--, #ffc107)",
-            error: "var(--error-content--, #dc3545)",
-            help: "var(--help-content--, #6f42c1)",
-        };
-        return map[this.color] || map.base;
-    }
-
     render() {
         const pos = this.position;
-        const bg = this._getBg();
-        const resolvedBg = resolveCSSColor(bg, this);
-        const fg = contrastTextColor(resolvedBg);
+        const [bg, fg] = getColorVarPair(this.color);
 
         this.shadowRoot.innerHTML = `
             <style>

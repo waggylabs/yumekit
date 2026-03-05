@@ -1,3 +1,5 @@
+import { getColorVarPair } from "../modules/helpers.js";
+
 export class YumeProgress extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -154,19 +156,6 @@ export class YumeProgress extends HTMLElement {
         return Math.max(0, Math.min(100, pct));
     }
 
-    getBarColor(color) {
-        const colorMap = {
-            primary: "var(--primary-content--)",
-            secondary: "var(--secondary-content--)",
-            base: "var(--base-content--)",
-            success: "var(--success-content--)",
-            warning: "var(--warning-content--)",
-            error: "var(--error-content--)",
-            help: "var(--help-content--)",
-        };
-        return colorMap[color] || color;
-    }
-
     getSizeVar(size) {
         const map = {
             small: "var(--component-progress-size-small)",
@@ -194,7 +183,7 @@ export class YumeProgress extends HTMLElement {
     render() {
         const isIndeterminate = this.indeterminate;
         const pct = this.percentage;
-        const barColor = this.getBarColor(this.color);
+        const [barColor, barTextColor] = getColorVarPair(this.color, null);
         const sizeVar = this.getSizeVar(this.size);
         const isDisabled = this.disabled;
         const showLabel = this.labelDisplay && !isIndeterminate;
@@ -272,7 +261,7 @@ export class YumeProgress extends HTMLElement {
                 }
 
                 .value-label--bar {
-                    color: var(--base-background-component);
+                    color: ${barTextColor};
                     width: calc(100% / (${pct || 1} / 100));
                 }
 

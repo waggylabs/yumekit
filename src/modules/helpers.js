@@ -1,3 +1,29 @@
+/**
+ * Return a [background, foreground] CSS variable pair for a color scheme.
+ * Background is `--{color}-content--`, foreground is `--{color}-content-inverse`.
+ * @param {string} color — one of base, primary, secondary, success, warning, error, help
+ * @param {string} [fallbackColor="base"] — color to fall back to when `color` is unrecognised.
+ *   Use `null` to pass the raw `color` string through as the background instead.
+ * @returns {[string, string]} — [bg var, fg var]
+ */
+export function getColorVarPair(color, fallbackColor = "base") {
+    const map = {
+        base: ["var(--base-content--)", "var(--base-content-inverse)"],
+        primary: ["var(--primary-content--)", "var(--primary-content-inverse)"],
+        secondary: [
+            "var(--secondary-content--)",
+            "var(--secondary-content-inverse)",
+        ],
+        success: ["var(--success-content--)", "var(--success-content-inverse)"],
+        warning: ["var(--warning-content--)", "var(--warning-content-inverse)"],
+        error: ["var(--error-content--)", "var(--error-content-inverse)"],
+        help: ["var(--help-content--)", "var(--help-content-inverse)"],
+    };
+    if (map[color]) return map[color];
+    if (fallbackColor === null) return [color, "var(--base-content-inverse)"];
+    return map[fallbackColor] || map.base;
+}
+
 // helpers/slot-utils.js
 export function hideEmptySlotContainers(shadowRoot, slotsConfig = {}) {
     Object.entries(slotsConfig).forEach(([slotName, containerSelector]) => {

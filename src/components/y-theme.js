@@ -52,7 +52,12 @@ export class YumeTheme extends HTMLElement {
         }
 
         this.shadowRoot.innerHTML = `
-            <style>${variablesCSS}</style>
+            <style>
+                ${variablesCSS}
+                :host {
+                    font-family: var(--font-family-body, sans-serif);
+                }
+            </style>
             ${themeCSS ? `<style>${themeCSS}</style>` : ""}
             <slot></slot>
         `;
