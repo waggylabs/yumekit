@@ -94,6 +94,13 @@ export class YumeInput extends HTMLElement {
             large: "--component-inputs-padding-large",
         }[size];
 
+        const minHeightVar =
+            {
+                small: "var(--sizing-small, 32px)",
+                medium: "var(--sizing-medium, 40px)",
+                large: "var(--sizing-large, 56px)",
+            }[size] || "var(--sizing-medium, 40px)";
+
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
@@ -119,6 +126,7 @@ export class YumeInput extends HTMLElement {
                 border: var(--component-inputs-border-width) solid var(--component-input-border-color);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
+                min-height: ${minHeightVar};
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
             }
