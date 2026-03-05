@@ -433,6 +433,9 @@
     --component-tag-padding-large: var(--spacing-small);
     --component-tag-padding-medium: var(--spacing-x-small);
     --component-tag-padding-small: var(--spacing-2x-small);
+    --component-tag-height-large: 38px;
+    --component-tag-height-medium: 28px;
+    --component-tag-height-small: 22px;
     --component-tag-size-large: var(--sizing-large);
     --component-tag-size-medium: var(--sizing-medium);
     --component-tag-size-small: var(--sizing-small);
