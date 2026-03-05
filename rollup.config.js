@@ -101,6 +101,7 @@ export default [
             file: "dist/icons/all.js",
             format: "esm",
         },
+        external: ["./registry.js"],
         plugins: [svgString()],
     },
 
@@ -111,6 +112,7 @@ export default [
             file: `dist/components/${file}`,
             format: "esm",
         },
+        external: ["../icons/registry.js", "../modules/helpers.js"],
         plugins: [cssString(), svgString()],
     })),
 ];
