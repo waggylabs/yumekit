@@ -23,6 +23,29 @@ import clock from "./clock.svg";
 import close from "./close.svg";
 import collapseLeft from "./collapse-left.svg";
 import comments from "./comments.svg";
+import compAppbar from "./comp-appbar.svg";
+import compAvatar from "./comp-avatar.svg";
+import compBadge from "./comp-badge.svg";
+import compButton from "./comp-button.svg";
+import compCard from "./comp-card.svg";
+import compCheckbox from "./comp-checkbox.svg";
+import compDialog from "./comp-dialog.svg";
+import compDrawer from "./comp-drawer.svg";
+import compIcon from "./comp-icon.svg";
+import compInput from "./comp-input.svg";
+import compMenu from "./comp-menu.svg";
+import compPanelbar from "./comp-panelbar.svg";
+import compProgress from "./comp-progress.svg";
+import compRadio from "./comp-radio.svg";
+import compSelect from "./comp-select.svg";
+import compSlider from "./comp-slider.svg";
+import compSwitch from "./comp-switch.svg";
+import compTable from "./comp-table.svg";
+import compTabs from "./comp-tabs.svg";
+import compTag from "./comp-tag.svg";
+import compTheme from "./comp-theme.svg";
+import compToast from "./comp-toast.svg";
+import compTooltip from "./comp-tooltip.svg";
 import compass from "./compass.svg";
 import diagram from "./diagram.svg";
 import discord from "./discord.svg";
@@ -67,6 +90,29 @@ registerIcons({
     close,
     "collapse-left": collapseLeft,
     comments,
+    "comp-appbar": compAppbar,
+    "comp-avatar": compAvatar,
+    "comp-badge": compBadge,
+    "comp-button": compButton,
+    "comp-card": compCard,
+    "comp-checkbox": compCheckbox,
+    "comp-dialog": compDialog,
+    "comp-drawer": compDrawer,
+    "comp-icon": compIcon,
+    "comp-input": compInput,
+    "comp-menu": compMenu,
+    "comp-panelbar": compPanelbar,
+    "comp-progress": compProgress,
+    "comp-radio": compRadio,
+    "comp-select": compSelect,
+    "comp-slider": compSlider,
+    "comp-switch": compSwitch,
+    "comp-table": compTable,
+    "comp-tabs": compTabs,
+    "comp-tag": compTag,
+    "comp-theme": compTheme,
+    "comp-toast": compToast,
+    "comp-tooltip": compTooltip,
     compass,
     diagram,
     discord,
