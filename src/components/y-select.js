@@ -15,6 +15,7 @@ export class YumeSelect extends HTMLElement {
             "options",
             "display-mode",
             "close-on-click-outside",
+            "size",
         ];
     }
 
@@ -64,6 +65,7 @@ export class YumeSelect extends HTMLElement {
                 "required",
                 "placeholder",
                 "options",
+                "size",
             ].includes(name)
         ) {
             this.render();
@@ -247,6 +249,7 @@ export class YumeSelect extends HTMLElement {
         selected.forEach((opt) => {
             const tag = document.createElement("y-tag");
             tag.setAttribute("removable", "");
+            tag.setAttribute("size", "small");
             tag.setAttribute("color", "primary");
             tag.setAttribute("style-type", "filled");
             tag.textContent = opt.label;
@@ -326,6 +329,21 @@ export class YumeSelect extends HTMLElement {
 
     applyStyles() {
         const isDisabled = this.hasAttribute("disabled");
+        const size = this.getAttribute("size") || "medium";
+
+        const paddingVar =
+            {
+                small: "--component-inputs-padding-small",
+                medium: "--component-inputs-padding-medium",
+                large: "--component-inputs-padding-large",
+            }[size] || "--component-inputs-padding-medium";
+
+        const minHeightVar =
+            {
+                small: "var(--sizing-small, 32px)",
+                medium: "var(--sizing-medium, 40px)",
+                large: "var(--sizing-large, 56px)",
+            }[size] || "var(--sizing-medium, 40px)";
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -351,7 +369,8 @@ export class YumeSelect extends HTMLElement {
                 background: var(--component-select-background);
                 border: var(--component-inputs-border-width) solid var(--component-select-border-color);
                 border-radius: var(--component-inputs-border-radius-outer);
-                padding: var(--component-inputs-padding-medium);
+                padding: var(${paddingVar});
+                min-height: ${minHeightVar};
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
                 cursor: pointer;
@@ -423,7 +442,10 @@ export class YumeSelect extends HTMLElement {
                 font-size: 1em;
                 color: inherit;
                 display: flex;
+                flex-wrap: wrap;
+                align-items: center;
                 gap: var(--spacing-x-small);
+                min-height: var(--component-tag-height-small, 22px);
             }
 
             .label-wrapper {

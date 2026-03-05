@@ -23,6 +23,7 @@ export class YumeTheme extends HTMLElement {
     }
 
     connectedCallback() {
+        this._injectPageStyles();
         this._applyTheme();
     }
 
@@ -84,6 +85,22 @@ export class YumeTheme extends HTMLElement {
             }
         }
         this._themeProps = [];
+    }
+
+    _injectPageStyles() {
+        if (document.querySelector("[data-yumekit-page-styles]")) return;
+        const style = document.createElement("style");
+        style.setAttribute("data-yumekit-page-styles", "");
+        style.textContent = `
+            html, body {
+                margin: 0;
+                padding: 0;
+                font-family: var(--font-family-header, "Lexend", sans-serif);
+                color: var(--base-content--, #000);
+                font-weight: 300;
+            }
+        `;
+        document.head.appendChild(style);
     }
 }
 

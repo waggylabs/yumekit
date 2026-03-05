@@ -255,7 +255,7 @@ export class YumeAppbar extends HTMLElement {
 
             .appbar.vertical .appbar-header {
                 border-bottom: var(--component-appbar-inner-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                padding: var(--_appbar-padding);
+                padding: var(--_appbar-padding) 0;
                 margin-bottom: var(--_appbar-padding);
             }
             .appbar.vertical .appbar-footer {
@@ -267,6 +267,7 @@ export class YumeAppbar extends HTMLElement {
             .appbar.horizontal .appbar-header {
                 border-right: var(--component-appbar-inner-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
                 padding: var(--_appbar-padding);
+                padding-right: var(--spacing-x-large, 16px);
                 margin-right: var(--_appbar-padding);
             }
             .appbar.horizontal .appbar-footer {
