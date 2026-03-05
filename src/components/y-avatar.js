@@ -1,6 +1,6 @@
 export class YumeAvatar extends HTMLElement {
     static get observedAttributes() {
-        return ["src", "alt", "size", "shape"];
+        return ["src", "alt", "size", "shape", "color"];
     }
 
     constructor() {
@@ -19,7 +19,9 @@ export class YumeAvatar extends HTMLElement {
         const src = this.getAttribute("src");
         const altRaw = this.getAttribute("alt") || "AN";
         const shape = this.getAttribute("shape") || "circle";
+        const color = this.getAttribute("color") || "primary";
         const borderRadius = `var(--component-avatar-border-radius-${shape}, 9999px)`;
+        const [bgColor, textColor] = this._getColorVars(color);
 
         let dimensions;
         const size = this.getAttribute("size") || "medium";
@@ -68,8 +70,8 @@ export class YumeAvatar extends HTMLElement {
             width: 100%;
             height: 100%;
             border-radius: ${borderRadius};
-            background-color: var(--primary-content--, #0576ff);
-            color: var(--primary-background-component, #0c0c0d);
+            background-color: ${bgColor};
+            color: ${textColor};
             display: flex;
             align-items: center;
             justify-content: center;
@@ -94,6 +96,31 @@ export class YumeAvatar extends HTMLElement {
                     : altRaw.substring(0, 2);
             this.shadowRoot.innerHTML = `<div class="avatar" part="avatar"><h5>${displayText}</h5></div>`;
         }
+    }
+
+    _getColorVars(color) {
+        const map = {
+            base: ["var(--base-content--)", "var(--base-content-inverse)"],
+            primary: [
+                "var(--primary-content--)",
+                "var(--primary-content-inverse)",
+            ],
+            secondary: [
+                "var(--secondary-content--)",
+                "var(--secondary-content-inverse)",
+            ],
+            success: [
+                "var(--success-content--)",
+                "var(--success-content-inverse)",
+            ],
+            warning: [
+                "var(--warning-content--)",
+                "var(--warning-content-inverse)",
+            ],
+            error: ["var(--error-content--)", "var(--error-content-inverse)"],
+            help: ["var(--help-content--)", "var(--help-content-inverse)"],
+        };
+        return map[color] || map.primary;
     }
 }
 
