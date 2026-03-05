@@ -1,3 +1,5 @@
+import { getColorVarPair } from "../modules/helpers.js";
+
 export class YumeProgress extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -154,31 +156,6 @@ export class YumeProgress extends HTMLElement {
         return Math.max(0, Math.min(100, pct));
     }
 
-    getBarColorVars(color) {
-        const colorMap = {
-            primary: [
-                "var(--primary-content--)",
-                "var(--primary-content-inverse)",
-            ],
-            secondary: [
-                "var(--secondary-content--)",
-                "var(--secondary-content-inverse)",
-            ],
-            base: ["var(--base-content--)", "var(--base-content-inverse)"],
-            success: [
-                "var(--success-content--)",
-                "var(--success-content-inverse)",
-            ],
-            warning: [
-                "var(--warning-content--)",
-                "var(--warning-content-inverse)",
-            ],
-            error: ["var(--error-content--)", "var(--error-content-inverse)"],
-            help: ["var(--help-content--)", "var(--help-content-inverse)"],
-        };
-        return colorMap[color] || [color, "var(--base-content-inverse)"];
-    }
-
     getSizeVar(size) {
         const map = {
             small: "var(--component-progress-size-small)",
@@ -206,7 +183,7 @@ export class YumeProgress extends HTMLElement {
     render() {
         const isIndeterminate = this.indeterminate;
         const pct = this.percentage;
-        const [barColor, barTextColor] = this.getBarColorVars(this.color);
+        const [barColor, barTextColor] = getColorVarPair(this.color, null);
         const sizeVar = this.getSizeVar(this.size);
         const isDisabled = this.disabled;
         const showLabel = this.labelDisplay && !isIndeterminate;

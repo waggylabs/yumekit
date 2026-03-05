@@ -1,3 +1,5 @@
+import { getColorVarPair } from "../modules/helpers.js";
+
 export class YumeToast extends HTMLElement {
     static get observedAttributes() {
         return ["position", "duration", "max"];
@@ -72,7 +74,7 @@ export class YumeToast extends HTMLElement {
         toast.setAttribute("aria-live", "assertive");
         toast.setAttribute("part", "toast");
 
-        const [bg, fg] = this._getColorVars(color);
+        const [bg, fg] = getColorVarPair(color);
         toast.style.backgroundColor = bg;
         toast.style.color = fg;
 
@@ -171,31 +173,6 @@ export class YumeToast extends HTMLElement {
         };
 
         return map[pos] || map["bottom-right"];
-    }
-
-    _getColorVars(color) {
-        const map = {
-            base: ["var(--base-content--)", "var(--base-content-inverse)"],
-            primary: [
-                "var(--primary-content--)",
-                "var(--primary-content-inverse)",
-            ],
-            secondary: [
-                "var(--secondary-content--)",
-                "var(--secondary-content-inverse)",
-            ],
-            success: [
-                "var(--success-content--)",
-                "var(--success-content-inverse)",
-            ],
-            warning: [
-                "var(--warning-content--)",
-                "var(--warning-content-inverse)",
-            ],
-            error: ["var(--error-content--)", "var(--error-content-inverse)"],
-            help: ["var(--help-content--)", "var(--help-content-inverse)"],
-        };
-        return map[color] || map.base;
     }
 
     render() {
