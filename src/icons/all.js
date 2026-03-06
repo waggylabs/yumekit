@@ -3,7 +3,7 @@
  *
  * Import this module as a side-effect to make every icon available to <y-icon>:
  *
- *   import "@studious-creative/yumekit/icons/all.js";
+ *   import "@waggylabs/yumekit/icons/all.js";
  */
 
 import { registerIcons } from "./registry.js";

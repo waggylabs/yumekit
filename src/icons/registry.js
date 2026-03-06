@@ -3,12 +3,12 @@
  *
  * Register only the icons you need for tree-shaking:
  *
- *   import { registerIcon } from "@studious-creative/yumekit";
+ *   import { registerIcon } from "@waggylabs/yumekit";
  *   registerIcon("home", homeSvgString);
  *
  * Or register all bundled icons at once (separate import):
  *
- *   import "@studious-creative/yumekit/icons/all.js";
+ *   import "@waggylabs/yumekit/icons/all.js";
  */
 
 const icons = new Map();

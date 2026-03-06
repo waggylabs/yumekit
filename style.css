@@ -16,16 +16,6 @@ y-theme {
     overflow: hidden;
 }
 
-/* ── Top bar ─────────────────────────────────── */
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-small) var(--spacing-medium);
-    border-bottom: 1px solid var(--base-border--);
-    flex-shrink: 0;
-}
-
 /* ── Main content area ───────────────────────── */
 .content-area {
     flex: 1;

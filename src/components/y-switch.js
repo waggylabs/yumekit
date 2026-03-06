@@ -7,7 +7,6 @@ class YumeSwitch extends HTMLElement {
             "disabled",
             "animate",
             "toggle-label",
-            "label-display",
             "label-position",
             "size",
             "value",
@@ -22,8 +21,6 @@ class YumeSwitch extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("label-display"))
-            this.setAttribute("label-display", "true");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
         if (!this.hasAttribute("animate")) this.setAttribute("animate", "true");
@@ -75,13 +72,35 @@ class YumeSwitch extends HTMLElement {
     }
 
     labelTag(pos) {
-        if (this.getAttribute("label-display") === "false") return "";
         const labelPos = this.getAttribute("label-position");
         const shouldRender =
             (pos === "top" && (labelPos === "top" || labelPos === "left")) ||
             (pos === "bottom" &&
                 (labelPos === "bottom" || labelPos === "right"));
-        return shouldRender ? `<label><slot name="label"></slot></label>` : "";
+        return shouldRender
+            ? `<label class="label-wrapper"><slot name="label"></slot></label>`
+            : "";
+    }
+
+    _autoHideLabel() {
+        const slot = this.shadowRoot.querySelector('slot[name="label"]');
+        if (!slot) return;
+        const wrapper = slot.closest(".label-wrapper");
+        if (!wrapper) return;
+        const update = () => {
+            const hasContent = slot
+                .assignedNodes({ flatten: true })
+                .some(
+                    (n) =>
+                        !(
+                            n.nodeType === Node.TEXT_NODE &&
+                            n.textContent.trim() === ""
+                        ),
+                );
+            wrapper.style.display = hasContent ? "" : "none";
+        };
+        slot.addEventListener("slotchange", update);
+        update();
     }
 
     mirrorToggleLabels() {
@@ -345,6 +364,7 @@ class YumeSwitch extends HTMLElement {
         `;
 
         this.update();
+        this._autoHideLabel();
     }
 }
 
