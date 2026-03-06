@@ -1,6 +1,6 @@
 {
-    "name": "@studious-creative/yumekit",
-    "version": "0.1.12",
+    "name": "@waggylabs/yumekit",
+    "version": "0.2.0",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -35,7 +35,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Studious-Creative/YumeKit.git"
+        "url": "https://github.com/WaggyLabs/YumeKit.git"
     },
     "license": "MIT",
     "homepage": "https://www.yumekit.com",
