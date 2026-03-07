@@ -8,6 +8,7 @@
 
 import { registerIcons } from "./registry.js";
 
+import accessibility from "./accessibility.svg";
 import ai from "./ai.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
@@ -49,32 +50,45 @@ import compTooltip from "./comp-tooltip.svg";
 import compass from "./compass.svg";
 import diagram from "./diagram.svg";
 import discord from "./discord.svg";
+import download from "./download.svg";
 import expandRight from "./expand-right.svg";
 import features from "./features.svg";
 import figma from "./figma.svg";
 import filter from "./filter.svg";
 import folder from "./folder.svg";
 import github from "./github.svg";
+import globe from "./globe.svg";
+import grid from "./grid.svg";
 import home from "./home.svg";
 import image from "./image.svg";
 import indeterminate from "./indeterminate.svg";
 import layout from "./layout.svg";
+import leftFromBracket from "./left-from-bracket.svg";
+import leftToBracket from "./left-to-bracket.svg";
 import listCheck from "./list-check.svg";
+import lock from "./lock.svg";
 import logo from "./logo.svg";
 import mail from "./mail.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
 import plus from "./plus.svg";
+import puzzle from "./puzzle.svg";
+import rightFromBracket from "./right-from-bracket.svg";
+import rightToBracket from "./right-to-bracket.svg";
 import save from "./save.svg";
 import search from "./search.svg";
 import settings from "./settings.svg";
+import shield from "./shield.svg";
 import star from "./star.svg";
 import sun from "./sun.svg";
+import swap from "./swap.svg";
+import upload from "./upload.svg";
 import user from "./user.svg";
 import users from "./users.svg";
 import warning from "./warning.svg";
 
 registerIcons({
+    accessibility,
     ai,
     "arrow-right": arrowRight,
     "arrow-up": arrowUp,
@@ -116,27 +130,39 @@ registerIcons({
     compass,
     diagram,
     discord,
+    download,
     "expand-right": expandRight,
     features,
     figma,
     filter,
     folder,
     github,
+    globe,
+    grid,
     home,
     image,
     indeterminate,
     layout,
+    "left-from-bracket": leftFromBracket,
+    "left-to-bracket": leftToBracket,
     "list-check": listCheck,
+    lock,
     logo,
     mail,
     moon,
     palette,
     plus,
+    puzzle,
+    "right-from-bracket": rightFromBracket,
+    "right-to-bracket": rightToBracket,
     save,
     search,
     settings,
+    shield,
     star,
     sun,
+    swap,
+    upload,
     user,
     users,
     warning,

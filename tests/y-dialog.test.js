@@ -45,7 +45,7 @@ describe("YumeDialog", () => {
         const el = await fixture(html`<y-dialog visible></y-dialog>`);
         expect(el.hasAttribute("visible")).to.be.true;
         document.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
+            new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
         );
         expect(el.hasAttribute("visible")).to.be.false;
     });
@@ -81,5 +81,23 @@ describe("YumeDialog", () => {
         expect(assignedHeader).to.exist;
         expect(assignedBody).to.exist;
         expect(assignedFooter).to.exist;
+    });
+
+    it("supports show-backdrop attribute", async () => {
+        const el = await fixture(
+            html`<y-dialog visible show-backdrop></y-dialog>`,
+        );
+        expect(el.showBackdrop).to.be.true;
+        expect(el.hasAttribute("show-backdrop")).to.be.true;
+        el.showBackdrop = false;
+        expect(el.hasAttribute("show-backdrop")).to.be.false;
+    });
+
+    it("supports animate attribute", async () => {
+        const el = await fixture(html`<y-dialog visible animate></y-dialog>`);
+        expect(el.animate).to.be.true;
+        expect(el.hasAttribute("animate")).to.be.true;
+        el.animate = false;
+        expect(el.hasAttribute("animate")).to.be.false;
     });
 });
