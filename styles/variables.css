@@ -398,13 +398,13 @@
     /* slider */
     --component-slider-border-radius-inner: var(--radii-small);
     --component-slider-border-radius-outer: calc(var(--radii-small) + 4px);
-    --component-slider-border-width: var(--border-x-thin);
+    --component-slider-border-width: var(--border-thin);
     --component-slider-padding: var(--spacing-x-small);
     --component-slider-thumb-border-radius: var(--radii-x-small);
 
     /* switch */
     --component-switch-border-radius: var(--radii-full);
-    --component-switch-border-width: var(--border-x-thin);
+    --component-switch-border-width: var(--border-thin);
     --component-switch-padding: var(--spacing-2x-small);
 
     /* tab */

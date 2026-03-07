@@ -1,6 +1,6 @@
 class YumeDialog extends HTMLElement {
     static get observedAttributes() {
-        return ["visible", "anchor", "closable"];
+        return ["visible", "anchor", "closable", "show-backdrop", "animate"];
     }
 
     constructor() {
@@ -52,6 +52,22 @@ class YumeDialog extends HTMLElement {
     set closable(val) {
         if (val) this.setAttribute("closable", "");
         else this.removeAttribute("closable");
+    }
+
+    get showBackdrop() {
+        return this.hasAttribute("show-backdrop");
+    }
+    set showBackdrop(val) {
+        if (val) this.setAttribute("show-backdrop", "");
+        else this.removeAttribute("show-backdrop");
+    }
+
+    get animate() {
+        return this.hasAttribute("animate");
+    }
+    set animate(val) {
+        if (val) this.setAttribute("animate", "");
+        else this.removeAttribute("animate");
     }
 
     show() {
@@ -107,6 +123,16 @@ class YumeDialog extends HTMLElement {
                 z-index: var(--component-dialog-z-index, 1000);
             }
             :host([visible]) { display: flex; }
+            :host([show-backdrop]) {
+                backdrop-filter: blur(var(--component-dialog-backdrop-blur, 4px));
+                -webkit-backdrop-filter: blur(var(--component-dialog-backdrop-blur, 4px));
+            }
+
+            @keyframes dialog-fade-in {
+                from { opacity: 0; transform: translateY(16px) scale(0.97); }
+                to   { opacity: 1; transform: translateY(0) scale(1); }
+            }
+
             .dialog {
                 background: var(--component-dialog-background);
                 border: var(--component-dialog-border-width, 1px) solid var(--component-dialog-border-color);
@@ -116,6 +142,9 @@ class YumeDialog extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 box-shadow: var(--component-dialog-shadow, 0 2px 10px rgba(0,0,0,0.3));
+            }
+            :host([animate][visible]) .dialog {
+                animation: dialog-fade-in var(--component-dialog-animation-duration, 0.2s) ease-out both;
             }
             .header {
                 padding: var(--component-dialog-padding, var(--spacing-medium));
