@@ -28,6 +28,7 @@ export class YumeRadio extends HTMLElement {
         }
     }
 
+    /** @type {string} The currently selected radio value. */
     get value() {
         return this._value;
     }
@@ -39,10 +40,12 @@ export class YumeRadio extends HTMLElement {
         this.updateChecked();
     }
 
+    /** @type {string} The form name of the radio group. */
     get name() {
         return this.getAttribute("name") || "";
     }
 
+    /** @type {Array<{value: string, label: string}>} The radio options parsed from the "options" attribute. */
     get options() {
         try {
             return JSON.parse(this.getAttribute("options") || "[]");

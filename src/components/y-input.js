@@ -57,6 +57,7 @@ export class YumeInput extends HTMLElement {
         this.render();
     }
 
+    /** @type {string} The current input value. */
     get value() {
         return this.input?.value || "";
     }
@@ -67,6 +68,10 @@ export class YumeInput extends HTMLElement {
         this._internals.setFormValue(val, this.getAttribute("name"));
     }
 
+    /**
+     * Checks the validity of the underlying input element.
+     * @returns {boolean} Whether the input is valid.
+     */
     checkValidity() {
         return this.input?.checkValidity?.() ?? true;
     }
@@ -102,6 +107,7 @@ export class YumeInput extends HTMLElement {
             }[size] || "var(--sizing-medium, 40px)";
 
         const sheet = new CSSStyleSheet();
+
         sheet.replaceSync(`
             :host {
                 display: block;

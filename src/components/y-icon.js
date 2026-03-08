@@ -108,7 +108,6 @@ function sanitizeSvg(raw) {
         }
     };
 
-    // Sanitize the <svg> element's own attributes
     for (const attr of [...svg.attributes]) {
         if (!ALLOWED_ATTRS.has(attr.name.toLowerCase())) {
             svg.removeAttribute(attr.name);
@@ -150,6 +149,7 @@ export class YumeIcon extends HTMLElement {
         this.render();
     }
 
+    /** The registered icon name to display. */
     get name() {
         return this.getAttribute("name") || "";
     }
@@ -157,6 +157,7 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("name", val);
     }
 
+    /** Icon size: "small" | "medium" | "large" (default "medium"). */
     get size() {
         return this.getAttribute("size") || "medium";
     }
@@ -164,6 +165,7 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("size", val);
     }
 
+    /** Color theme: "base" | "primary" | "secondary" | "success" | "warning" | "error" | "help". */
     get color() {
         return this.getAttribute("color") || "";
     }
@@ -172,6 +174,7 @@ export class YumeIcon extends HTMLElement {
         else this.removeAttribute("color");
     }
 
+    /** Accessible label for the icon. When set, the icon gets role="img". */
     get label() {
         return this.getAttribute("label") || "";
     }
@@ -180,6 +183,7 @@ export class YumeIcon extends HTMLElement {
         else this.removeAttribute("label");
     }
 
+    /** Stroke weight: "thin" | "regular" | "thick". */
     get weight() {
         return this.getAttribute("weight") || "";
     }

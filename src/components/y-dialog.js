@@ -29,6 +29,7 @@ class YumeDialog extends HTMLElement {
         }
     }
 
+    /** Whether the dialog is currently displayed. */
     get visible() {
         return this.hasAttribute("visible");
     }
@@ -38,6 +39,7 @@ class YumeDialog extends HTMLElement {
         else this.removeAttribute("visible");
     }
 
+    /** The id of the element that toggles this dialog on click. */
     get anchor() {
         return this.getAttribute("anchor");
     }
@@ -46,6 +48,7 @@ class YumeDialog extends HTMLElement {
         this.setAttribute("anchor", id);
     }
 
+    /** Whether the dialog renders a close button in the header. */
     get closable() {
         return this.hasAttribute("closable");
     }
@@ -54,6 +57,7 @@ class YumeDialog extends HTMLElement {
         else this.removeAttribute("closable");
     }
 
+    /** Whether to apply a blurred backdrop behind the dialog. */
     get showBackdrop() {
         return this.hasAttribute("show-backdrop");
     }
@@ -62,6 +66,7 @@ class YumeDialog extends HTMLElement {
         else this.removeAttribute("show-backdrop");
     }
 
+    /** Whether the dialog uses an entrance animation. */
     get animate() {
         return this.hasAttribute("animate");
     }
@@ -70,6 +75,7 @@ class YumeDialog extends HTMLElement {
         else this.removeAttribute("animate");
     }
 
+    /** Opens the dialog and focuses it. */
     show() {
         if (!this.shadowRoot.querySelector(".dialog")) {
             this.render();
@@ -83,6 +89,7 @@ class YumeDialog extends HTMLElement {
         }
     }
 
+    /** Closes the dialog. */
     hide() {
         document.removeEventListener("keydown", this.onKeyDown);
     }
@@ -158,26 +165,6 @@ class YumeDialog extends HTMLElement {
             .header-content {
                 flex: 1;
             }
-            .close-btn {
-                background: none;
-                border: none;
-                cursor: pointer;
-                padding: var(--spacing-x-small, 4px);
-                color: var(--component-dialog-color, #f7f7fa);
-                font-size: 1.25em;
-                line-height: 1;
-                border-radius: var(--component-button-border-radius-outer, 4px);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .close-btn:hover {
-                background: var(--component-dialog-hover-background, #292a2b);
-            }
-            .close-btn:focus-visible {
-                outline: 2px solid var(--component-dialog-accent);
-                outline-offset: -1px;
-            }
             .body {
                 padding: var(--component-dialog-padding, var(--spacing-medium));
                 overflow: auto;
@@ -213,10 +200,11 @@ class YumeDialog extends HTMLElement {
         header.appendChild(headerContent);
 
         if (this.closable) {
-            const closeBtn = document.createElement("button");
-            closeBtn.className = "close-btn";
+            const closeBtn = document.createElement("y-button");
+            closeBtn.setAttribute("size", "small");
+            closeBtn.setAttribute("style-type", "flat");
             closeBtn.setAttribute("aria-label", "Close");
-            closeBtn.innerHTML = "&#10005;";
+            closeBtn.textContent = "\u2715";
             closeBtn.addEventListener("click", () => {
                 this.visible = false;
             });
@@ -238,18 +226,20 @@ class YumeDialog extends HTMLElement {
         dialog.appendChild(footer);
         this.shadowRoot.appendChild(dialog);
 
-        // Hide slot containers that have no slotted content
         const hideIfEmpty = (wrapper) => {
             const slot = wrapper.querySelector("slot");
             if (!slot) return;
+
             const update = () => {
                 const hasContent =
                     slot.assignedNodes({ flatten: true }).length > 0;
                 wrapper.style.display = hasContent ? "" : "none";
             };
+
             slot.addEventListener("slotchange", update);
             update();
         };
+
         if (!this.closable) hideIfEmpty(header);
         hideIfEmpty(body);
         hideIfEmpty(footer);

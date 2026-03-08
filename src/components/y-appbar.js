@@ -143,12 +143,13 @@ export class YumeAppbar extends HTMLElement {
                 iconSize: "large",
             },
         };
-        const cfg = sizeConfig[size] || sizeConfig.medium;
 
         this.shadowRoot.innerHTML = "";
         this._idCounter = 0;
 
+        const cfg = sizeConfig[size] || sizeConfig.medium;
         const style = document.createElement("style");
+
         style.textContent = `
             :host {
                 display: block;
@@ -377,15 +378,11 @@ export class YumeAppbar extends HTMLElement {
         `;
         this.shadowRoot.appendChild(style);
 
-        // Clone document stylesheets so CSS-class-based icons (e.g. Font Awesome) render in shadow DOM
-        document.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
-            this.shadowRoot.appendChild(link.cloneNode(true));
-        });
-
         const bar = document.createElement("div");
         bar.className = `appbar ${isVertical ? "vertical" : "horizontal"}`;
 
         if (isCollapsed) bar.classList.add("collapsed");
+
         bar.setAttribute("role", "navigation");
         bar.style.setProperty("--_appbar-padding", cfg.padding);
         bar.style.setProperty("--_appbar-collapsed-width", cfg.collapsedWidth);
@@ -395,7 +392,6 @@ export class YumeAppbar extends HTMLElement {
             `calc(${cfg.collapsedWidth} - 2 * var(--_appbar-padding) - 2 * var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)))`,
         );
 
-        /* --- Header: logo + title --- */
         const header = document.createElement("div");
         header.className = "appbar-header";
         header.setAttribute("part", "header");
@@ -425,21 +421,22 @@ export class YumeAppbar extends HTMLElement {
         header.appendChild(headerSlot);
         bar.appendChild(header);
 
-        /* --- Body: y-button nav items --- */
         const body = document.createElement("div");
         body.className = "appbar-body";
         body.setAttribute("part", "body");
 
         const navItems = this.items;
+
         navItems.forEach((item) => {
             const hasChildren = item.children?.length > 0;
             const wrapper = document.createElement("div");
-            wrapper.className = "nav-item";
-
             const btn = document.createElement("y-button");
             const btnId = this._uid("appbar-btn");
-            btn.id = btnId;
             const isActive = this._isItemActive(item);
+
+            wrapper.className = "nav-item";
+            btn.id = btnId;
+
             btn.setAttribute("color", isActive ? "primary" : "base");
             btn.setAttribute("style-type", "flat");
             btn.setAttribute("size", cfg.buttonSize);
@@ -502,7 +499,6 @@ export class YumeAppbar extends HTMLElement {
 
         bar.appendChild(body);
 
-        /* --- Footer: slot + collapse toggle (vertical only) --- */
         const footer = document.createElement("div");
         footer.className = "appbar-footer";
         footer.setAttribute("part", "footer");

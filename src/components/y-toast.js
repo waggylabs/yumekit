@@ -20,6 +20,7 @@ export class YumeToast extends HTMLElement {
         this.render();
     }
 
+    /** Screen position for the toast stack (e.g. "top-right", "bottom-center"). */
     get position() {
         return this.getAttribute("position") || "bottom-right";
     }
@@ -27,6 +28,7 @@ export class YumeToast extends HTMLElement {
         this.setAttribute("position", val);
     }
 
+    /** Default auto-dismiss duration in milliseconds. */
     get duration() {
         return parseInt(this.getAttribute("duration") ?? "4000", 10);
     }
@@ -34,6 +36,7 @@ export class YumeToast extends HTMLElement {
         this.setAttribute("duration", String(val));
     }
 
+    /** Maximum number of toasts visible at once. */
     get max() {
         return parseInt(this.getAttribute("max") ?? "5", 10);
     }
@@ -126,6 +129,7 @@ export class YumeToast extends HTMLElement {
         return toast;
     }
 
+    /** Dismisses all visible toasts. */
     clear() {
         const container = this.shadowRoot.querySelector(".toast-container");
         if (!container) return;
@@ -136,8 +140,11 @@ export class YumeToast extends HTMLElement {
 
     _removeToast(toast) {
         if (!toast || toast._removing) return;
+
         toast._removing = true;
+
         clearTimeout(toast._timeout);
+
         toast.classList.remove("visible");
         toast.classList.add("exit");
         toast.addEventListener(

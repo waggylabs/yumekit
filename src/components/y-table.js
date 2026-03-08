@@ -9,7 +9,7 @@ export class YumeTable extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this._sortField = null;
-        this._sortDir = "none"; // "none" | "asc" | "desc"
+        this._sortDir = "none";
         this._parsedData = [];
         this._parsedColumns = [];
     }
@@ -25,6 +25,7 @@ export class YumeTable extends HTMLElement {
         this.render();
     }
 
+    /** Column definitions as a JSON string or array of { field, header?, sortable? } objects. */
     get columns() {
         return this.getAttribute("columns");
     }
@@ -35,6 +36,7 @@ export class YumeTable extends HTMLElement {
         );
     }
 
+    /** Row data as a JSON string or array of objects keyed by column field names. */
     get data() {
         return this.getAttribute("data");
     }
@@ -45,6 +47,7 @@ export class YumeTable extends HTMLElement {
         );
     }
 
+    /** Whether to show alternating row backgrounds. */
     get striped() {
         return this.hasAttribute("striped");
     }

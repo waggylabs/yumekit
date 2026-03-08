@@ -19,22 +19,27 @@ export class YumeBadge extends HTMLElement {
         }
     }
 
+    /** Horizontal alignment of the badge: "left" | "right" (default "right"). */
     get alignment() {
         return this.getAttribute("alignment") || "right";
     }
 
+    /** Color theme: "primary" | "secondary" | "base" | "success" | "warning" | "error" | "help". */
     get color() {
         return this.getAttribute("color") || "primary";
     }
 
+    /** Vertical position of the badge: "top" | "bottom" (default "top"). */
     get position() {
         return this.getAttribute("position") || "top";
     }
 
+    /** Badge size: "small" | "medium" | "large" (default "small"). */
     get size() {
         return this.getAttribute("size") || "small";
     }
 
+    /** The text content displayed inside the badge. */
     get value() {
         return this.getAttribute("value") || "";
     }

@@ -25,6 +25,7 @@ export class YumeTabs extends HTMLElement {
         }
     }
 
+    /** @type {Array<Object>} Tab definitions with id, label, slot, and optional disabled flag. */
     get options() {
         try {
             return JSON.parse(this.getAttribute("options") || "[]");
@@ -38,6 +39,7 @@ export class YumeTabs extends HTMLElement {
         this.render();
     }
 
+    /** @type {"small"|"medium"|"large"} Controls tab button padding and gap. */
     get size() {
         const sz = this.getAttribute("size");
         return ["small", "medium", "large"].includes(sz) ? sz : "medium";
@@ -49,6 +51,7 @@ export class YumeTabs extends HTMLElement {
         else this.setAttribute("size", "medium");
     }
 
+    /** @type {"top"|"bottom"|"left"|"right"} Which edge the tab strip is placed on. */
     get position() {
         const pos = this.getAttribute("position");
         return ["top", "bottom", "left", "right"].includes(pos) ? pos : "top";
@@ -60,6 +63,10 @@ export class YumeTabs extends HTMLElement {
         else this.setAttribute("position", "top");
     }
 
+    /**
+     * Activates a tab by its id.
+     * @param {string} id - The id of the tab to activate.
+     */
     activateTab(id) {
         const tab = this.options.find((t) => t.id === id);
         if (!tab || tab.disabled) return;
@@ -208,6 +215,7 @@ export class YumeTabs extends HTMLElement {
         const isActive = tab.id === this._activeTab;
         const isDisabled = !!tab.disabled;
         const btn = document.createElement("button");
+
         btn.id = `tab-${tab.id}`;
         btn.setAttribute("role", "tab");
         btn.setAttribute("part", "tab");
@@ -251,6 +259,7 @@ export class YumeTabs extends HTMLElement {
         const contentSlot = document.createElement("slot");
         contentSlot.name = slotName;
         panel.appendChild(contentSlot);
+
         return panel;
     }
 
