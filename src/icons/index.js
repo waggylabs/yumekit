@@ -27,6 +27,10 @@ export const checkmark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2
 
 export const indeterminate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="2" rx="1" ry="1" fill="currentColor"/></svg>`;
 
+/* ── Menu (hamburger) ────────────────────────────────────────────── */
+
+export const menu = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>`;
+
 /* ── Close / remove ───────────────────────────────────────────────── */
 
 export const close = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><line x1="6" y1="6" x2="14" y2="14" /><line x1="14" y1="6" x2="6" y2="14" /></svg>`;

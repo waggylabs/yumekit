@@ -97,12 +97,14 @@ export class YumeTheme extends HTMLElement {
         const style = document.createElement("style");
         style.setAttribute("data-yumekit-page-styles", "");
         style.textContent = `
-            html, body {
-                margin: 0;
-                padding: 0;
+            :host {
                 font-family: var(--font-family-header, "Lexend", sans-serif);
                 color: var(--base-content--, #000);
                 font-weight: 300;
+            }
+
+            :host * {
+                color: var(--base-content--, #000);
             }
         `;
         document.head.appendChild(style);

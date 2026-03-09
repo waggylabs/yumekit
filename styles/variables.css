@@ -290,6 +290,7 @@
 :root {
     /* appbar */
     --component-appbar-collapsed-width: 48px;
+    --component-appbar-mobile-breakpoint: 768px;
     --component-appbar-padding: var(--spacing-medium);
     --component-appbar-width: 240px;
     --component-appbar-z-index: 100;
