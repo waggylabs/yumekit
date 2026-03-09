@@ -190,11 +190,11 @@ describe("YumeIcon", () => {
         expect(el.getAttribute("color")).to.equal("success");
     });
 
-    it("has no weight by default", async () => {
+    it("has regular weight by default", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
-        expect(el.weight).to.equal("");
+        expect(el.weight).to.equal("regular");
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.not.include("stroke-width");
+        expect(style).to.include("stroke-width: 2 !important");
     });
 
     it("applies thin weight", async () => {
@@ -202,7 +202,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="thin"></y-icon>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("stroke-width: 1 !important");
+        expect(style).to.include("stroke-width: 1.5 !important");
     });
 
     it("applies regular weight", async () => {
@@ -210,7 +210,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="regular"></y-icon>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("stroke-width: 1.5 !important");
+        expect(style).to.include("stroke-width: 2 !important");
     });
 
     it("applies thick weight", async () => {
@@ -218,7 +218,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="thick"></y-icon>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("stroke-width: 2 !important");
+        expect(style).to.include("stroke-width: 2.5 !important");
     });
 
     it("ignores unknown weight values", async () => {
@@ -233,7 +233,7 @@ describe("YumeIcon", () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         el.setAttribute("weight", "thick");
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("stroke-width: 2 !important");
+        expect(style).to.include("stroke-width: 2.5 !important");
     });
 
     it("weight property setter updates attribute", async () => {
