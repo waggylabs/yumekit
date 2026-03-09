@@ -207,18 +207,22 @@ export class YumeIcon extends HTMLElement {
 
     _getSize(size) {
         const map = {
-            small: "var(--component-icon-size-small, 16px)",
-            medium: "var(--component-icon-size-medium, 24px)",
-            large: "var(--component-icon-size-large, 32px)",
+            "x-small": "var(--component-icon-size-x-small, 10px)",
+            small: "var(--component-icon-size-small, 14px)",
+            medium: "var(--component-icon-size-medium, 18px)",
+            large: "var(--component-icon-size-large, 22px)",
+            "x-large": "var(--component-icon-size-x-large, 28px)",
         };
         return map[size] || map.medium;
     }
 
     _getWeight(weight) {
         const map = {
-            thin: "1",
-            regular: "1.5",
-            thick: "2",
+            "x-thin": "1",
+            thin: "1.5",
+            regular: "2",
+            thick: "2.5",
+            "x-thick": "3",
         };
         return map[weight] || "";
     }
