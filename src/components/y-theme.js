@@ -97,7 +97,7 @@ export class YumeTheme extends HTMLElement {
         const style = document.createElement("style");
         style.setAttribute("data-yumekit-page-styles", "");
         style.textContent = `
-            :host {
+            :html, body {
                 font-family: var(--font-family-header, "Lexend", sans-serif);
                 color: var(--base-content--, #000);
                 font-weight: 300;
