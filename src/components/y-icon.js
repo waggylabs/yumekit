@@ -185,7 +185,7 @@ export class YumeIcon extends HTMLElement {
 
     /** Stroke weight: "thin" | "regular" | "thick". */
     get weight() {
-        return this.getAttribute("weight") || "";
+        return this.getAttribute("weight") || "regular";
     }
     set weight(val) {
         if (val) this.setAttribute("weight", val);
