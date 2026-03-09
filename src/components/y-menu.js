@@ -158,7 +158,18 @@ class YumeMenu extends HTMLElement {
 
     _onAnchorClick(e) {
         e.stopPropagation();
+        if (!this.visible) {
+            YumeMenu._closeAll(this);
+        }
         this.visible = !this.visible;
+    }
+
+    static _closeAll(except) {
+        document.querySelectorAll("y-menu").forEach((menu) => {
+            if (menu !== except && menu.visible) {
+                menu.visible = false;
+            }
+        });
     }
 
     _onDocumentClick(e) {
@@ -200,7 +211,13 @@ class YumeMenu extends HTMLElement {
         }
 
         const anchorRect = this._anchorEl.getBoundingClientRect();
+
+        // Temporarily show off-screen to measure actual dimensions
+        this.style.visibility = "hidden";
+        this.style.display = "block";
         const menuRect = this.getBoundingClientRect();
+        this.style.visibility = "";
+
         const vw = window.innerWidth;
         const vh = window.innerHeight;
 
