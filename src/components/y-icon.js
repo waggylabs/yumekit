@@ -108,7 +108,6 @@ function sanitizeSvg(raw) {
         }
     };
 
-    // Sanitize the <svg> element's own attributes
     for (const attr of [...svg.attributes]) {
         if (!ALLOWED_ATTRS.has(attr.name.toLowerCase())) {
             svg.removeAttribute(attr.name);
@@ -150,6 +149,7 @@ export class YumeIcon extends HTMLElement {
         this.render();
     }
 
+    /** The registered icon name to display. */
     get name() {
         return this.getAttribute("name") || "";
     }
@@ -157,6 +157,7 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("name", val);
     }
 
+    /** Icon size: "small" | "medium" | "large" (default "medium"). */
     get size() {
         return this.getAttribute("size") || "medium";
     }
@@ -164,6 +165,7 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("size", val);
     }
 
+    /** Color theme: "base" | "primary" | "secondary" | "success" | "warning" | "error" | "help". */
     get color() {
         return this.getAttribute("color") || "";
     }
@@ -172,6 +174,7 @@ export class YumeIcon extends HTMLElement {
         else this.removeAttribute("color");
     }
 
+    /** Accessible label for the icon. When set, the icon gets role="img". */
     get label() {
         return this.getAttribute("label") || "";
     }
@@ -180,8 +183,9 @@ export class YumeIcon extends HTMLElement {
         else this.removeAttribute("label");
     }
 
+    /** Stroke weight: "thin" | "regular" | "thick". */
     get weight() {
-        return this.getAttribute("weight") || "";
+        return this.getAttribute("weight") || "regular";
     }
     set weight(val) {
         if (val) this.setAttribute("weight", val);
@@ -203,18 +207,22 @@ export class YumeIcon extends HTMLElement {
 
     _getSize(size) {
         const map = {
-            small: "var(--component-icon-size-small, 16px)",
-            medium: "var(--component-icon-size-medium, 24px)",
-            large: "var(--component-icon-size-large, 32px)",
+            "x-small": "var(--component-icon-size-x-small, 10px)",
+            small: "var(--component-icon-size-small, 14px)",
+            medium: "var(--component-icon-size-medium, 18px)",
+            large: "var(--component-icon-size-large, 22px)",
+            "x-large": "var(--component-icon-size-x-large, 28px)",
         };
         return map[size] || map.medium;
     }
 
     _getWeight(weight) {
         const map = {
-            thin: "1",
-            regular: "1.5",
-            thick: "2",
+            "x-thin": "1",
+            thin: "1.5",
+            regular: "2",
+            thick: "2.5",
+            "x-thick": "3",
         };
         return map[weight] || "";
     }

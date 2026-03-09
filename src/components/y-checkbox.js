@@ -48,6 +48,7 @@ export class YumeCheckbox extends HTMLElement {
         this.updateState();
     }
 
+    /** @type {boolean} Whether the checkbox is checked. */
     get checked() {
         return this.hasAttribute("checked");
     }
@@ -57,6 +58,7 @@ export class YumeCheckbox extends HTMLElement {
         else this.removeAttribute("checked");
     }
 
+    /** @type {boolean} Whether the checkbox is disabled. */
     get disabled() {
         return this.hasAttribute("disabled");
     }
@@ -66,6 +68,7 @@ export class YumeCheckbox extends HTMLElement {
         else this.removeAttribute("disabled");
     }
 
+    /** @type {boolean} Whether the checkbox is in an indeterminate state. */
     get indeterminate() {
         return this.hasAttribute("indeterminate");
     }
@@ -75,6 +78,7 @@ export class YumeCheckbox extends HTMLElement {
         else this.removeAttribute("indeterminate");
     }
 
+    /** @type {string} The form value submitted when checked. Defaults to "on". */
     get value() {
         return this.getAttribute("value") || "on";
     }
@@ -83,10 +87,12 @@ export class YumeCheckbox extends HTMLElement {
         this.setAttribute("value", val);
     }
 
+    /** @type {string|null} The form name of the checkbox. */
     get name() {
         return this.getAttribute("name");
     }
 
+    /** Toggles the checked state and dispatches a "change" event. */
     toggle() {
         if (this.disabled) return;
         if (this.indeterminate) {

@@ -55,6 +55,7 @@ export class YumeButton extends HTMLElement {
         }
     }
 
+    /** The current selected value(s), comma-separated when 'multiple' is set. */
     get value() {
         if (this.hasAttribute("multiple")) {
             return Array.from(this.selectedValues).join(",");
@@ -85,6 +86,10 @@ export class YumeButton extends HTMLElement {
         this.setAttribute("value", newVal);
     }
 
+    /**
+     * Sets the button options from an array of objects.
+     * @param {Array<Object>} options
+     */
     setOptions(options) {
         this.setAttribute("options", JSON.stringify(options));
     }

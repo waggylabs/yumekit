@@ -66,6 +66,10 @@ export class YumeTheme extends HTMLElement {
         this.applyVariablesToHost(variablesCSS + themeCSS);
     }
 
+    /**
+     * Parses CSS custom properties from the given text and sets them on the host element.
+     * @param {string} cssText - Raw CSS containing custom property declarations.
+     */
     applyVariablesToHost(cssText) {
         const regex = /--([\w-]+):\s*([^;]+);/g;
         let match;
@@ -78,6 +82,7 @@ export class YumeTheme extends HTMLElement {
         }
     }
 
+    /** Removes all theme custom properties previously applied to the host element. */
     clearThemeProperties() {
         if (this._themeProps) {
             for (const prop of this._themeProps) {
@@ -92,12 +97,14 @@ export class YumeTheme extends HTMLElement {
         const style = document.createElement("style");
         style.setAttribute("data-yumekit-page-styles", "");
         style.textContent = `
-            html, body {
-                margin: 0;
-                padding: 0;
+            :host {
                 font-family: var(--font-family-header, "Lexend", sans-serif);
                 color: var(--base-content--, #000);
                 font-weight: 300;
+            }
+
+            :host * {
+                color: var(--base-content--, #000);
             }
         `;
         document.head.appendChild(style);

@@ -54,6 +54,7 @@ export class YumeSlider extends HTMLElement {
         }
     }
 
+    /** @type {number} The current slider value, clamped between min and max. */
     get value() {
         const val = parseFloat(this.getAttribute("value"));
         return Number.isNaN(val) ? 0 : val;
@@ -65,6 +66,7 @@ export class YumeSlider extends HTMLElement {
         this.setAttribute("value", String(stepped));
     }
 
+    /** @type {number} The minimum allowed value. Defaults to 0. */
     get min() {
         return parseFloat(this.getAttribute("min")) || 0;
     }
@@ -73,6 +75,7 @@ export class YumeSlider extends HTMLElement {
         this.setAttribute("min", String(val));
     }
 
+    /** @type {number} The maximum allowed value. Defaults to 100. */
     get max() {
         return parseFloat(this.getAttribute("max")) || 100;
     }
@@ -81,6 +84,7 @@ export class YumeSlider extends HTMLElement {
         this.setAttribute("max", String(val));
     }
 
+    /** @type {number|null} The step increment, or null for continuous. */
     get step() {
         const s = parseFloat(this.getAttribute("step"));
         return Number.isNaN(s) || s <= 0 ? null : s;
@@ -94,6 +98,7 @@ export class YumeSlider extends HTMLElement {
         }
     }
 
+    /** @type {string} The size variant ("small", "medium", or "large"). */
     get size() {
         return this.getAttribute("size") || "medium";
     }
@@ -102,6 +107,7 @@ export class YumeSlider extends HTMLElement {
         this.setAttribute("size", val);
     }
 
+    /** @type {string} The color theme for the slider track and thumb. */
     get color() {
         return this.getAttribute("color") || "primary";
     }
@@ -110,6 +116,7 @@ export class YumeSlider extends HTMLElement {
         this.setAttribute("color", val);
     }
 
+    /** @type {boolean} Whether the slider is disabled. */
     get disabled() {
         return this.hasAttribute("disabled");
     }
@@ -119,6 +126,7 @@ export class YumeSlider extends HTMLElement {
         else this.removeAttribute("disabled");
     }
 
+    /** @type {string} The slider orientation ("horizontal" or "vertical"). */
     get orientation() {
         return this.getAttribute("orientation") || "horizontal";
     }
@@ -127,6 +135,7 @@ export class YumeSlider extends HTMLElement {
         this.setAttribute("orientation", val);
     }
 
+    /** @type {number} The current value as a percentage of the min-max range. */
     get percentage() {
         const range = this.max - this.min;
         if (range <= 0) return 0;
@@ -259,6 +268,7 @@ export class YumeSlider extends HTMLElement {
             Math.min(1, (e.clientX - rect.left) / rect.width),
         );
         const rawValue = this.min + ratio * (this.max - this.min);
+
         this.value = rawValue;
         this.dispatchEvent(
             new Event("input", { bubbles: true, composed: true }),

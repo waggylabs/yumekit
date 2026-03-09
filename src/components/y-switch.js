@@ -44,6 +44,7 @@ class YumeSwitch extends HTMLElement {
         }
     }
 
+    /** @type {boolean} Whether the switch is on. */
     get checked() {
         return this.hasAttribute("checked");
     }
@@ -54,6 +55,7 @@ class YumeSwitch extends HTMLElement {
         this.update();
     }
 
+    /** @type {string} The form value submitted when checked. Defaults to "on". */
     get value() {
         return this.getAttribute("value") || "on";
     }
@@ -63,8 +65,10 @@ class YumeSwitch extends HTMLElement {
         this.update();
     }
 
+    /** Toggles the checked state and dispatches a "change" event. */
     toggle() {
         if (this.hasAttribute("disabled")) return;
+
         this.checked = !this.checked;
         this.dispatchEvent(
             new Event("change", { bubbles: true, composed: true }),
@@ -84,9 +88,10 @@ class YumeSwitch extends HTMLElement {
 
     _autoHideLabel() {
         const slot = this.shadowRoot.querySelector('slot[name="label"]');
-        if (!slot) return;
         const wrapper = slot.closest(".label-wrapper");
-        if (!wrapper) return;
+
+        if (!slot || !wrapper) return;
+
         const update = () => {
             const hasContent = slot
                 .assignedNodes({ flatten: true })
@@ -99,6 +104,7 @@ class YumeSwitch extends HTMLElement {
                 );
             wrapper.style.display = hasContent ? "" : "none";
         };
+
         slot.addEventListener("slotchange", update);
         update();
     }

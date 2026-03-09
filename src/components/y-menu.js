@@ -13,11 +13,14 @@ class YumeMenu extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("items")) this.items = [];
+
         this._setupAnchor();
         this.render();
+
         document.addEventListener("click", this._onDocumentClick);
         window.addEventListener("scroll", this._onScrollOrResize, true);
         window.addEventListener("resize", this._onScrollOrResize);
+
         this.style.position = "fixed";
         this.style.zIndex = "1000";
         this.style.display = "none";
@@ -25,6 +28,7 @@ class YumeMenu extends HTMLElement {
 
     disconnectedCallback() {
         this._teardownAnchor();
+
         document.removeEventListener("click", this._onDocumentClick);
         window.removeEventListener("scroll", this._onScrollOrResize, true);
         window.removeEventListener("resize", this._onScrollOrResize);
@@ -32,14 +36,18 @@ class YumeMenu extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+
         if (name === "items" || name === "size") this.render();
+
         if (name === "anchor") {
             this._teardownAnchor();
             this._setupAnchor();
         }
+
         if (name === "visible") {
             this._updatePosition();
         }
+
         if (name === "direction") {
             this._updatePosition();
         }
@@ -150,7 +158,18 @@ class YumeMenu extends HTMLElement {
 
     _onAnchorClick(e) {
         e.stopPropagation();
+        if (!this.visible) {
+            YumeMenu._closeAll(this);
+        }
         this.visible = !this.visible;
+    }
+
+    static _closeAll(except) {
+        document.querySelectorAll("y-menu").forEach((menu) => {
+            if (menu !== except && menu.visible) {
+                menu.visible = false;
+            }
+        });
     }
 
     _onDocumentClick(e) {
@@ -192,7 +211,13 @@ class YumeMenu extends HTMLElement {
         }
 
         const anchorRect = this._anchorEl.getBoundingClientRect();
+
+        // Temporarily show off-screen to measure actual dimensions
+        this.style.visibility = "hidden";
+        this.style.display = "block";
         const menuRect = this.getBoundingClientRect();
+        this.style.visibility = "";
+
         const vw = window.innerWidth;
         const vh = window.innerHeight;
 
@@ -253,8 +278,8 @@ class YumeMenu extends HTMLElement {
         this.shadowRoot.innerHTML = "";
 
         const paddingVar = `var(--component-button-padding-${this.size}, 0.5rem)`;
-
         const style = document.createElement("style");
+
         style.textContent = `
             ul.menu,
             ul.submenu {
@@ -307,12 +332,14 @@ class YumeMenu extends HTMLElement {
                 flex: 1;
             }
         `;
+
         this.shadowRoot.appendChild(style);
 
         const rootUl = this._createMenuList(this.items);
         rootUl.classList.add("menu");
         rootUl.setAttribute("role", "menu");
         rootUl.setAttribute("part", "menu");
+
         this.shadowRoot.appendChild(rootUl);
     }
 }

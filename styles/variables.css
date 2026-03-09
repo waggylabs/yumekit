@@ -289,7 +289,8 @@
 
 :root {
     /* appbar */
-    --component-appbar-collapsed-width: 48px;
+    --component-appbar-collapsed-width: 52px;
+    --component-appbar-mobile-breakpoint: 768px;
     --component-appbar-padding: var(--spacing-medium);
     --component-appbar-width: 240px;
     --component-appbar-z-index: 100;
@@ -349,9 +350,11 @@
     --component-drawer-z-index: 5000;
 
     /* icon */
-    --component-icon-size-large: var(--spacing-4x-large);
-    --component-icon-size-medium: var(--spacing-2x-large);
-    --component-icon-size-small: var(--spacing-x-large);
+    --component-icon-size-x-large: 28px;
+    --component-icon-size-large: 22px;
+    --component-icon-size-medium: 18px;
+    --component-icon-size-small: 14px;
+    --component-icon-size-x-small: 10px;
 
     /* inputs */
     --component-inputs-border-radius-inner: var(--radii-x-small);

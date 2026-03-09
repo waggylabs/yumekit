@@ -42,6 +42,7 @@ export class YumeTooltip extends HTMLElement {
         this.render();
     }
 
+    /** The tooltip text content. */
     get text() {
         return this.getAttribute("text") || "";
     }
@@ -49,6 +50,7 @@ export class YumeTooltip extends HTMLElement {
         this.setAttribute("text", val);
     }
 
+    /** Placement relative to the trigger: "top" | "bottom" | "left" | "right". */
     get position() {
         return this.getAttribute("position") || "top";
     }
@@ -56,6 +58,7 @@ export class YumeTooltip extends HTMLElement {
         this.setAttribute("position", val);
     }
 
+    /** Delay in milliseconds before the tooltip appears. */
     get delay() {
         return parseInt(this.getAttribute("delay") ?? "200", 10);
     }
@@ -63,6 +66,7 @@ export class YumeTooltip extends HTMLElement {
         this.setAttribute("delay", String(val));
     }
 
+    /** Color theme for the tooltip (e.g. "base", "primary", "error"). */
     get color() {
         return this.getAttribute("color") || "base";
     }
@@ -70,11 +74,14 @@ export class YumeTooltip extends HTMLElement {
         this.setAttribute("color", val);
     }
 
+    /** Programmatically shows the tooltip after the configured delay. */
     show() {
         clearTimeout(this._hideTimeout);
+
         this._showTimeout = setTimeout(() => {
             this._visible = true;
             const tip = this.shadowRoot.querySelector(".tooltip");
+
             if (tip) {
                 const [, fg] = getColorVarPair(this.color);
                 tip.style.color = fg;
@@ -83,6 +90,7 @@ export class YumeTooltip extends HTMLElement {
         }, this.delay);
     }
 
+    /** Immediately hides the tooltip. */
     hide() {
         clearTimeout(this._showTimeout);
         this._visible = false;

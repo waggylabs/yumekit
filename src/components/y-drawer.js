@@ -102,8 +102,7 @@ class YumeDrawer extends HTMLElement {
 
     _show() {
         this.style.display = "block";
-        // Force a reflow so the browser registers the initial state
-        this.offsetHeight; // eslint-disable-line no-unused-expressions
+        this.offsetHeight;
 
         const overlay = this.shadowRoot.querySelector(".overlay");
         const panel = this.shadowRoot.querySelector(".drawer-panel");

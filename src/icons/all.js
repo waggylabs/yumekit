@@ -69,6 +69,7 @@ import listCheck from "./list-check.svg";
 import lock from "./lock.svg";
 import logo from "./logo.svg";
 import mail from "./mail.svg";
+import menu from "./menu.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
 import plus from "./plus.svg";
@@ -149,6 +150,7 @@ registerIcons({
     lock,
     logo,
     mail,
+    menu,
     moon,
     palette,
     plus,

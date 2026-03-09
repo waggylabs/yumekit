@@ -8,8 +8,10 @@ export class YumePanel extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+
         this._expanded = false;
         this._checkRouteMatchBound = this.checkRouteMatch.bind(this);
+
         this.render();
     }
 
@@ -48,6 +50,7 @@ export class YumePanel extends HTMLElement {
         }
     }
 
+    /** @type {boolean} Whether the panel is in a selected/active state. */
     get selected() {
         return this.hasAttribute("selected");
     }
@@ -57,6 +60,7 @@ export class YumePanel extends HTMLElement {
         else this.removeAttribute("selected");
     }
 
+    /** @type {boolean} Whether the panel's children slot is visible. */
     get expanded() {
         return this.hasAttribute("expanded");
     }
@@ -66,8 +70,10 @@ export class YumePanel extends HTMLElement {
         else this.removeAttribute("expanded");
     }
 
+    /** Toggles the expanded state (collapses siblings when inside an exclusive panelbar). */
     toggle() {
         if (!this.hasChildren()) return;
+
         if (!this._expanded) {
             const parentBar = this.closest("y-panelbar");
             if (parentBar && parentBar.hasAttribute("exclusive")) {
@@ -87,6 +93,7 @@ export class YumePanel extends HTMLElement {
         } else {
             this.collapse();
         }
+
         this.dispatchEvent(
             new CustomEvent("toggle", {
                 detail: { expanded: this._expanded },
@@ -96,6 +103,7 @@ export class YumePanel extends HTMLElement {
         );
     }
 
+    /** Expands the panel to show its children. */
     expand() {
         if (!this.hasChildren()) return;
         this.expanded = true;
@@ -110,6 +118,7 @@ export class YumePanel extends HTMLElement {
         );
     }
 
+    /** Collapses the panel to hide its children. */
     collapse() {
         this.expanded = false;
         this._expanded = false;
@@ -139,6 +148,7 @@ export class YumePanel extends HTMLElement {
                 break;
             }
         }
+
         this.setAttribute("data-is-child", depth > 0 ? "true" : "false");
         this.style.setProperty("--panel-depth", depth);
     }
@@ -194,6 +204,7 @@ export class YumePanel extends HTMLElement {
         const childrenSlot = this.shadowRoot.querySelector(
             'slot[name="children"]',
         );
+
         if (childrenSlot) {
             childrenSlot.addEventListener("slotchange", () =>
                 this.checkForChildren(),
@@ -201,11 +212,17 @@ export class YumePanel extends HTMLElement {
         }
     }
 
+    /**
+     * Checks whether the panel has slotted children content.
+     * @returns {boolean}
+     */
     hasChildren() {
         const childrenSlot = this.shadowRoot.querySelector(
             'slot[name="children"]',
         );
+
         if (!childrenSlot) return false;
+
         const nodes = childrenSlot.assignedNodes({ flatten: true });
         return nodes.some((n) => {
             if (n.nodeType === Node.TEXT_NODE) {
@@ -217,7 +234,9 @@ export class YumePanel extends HTMLElement {
 
     checkForChildren() {
         const hasChildren = this.hasChildren();
+
         this.setAttribute("data-has-children", hasChildren ? "true" : "false");
+
         if (!hasChildren && this.expanded) {
             this.expanded = false;
         }
@@ -227,6 +246,7 @@ export class YumePanel extends HTMLElement {
         const hasChildren = this.hasChildren();
         const header = this.shadowRoot.querySelector(".header");
         const isExpanded = this.expanded && hasChildren;
+
         this._expanded = isExpanded;
 
         if (header) {
@@ -236,6 +256,7 @@ export class YumePanel extends HTMLElement {
 
     render() {
         const sheet = new CSSStyleSheet();
+
         sheet.replaceSync(`
             :host {
                 display: block;

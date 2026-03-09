@@ -34,6 +34,7 @@ export class YumeProgress extends HTMLElement {
         }
     }
 
+    /** Current progress value, or null if unset. */
     get value() {
         const val = parseFloat(this.getAttribute("value"));
         return Number.isNaN(val) ? null : val;
@@ -47,6 +48,7 @@ export class YumeProgress extends HTMLElement {
         }
     }
 
+    /** Minimum value (default 0). */
     get min() {
         return parseFloat(this.getAttribute("min")) || 0;
     }
@@ -55,6 +57,7 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("min", String(val));
     }
 
+    /** Maximum value (default 100). */
     get max() {
         return parseFloat(this.getAttribute("max")) || 100;
     }
@@ -63,6 +66,7 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("max", String(val));
     }
 
+    /** Step increment for snapping, or null if continuous. */
     get step() {
         const s = parseFloat(this.getAttribute("step"));
         return Number.isNaN(s) || s <= 0 ? null : s;
@@ -76,6 +80,7 @@ export class YumeProgress extends HTMLElement {
         }
     }
 
+    /** Bar thickness: "small" | "medium" | "large" (default "medium"). */
     get size() {
         return this.getAttribute("size") || "medium";
     }
@@ -84,6 +89,7 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("size", val);
     }
 
+    /** Color theme for the progress bar (default "primary"). */
     get color() {
         return this.getAttribute("color") || "primary";
     }
@@ -92,6 +98,7 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("color", val);
     }
 
+    /** Whether to show the value label on the bar (default true). */
     get labelDisplay() {
         return this.getAttribute("label-display") !== "false";
     }
@@ -100,6 +107,7 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("label-display", val ? "true" : "false");
     }
 
+    /** Label format: "percent" | "value" | "fraction" (default "percent"). */
     get labelFormat() {
         return this.getAttribute("label-format") || "percent";
     }
@@ -108,6 +116,7 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("label-format", val);
     }
 
+    /** Whether the progress bar shows an indeterminate animation. */
     get indeterminate() {
         return this.hasAttribute("indeterminate");
     }
@@ -117,6 +126,7 @@ export class YumeProgress extends HTMLElement {
         else this.removeAttribute("indeterminate");
     }
 
+    /** Whether the progress bar is disabled. */
     get disabled() {
         return this.hasAttribute("disabled");
     }
@@ -144,6 +154,7 @@ export class YumeProgress extends HTMLElement {
         this.value = Math.max(this.value - s, this.min);
     }
 
+    /** Computed fill percentage (0–100), accounting for min, max, and step. */
     get percentage() {
         if (this.value === null) return 0;
         const range = this.max - this.min;
@@ -303,7 +314,9 @@ export class YumeProgress extends HTMLElement {
     _autoHideHeader() {
         const header = this.shadowRoot.querySelector(".progress-header");
         const slot = header?.querySelector("slot");
+
         if (!slot || !header) return;
+
         const update = () => {
             const hasContent = slot
                 .assignedNodes({ flatten: true })
@@ -316,6 +329,7 @@ export class YumeProgress extends HTMLElement {
                 );
             header.style.display = hasContent ? "" : "none";
         };
+
         slot.addEventListener("slotchange", update);
         update();
     }

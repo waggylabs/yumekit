@@ -32,6 +32,7 @@ export class YumeSelect extends HTMLElement {
         if (!this.hasAttribute("label-position")) {
             this.setAttribute("label-position", "top");
         }
+
         this.updateValidation();
         this._internals.setFormValue(this.value);
     }
@@ -42,7 +43,9 @@ export class YumeSelect extends HTMLElement {
 
     _onDocumentClick(e) {
         if (this.getAttribute("close-on-click-outside") === "false") return;
+
         const path = e.composedPath();
+
         if (!path.includes(this) && this.dropdown?.classList.contains("open")) {
             this.closeDropdown();
         }
@@ -76,6 +79,7 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
+    /** @type {string} The current selected value, or comma-separated values when multiple. */
     get value() {
         if (this.hasAttribute("multiple")) {
             return Array.from(this.selectedValues).join(",");
@@ -102,6 +106,10 @@ export class YumeSelect extends HTMLElement {
         this.updateSelectedStyles();
     }
 
+    /**
+     * Returns the parsed options array from the "options" attribute.
+     * @returns {Array<{value: string, label: string}>}
+     */
     getOptions() {
         try {
             return JSON.parse(this.getAttribute("options") || "[]");
@@ -110,6 +118,10 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
+    /**
+     * Returns the display text for the current selection.
+     * @returns {string}
+     */
     getDisplayText() {
         const options = this.getOptions();
         const isMulti = this.hasAttribute("multiple");
@@ -136,6 +148,7 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
+    /** Toggles the dropdown open or closed. */
     toggleDropdown() {
         const isOpen = this.dropdown.classList.contains("open");
         if (isOpen) {
@@ -145,16 +158,19 @@ export class YumeSelect extends HTMLElement {
             this.selectContainer.classList.add("open");
             this._positionDropdown();
             this._onScrollOrResize = this._positionDropdown.bind(this);
+
             window.addEventListener("scroll", this._onScrollOrResize, true);
             window.addEventListener("resize", this._onScrollOrResize);
             document.addEventListener("click", this._onDocumentClick, true);
         }
     }
 
+    /** Closes the dropdown. */
     closeDropdown() {
         this.dropdown?.classList.remove("open");
         this.selectContainer?.classList.remove("open");
         document.removeEventListener("click", this._onDocumentClick, true);
+
         if (this._onScrollOrResize) {
             window.removeEventListener("scroll", this._onScrollOrResize, true);
             window.removeEventListener("resize", this._onScrollOrResize);
@@ -165,11 +181,13 @@ export class YumeSelect extends HTMLElement {
     _positionDropdown() {
         const rect = this.selectContainer.getBoundingClientRect();
         const gap = 4;
+
         this.dropdown.style.left = `${rect.left}px`;
         this.dropdown.style.width = `${rect.width}px`;
 
         const spaceBelow = window.innerHeight - rect.bottom - gap;
         const maxH = 200;
+
         if (spaceBelow >= maxH || spaceBelow >= rect.top) {
             this.dropdown.style.top = `${rect.bottom + gap}px`;
             this.dropdown.style.bottom = "auto";
@@ -237,6 +255,7 @@ export class YumeSelect extends HTMLElement {
     renderTags() {
         const isMulti = this.hasAttribute("multiple");
         const isTagMode = this.getAttribute("display-mode") === "tag";
+
         if (!isMulti || !isTagMode || !this.displayElement) return;
 
         const options = this.getOptions();
