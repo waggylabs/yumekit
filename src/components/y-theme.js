@@ -94,6 +94,16 @@ export class YumeTheme extends HTMLElement {
 
     _injectPageStyles() {
         if (document.querySelector("[data-yumekit-page-styles]")) return;
+
+        if (!this.hasAttribute("no-default-font")) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href =
+                "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap";
+            link.setAttribute("data-yumekit-font", "");
+            document.head.appendChild(link);
+        }
+
         const style = document.createElement("style");
         style.setAttribute("data-yumekit-page-styles", "");
         style.textContent = `
