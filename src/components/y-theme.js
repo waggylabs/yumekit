@@ -57,6 +57,8 @@ export class YumeTheme extends HTMLElement {
                 ${variablesCSS}
                 :host {
                     font-family: var(--font-family-body, sans-serif);
+                    color: var(--base-content--, inherit);
+                    font-weight: 300;
                 }
             </style>
             ${themeCSS ? `<style>${themeCSS}</style>` : ""}
@@ -106,17 +108,7 @@ export class YumeTheme extends HTMLElement {
 
         const style = document.createElement("style");
         style.setAttribute("data-yumekit-page-styles", "");
-        style.textContent = `
-            html, body {
-                font-family: var(--font-family-header, "Lexend", sans-serif);
-                color: var(--base-content--, #000);
-                font-weight: 300;
-            }
 
-            :host * {
-                color: var(--base-content--, #000);
-            }
-        `;
         document.head.appendChild(style);
     }
 }
