@@ -638,7 +638,7 @@ export class YumeAppbar extends HTMLElement {
         bar.style.setProperty("--_appbar-body-gap", cfg.bodyGap);
         bar.style.setProperty(
             "--_icon-col-width",
-            `calc(${cfg.collapsedWidth} - 2 * var(--_appbar-padding) - 2 * var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)))`,
+            `calc(${cfg.collapsedWidth} - 2 * var(--_appbar-padding) - 2 * var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) - 2 * var(--component-button-border-width, 1px))`,
         );
 
         const header = document.createElement("div");
