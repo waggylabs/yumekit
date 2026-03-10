@@ -175,7 +175,7 @@ export class YumeTable extends HTMLElement {
                 position: relative;
                 padding: ${paddingVar};
                 text-align: left;
-                font-weight: 500;
+                font-weight: 400;
                 font-size: var(--font-size-paragraph, 1em);
                 white-space: nowrap;
                 background: transparent;
@@ -213,7 +213,7 @@ export class YumeTable extends HTMLElement {
             }
 
             tbody td.row-header {
-                font-weight: 500;
+                font-weight: 400;
             }
 
             ${

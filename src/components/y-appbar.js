@@ -372,21 +372,21 @@ export class YumeAppbar extends HTMLElement {
         const sizeConfig = {
             small: {
                 padding: "var(--spacing-x-small, 4px)",
-                collapsedWidth: "40px",
+                collapsedWidth: "var(--component-appbar-collapsed-width-small, 40px)",
                 bodyGap: "2px",
                 buttonSize: "small",
                 iconSize: "small",
             },
             medium: {
                 padding: "var(--spacing-small, 6px)",
-                collapsedWidth: "52px",
+                collapsedWidth: "var(--component-appbar-collapsed-width-medium, 52px)",
                 bodyGap: "3px",
                 buttonSize: "medium",
                 iconSize: "medium",
             },
             large: {
                 padding: "var(--spacing-medium, 8px)",
-                collapsedWidth: "64px",
+                collapsedWidth: "var(--component-appbar-collapsed-width-large, 64px)",
                 bodyGap: "4px",
                 buttonSize: "large",
                 iconSize: "large",

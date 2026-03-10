@@ -10,18 +10,23 @@ import { registerIcons } from "./registry.js";
 
 import accessibility from "./accessibility.svg";
 import ai from "./ai.svg";
+import arrowDown from "./arrow-down.svg";
+import arrowLeft from "./arrow-left.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
 import bell from "./bell.svg";
 import bolt from "./bolt.svg";
 import calendar from "./calendar.svg";
+import campfire from "./campfire.svg";
 import chart from "./chart.svg";
 import checkmark from "./checkmark.svg";
 import chevronDown from "./chevron-down.svg";
-import chevronDownLg from "./chevron-down-lg.svg";
+import chevronLeft from "./chevron-left.svg";
 import chevronRight from "./chevron-right.svg";
+import chevronUp from "./chevron-up.svg";
 import clock from "./clock.svg";
 import close from "./close.svg";
+import cloud from "./cloud.svg";
 import collapseLeft from "./collapse-left.svg";
 import comments from "./comments.svg";
 import compAppbar from "./comp-appbar.svg";
@@ -91,18 +96,23 @@ import warning from "./warning.svg";
 registerIcons({
     accessibility,
     ai,
+    "arrow-down": arrowDown,
+    "arrow-left": arrowLeft,
     "arrow-right": arrowRight,
     "arrow-up": arrowUp,
     bell,
     bolt,
     calendar,
+    campfire,
     chart,
     checkmark,
     "chevron-down": chevronDown,
-    "chevron-down-lg": chevronDownLg,
+    "chevron-left": chevronLeft,
     "chevron-right": chevronRight,
+    "chevron-up": chevronUp,
     clock,
     close,
+    cloud,
     "collapse-left": collapseLeft,
     comments,
     "comp-appbar": compAppbar,
