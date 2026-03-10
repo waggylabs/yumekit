@@ -126,11 +126,11 @@ class YumeDialog extends HTMLElement {
                 display: none;
                 align-items: center;
                 justify-content: center;
-                background: rgba(0,0,0,0.5);
                 z-index: var(--component-dialog-z-index, 1000);
             }
             :host([visible]) { display: flex; }
             :host([show-backdrop]) {
+                background: rgba(0,0,0,0.5);
                 backdrop-filter: blur(var(--component-dialog-backdrop-blur, 4px));
                 -webkit-backdrop-filter: blur(var(--component-dialog-backdrop-blur, 4px));
             }

@@ -1,4 +1,4 @@
-import { chevronDownLg } from "../icons/index.js";
+import { chevronDown } from "../icons/index.js";
 
 export class YumeSelect extends HTMLElement {
     static formAssociated = true;
@@ -480,6 +480,8 @@ export class YumeSelect extends HTMLElement {
             }
 
             .chevron-icon svg {
+                width: 20px;
+                height: 20px;
                 transition: transform 0.2s ease;
                 transform-origin: center;
             }
@@ -506,7 +508,7 @@ export class YumeSelect extends HTMLElement {
                 <div class="select-container ${isInvalid ? "is-invalid" : ""}" tabindex="0">
                     <div class="value-display">${this.getDisplayText()}</div>
                     <div class="chevron-icon" part="chevron-icon">
-                        ${chevronDownLg}
+                        ${chevronDown}
                     </div>
                 </div>
                 ${!isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}

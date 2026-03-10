@@ -1,4 +1,4 @@
-import { chevronDownLg } from "../icons/index.js";
+import { chevronDown } from "../icons/index.js";
 
 export class YumePanel extends HTMLElement {
     static get observedAttributes() {
@@ -324,9 +324,12 @@ export class YumePanel extends HTMLElement {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                transition: transform 0.2s ease;
+            }
+
+            .arrow svg {
                 width: 20px;
                 height: 20px;
-                transition: transform 0.2s ease;
             }
 
             :host([expanded]) .arrow {
@@ -360,7 +363,7 @@ export class YumePanel extends HTMLElement {
                 <slot name="icon"></slot>
                 <slot name="label"><slot></slot></slot>
                 <span class="arrow" id="arrow" part="arrow">
-                    ${chevronDownLg}
+                    ${chevronDown}
                 </span>
             </div>
             <div class="children" id="childrenContainer" part="children">
