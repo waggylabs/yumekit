@@ -42,10 +42,6 @@ npm install @waggylabs/yumekit
 The IIFE bundle includes all components and icons. Drop it into any HTML page:
 
 ```html
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@waggylabs/yumekit/dist/styles/blue-light.css"
-/>
 <script src="https://cdn.jsdelivr.net/npm/@waggylabs/yumekit/dist/yumekit.min.js"></script>
 
 <y-button color="primary">Click me</y-button>

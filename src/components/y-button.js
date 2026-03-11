@@ -219,6 +219,7 @@ export class YumeButton extends HTMLElement {
         .button {
             box-sizing: border-box;
             display: inline-flex;
+            width: 100%;
             min-height: var(--button-min-height, var(--sizing-medium, 40px));
             min-width: var(--button-min-width, var(--sizing-medium, 40px));
             padding: var(--button-padding, var(--component-button-padding-medium));
