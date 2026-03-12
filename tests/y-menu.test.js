@@ -55,11 +55,11 @@ describe("YumeMenu", () => {
         expect(hasSubmenu).to.be.true;
     });
 
-    it("displays correct submenu indicator for nested items", async () => {
+    it("displays chevron SVG indicator for nested items", async () => {
         const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
         const indicators = el.shadowRoot.querySelectorAll(".submenu-indicator");
         expect(indicators.length).to.equal(1);
-        expect(indicators[0].textContent).to.equal("▶");
+        expect(indicators[0].querySelector("svg")).to.exist;
     });
 
     it("hides menu when visible is toggled off", async () => {
@@ -96,5 +96,91 @@ describe("YumeMenu", () => {
         const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
         el.direction = "right";
         expect(el.getAttribute("direction")).to.equal("right");
+    });
+
+    it("closes when a leaf menu item is clicked", async () => {
+        const noUrlItems = [{ text: "Alpha" }, { text: "Beta" }];
+        const el = await fixture(
+            html`<y-menu .items=${noUrlItems}></y-menu>`,
+        );
+        el._anchorEl = el;
+        el.visible = true;
+        await new Promise((r) => setTimeout(r, 0));
+
+        const leafItem = el.shadowRoot.querySelector("li.menuitem");
+        leafItem.click();
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.visible).to.be.false;
+    });
+
+    it("does not close when a parent menu item (with children) is clicked", async () => {
+        const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
+        el._anchorEl = el;
+        el.visible = true;
+        await new Promise((r) => setTimeout(r, 0));
+
+        const items = el.shadowRoot.querySelectorAll("li.menuitem");
+        const parentItem = Array.from(items).find((li) =>
+            li.querySelector("ul.submenu"),
+        );
+        parentItem.click();
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.visible).to.be.true;
+    });
+
+    it("defaults size to medium", async () => {
+        const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
+        expect(el.size).to.equal("medium");
+    });
+
+    it("accepts size attribute of small, medium, or large", async () => {
+        for (const size of ["small", "medium", "large"]) {
+            const el = await fixture(
+                html`<y-menu size="${size}" .items=${testItems}></y-menu>`,
+            );
+            expect(el.size).to.equal(size);
+        }
+    });
+
+    it("falls back to medium for an invalid size value", async () => {
+        const el = await fixture(
+            html`<y-menu size="huge" .items=${testItems}></y-menu>`,
+        );
+        expect(el.size).to.equal("medium");
+    });
+
+    it("sets size via property setter", async () => {
+        const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+    });
+
+    it("applies the correct padding CSS variable for each size", async () => {
+        for (const size of ["small", "medium", "large"]) {
+            const el = await fixture(
+                html`<y-menu size="${size}" .items=${testItems}></y-menu>`,
+            );
+            const styleEl = el.shadowRoot.querySelector("style");
+            expect(styleEl.textContent).to.include(
+                `--component-button-padding-${size}`,
+            );
+        }
+    });
+
+    it("re-renders with updated padding when size attribute changes", async () => {
+        const el = await fixture(
+            html`<y-menu size="small" .items=${testItems}></y-menu>`,
+        );
+
+        let styleEl = el.shadowRoot.querySelector("style");
+        expect(styleEl.textContent).to.include("--component-button-padding-small");
+
+        el.setAttribute("size", "large");
+        await new Promise((r) => setTimeout(r, 0));
+
+        styleEl = el.shadowRoot.querySelector("style");
+        expect(styleEl.textContent).to.include("--component-button-padding-large");
     });
 });

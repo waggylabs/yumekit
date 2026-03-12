@@ -181,17 +181,13 @@ export class YumePanel extends HTMLElement {
                 return;
             }
 
-            if (this.hasChildren()) {
-                this.toggle();
-            } else {
-                this.dispatchEvent(
-                    new CustomEvent("select", {
-                        detail: { selected: true },
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
-            }
+            this.dispatchEvent(
+                new CustomEvent("select", {
+                    detail: { selected: true },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
         });
 
         header.addEventListener("keydown", (e) => {
@@ -200,6 +196,21 @@ export class YumePanel extends HTMLElement {
                 header.click();
             }
         });
+
+        const arrow = this.shadowRoot.querySelector(".arrow");
+        if (arrow) {
+            arrow.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.toggle();
+            });
+
+            arrow.addEventListener("keydown", (e) => {
+                if (e.key === " " || e.key === "Enter") {
+                    e.preventDefault();
+                    this.toggle();
+                }
+            });
+        }
 
         const childrenSlot = this.shadowRoot.querySelector(
             'slot[name="children"]',
@@ -244,13 +255,13 @@ export class YumePanel extends HTMLElement {
 
     updateExpandedState() {
         const hasChildren = this.hasChildren();
-        const header = this.shadowRoot.querySelector(".header");
+        const arrow = this.shadowRoot.querySelector(".arrow");
         const isExpanded = this.expanded && hasChildren;
 
         this._expanded = isExpanded;
 
-        if (header) {
-            header.setAttribute("aria-expanded", String(isExpanded));
+        if (arrow) {
+            arrow.setAttribute("aria-expanded", String(isExpanded));
         }
     }
 
@@ -305,10 +316,6 @@ export class YumePanel extends HTMLElement {
                 background: var(--component-panel-hover-background);
             }
 
-            :host([data-has-children="false"]) .header {
-                cursor: default;
-            }
-
             .header ::slotted([slot="icon"]) {
                 margin-right: 6px;
             }
@@ -325,6 +332,17 @@ export class YumePanel extends HTMLElement {
                 align-items: center;
                 justify-content: center;
                 transition: transform 0.2s ease;
+                background: none;
+                border: none;
+                padding: 0;
+                cursor: pointer;
+                color: inherit;
+                flex-shrink: 0;
+            }
+
+            .arrow:focus-visible {
+                outline: 2px solid var(--component-panel-accent, currentColor);
+                border-radius: 2px;
             }
 
             .arrow svg {
@@ -359,12 +377,12 @@ export class YumePanel extends HTMLElement {
 
         this.shadowRoot.adoptedStyleSheets = [sheet];
         this.shadowRoot.innerHTML = `
-            <div class="header" part="header" role="button" tabindex="0" aria-expanded="false">
+            <div class="header" part="header" role="button" tabindex="0">
                 <slot name="icon"></slot>
                 <slot name="label"><slot></slot></slot>
-                <span class="arrow" id="arrow" part="arrow">
+                <button class="arrow" id="arrow" part="arrow" tabindex="0" aria-expanded="false" aria-label="Toggle children">
                     ${chevronDown}
-                </span>
+                </button>
             </div>
             <div class="children" id="childrenContainer" part="children">
                 <slot name="children"></slot>

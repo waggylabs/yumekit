@@ -1,3 +1,5 @@
+import { chevronRight } from "../icons/index.js";
+
 class YumeMenu extends HTMLElement {
     static get observedAttributes() {
         return ["items", "anchor", "visible", "direction", "size"];
@@ -134,10 +136,16 @@ class YumeMenu extends HTMLElement {
                 });
             }
 
+            if (!item.children?.length) {
+                li.addEventListener("click", () => {
+                    this.visible = false;
+                });
+            }
+
             if (item.children?.length) {
                 const indicator = document.createElement("span");
                 indicator.className = "submenu-indicator";
-                indicator.textContent = "▶";
+                indicator.innerHTML = chevronRight;
                 li.appendChild(indicator);
 
                 const submenu = this._createMenuList(item.children);
@@ -291,8 +299,6 @@ class YumeMenu extends HTMLElement {
                 border-radius: var(--component-menu-border-radius, 4px);
                 box-shadow: var(--component-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
                 min-width: 150px;
-                max-height: 300px;
-                overflow-y: auto;
             }
 
             li.menuitem {
@@ -304,6 +310,7 @@ class YumeMenu extends HTMLElement {
                 white-space: nowrap;
                 color: var(--component-menu-color, #f7f7fa);
                 font-size: var(--font-size-button, 1em);
+                position: relative;
             }
 
             li.menuitem:hover {
@@ -323,7 +330,8 @@ class YumeMenu extends HTMLElement {
             }
 
             .submenu-indicator {
-                font-size: 0.75em;
+                display: inline-flex;
+                align-items: center;
                 margin-left: 0.5rem;
                 opacity: 0.6;
             }
