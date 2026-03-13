@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YumeKit Form Example</title>
+  <script type="module">
+    import "@waggylabs/yumekit/components/y-theme";
+    import "@waggylabs/yumekit/components/y-card";
+    import "@waggylabs/yumekit/components/y-input";
+    import "@waggylabs/yumekit/components/y-select";
+    import "@waggylabs/yumekit/components/y-checkbox";
+    import "@waggylabs/yumekit/components/y-button";
+    import "@waggylabs/yumekit/components/y-toast";
+  </script>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--y-base-background-app); }
+    .fields { display: flex; flex-direction: column; gap: 1rem; }
+  </style>
+</head>
+<body>
+<y-theme theme="blue" mode="light">
+  <div class="page">
+    <y-card style="width: 400px;">
+      <span slot="header">Create Account</span>
+
+      <form id="signup-form" class="fields">
+        <y-input type="text" name="full_name" label="Full Name" placeholder="Jane Doe" required></y-input>
+        <y-input type="email" name="email" label="Email" placeholder="jane@example.com" required></y-input>
+        <y-input type="password" name="password" label="Password" required min-length="8"></y-input>
+        <y-select
+          name="role"
+          label="Role"
+          options='[{"value":"viewer","label":"Viewer"},{"value":"editor","label":"Editor"},{"value":"admin","label":"Admin"}]'
+          placeholder="Select a role"
+          required
+        ></y-select>
+        <y-checkbox name="terms" label="I agree to the terms and conditions" required></y-checkbox>
+        <y-button type="submit" color="primary">Create Account</y-button>
+      </form>
+
+      <y-button slot="footer" style-type="flat">Already have an account? Sign in</y-button>
+    </y-card>
+  </div>
+
+  <y-toast id="toast" position="bottom-right"></y-toast>
+</y-theme>
+
+<script type="module">
+  document.getElementById("signup-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    console.log("Form data:", data);
+    document.getElementById("toast").show("Account created successfully!", { color: "success", duration: 3000 });
+  });
+</script>
+</body>
+</html>

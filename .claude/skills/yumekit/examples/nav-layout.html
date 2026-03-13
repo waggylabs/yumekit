@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YumeKit Nav Layout Example</title>
+  <script type="module">
+    import "@waggylabs/yumekit/components/y-theme";
+    import "@waggylabs/yumekit/components/y-appbar";
+    import "@waggylabs/yumekit/components/y-drawer";
+    import "@waggylabs/yumekit/components/y-button";
+    import "@waggylabs/yumekit/components/y-icon";
+    import "@waggylabs/yumekit/components/y-avatar";
+    import "@waggylabs/yumekit/components/y-badge";
+    import "@waggylabs/yumekit/components/y-menu";
+    import "@waggylabs/yumekit/icons/all.js";
+  </script>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .layout { display: flex; flex-direction: column; min-height: 100vh; }
+    .content { flex: 1; padding: 1.5rem; background: var(--y-base-background-app); }
+    .drawer-nav { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem; }
+  </style>
+</head>
+<body>
+<y-theme theme="blue" mode="light">
+  <div class="layout">
+    <!-- Top appbar -->
+    <y-appbar sticky color="primary">
+      <div slot="brand" style="display:flex; align-items:center; gap:0.5rem;">
+        <y-button id="drawer-toggle" style-type="flat" aria-label="Open menu">
+          <y-icon name="menu"></y-icon>
+        </y-button>
+        <strong>MyApp</strong>
+      </div>
+
+      <nav slot="nav">
+        <y-button style-type="flat" left-icon="home">Dashboard</y-button>
+        <y-button style-type="flat" left-icon="chart">Reports</y-button>
+      </nav>
+
+      <div slot="actions" style="display:flex; align-items:center; gap:0.5rem;">
+        <!-- Notification bell with badge -->
+        <y-badge color="error" position="top-right">3
+          <y-button slot="anchor" style-type="flat" aria-label="Notifications">
+            <y-icon name="bell"></y-icon>
+          </y-button>
+        </y-badge>
+
+        <!-- User menu -->
+        <y-menu position="bottom-right">
+          <y-avatar slot="trigger" alt="JD" color="secondary" size="small" style="cursor:pointer;"></y-avatar>
+          <y-button style-type="flat" left-icon="settings">Settings</y-button>
+          <y-button style-type="flat" left-icon="close">Sign Out</y-button>
+        </y-menu>
+      </div>
+    </y-appbar>
+
+    <!-- Side drawer (mobile nav) -->
+    <y-drawer id="sidebar" position="left" modal>
+      <nav class="drawer-nav">
+        <y-button style-type="flat" left-icon="home">Dashboard</y-button>
+        <y-button style-type="flat" left-icon="chart">Reports</y-button>
+        <y-button style-type="flat" left-icon="settings">Settings</y-button>
+      </nav>
+    </y-drawer>
+
+    <!-- Page content -->
+    <main class="content">
+      <h1>Dashboard</h1>
+      <p>Main content area. The sidebar drawer opens on the menu button click.</p>
+    </main>
+  </div>
+</y-theme>
+
+<script type="module">
+  document.getElementById("drawer-toggle").addEventListener("click", () => {
+    document.getElementById("sidebar").show();
+  });
+</script>
+</body>
+</html>

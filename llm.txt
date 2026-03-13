@@ -1,0 +1,607 @@
+# YumeKit (@waggylabs/yumekit)
+
+A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+
+## Version
+0.2.5
+
+## License
+MIT
+
+## Installation
+
+```bash
+npm install @waggylabs/yumekit
+```
+
+## Key Characteristics
+- Pure Web Components (Custom Elements v1, Shadow DOM, ElementInternals)
+- Zero runtime dependencies
+- Full TypeScript support with type declarations
+- Tree-shakeable ESM modules
+- ARIA-compliant and keyboard-navigable
+- Design token system via CSS custom properties
+- Multiple built-in themes (blue-light, blue-dark, orange-light, orange-dark)
+- React JSX type declarations included
+- Form-associated components with native HTML form API support
+- Security-focused SVG icon sanitization (allowlist-based)
+
+## Entry Points (package.json exports)
+
+- `@waggylabs/yumekit` — full ESM bundle
+- `@waggylabs/yumekit/react` — React JSX type declarations
+- `@waggylabs/yumekit/components/y-{name}` — individual components
+- `@waggylabs/yumekit/icons/all.js` — all pre-built icons
+- `@waggylabs/yumekit/icons/registry` — icon registry API
+- `@waggylabs/yumekit/styles/{name}.css` — theme CSS files
+
+CDN (IIFE):
+```html
+<script src="https://cdn.jsdelivr.net/npm/@waggylabs/yumekit/dist/yumekit.min.js"></script>
+```
+
+## Usage Patterns
+
+### Full Import
+```javascript
+import "@waggylabs/yumekit";
+```
+
+### Tree-Shaken Import
+```javascript
+import "@waggylabs/yumekit/components/y-theme";
+import "@waggylabs/yumekit/components/y-button";
+import "@waggylabs/yumekit/components/y-input";
+```
+
+### Icons
+```javascript
+import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
+import "@waggylabs/yumekit/icons/all.js"; // load all 60+ pre-built icons
+```
+
+### React
+```jsx
+import "@waggylabs/yumekit";
+// JSX types are auto-resolved via react.d.ts
+
+function App() {
+  return (
+    <y-theme theme="blue" mode="light">
+      <y-button color="primary">Click me</y-button>
+    </y-theme>
+  );
+}
+```
+
+## Component Reference
+
+All custom elements are prefixed with `y-`.
+
+### y-theme
+Theme provider. Wraps your app and injects design tokens as CSS custom properties.
+
+Attributes:
+- `theme` — `"blue"` | `"orange"` — built-in palette name
+- `mode` — `"light"` | `"dark"`
+- `theme-path` — URL to a custom CSS theme file
+- `cross-origin` — boolean, enables CORS for remote theme loading
+
+```html
+<y-theme theme="blue" mode="light">
+  <!-- app content -->
+</y-theme>
+```
+
+---
+
+### y-button
+Pressable button with icon support.
+
+Tag: `<y-button>`
+Attributes:
+- `color` — `"base"` | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"`
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
+- `left-icon` — icon name (from registry)
+- `right-icon` — icon name (from registry)
+- `disabled` — boolean
+- `type` — `"button"` | `"submit"` | `"reset"` (default: `"button"`)
+
+```html
+<y-button color="primary" size="large" left-icon="check">Save</y-button>
+```
+
+---
+
+### y-input
+Text input field. Form-associated.
+
+Tag: `<y-input>`
+Attributes:
+- `type` — `"text"` | `"email"` | `"password"` | `"number"` | `"tel"` | `"url"` | `"search"`
+- `name` — form field name
+- `value` — current value
+- `placeholder`
+- `label` — visible label text
+- `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `disabled` — boolean
+- `readonly` — boolean
+- `required` — boolean
+- `invalid` — boolean, applies error state
+- `max-length` — numeric string
+- `min-length` — numeric string
+- `pattern` — validation regex
+
+Events: `change`, `input`
+
+```html
+<y-input type="email" name="email" label="Email" required></y-input>
+```
+
+---
+
+### y-select
+Dropdown/multi-select. Form-associated.
+
+Tag: `<y-select>`
+Attributes:
+- `options` — JSON string: `[{"value": "1", "label": "Option 1"}, ...]`
+- `value` — selected value string (or JSON array for multiple)
+- `name` — form field name
+- `placeholder`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `disabled` — boolean
+- `required` — boolean
+- `multiple` — boolean
+- `display-mode` — `"dropdown"` (default) | `"inline"`
+
+Events: `change`
+
+```html
+<y-select options='[{"value":"a","label":"Option A"},{"value":"b","label":"Option B"}]'></y-select>
+```
+
+---
+
+### y-checkbox
+Checkbox input. Form-associated.
+
+Tag: `<y-checkbox>`
+Attributes:
+- `name`, `value`, `checked`, `disabled`, `required`, `indeterminate`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `label` — visible label text
+- `label-position` — `"right"` (default) | `"left"`
+
+Events: `change`
+
+---
+
+### y-radio
+Radio button. Form-associated.
+
+Tag: `<y-radio>`
+Attributes:
+- `name`, `value`, `checked`, `disabled`, `required`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `label`, `label-position`
+
+Events: `change`
+
+---
+
+### y-switch
+Toggle switch. Form-associated.
+
+Tag: `<y-switch>`
+Attributes:
+- `name`, `value`, `checked`, `disabled`, `required`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `label`, `label-position` — `"right"` | `"left"`
+
+Events: `change`
+
+---
+
+### y-slider
+Range slider. Form-associated.
+
+Tag: `<y-slider>`
+Attributes:
+- `name`, `value`, `min`, `max`, `step`
+- `disabled`, `required`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `show-value` — boolean, displays current value
+
+Events: `change`, `input`
+
+---
+
+### y-icon
+Renders a registered SVG icon. Sanitizes SVG using an allowlist.
+
+Tag: `<y-icon>`
+Attributes:
+- `name` — registered icon name (required)
+- `size` — `"small"` | `"medium"` | `"large"`
+- `color` — color scheme name or CSS color
+- `weight` — `"thin"` | `"regular"` (default) | `"thick"`
+- `label` — accessible label (sets aria-label)
+
+```html
+<y-icon name="arrow-right" size="large" color="primary"></y-icon>
+```
+
+---
+
+### y-badge
+Status badge, often positioned over another element.
+
+Tag: `<y-badge>`
+Attributes:
+- `color` — color scheme name
+- `position` — `"top-right"` | `"top-left"` | `"bottom-right"` | `"bottom-left"`
+- `size` — `"small"` | `"medium"` | `"large"`
+
+Slots: default (badge label), `anchor` (element to badge-over)
+
+```html
+<y-badge color="error" position="top-right">3
+  <y-button slot="anchor">Inbox</y-button>
+</y-badge>
+```
+
+---
+
+### y-avatar
+User avatar with image or initials fallback.
+
+Tag: `<y-avatar>`
+Attributes:
+- `src` — image URL
+- `alt` — alt text / initials fallback
+- `shape` — `"circle"` (default) | `"square"` | `"rounded"`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `color` — color scheme for initials background
+
+---
+
+### y-tag
+Tag/chip label.
+
+Tag: `<y-tag>`
+Attributes:
+- `color` — color scheme name
+- `size` — `"small"` | `"medium"` | `"large"`
+- `removable` — boolean, shows close button
+
+Events: `remove`
+
+```html
+<y-tag color="primary" removable>JavaScript</y-tag>
+```
+
+---
+
+### y-progress
+Progress bar.
+
+Tag: `<y-progress>`
+Attributes:
+- `value` — numeric 0–100
+- `max` — numeric (default: 100)
+- `indeterminate` — boolean, animated spinner-style bar
+- `color` — color scheme name
+- `size` — `"small"` | `"medium"` | `"large"`
+
+---
+
+### y-tooltip
+Tooltip / popover.
+
+Tag: `<y-tooltip>`
+Attributes:
+- `text` — tooltip content text
+- `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
+- `trigger` — `"hover"` (default) | `"click"` | `"focus"`
+
+Slots: default (trigger element)
+
+```html
+<y-tooltip text="This is a tooltip">
+  <y-button>Hover me</y-button>
+</y-tooltip>
+```
+
+---
+
+### y-card
+Content container card.
+
+Tag: `<y-card>`
+Attributes:
+- `color` — color scheme name
+
+Slots: `header`, `footer`, default (body content)
+
+---
+
+### y-appbar
+Top/side navigation bar.
+
+Tag: `<y-appbar>`
+Attributes:
+- `orientation` — `"horizontal"` (default) | `"vertical"`
+- `sticky` — boolean
+- `color` — color scheme name
+
+Slots: `brand`, `nav`, `actions`, default
+
+---
+
+### y-drawer
+Side panel / sidebar.
+
+Tag: `<y-drawer>`
+Attributes:
+- `open` — boolean
+- `position` — `"left"` (default) | `"right"` | `"top"` | `"bottom"`
+- `modal` — boolean, shows backdrop
+- `persistent` — boolean, backdrop click does not close
+
+Events: `open`, `close`
+
+Methods: `show()`, `hide()`
+
+Slots: default (drawer content)
+
+---
+
+### y-dialog
+Modal dialog.
+
+Tag: `<y-dialog>`
+Attributes:
+- `open` — boolean
+- `persistent` — boolean, prevents closing on backdrop click
+
+Events: `open`, `close`
+
+Methods: `show()`, `hide()`
+
+Slots: `header`, `footer`, default (body)
+
+```html
+<y-dialog id="my-dialog">
+  <span slot="header">Confirm</span>
+  <p>Are you sure?</p>
+  <y-button slot="footer" color="error">Delete</y-button>
+</y-dialog>
+
+<script>
+  document.getElementById("my-dialog").show();
+</script>
+```
+
+---
+
+### y-menu
+Dropdown menu.
+
+Tag: `<y-menu>`
+Attributes:
+- `open` — boolean
+- `position` — `"bottom-left"` (default) | `"bottom-right"` | `"top-left"` | `"top-right"`
+
+Slots: `trigger` (element that toggles the menu), default (menu items)
+
+```html
+<y-menu>
+  <y-button slot="trigger">Options</y-button>
+  <y-button>Edit</y-button>
+  <y-button>Delete</y-button>
+</y-menu>
+```
+
+---
+
+### y-toast
+Notification toast messages.
+
+Tag: `<y-toast>`
+Attributes:
+- `position` — `"top-right"` (default) | `"top-left"` | `"top-center"` | `"bottom-right"` | `"bottom-left"` | `"bottom-center"`
+- `duration` — number (ms), 0 for persistent
+- `color` — color scheme name
+
+Methods: `show(message, options?)`, `hide()`
+
+```javascript
+document.querySelector("y-toast").show("Saved successfully!", { color: "success" });
+```
+
+---
+
+### y-tabs
+Tabbed interface.
+
+Tag: `<y-tabs>`
+Attributes:
+- `options` — JSON string: `[{"id": "tab1", "label": "Tab 1"}, ...]`
+- `active` — currently active tab id
+- `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
+- `size` — `"small"` | `"medium"` | `"large"`
+
+Events: `change` (detail: `{ id }`)
+
+Slots: Use matching slot names from options `id` for tab panel content:
+```html
+<y-tabs options='[{"id":"a","label":"A"},{"id":"b","label":"B"}]'>
+  <div slot="a">Content A</div>
+  <div slot="b">Content B</div>
+</y-tabs>
+```
+
+---
+
+### y-panelbar
+Accordion container. Groups y-panel elements.
+
+Tag: `<y-panelbar>`
+Attributes:
+- `multi` — boolean, allows multiple panels open simultaneously
+
+Slots: default (y-panel elements)
+
+---
+
+### y-panel
+Individual accordion panel, used inside y-panelbar.
+
+Tag: `<y-panel>`
+Attributes:
+- `label` — header text
+- `open` — boolean
+
+Slots: default (panel body content)
+
+```html
+<y-panelbar>
+  <y-panel label="Section 1" open>
+    <p>Content 1</p>
+  </y-panel>
+  <y-panel label="Section 2">
+    <p>Content 2</p>
+  </y-panel>
+</y-panelbar>
+```
+
+---
+
+### y-table
+Data table.
+
+Tag: `<y-table>`
+Attributes:
+- `columns` — JSON string: `[{"key": "name", "label": "Name"}, ...]`
+- `rows` — JSON string: `[{"name": "Alice", ...}, ...]`
+- `striped` — boolean
+- `size` — `"small"` | `"medium"` | `"large"`
+
+```html
+<y-table
+  columns='[{"key":"id","label":"ID"},{"key":"name","label":"Name"}]'
+  rows='[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
+  striped
+></y-table>
+```
+
+---
+
+## Design Token System (CSS Custom Properties)
+
+Applied by y-theme or by manually including a theme CSS file. Variables follow this naming pattern:
+
+```
+--y-{scheme}-background-app
+--y-{scheme}-background-component
+--y-{scheme}-background-hover
+--y-{scheme}-background-active
+--y-{scheme}-background-border
+--y-{scheme}-content
+--y-{scheme}-content-inverse
+```
+
+Where `{scheme}` is: `base`, `primary`, `secondary`, `success`, `warning`, `error`, `help`
+
+Additional tokens:
+```
+--y-spacing-xs, --y-spacing-sm, --y-spacing-md, --y-spacing-lg, --y-spacing-xl
+--y-font-size-sm, --y-font-size-md, --y-font-size-lg
+--y-border-radius-sm, --y-border-radius-md, --y-border-radius-lg, --y-border-radius-full
+--y-shadow-sm, --y-shadow-md, --y-shadow-lg
+```
+
+To create a custom theme, define these CSS variables in a stylesheet and point y-theme at it:
+```html
+<y-theme theme-path="/custom-theme.css"></y-theme>
+```
+
+---
+
+## Icon Registry API
+
+```javascript
+import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
+
+// Register one icon (raw SVG string)
+registerIcon("my-icon", `<svg viewBox="0 0 24 24">...</svg>`);
+
+// Register many at once
+registerIcons([
+  { name: "icon-a", svg: `<svg>...</svg>` },
+  { name: "icon-b", svg: `<svg>...</svg>` },
+]);
+
+// Retrieve
+const svg = getIcon("my-icon");
+```
+
+Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
+- Accessibility (accessible, eye, eye-off, …)
+- Arrows (arrow-up/down/left/right, chevrons, …)
+- Actions (check, close, copy, download, edit, trash, …)
+- Communication (bell, chat, email, phone, …)
+- Media (camera, image, mic, play, pause, …)
+- Navigation (home, menu, search, settings, …)
+- UI (lock, star, heart, info, warning, error, …)
+
+---
+
+## TypeScript Support
+
+Types are in `dist/index.d.ts`. React JSX types are in `dist/react.d.ts` and auto-resolved via the `react` export condition.
+
+For non-React TypeScript projects, augment `HTMLElementTagNameMap`:
+```typescript
+// Already included in the library's type declarations.
+// Just import the library and use elements with full type safety.
+import "@waggylabs/yumekit";
+```
+
+---
+
+## Helper Functions (internal, `src/modules/helpers.js`)
+
+These are not exported in the public API but are used internally:
+
+- `getColorVarPair(color, fallbackColor)` — resolves a color name to CSS var pair
+- `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
+- `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
+- `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}`
+- `luminance({r,g,b})` — WCAG relative luminance
+- `contrastTextColor(bgColor)` — returns `"#000"` or `"#fff"` for best contrast
+
+---
+
+## Build
+
+```bash
+npm run build   # runs rollup + tsc
+npm test        # runs @web/test-runner with Playwright (Chromium)
+```
+
+Output is in `dist/`. ESM modules preserve tree-shakeability; IIFE bundle is in `dist/yumekit.min.js`.
+
+---
+
+## Browser Support
+
+Requires browsers with native Custom Elements v1, Shadow DOM v1, and ElementInternals support:
+- Chrome/Edge 89+
+- Firefox 93+
+- Safari 15.4+
+
+No polyfills are included or required for modern browser targets.
