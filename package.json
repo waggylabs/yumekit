@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
