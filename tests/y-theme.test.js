@@ -52,6 +52,10 @@ describe("<y-theme>", () => {
 
         el.setAttribute("mode", "dark");
 
+        await waitUntil(() =>
+            el.style.getPropertyValue("--base-background-app").includes("dark"),
+        );
+
         const darkBg = el.style.getPropertyValue("--base-background-app");
         expect(darkBg).to.include("dark");
     });
