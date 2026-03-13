@@ -300,11 +300,11 @@ export class YumeSlider extends HTMLElement {
             <style>
                 :host {
                     display: inline-block;
-                    width: var(--component-slider-width, 129px);
                     font-family: var(--font-family-body);
                     color: var(--base-content--);
                     opacity: ${isDisabled ? "0.5" : "1"};
                     pointer-events: ${isDisabled ? "none" : "auto"};
+                    min-width: 100px;
                 }
 
                 .slider-wrapper {

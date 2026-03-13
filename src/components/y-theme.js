@@ -13,7 +13,7 @@ const THEMES = {
 
 export class YumeTheme extends HTMLElement {
     static get observedAttributes() {
-        return ["theme", "mode", "theme-path"];
+        return ["theme", "mode", "theme-path", "cross-origin"];
     }
 
     constructor() {
@@ -33,6 +33,15 @@ export class YumeTheme extends HTMLElement {
         }
     }
 
+    /** Whether cross-origin theme-path URLs are allowed. */
+    get crossOrigin() {
+        return this.hasAttribute("cross-origin");
+    }
+    set crossOrigin(val) {
+        if (val) this.setAttribute("cross-origin", "");
+        else this.removeAttribute("cross-origin");
+    }
+
     async _applyTheme() {
         const themePath = this.getAttribute("theme-path");
         let themeCSS;
@@ -40,8 +49,19 @@ export class YumeTheme extends HTMLElement {
         if (themePath) {
             try {
                 const url = new URL(themePath, document.baseURI);
-                const response = await fetch(url.href);
-                themeCSS = await response.text();
+                if (
+                    !this.crossOrigin &&
+                    url.origin !== window.location.origin
+                ) {
+                    console.error(
+                        `Blocked cross-origin theme load from ${url.origin}. ` +
+                            `Add the "cross-origin" attribute to <y-theme> to allow this.`,
+                    );
+                    themeCSS = "";
+                } else {
+                    const response = await fetch(url.href);
+                    themeCSS = await response.text();
+                }
             } catch (e) {
                 console.error(`Failed to load theme from ${themePath}:`, e);
                 themeCSS = "";
@@ -52,18 +72,25 @@ export class YumeTheme extends HTMLElement {
             themeCSS = THEMES[`${theme}-${mode}`] || "";
         }
 
-        this.shadowRoot.innerHTML = `
-            <style>
-                ${variablesCSS}
+        this.shadowRoot.innerHTML = "";
+
+        const baseStyle = document.createElement("style");
+        baseStyle.textContent = `${variablesCSS}
                 :host {
                     font-family: var(--font-family-body, sans-serif);
                     color: var(--base-content--, inherit);
                     font-weight: 300;
-                }
-            </style>
-            ${themeCSS ? `<style>${themeCSS}</style>` : ""}
-            <slot></slot>
-        `;
+                }`;
+        this.shadowRoot.appendChild(baseStyle);
+
+        if (themeCSS) {
+            const themeStyle = document.createElement("style");
+            themeStyle.textContent = themeCSS;
+            this.shadowRoot.appendChild(themeStyle);
+        }
+
+        const slot = document.createElement("slot");
+        this.shadowRoot.appendChild(slot);
 
         this.applyVariablesToHost(variablesCSS + themeCSS);
     }

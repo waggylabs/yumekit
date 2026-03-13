@@ -131,8 +131,6 @@
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-background-border);
     --component-tabs-accent: var(--primary-content--);
-    --component-tabs-font-family: var(--font-family-body);
-    --component-slider-width: 129px;
     --font-family-header: "Lexend", sans-serif;
     --font-family-body: "Lexend", sans-serif;
 }
