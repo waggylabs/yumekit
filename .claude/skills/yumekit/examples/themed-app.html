@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YumeKit Themed App Example</title>
+  <script type="module">
+    import "@waggylabs/yumekit/components/y-theme";
+    import "@waggylabs/yumekit/components/y-appbar";
+    import "@waggylabs/yumekit/components/y-button";
+    import "@waggylabs/yumekit/components/y-card";
+    import "@waggylabs/yumekit/components/y-tabs";
+    import "@waggylabs/yumekit/components/y-select";
+    import "@waggylabs/yumekit/components/y-switch";
+    import "@waggylabs/yumekit/components/y-icon";
+    import "@waggylabs/yumekit/icons/all.js";
+  </script>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    .content { padding: 1.5rem; background: var(--y-base-background-app); min-height: calc(100vh - 56px); }
+    .controls { display: flex; align-items: center; gap: 1rem; }
+    .cards { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .card-grid { flex: 1; min-width: 180px; }
+  </style>
+</head>
+<body>
+<!-- Theme wrapper — swap theme/mode at runtime to demonstrate switching -->
+<y-theme id="app-theme" theme="blue" mode="light">
+  <y-appbar sticky color="primary">
+    <strong slot="brand">Theme Demo</strong>
+    <div slot="actions" class="controls">
+      <!-- Palette selector -->
+      <y-select
+        id="theme-select"
+        options='[{"value":"blue","label":"Blue"},{"value":"orange","label":"Orange"}]'
+        value="blue"
+        size="small"
+        style="min-width:110px;"
+      ></y-select>
+      <!-- Dark mode toggle -->
+      <y-switch id="dark-toggle" label="Dark" label-position="left" size="small"></y-switch>
+    </div>
+  </y-appbar>
+
+  <div class="content">
+    <y-tabs
+      options='[{"id":"components","label":"Components"},{"id":"colors","label":"Colors"},{"id":"icons","label":"Icons"}]'
+      active="components"
+    >
+      <!-- Components tab -->
+      <div slot="components">
+        <div class="cards">
+          <y-card class="card-grid" color="primary">
+            <span slot="header">Primary</span>
+            <p>Primary color scheme card.</p>
+            <y-button slot="footer" color="primary">Action</y-button>
+          </y-card>
+          <y-card class="card-grid" color="success">
+            <span slot="header">Success</span>
+            <p>Success color scheme card.</p>
+            <y-button slot="footer" color="success">Action</y-button>
+          </y-card>
+          <y-card class="card-grid" color="warning">
+            <span slot="header">Warning</span>
+            <p>Warning color scheme card.</p>
+            <y-button slot="footer" color="warning">Action</y-button>
+          </y-card>
+          <y-card class="card-grid" color="error">
+            <span slot="header">Error</span>
+            <p>Error color scheme card.</p>
+            <y-button slot="footer" color="error">Action</y-button>
+          </y-card>
+        </div>
+      </div>
+
+      <!-- Colors tab -->
+      <div slot="colors" style="display:flex; gap:0.5rem; flex-wrap:wrap; padding-top:1rem;">
+        <y-button color="base">Base</y-button>
+        <y-button color="primary">Primary</y-button>
+        <y-button color="secondary">Secondary</y-button>
+        <y-button color="success">Success</y-button>
+        <y-button color="warning">Warning</y-button>
+        <y-button color="error">Error</y-button>
+        <y-button color="help">Help</y-button>
+        <y-button color="primary" style-type="outlined">Outlined</y-button>
+        <y-button color="primary" style-type="flat">Flat</y-button>
+      </div>
+
+      <!-- Icons tab -->
+      <div slot="icons" style="display:flex; gap:1rem; flex-wrap:wrap; padding-top:1rem; align-items:center;">
+        <y-icon name="home" size="large" label="Home"></y-icon>
+        <y-icon name="settings" size="large" label="Settings"></y-icon>
+        <y-icon name="bell" size="large" color="warning" label="Notifications"></y-icon>
+        <y-icon name="check" size="large" color="success" label="Success"></y-icon>
+        <y-icon name="close" size="large" color="error" label="Close"></y-icon>
+        <y-icon name="info" size="large" color="primary" label="Info"></y-icon>
+        <y-icon name="search" size="large" label="Search"></y-icon>
+        <y-icon name="trash" size="large" color="error" label="Delete"></y-icon>
+        <y-icon name="edit" size="large" color="secondary" label="Edit"></y-icon>
+        <y-icon name="download" size="large" color="primary" label="Download"></y-icon>
+      </div>
+    </y-tabs>
+  </div>
+</y-theme>
+
+<script type="module">
+  const appTheme = document.getElementById("app-theme");
+
+  // Palette switching
+  document.getElementById("theme-select").addEventListener("change", (e) => {
+    appTheme.setAttribute("theme", e.target.value);
+  });
+
+  // Dark mode toggle
+  document.getElementById("dark-toggle").addEventListener("change", (e) => {
+    appTheme.setAttribute("mode", e.target.checked ? "dark" : "light");
+  });
+</script>
+</body>
+</html>

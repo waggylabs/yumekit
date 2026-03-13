@@ -129,7 +129,6 @@ export class YumeTabs extends HTMLElement {
         return `
             :host {
                 display: flex;
-                font-family: var(--component-tabs-font-family, var(--font-family-body));
             }
             :host([position="top"]) { flex-direction: column; }
             :host([position="bottom"]) { flex-direction: column-reverse; }

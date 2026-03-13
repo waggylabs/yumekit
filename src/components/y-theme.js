@@ -13,7 +13,7 @@ const THEMES = {
 
 export class YumeTheme extends HTMLElement {
     static get observedAttributes() {
-        return ["theme", "mode", "theme-path"];
+        return ["theme", "mode", "theme-path", "cross-origin"];
     }
 
     constructor() {
@@ -33,39 +33,68 @@ export class YumeTheme extends HTMLElement {
         }
     }
 
-    async _applyTheme() {
-        const themePath = this.getAttribute("theme-path");
-        let themeCSS;
+    /** Whether cross-origin theme-path URLs are allowed. */
+    get crossOrigin() {
+        return this.hasAttribute("cross-origin");
+    }
+    set crossOrigin(val) {
+        if (val) this.setAttribute("cross-origin", "");
+        else this.removeAttribute("cross-origin");
+    }
 
-        if (themePath) {
-            try {
-                const url = new URL(themePath, document.baseURI);
-                const response = await fetch(url.href);
-                themeCSS = await response.text();
-            } catch (e) {
-                console.error(`Failed to load theme from ${themePath}:`, e);
-                themeCSS = "";
-            }
-        } else {
+    async _applyTheme() {
+        const themeCSS = await this._resolveThemeCSS();
+        this._buildShadowDOM(themeCSS);
+        this.applyVariablesToHost(variablesCSS + themeCSS);
+    }
+
+    /** Resolves theme CSS from either a remote path or the built-in theme map. */
+    async _resolveThemeCSS() {
+        const themePath = this.getAttribute("theme-path");
+
+        if (!themePath) {
             const theme = this.getAttribute("theme") || "blue";
             const mode = this.getAttribute("mode") || "light";
-            themeCSS = THEMES[`${theme}-${mode}`] || "";
+            return THEMES[`${theme}-${mode}`] || "";
         }
 
-        this.shadowRoot.innerHTML = `
-            <style>
-                ${variablesCSS}
+        try {
+            const url = new URL(themePath, document.baseURI);
+            if (!this.crossOrigin && url.origin !== window.location.origin) {
+                console.error(
+                    `Blocked cross-origin theme load from ${url.origin}. ` +
+                        `Add the "cross-origin" attribute to <y-theme> to allow this.`,
+                );
+                return "";
+            }
+            const response = await fetch(url.href);
+            return await response.text();
+        } catch (e) {
+            console.error(`Failed to load theme from ${themePath}:`, e);
+            return "";
+        }
+    }
+
+    /** Rebuilds the shadow DOM with base variables, optional theme styles, and a slot. */
+    _buildShadowDOM(themeCSS) {
+        this.shadowRoot.innerHTML = "";
+
+        const baseStyle = document.createElement("style");
+        baseStyle.textContent = `${variablesCSS}
                 :host {
                     font-family: var(--font-family-body, sans-serif);
                     color: var(--base-content--, inherit);
                     font-weight: 300;
-                }
-            </style>
-            ${themeCSS ? `<style>${themeCSS}</style>` : ""}
-            <slot></slot>
-        `;
+                }`;
+        this.shadowRoot.appendChild(baseStyle);
 
-        this.applyVariablesToHost(variablesCSS + themeCSS);
+        if (themeCSS) {
+            const themeStyle = document.createElement("style");
+            themeStyle.textContent = themeCSS;
+            this.shadowRoot.appendChild(themeStyle);
+        }
+
+        this.shadowRoot.appendChild(document.createElement("slot"));
     }
 
     /**
