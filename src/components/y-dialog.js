@@ -199,7 +199,10 @@ class YumeDialog extends HTMLElement {
             .footer {
                 padding: var(--component-dialog-padding, var(--spacing-medium));
                 border-top: var(--component-dialog-inner-border-width, 1px) solid var(--component-dialog-border-color);
-                text-align: right;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: var(--component-dialog-footer-gap, var(--spacing-small, 8px));
             }
 
             ::slotted(*) {
