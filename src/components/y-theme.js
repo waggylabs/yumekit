@@ -13,7 +13,7 @@ const THEMES = {
 
 export class YumeTheme extends HTMLElement {
     static get observedAttributes() {
-        return ["theme", "mode", "theme-path", "cross-origin"];
+        return ["theme", "cross-origin"];
     }
 
     constructor() {
@@ -48,18 +48,16 @@ export class YumeTheme extends HTMLElement {
         this.applyVariablesToHost(variablesCSS + themeCSS);
     }
 
-    /** Resolves theme CSS from either a remote path or the built-in theme map. */
+    /** Resolves theme CSS from either a built-in theme name or a remote URL/path. */
     async _resolveThemeCSS() {
-        const themePath = this.getAttribute("theme-path");
+        const theme = this.getAttribute("theme") || "blue-light";
 
-        if (!themePath) {
-            const theme = this.getAttribute("theme") || "blue";
-            const mode = this.getAttribute("mode") || "light";
-            return THEMES[`${theme}-${mode}`] || "";
+        if (THEMES[theme]) {
+            return THEMES[theme];
         }
 
         try {
-            const url = new URL(themePath, document.baseURI);
+            const url = new URL(theme, document.baseURI);
             if (!this.crossOrigin && url.origin !== window.location.origin) {
                 console.error(
                     `Blocked cross-origin theme load from ${url.origin}. ` +
@@ -70,7 +68,7 @@ export class YumeTheme extends HTMLElement {
             const response = await fetch(url.href);
             return await response.text();
         } catch (e) {
-            console.error(`Failed to load theme from ${themePath}:`, e);
+            console.error(`Failed to load theme from ${theme}:`, e);
             return "";
         }
     }

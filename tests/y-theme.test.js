@@ -32,9 +32,9 @@ describe("<y-theme>", () => {
         expect(bg).to.include("light");
     });
 
-    it("applies dark mode when mode='dark'", async () => {
+    it("applies dark mode when theme='blue-dark'", async () => {
         const el = await fixture(
-            html`<y-theme theme="blue" mode="dark"></y-theme>`,
+            html`<y-theme theme="blue-dark"></y-theme>`,
         );
 
         // blue-dark sets --base-background-app to a neutral-dark variable
@@ -42,15 +42,15 @@ describe("<y-theme>", () => {
         expect(bg).to.include("dark");
     });
 
-    it("updates applied variables when mode attribute changes", async () => {
+    it("updates applied variables when theme attribute changes", async () => {
         const el = await fixture(
-            html`<y-theme theme="blue" mode="light"></y-theme>`,
+            html`<y-theme theme="blue-light"></y-theme>`,
         );
 
         const lightBg = el.style.getPropertyValue("--base-background-app");
         expect(lightBg).to.include("light");
 
-        el.setAttribute("mode", "dark");
+        el.setAttribute("theme", "blue-dark");
 
         await waitUntil(() =>
             el.style.getPropertyValue("--base-background-app").includes("dark"),
@@ -60,14 +60,14 @@ describe("<y-theme>", () => {
         expect(darkBg).to.include("dark");
     });
 
-    it("updates applied variables when theme attribute changes", async () => {
+    it("updates applied variables when switching theme families", async () => {
         const el = await fixture(
-            html`<y-theme theme="blue" mode="light"></y-theme>`,
+            html`<y-theme theme="blue-light"></y-theme>`,
         );
 
         // Both blue-light and orange-light define --primary-content--.
         // Verify the property is still populated after switching theme.
-        el.setAttribute("theme", "orange");
+        el.setAttribute("theme", "orange-light");
 
         const primaryContent = el.style.getPropertyValue("--primary-content--");
         expect(primaryContent.trim()).to.not.be.empty;
@@ -75,7 +75,7 @@ describe("<y-theme>", () => {
 
     it("injects two <style> elements into shadow DOM (variables + theme)", async () => {
         const el = await fixture(
-            html`<y-theme theme="blue" mode="light"></y-theme>`,
+            html`<y-theme theme="blue-light"></y-theme>`,
         );
 
         const styles = el.shadowRoot.querySelectorAll("style");
@@ -85,8 +85,8 @@ describe("<y-theme>", () => {
     it("two side-by-side themes do not share inline style variables", async () => {
         const wrapper = await fixture(html`
             <div>
-                <y-theme id="a" theme="blue" mode="light"></y-theme>
-                <y-theme id="b" theme="blue" mode="dark"></y-theme>
+                <y-theme id="a" theme="blue-light"></y-theme>
+                <y-theme id="b" theme="blue-dark"></y-theme>
             </div>
         `);
 
@@ -103,8 +103,8 @@ describe("<y-theme>", () => {
 
     it("nested themes apply their own variables independently", async () => {
         const outer = await fixture(html`
-            <y-theme id="outer" theme="blue" mode="light">
-                <y-theme id="inner" theme="blue" mode="dark"></y-theme>
+            <y-theme id="outer" theme="blue-light">
+                <y-theme id="inner" theme="blue-dark"></y-theme>
             </y-theme>
         `);
 
@@ -118,7 +118,7 @@ describe("<y-theme>", () => {
         expect(outerBg).to.not.equal(innerBg);
     });
 
-    describe("theme-path", () => {
+    describe("custom theme paths", () => {
         let originalFetch;
 
         beforeEach(() => {
@@ -149,9 +149,9 @@ describe("<y-theme>", () => {
             window.fetch = originalFetch;
         });
 
-        it("loads and applies CSS from a custom theme-path", async () => {
+        it("loads and applies CSS from a custom theme URL", async () => {
             const el = await fixture(
-                html`<y-theme theme-path="custom.css"></y-theme>`,
+                html`<y-theme theme="custom.css"></y-theme>`,
             );
 
             await waitUntil(
@@ -163,31 +163,31 @@ describe("<y-theme>", () => {
             );
         });
 
-        it("still applies base variables when using theme-path", async () => {
+        it("still applies base variables when using a custom theme", async () => {
             const el = await fixture(
-                html`<y-theme theme-path="custom.css"></y-theme>`,
+                html`<y-theme theme="custom.css"></y-theme>`,
             );
 
             await waitUntil(
                 () => el.style.getPropertyValue("--custom-var") === "hotpink",
             );
 
-            // variables.css is always bundled regardless of theme-path
+            // variables.css is always bundled regardless of theme
             expect(
                 el.style.getPropertyValue("--spacing-medium").trim(),
             ).to.equal("8px");
         });
 
-        it("updates when theme-path attribute changes", async () => {
+        it("updates when theme attribute changes from one URL to another", async () => {
             const el = await fixture(
-                html`<y-theme theme-path="first.css"></y-theme>`,
+                html`<y-theme theme="first.css"></y-theme>`,
             );
 
             await waitUntil(
                 () => el.style.getPropertyValue("--theme-color") === "blue",
             );
 
-            el.setAttribute("theme-path", "second.css");
+            el.setAttribute("theme", "second.css");
 
             await waitUntil(
                 () => el.style.getPropertyValue("--theme-color") === "green",
@@ -198,38 +198,16 @@ describe("<y-theme>", () => {
             );
         });
 
-        it("theme-path takes priority over theme and mode attributes", async () => {
+        it("switches from a custom theme back to a built-in theme", async () => {
             const el = await fixture(
-                html`<y-theme
-                    theme="blue"
-                    mode="light"
-                    theme-path="override.css"
-                ></y-theme>`,
-            );
-
-            await waitUntil(
-                () => el.style.getPropertyValue("--override-var") === "purple",
-            );
-
-            expect(el.style.getPropertyValue("--override-var")).to.equal(
-                "purple",
-            );
-        });
-
-        it("removing theme-path falls back to theme and mode attributes", async () => {
-            const el = await fixture(
-                html`<y-theme
-                    theme="blue"
-                    mode="dark"
-                    theme-path="custom.css"
-                ></y-theme>`,
+                html`<y-theme theme="custom.css"></y-theme>`,
             );
 
             await waitUntil(
                 () => el.style.getPropertyValue("--custom-var") === "hotpink",
             );
 
-            el.removeAttribute("theme-path");
+            el.setAttribute("theme", "blue-dark");
 
             await waitUntil(() =>
                 el.style
@@ -242,13 +220,13 @@ describe("<y-theme>", () => {
             ).to.include("dark");
         });
 
-        it("degrades gracefully when the theme-path fetch fails", async () => {
+        it("degrades gracefully when the theme fetch fails", async () => {
             window.fetch = async () => {
                 throw new Error("Network error");
             };
 
             const el = await fixture(
-                html`<y-theme theme-path="missing.css"></y-theme>`,
+                html`<y-theme theme="missing.css"></y-theme>`,
             );
 
             // Give the async _applyTheme a moment to settle after the error
