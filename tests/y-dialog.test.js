@@ -100,4 +100,47 @@ describe("YumeDialog", () => {
         el.animate = false;
         expect(el.hasAttribute("animate")).to.be.false;
     });
+
+    it("without show-backdrop, the host is pointer-events:none so background is interactive", async () => {
+        const el = await fixture(html`<y-dialog visible></y-dialog>`);
+        expect(getComputedStyle(el).pointerEvents).to.equal("none");
+    });
+
+    it("with show-backdrop, the host is pointer-events:auto so it blocks background", async () => {
+        const el = await fixture(html`<y-dialog visible show-backdrop></y-dialog>`);
+        expect(getComputedStyle(el).pointerEvents).to.equal("auto");
+    });
+
+    it("defaults position to center", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        expect(el.position).to.equal("center");
+    });
+
+    it("position getter/setter round-trips", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        el.position = "bottom-right";
+        expect(el.position).to.equal("bottom-right");
+        expect(el.getAttribute("position")).to.equal("bottom-right");
+    });
+
+    it("position attribute applies correct alignment (top-left)", async () => {
+        const el = await fixture(html`<y-dialog visible position="top-left"></y-dialog>`);
+        const styles = getComputedStyle(el);
+        expect(styles.alignItems).to.equal("flex-start");
+        expect(styles.justifyContent).to.equal("flex-start");
+    });
+
+    it("position attribute applies correct alignment (bottom-right)", async () => {
+        const el = await fixture(html`<y-dialog visible position="bottom-right"></y-dialog>`);
+        const styles = getComputedStyle(el);
+        expect(styles.alignItems).to.equal("flex-end");
+        expect(styles.justifyContent).to.equal("flex-end");
+    });
+
+    it("position attribute applies correct alignment (top-center)", async () => {
+        const el = await fixture(html`<y-dialog visible position="top-center"></y-dialog>`);
+        const styles = getComputedStyle(el);
+        expect(styles.alignItems).to.equal("flex-start");
+        expect(styles.justifyContent).to.equal("center");
+    });
 });
