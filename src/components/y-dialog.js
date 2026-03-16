@@ -1,6 +1,6 @@
 class YumeDialog extends HTMLElement {
     static get observedAttributes() {
-        return ["visible", "anchor", "closable", "show-backdrop", "animate"];
+        return ["visible", "anchor", "closable", "show-backdrop", "animate", "position"];
     }
 
     constructor() {
@@ -75,6 +75,14 @@ class YumeDialog extends HTMLElement {
         else this.removeAttribute("animate");
     }
 
+    /** Screen position of the dialog. One of: center (default), top-left, top-center, top-right, left, right, bottom-left, bottom-center, bottom-right. */
+    get position() {
+        return this.getAttribute("position") || "center";
+    }
+    set position(val) {
+        this.setAttribute("position", val);
+    }
+
     /** Opens the dialog and focuses it. */
     show() {
         if (!this.shadowRoot.querySelector(".dialog")) {
@@ -127,13 +135,31 @@ class YumeDialog extends HTMLElement {
                 align-items: center;
                 justify-content: center;
                 z-index: var(--component-dialog-z-index, 1000);
+                padding: var(--component-dialog-offset, 16px);
+                box-sizing: border-box;
             }
-            :host([visible]) { display: flex; }
-            :host([show-backdrop]) {
+            :host([visible]) {
+                display: flex;
+                pointer-events: none;
+            }
+            :host([visible]) .dialog {
+                pointer-events: auto;
+            }
+            :host([visible][show-backdrop]) {
+                pointer-events: auto;
                 background: rgba(0,0,0,0.5);
                 backdrop-filter: blur(var(--component-dialog-backdrop-blur, 4px));
                 -webkit-backdrop-filter: blur(var(--component-dialog-backdrop-blur, 4px));
             }
+
+            :host([position="top-left"])      { align-items: flex-start; justify-content: flex-start; }
+            :host([position="top-center"])    { align-items: flex-start; justify-content: center; }
+            :host([position="top-right"])     { align-items: flex-start; justify-content: flex-end; }
+            :host([position="left"])          { align-items: center;     justify-content: flex-start; }
+            :host([position="right"])         { align-items: center;     justify-content: flex-end; }
+            :host([position="bottom-left"])   { align-items: flex-end;   justify-content: flex-start; }
+            :host([position="bottom-center"]) { align-items: flex-end;   justify-content: center; }
+            :host([position="bottom-right"])  { align-items: flex-end;   justify-content: flex-end; }
 
             @keyframes dialog-fade-in {
                 from { opacity: 0; transform: translateY(16px) scale(0.97); }
@@ -173,7 +199,10 @@ class YumeDialog extends HTMLElement {
             .footer {
                 padding: var(--component-dialog-padding, var(--spacing-medium));
                 border-top: var(--component-dialog-inner-border-width, 1px) solid var(--component-dialog-border-color);
-                text-align: right;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: var(--component-dialog-footer-gap, var(--spacing-small, 8px));
             }
 
             ::slotted(*) {

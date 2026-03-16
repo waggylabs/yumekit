@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.2.6",
+    "version": "0.3.0",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -23,7 +23,8 @@
     },
     "sideEffects": true,
     "files": [
-        "dist"
+        "dist",
+        "llm.txt"
     ],
     "publishConfig": {
         "access": "public"
