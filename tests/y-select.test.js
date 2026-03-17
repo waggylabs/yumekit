@@ -138,6 +138,48 @@ describe("<y-select>", () => {
         expect(dropdown.classList.contains("open")).to.be.true;
     });
 
+    it("options setter triggers render with correct items", async () => {
+        const el = await fixture(html`<y-select></y-select>`);
+        el.options = [
+            { label: "Apple", value: "apple" },
+            { label: "Banana", value: "banana" },
+        ];
+        await nextFrame();
+
+        const items = el.shadowRoot.querySelectorAll(".dropdown-item");
+        expect(items.length).to.equal(2);
+        expect(items[0].getAttribute("data-value")).to.equal("apple");
+        expect(items[1].getAttribute("data-value")).to.equal("banana");
+    });
+
+    it("shows correct label when value attribute is set before options attribute", async () => {
+        const el = await fixture(html`<y-select></y-select>`);
+        el.setAttribute("value", "banana");
+        el.setAttribute(
+            "options",
+            '[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]',
+        );
+        await nextFrame();
+
+        expect(
+            el.shadowRoot.querySelector(".value-display").textContent.trim(),
+        ).to.equal("Banana");
+    });
+
+    it("marks correct item selected when value attribute is set before options attribute", async () => {
+        const el = await fixture(html`<y-select></y-select>`);
+        el.setAttribute("value", "banana");
+        el.setAttribute(
+            "options",
+            '[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]',
+        );
+        await nextFrame();
+
+        const selected = el.shadowRoot.querySelectorAll(".dropdown-item.selected");
+        expect(selected.length).to.equal(1);
+        expect(selected[0].getAttribute("data-value")).to.equal("banana");
+    });
+
     it("clears invalid state when value is set", async () => {
         const el = await fixture(
             html`<y-select

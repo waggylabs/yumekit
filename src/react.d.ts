@@ -16,12 +16,14 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 "menu-direction"?: "right" | "down" | "";
                 sticky?: "start" | "end";
+                "mobile-breakpoint"?: string | number;
             }>;
             "y-avatar": El<{
                 src?: string;
                 alt?: string;
                 size?: "small" | "medium" | "large";
                 shape?: string;
+                color?: string;
             }>;
             "y-badge": El<{
                 value?: string;
@@ -62,13 +64,23 @@ declare module "react" {
                 disabled?: boolean | string;
                 indeterminate?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
-                color?: string;
-                size?: string;
             }>;
             "y-dialog": El<{
                 visible?: boolean | string;
                 anchor?: string;
                 closable?: boolean | string;
+                "show-backdrop"?: boolean | string;
+                animate?: boolean | string;
+                position?:
+                    | "center"
+                    | "top-left"
+                    | "top-center"
+                    | "top-right"
+                    | "left"
+                    | "right"
+                    | "bottom-left"
+                    | "bottom-center"
+                    | "bottom-right";
             }>;
             "y-drawer": El<{
                 visible?: boolean | string;
@@ -87,14 +99,10 @@ declare module "react" {
                 type?: string;
                 name?: string;
                 value?: string;
-                placeholder?: string;
                 disabled?: boolean | string;
                 invalid?: boolean | string;
-                required?: boolean | string;
-                color?: string;
                 size?: "small" | "medium" | "large";
-                label?: string;
-                "label-position"?: string;
+                "label-position"?: "top" | "bottom";
             }>;
             "y-menu": El<{
                 items?: string;
@@ -129,22 +137,19 @@ declare module "react" {
                 value?: string;
                 options?: string;
                 disabled?: boolean | string;
-                color?: string;
-                size?: string;
             }>;
             "y-select": El<{
                 name?: string;
                 value?: string;
                 disabled?: boolean | string;
                 multiple?: boolean | string;
-                color?: string;
-                size?: string;
+                size?: "small" | "medium" | "large";
                 placeholder?: string;
                 options?: string;
                 invalid?: boolean | string;
                 required?: boolean | string;
-                "label-position"?: string;
-                "display-mode"?: string;
+                "label-position"?: "top" | "bottom";
+                "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
             }>;
             "y-slider": El<{
@@ -163,7 +168,7 @@ declare module "react" {
                 value?: string;
                 checked?: boolean | string;
                 disabled?: boolean | string;
-                animate?: string;
+                animate?: boolean | string;
                 "toggle-label"?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
                 color?: string;
@@ -189,8 +194,7 @@ declare module "react" {
             }>;
             "y-theme": El<{
                 theme?: string;
-                mode?: "light" | "dark";
-                "theme-path"?: string;
+                "cross-origin"?: boolean | string;
             }>;
             "y-toast": El<{
                 position?:

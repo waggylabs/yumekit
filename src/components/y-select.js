@@ -55,6 +55,13 @@ export class YumeSelect extends HTMLElement {
         if (oldValue === newValue) return;
 
         if (name === "value") {
+            if (this.hasAttribute("multiple")) {
+                this.selectedValues = new Set(
+                    (newValue || "").split(",").map((v) => v.trim()).filter(Boolean),
+                );
+            } else {
+                this._value = newValue || "";
+            }
             this.updateDisplay();
             this._internals.setFormValue(newValue, this.getAttribute("name"));
             this.updateSelectedStyles();
@@ -106,16 +113,25 @@ export class YumeSelect extends HTMLElement {
         this.updateSelectedStyles();
     }
 
-    /**
-     * Returns the parsed options array from the "options" attribute.
-     * @returns {Array<{value: string, label: string}>}
-     */
-    getOptions() {
+    /** @type {Array<{value: string, label: string}>} The options array for the select. */
+    get options() {
         try {
             return JSON.parse(this.getAttribute("options") || "[]");
         } catch (e) {
             return [];
         }
+    }
+
+    set options(val) {
+        this.setAttribute("options", JSON.stringify(val));
+    }
+
+    /**
+     * Returns the parsed options array from the "options" attribute.
+     * @returns {Array<{value: string, label: string}>}
+     */
+    getOptions() {
+        return this.options;
     }
 
     /**
