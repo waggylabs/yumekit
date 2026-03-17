@@ -33,17 +33,22 @@ CDN:
 
 Injects design tokens as CSS custom properties. Wraps entire app.
 
-| Attribute    | Values                          | Notes                            |
-|-------------|----------------------------------|----------------------------------|
-| `theme`     | `"blue"` \| `"orange"`          | Built-in palette                 |
-| `mode`      | `"light"` \| `"dark"`           |                                  |
-| `theme-path`| URL string                       | Custom CSS theme file            |
-| `cross-origin` | boolean                       | CORS for remote theme-path       |
+| Attribute       | Values                                                                 | Notes                                      |
+|----------------|------------------------------------------------------------------------|--------------------------------------------|
+| `theme`        | `"blue-light"` \| `"blue-dark"` \| `"orange-light"` \| `"orange-dark"` \| URL | Built-in palette or path to custom CSS |
+| `cross-origin` | boolean                                                                | Allows loading theme from a different origin |
+| `no-default-font` | boolean                                                             | Skips injecting the Lexend font from Google Fonts |
 
 ```html
-<y-theme theme="blue" mode="light">
+<y-theme theme="blue-light">
   <!-- entire app -->
 </y-theme>
+
+<!-- custom theme file -->
+<y-theme theme="/my-theme.css"></y-theme>
+
+<!-- cross-origin custom theme -->
+<y-theme theme="https://example.com/theme.css" cross-origin></y-theme>
 ```
 
 ---

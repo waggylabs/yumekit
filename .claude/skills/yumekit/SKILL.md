@@ -14,7 +14,7 @@ Use [examples/](examples/) for complete working examples to adapt.
 
 ## Rules
 
-1. **Always wrap output in `<y-theme>`** with `theme="blue"` and `mode="light"` unless the user specifies otherwise.
+1. **Always wrap output in `<y-theme>`** with `theme="blue-light"` unless the user specifies otherwise. Built-in themes: `blue-light`, `blue-dark`, `orange-light`, `orange-dark`. For custom CSS, pass a URL path: `theme="/my-theme.css"`.
 2. **Import only what you use.** Prefer individual imports over the full bundle:
    ```javascript
    import "@waggylabs/yumekit/components/y-button";
