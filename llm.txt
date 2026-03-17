@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.2.5
+0.3.0
 
 ## License
 MIT
@@ -67,7 +67,7 @@ import "@waggylabs/yumekit";
 
 function App() {
   return (
-    <y-theme theme="blue" mode="light">
+    <y-theme theme="blue-light">
       <y-button color="primary">Click me</y-button>
     </y-theme>
   );
@@ -82,13 +82,12 @@ All custom elements are prefixed with `y-`.
 Theme provider. Wraps your app and injects design tokens as CSS custom properties.
 
 Attributes:
-- `theme` — `"blue"` | `"orange"` — built-in palette name
-- `mode` — `"light"` | `"dark"`
-- `theme-path` — URL to a custom CSS theme file
-- `cross-origin` — boolean, enables CORS for remote theme loading
+- `theme` — `"blue-light"` | `"orange-light"` | `"blue-dark"` | `"orange-dark"` — built-in palette name, or a URL/path to a custom CSS theme file
+- `cross-origin` — boolean, enables CORS for remote theme URLs
+- `no-default-font` — boolean, skips injecting the default Lexend font from Google Fonts
 
 ```html
-<y-theme theme="blue" mode="light">
+<y-theme theme="blue-light">
   <!-- app content -->
 </y-theme>
 ```
@@ -526,7 +525,12 @@ Additional tokens:
 
 To create a custom theme, define these CSS variables in a stylesheet and point y-theme at it:
 ```html
-<y-theme theme-path="/custom-theme.css"></y-theme>
+<y-theme theme="/custom-theme.css"></y-theme>
+```
+
+For cross-origin theme files, add the `cross-origin` attribute:
+```html
+<y-theme theme="https://example.com/theme.css" cross-origin></y-theme>
 ```
 
 ---
