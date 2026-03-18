@@ -19,6 +19,8 @@ import bolt from "./bolt.svg";
 import calendar from "./calendar.svg";
 import campfire from "./campfire.svg";
 import chart from "./chart.svg";
+import circleExclamation from "./circle-exclamation.svg";
+import circleInfo from "./circle-info.svg";
 import checkmark from "./checkmark.svg";
 import chevronDown from "./chevron-down.svg";
 import chevronLeft from "./chevron-left.svg";
@@ -57,6 +59,9 @@ import diagram from "./diagram.svg";
 import discord from "./discord.svg";
 import download from "./download.svg";
 import expandRight from "./expand-right.svg";
+import faceSmile from "./face-smile.svg";
+import faceNeutral from "./face-neutral.svg";
+import faceFrown from "./face-frown.svg";
 import features from "./features.svg";
 import figma from "./figma.svg";
 import filter from "./filter.svg";
@@ -75,8 +80,10 @@ import lock from "./lock.svg";
 import logo from "./logo.svg";
 import mail from "./mail.svg";
 import menu from "./menu.svg";
+import monitor from "./monitor.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
+import paperAirplane from "./paper-airplane.svg";
 import plus from "./plus.svg";
 import puzzle from "./puzzle.svg";
 import rightFromBracket from "./right-from-bracket.svg";
@@ -85,9 +92,11 @@ import save from "./save.svg";
 import search from "./search.svg";
 import settings from "./settings.svg";
 import shield from "./shield.svg";
+import smartphone from "./smartphone.svg";
 import star from "./star.svg";
 import sun from "./sun.svg";
 import swap from "./swap.svg";
+import tablet from "./tablet.svg";
 import upload from "./upload.svg";
 import user from "./user.svg";
 import users from "./users.svg";
@@ -106,6 +115,8 @@ registerIcons({
     campfire,
     chart,
     checkmark,
+    "circle-exclamation": circleExclamation,
+    "circle-info": circleInfo,
     "chevron-down": chevronDown,
     "chevron-left": chevronLeft,
     "chevron-right": chevronRight,
@@ -143,6 +154,9 @@ registerIcons({
     discord,
     download,
     "expand-right": expandRight,
+    "face-frown": faceFrown,
+    "face-neutral": faceNeutral,
+    "face-smile": faceSmile,
     features,
     figma,
     filter,
@@ -161,8 +175,10 @@ registerIcons({
     logo,
     mail,
     menu,
+    monitor,
     moon,
     palette,
+    "paper-airplane": paperAirplane,
     plus,
     puzzle,
     "right-from-bracket": rightFromBracket,
@@ -171,9 +187,11 @@ registerIcons({
     search,
     settings,
     shield,
+    smartphone,
     star,
     sun,
     swap,
+    tablet,
     upload,
     user,
     users,
