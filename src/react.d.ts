@@ -90,7 +90,7 @@ declare module "react" {
             }>;
             "y-icon": El<{
                 name?: string;
-                size?: "small" | "medium" | "large";
+                size?: "x-small" | "small" | "medium" | "large" | "x-large";
                 color?: string;
                 label?: string;
                 weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick";

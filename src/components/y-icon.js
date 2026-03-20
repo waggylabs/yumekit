@@ -157,7 +157,7 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("name", val);
     }
 
-    /** Icon size: "small" | "medium" | "large" (default "medium"). */
+    /** Icon size: "x-small" | "small" | "medium" | "large" | "x-large" (default "medium"). */
     get size() {
         return this.getAttribute("size") || "medium";
     }
