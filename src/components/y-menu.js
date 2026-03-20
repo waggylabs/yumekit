@@ -63,7 +63,7 @@ class YumeMenu extends HTMLElement {
         }
     }
     set items(val) {
-        this.setAttribute("items", JSON.stringify(val));
+        this.setAttribute("items", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
     }
 
     get anchor() {

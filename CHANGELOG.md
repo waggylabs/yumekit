@@ -31,13 +31,16 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.3.3] – 2026-03-20
+
+### Fixed
+
+- Several bug fixes and test updates
+
+---
+
 ## [0.3.2] – 2026-03-18
 
 ### Added
 
 - New icons: `paper-airplane`, `circle-info`, `circle-exclamation`, `monitor`, `smartphone`, `tablet`, `face-smile`, `face-neutral`, `face-frown`
-
----
-
-[Unreleased]: https://github.com/waggylabs/yumekit/compare/v0.3.1...HEAD
-[0.3.1]: https://github.com/waggylabs/yumekit/releases/tag/v0.3.1

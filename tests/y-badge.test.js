@@ -41,7 +41,7 @@ describe("YumeBadge", () => {
         expect(style).to.include("background: var(--success");
     });
 
-    it("uses fallback color if unknown color is provided", async () => {
+    it("uses custom color if custom color is provided", async () => {
         const el = await fixture(
             html`<y-badge value="!" color="#ff00ff"
                 ><div>Target</div></y-badge
