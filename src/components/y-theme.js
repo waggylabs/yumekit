@@ -82,7 +82,7 @@ export class YumeTheme extends HTMLElement {
                 :host {
                     font-family: var(--font-family-body, sans-serif);
                     color: var(--base-content--, inherit);
-                    font-weight: 300;
+                    font-weight: var(--font-weight-body, 400);
                 }`;
         this.shadowRoot.appendChild(baseStyle);
 

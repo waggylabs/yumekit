@@ -12,7 +12,7 @@ declare module "react" {
             "y-appbar": El<{
                 orientation?: "vertical" | "horizontal";
                 collapsed?: boolean | string;
-                items?: string;
+                items?: unknown[] | string;
                 size?: "small" | "medium" | "large";
                 "menu-direction"?: "right" | "down" | "";
                 sticky?: "start" | "end";
@@ -93,7 +93,7 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 color?: string;
                 label?: string;
-                weight?: "thin" | "regular" | "thick";
+                weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick";
             }>;
             "y-input": El<{
                 type?: string;
@@ -102,10 +102,11 @@ declare module "react" {
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
+                placeholder?: string;
                 "label-position"?: "top" | "bottom";
             }>;
             "y-menu": El<{
-                items?: string;
+                items?: unknown[] | string;
                 anchor?: string;
                 visible?: boolean | string;
                 direction?: "down" | "up" | "left" | "right";
@@ -135,7 +136,7 @@ declare module "react" {
             "y-radio": El<{
                 name?: string;
                 value?: string;
-                options?: string;
+                options?: Array<{ value: string; label: string }> | string;
                 disabled?: boolean | string;
             }>;
             "y-select": El<{
@@ -145,7 +146,7 @@ declare module "react" {
                 multiple?: boolean | string;
                 size?: "small" | "medium" | "large";
                 placeholder?: string;
-                options?: string;
+                options?: Array<{ value: string; label: string }> | string;
                 invalid?: boolean | string;
                 required?: boolean | string;
                 "label-position"?: "top" | "bottom";
@@ -175,13 +176,13 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
             }>;
             "y-table": El<{
-                columns?: string;
-                data?: string;
+                columns?: unknown[] | string;
+                data?: unknown[] | string;
                 striped?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
             "y-tabs": El<{
-                options?: string;
+                options?: Array<{ id: string; label: string; slot?: string; disabled?: boolean }> | string;
                 size?: "small" | "medium" | "large";
                 position?: "top" | "bottom" | "left" | "right";
             }>;

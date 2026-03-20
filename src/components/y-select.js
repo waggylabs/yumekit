@@ -123,7 +123,7 @@ export class YumeSelect extends HTMLElement {
     }
 
     set options(val) {
-        this.setAttribute("options", JSON.stringify(val));
+        this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
     }
 
     /**
