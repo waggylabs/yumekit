@@ -44,14 +44,6 @@ AI tools can be helpful for brainstorming and prototyping, but they are not a su
 - AI-generated content should be carefully reviewed and edited by a human before submission.
 - We value the unique creativity and critical thinking that humans bring to the project, and AI should be viewed as a tool to augment that rather than replace it.
 
-## Improving Documentation
-
-Documentation improvements are some of the most valuable contributions. The docs site source lives in a separate repository.
-
-- Docs are written in React (TypeScript) under `src/pages/`.
-- If you spot a typo, unclear explanation, or missing example, a PR is always welcome.
-- Adding real-world usage examples for components is especially appreciated.
-
 ## Code of Conduct
 
 We are committed to providing a welcoming, respectful community for everyone.
