@@ -23,25 +23,40 @@ export class YumeBadge extends HTMLElement {
     get alignment() {
         return this.getAttribute("alignment") || "right";
     }
+    set alignment(val) {
+        this.setAttribute("alignment", val);
+    }
 
     /** Color theme: "primary" | "secondary" | "base" | "success" | "warning" | "error" | "help". */
     get color() {
         return this.getAttribute("color") || "primary";
+    }
+    set color(val) {
+        this.setAttribute("color", val);
     }
 
     /** Vertical position of the badge: "top" | "bottom" (default "top"). */
     get position() {
         return this.getAttribute("position") || "top";
     }
+    set position(val) {
+        this.setAttribute("position", val);
+    }
 
     /** Badge size: "small" | "medium" | "large" (default "small"). */
     get size() {
         return this.getAttribute("size") || "small";
     }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** The text content displayed inside the badge. */
     get value() {
         return this.getAttribute("value") || "";
+    }
+    set value(val) {
+        this.setAttribute("value", val);
     }
 
     getBadgeColors(color) {

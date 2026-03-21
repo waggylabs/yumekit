@@ -44,6 +44,9 @@ export class YumeRadio extends HTMLElement {
     get name() {
         return this.getAttribute("name") || "";
     }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
 
     /** @type {Array<{value: string, label: string}>} The radio options parsed from the "options" attribute. */
     get options() {
@@ -55,7 +58,7 @@ export class YumeRadio extends HTMLElement {
     }
 
     set options(val) {
-        this.setAttribute("options", JSON.stringify(val));
+        this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
     }
 
     updateChecked() {
