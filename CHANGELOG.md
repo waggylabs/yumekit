@@ -45,6 +45,10 @@ Delete any empty sections before publishing.
 - Renamed icons for consistency: `checkmark` → `check`, `indeterminate` → `minus`, `logo` → `stack`, `download` → `down-to-bracket`, `upload` → `up-from-bracket`
 - Normalized arrow and shaft sizes across all directional icons (arrows, bracket icons, expand/collapse)
 
+### Fixed
+
+- Proper disabled styling for `y-switch` component
+
 ### Removed
 
 - Removed `features` icon (duplicate of `sun`)
