@@ -1,0 +1,50 @@
+name: Publish Beta
+
+on:
+    push:
+        branches: [dev]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - run: npm ci
+
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
+            - run: npm test
+
+    build-and-publish:
+        needs: test
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  registry-url: https://registry.npmjs.org/
+
+            - run: npm ci
+
+            - name: Stamp beta version
+              run: |
+                  VERSION=$(jq -r .version package.json)
+                  npm version "${VERSION}-beta.${{ github.run_number }}" --no-git-tag-version
+
+            - run: npm run build
+
+            - name: Publish beta to NPM
+              run: npm publish --provenance --access public --tag beta
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
