@@ -103,9 +103,10 @@ class YumeMenu extends HTMLElement {
 
         items.forEach((item) => {
             const li = document.createElement("li");
-            li.className = "menuitem";
+            li.className = item.selected ? "menuitem selected" : "menuitem";
             li.setAttribute("role", "menuitem");
-            li.setAttribute("part", "menuitem");
+            li.setAttribute("part", item.selected ? "menuitem selected" : "menuitem");
+            li.setAttribute("aria-current", item.selected ? "true" : "false");
             li.tabIndex = 0;
 
             const contentWrapper = document.createElement("span");
@@ -315,6 +316,15 @@ class YumeMenu extends HTMLElement {
 
             li.menuitem:hover {
                 background: var(--component-menu-hover-background, #292a2b);
+            }
+
+            li.menuitem.selected {
+                background: var(--component-menu-selected-background);
+                color: var(--component-menu-selected-color);
+            }
+
+            li.menuitem.selected:hover {
+                background: var(--component-menu-selected-background);
             }
 
             ul.submenu {

@@ -37,7 +37,8 @@ Delete any empty sections before publishing.
 
 - New icons: `trash`, `archive`, `share`, `link`, `tag`, `bookmark`, `expand-left`, `expand-up`, `expand-down`, `list-bullet`, `down-from-bracket`, `up-to-bracket`
 
-- New variant for tag component: `flat`
+- New variant for tag component: `flat`, using new per-color `--component-tag-flat-background-{color}` theme variables
+- Selected state for menu items — set `selected: true` on any item to highlight it using new `--component-menu-selected-background` and `--component-menu-selected-color` theme variables
 
 ### Changed
 

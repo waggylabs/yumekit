@@ -101,6 +101,8 @@
     --component-menu-color: var(--base-content--);
     --component-menu-border-color: var(--base-background-border);
     --component-menu-hover-background: var(--base-background-hover);
+    --component-menu-selected-background: var(--primary-content--);
+    --component-menu-selected-color: var(--primary-background-component);
     --component-menu-shadow: var(--base-shadow);
     --component-panel-background: var(--base-background-component);
     --component-panel-color: var(--base-content--);
