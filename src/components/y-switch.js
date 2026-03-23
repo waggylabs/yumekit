@@ -351,6 +351,14 @@ class YumeSwitch extends HTMLElement {
                 :host([animate="false"]) .toggle {
                     transition: none !important;
                 }
+
+                :host([disabled]) {
+                    opacity: 0.5;
+                }
+
+                :host([disabled]) .switch {
+                    cursor: not-allowed;
+                }
             </style>
 
             ${this.labelTag("top")}
