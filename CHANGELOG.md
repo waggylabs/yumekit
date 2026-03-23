@@ -31,6 +31,23 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.3.6] – 2026-03-23
+
+### Added
+
+- New icons: `trash`, `archive`, `share`, `link`, `tag`, `bookmark`, `expand-left`, `expand-up`, `expand-down`, `list-bullet`, `down-from-bracket`, `up-to-bracket`
+
+### Changed
+
+- Renamed icons for consistency: `checkmark` → `check`, `indeterminate` → `minus`, `logo` → `stack`, `download` → `down-to-bracket`, `upload` → `up-from-bracket`
+- Normalized arrow and shaft sizes across all directional icons (arrows, bracket icons, expand/collapse)
+
+### Removed
+
+- Removed `features` icon (duplicate of `sun`)
+
+---
+
 ## [0.3.5] – 2026-03-20
 
 ### Fixed
