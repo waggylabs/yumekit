@@ -460,15 +460,15 @@ export class YumeButton extends HTMLElement {
             );
             this.button.style.setProperty(
                 "--active-background-color",
-                `var(${colorVars[color][0]}, #f7f7fa)`,
+                `var(${colorVars[color][3]}, #0c0c0d)`,
             );
             this.button.style.setProperty(
                 "--active-text-color",
-                `var(${colorVars[color][6]}, #0c0c0d)`,
+                `var(${colorVars[color][0]}, #f7f7fa)`,
             );
             this.button.style.setProperty(
                 "--active-border-color",
-                `var(${colorVars[color][0]}, #f7f7fa)`,
+                `var(${colorVars[color][3]}, #0c0c0d)`,
             );
         } else {
             const borderColor = `var(${colorVars[color][0]}, #f7f7fa)`;

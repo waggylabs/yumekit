@@ -1,6 +1,6 @@
 import {
-    checkmark,
-    indeterminate as indeterminateSvg,
+    check,
+    minus as indeterminateSvg,
 } from "../icons/index.js";
 
 export class YumeCheckbox extends HTMLElement {
@@ -117,7 +117,7 @@ export class YumeCheckbox extends HTMLElement {
         if (this.indeterminate) {
             icon.innerHTML = indeterminateSvg;
         } else if (this.checked) {
-            icon.innerHTML = checkmark;
+            icon.innerHTML = check;
         } else {
             icon.innerHTML = "";
         }

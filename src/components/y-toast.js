@@ -51,7 +51,7 @@ export class YumeToast extends HTMLElement {
      * @param {string} [opts.color]  — base|primary|secondary|success|warning|error|help (default base).
      * @param {number} [opts.duration] — Override container-level duration for this toast.
      * @param {boolean} [opts.dismissible] — Show a close button (default true).
-     * @param {string} [opts.icon] — Optional y-icon name e.g. "checkmark".
+     * @param {string} [opts.icon] — Optional y-icon name e.g. "check".
      * @returns {HTMLElement} The toast element (for manual removal).
      */
     show(opts = {}) {
