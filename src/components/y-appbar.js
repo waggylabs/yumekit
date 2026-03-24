@@ -4,7 +4,7 @@ import "../components/y-menu.js";
 import {
     chevronRight,
     chevronDown,
-    collapseLeft,
+    expandLeft,
     expandRight,
     menu,
 } from "../icons/index.js";
@@ -372,21 +372,24 @@ export class YumeAppbar extends HTMLElement {
         const sizeConfig = {
             small: {
                 padding: "var(--spacing-x-small, 4px)",
-                collapsedWidth: "var(--component-appbar-collapsed-width-small, 40px)",
+                collapsedWidth:
+                    "var(--component-appbar-collapsed-width-small, 40px)",
                 bodyGap: "2px",
                 buttonSize: "small",
                 iconSize: "small",
             },
             medium: {
                 padding: "var(--spacing-small, 6px)",
-                collapsedWidth: "var(--component-appbar-collapsed-width-medium, 52px)",
+                collapsedWidth:
+                    "var(--component-appbar-collapsed-width-medium, 52px)",
                 bodyGap: "3px",
                 buttonSize: "medium",
                 iconSize: "medium",
             },
             large: {
                 padding: "var(--spacing-medium, 8px)",
-                collapsedWidth: "var(--component-appbar-collapsed-width-large, 64px)",
+                collapsedWidth:
+                    "var(--component-appbar-collapsed-width-large, 64px)",
                 bodyGap: "4px",
                 buttonSize: "large",
                 iconSize: "large",
@@ -769,7 +772,7 @@ export class YumeAppbar extends HTMLElement {
 
             const collapseIcon = document.createElement("span");
             collapseIcon.slot = "left-icon";
-            collapseIcon.innerHTML = isCollapsed ? expandRight : collapseLeft;
+            collapseIcon.innerHTML = isCollapsed ? expandRight : expandLeft;
             collapseBtn.appendChild(collapseIcon);
 
             if (!isCollapsed) {
