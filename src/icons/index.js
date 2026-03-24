@@ -21,9 +21,9 @@ export const expandRight = `<svg xmlns="http://www.w3.org/2000/svg" width="16" h
 
 /* ── Checkbox marks ───────────────────────────────────────────────── */
 
-export const checkmark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="5 13 10 17 19 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+export const check = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="5 13 10 17 19 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
 
-export const indeterminate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="2" rx="1" ry="1" fill="currentColor"/></svg>`;
+export const minus = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="2" rx="1" ry="1" fill="currentColor"/></svg>`;
 
 /* ── Menu (hamburger) ────────────────────────────────────────────── */
 

@@ -1,8 +1,8 @@
-name: Publish & Deploy
+name: Publish Beta
 
 on:
     push:
-        branches: [main]
+        branches: [dev]
 
 jobs:
     test:
@@ -24,8 +24,6 @@ jobs:
     build-and-publish:
         needs: test
         runs-on: ubuntu-latest
-        outputs:
-            version: ${{ steps.pkg.outputs.version }}
         permissions:
             contents: read
             id-token: write
@@ -37,20 +35,16 @@ jobs:
                   node-version: 20
                   registry-url: https://registry.npmjs.org/
 
-            - name: Read package version
-              id: pkg
-              run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
-
             - run: npm ci
+
+            - name: Stamp beta version
+              run: |
+                  VERSION=$(jq -r .version package.json)
+                  npm version "${VERSION}-beta.${{ github.run_number }}" --no-git-tag-version
+
             - run: npm run build
 
-            - name: Publish to NPM
-              run: npm publish --provenance --access public
+            - name: Publish beta to NPM
+              run: npm publish --provenance --access public --tag beta
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-            - name: Upload dist artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: dist
-                  path: dist/

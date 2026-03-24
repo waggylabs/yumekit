@@ -101,6 +101,8 @@
     --component-menu-color: var(--base-content--);
     --component-menu-border-color: var(--base-background-border);
     --component-menu-hover-background: var(--base-background-hover);
+    --component-menu-selected-background: var(--primary-content--);
+    --component-menu-selected-color: var(--primary-background-component);
     --component-menu-shadow: var(--base-shadow);
     --component-panel-background: var(--base-background-component);
     --component-panel-color: var(--base-content--);
@@ -131,6 +133,13 @@
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-background-border);
     --component-tabs-accent: var(--primary-content--);
+    --component-tag-flat-background-base: var(--base-background-app);
+    --component-tag-flat-background-primary: var(--primary-background-app);
+    --component-tag-flat-background-secondary: var(--secondary-background-app);
+    --component-tag-flat-background-success: var(--success-background-app);
+    --component-tag-flat-background-warning: var(--warning-background-app);
+    --component-tag-flat-background-error: var(--error-background-app);
+    --component-tag-flat-background-help: var(--help-background-app);
     --font-family-header: "Lexend", sans-serif;
     --font-family-body: "Lexend", sans-serif;
     --font-weight-body: 300;

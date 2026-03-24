@@ -68,46 +68,53 @@ export class YumeTag extends HTMLElement {
                 "--primary-content-hover",
                 "--primary-background-component",
                 "--primary-content-inverse",
+                "--component-tag-flat-background-primary",
             ],
             secondary: [
                 "--secondary-content--",
                 "--secondary-content-hover",
                 "--secondary-background-component",
                 "--secondary-content-inverse",
+                "--component-tag-flat-background-secondary",
             ],
             base: [
                 "--base-content--",
                 "--base-content-lighter",
                 "--base-background-component",
                 "--base-content-inverse",
+                "--component-tag-flat-background-base",
             ],
             success: [
                 "--success-content--",
                 "--success-content-hover",
                 "--success-background-component",
                 "--success-content-inverse",
+                "--component-tag-flat-background-success",
             ],
             error: [
                 "--error-content--",
                 "--error-content-hover",
                 "--error-background-component",
                 "--error-content-inverse",
+                "--component-tag-flat-background-error",
             ],
             warning: [
                 "--warning-content--",
                 "--warning-content-hover",
                 "--warning-background-component",
                 "--warning-content-inverse",
+                "--component-tag-flat-background-warning",
             ],
             help: [
                 "--help-content--",
                 "--help-content-hover",
                 "--help-background-component",
                 "--help-content-inverse",
+                "--component-tag-flat-background-help",
             ],
         };
 
-        const [content, hover, background, inverse] = vars[color] || vars.base;
+        const [content, hover, background, inverse, flatBackground] = vars[color] || vars.base;
 
         const borderRadius =
             shape === "round"
@@ -186,7 +193,8 @@ export class YumeTag extends HTMLElement {
             `,
             flat: `
                 .tag {
-                    background: transparent;
+                    background: var(${flatBackground});
+                    border-color: var(${flatBackground});
                     color: var(${content});
                 }
                 .remove {

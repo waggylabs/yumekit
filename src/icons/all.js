@@ -10,22 +10,24 @@ import { registerIcons } from "./registry.js";
 
 import accessibility from "./accessibility.svg";
 import ai from "./ai.svg";
+import archive from "./archive.svg";
 import arrowDown from "./arrow-down.svg";
 import arrowLeft from "./arrow-left.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
 import bell from "./bell.svg";
 import bolt from "./bolt.svg";
+import bookmark from "./bookmark.svg";
 import calendar from "./calendar.svg";
 import campfire from "./campfire.svg";
 import chart from "./chart.svg";
-import circleExclamation from "./circle-exclamation.svg";
-import circleInfo from "./circle-info.svg";
-import checkmark from "./checkmark.svg";
+import check from "./check.svg";
 import chevronDown from "./chevron-down.svg";
 import chevronLeft from "./chevron-left.svg";
 import chevronRight from "./chevron-right.svg";
 import chevronUp from "./chevron-up.svg";
+import circleExclamation from "./circle-exclamation.svg";
+import circleInfo from "./circle-info.svg";
 import clock from "./clock.svg";
 import close from "./close.svg";
 import cloud from "./cloud.svg";
@@ -57,29 +59,34 @@ import compTooltip from "./comp-tooltip.svg";
 import compass from "./compass.svg";
 import diagram from "./diagram.svg";
 import discord from "./discord.svg";
-import download from "./download.svg";
+import downFromBracket from "./down-from-bracket.svg";
+import downToBracket from "./down-to-bracket.svg";
+import expandDown from "./expand-down.svg";
+import expandLeft from "./expand-left.svg";
 import expandRight from "./expand-right.svg";
+import expandUp from "./expand-up.svg";
 import faceSmile from "./face-smile.svg";
 import faceNeutral from "./face-neutral.svg";
 import faceFrown from "./face-frown.svg";
-import features from "./features.svg";
 import figma from "./figma.svg";
 import filter from "./filter.svg";
 import folder from "./folder.svg";
+
 import github from "./github.svg";
 import globe from "./globe.svg";
 import grid from "./grid.svg";
 import home from "./home.svg";
 import image from "./image.svg";
-import indeterminate from "./indeterminate.svg";
 import layout from "./layout.svg";
 import leftFromBracket from "./left-from-bracket.svg";
 import leftToBracket from "./left-to-bracket.svg";
+import link from "./link.svg";
+import listBullet from "./list-bullet.svg";
 import listCheck from "./list-check.svg";
 import lock from "./lock.svg";
-import logo from "./logo.svg";
 import mail from "./mail.svg";
 import menu from "./menu.svg";
+import minus from "./minus.svg";
 import monitor from "./monitor.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
@@ -91,13 +98,18 @@ import rightToBracket from "./right-to-bracket.svg";
 import save from "./save.svg";
 import search from "./search.svg";
 import settings from "./settings.svg";
+import share from "./share.svg";
 import shield from "./shield.svg";
 import smartphone from "./smartphone.svg";
+import stack from "./stack.svg";
 import star from "./star.svg";
 import sun from "./sun.svg";
 import swap from "./swap.svg";
 import tablet from "./tablet.svg";
-import upload from "./upload.svg";
+import tag from "./tag.svg";
+import trash from "./trash.svg";
+import upFromBracket from "./up-from-bracket.svg";
+import upToBracket from "./up-to-bracket.svg";
 import user from "./user.svg";
 import users from "./users.svg";
 import warning from "./warning.svg";
@@ -105,16 +117,18 @@ import warning from "./warning.svg";
 registerIcons({
     accessibility,
     ai,
+    archive,
     "arrow-down": arrowDown,
     "arrow-left": arrowLeft,
     "arrow-right": arrowRight,
     "arrow-up": arrowUp,
     bell,
     bolt,
+    bookmark,
     calendar,
     campfire,
     chart,
-    checkmark,
+    check,
     "circle-exclamation": circleExclamation,
     "circle-info": circleInfo,
     "chevron-down": chevronDown,
@@ -152,29 +166,34 @@ registerIcons({
     compass,
     diagram,
     discord,
-    download,
+    "down-from-bracket": downFromBracket,
+    "down-to-bracket": downToBracket,
+    "expand-down": expandDown,
+    "expand-left": expandLeft,
     "expand-right": expandRight,
+    "expand-up": expandUp,
     "face-frown": faceFrown,
     "face-neutral": faceNeutral,
     "face-smile": faceSmile,
-    features,
     figma,
     filter,
     folder,
+
     github,
     globe,
     grid,
     home,
     image,
-    indeterminate,
     layout,
     "left-from-bracket": leftFromBracket,
     "left-to-bracket": leftToBracket,
+    link,
+    "list-bullet": listBullet,
     "list-check": listCheck,
     lock,
-    logo,
     mail,
     menu,
+    minus,
     monitor,
     moon,
     palette,
@@ -186,13 +205,18 @@ registerIcons({
     save,
     search,
     settings,
+    share,
     shield,
     smartphone,
+    stack,
     star,
     sun,
     swap,
     tablet,
-    upload,
+    tag,
+    trash,
+    "up-from-bracket": upFromBracket,
+    "up-to-bracket": upToBracket,
     user,
     users,
     warning,

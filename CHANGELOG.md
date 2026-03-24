@@ -31,6 +31,30 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.3.6] – 2026-03-23
+
+### Added
+
+- New icons: `trash`, `archive`, `share`, `link`, `tag`, `bookmark`, `expand-left`, `expand-up`, `expand-down`, `list-bullet`, `down-from-bracket`, `up-to-bracket`
+
+- New variant for tag component: `flat`, using new per-color `--component-tag-flat-background-{color}` theme variables
+- Selected state for menu items — set `selected: true` on any item to highlight it using new `--component-menu-selected-background` and `--component-menu-selected-color` theme variables
+
+### Changed
+
+- Renamed icons for consistency: `checkmark` → `check`, `indeterminate` → `minus`, `logo` → `stack`, `download` → `down-to-bracket`, `upload` → `up-from-bracket`
+- Normalized arrow and shaft sizes across all directional icons (arrows, bracket icons, expand/collapse)
+
+### Fixed
+
+- Proper disabled styling for `y-switch` component
+
+### Removed
+
+- Removed `features` icon (duplicate of `sun`)
+
+---
+
 ## [0.3.5] – 2026-03-20
 
 ### Fixed

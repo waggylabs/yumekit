@@ -105,7 +105,7 @@ describe("YumeTag", () => {
         );
         const style = el.shadowRoot.querySelector("style").textContent;
 
-        expect(style).to.include("background: transparent");
+        expect(style).to.include("var(--component-tag-flat-background-primary)");
         expect(style).to.include("color: var(--primary-content--)");
     });
 
