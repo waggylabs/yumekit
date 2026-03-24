@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -19,12 +19,16 @@
         "./components/*": "./dist/components/*",
         "./icons/all.js": "./dist/icons/all.js",
         "./icons/registry.js": "./dist/icons/registry.js",
-        "./styles/*": "./dist/styles/*"
+        "./styles/*": "./dist/styles/*",
+        "./CHANGELOG.md": "./CHANGELOG.md",
+        "./CONTRIBUTING.md": "./CONTRIBUTING.md"
     },
     "sideEffects": true,
     "files": [
         "dist",
-        "llm.txt"
+        "llm.txt",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md"
     ],
     "publishConfig": {
         "access": "public"
