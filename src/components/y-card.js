@@ -143,9 +143,14 @@ export class YumeCard extends HTMLElement {
             </div>
         `;
 
-        hideEmptySlotContainers(this.shadowRoot, {
-            header: ".header",
-            footer: ".footer",
+        const slotsConfig = { header: ".header", footer: ".footer" };
+
+        hideEmptySlotContainers(this.shadowRoot, slotsConfig);
+
+        this.shadowRoot.querySelectorAll("slot").forEach((slot) => {
+            slot.addEventListener("slotchange", () =>
+                hideEmptySlotContainers(this.shadowRoot, slotsConfig),
+            );
         });
     }
 }
