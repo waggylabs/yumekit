@@ -37,6 +37,8 @@ Delete any empty sections before publishing.
 
 - `y-card`: header and footer slots now correctly show/hide when used in React (or any framework that appends children after element upgrade). Previously, `hideEmptySlotContainers` ran once in `render()` before children were available, causing header/footer to stay hidden unless a `color` or `raised` attribute was also present. Fixed by adding `slotchange` listeners so visibility is re-evaluated whenever slot content changes.
 
+- `y-tag`: reverted earlier change adding variables to tag backgrounds. Defaults to -background-app variables
+
 ## [0.3.6] – 2026-03-23
 
 ### Added
