@@ -133,6 +133,17 @@ declare module "react" {
                 indeterminate?: boolean | string;
                 disabled?: boolean | string;
             }>;
+            "y-rating": El<{
+                name?: string;
+                value?: string | number;
+                max?: string | number;
+                icon?: string;
+                color?: string;
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                readonly?: boolean | string;
+                required?: boolean | string;
+            }>;
             "y-radio": El<{
                 name?: string;
                 value?: string;
@@ -174,6 +185,17 @@ declare module "react" {
                 "label-position"?: "top" | "bottom" | "left" | "right";
                 color?: string;
                 size?: "small" | "medium" | "large";
+            }>;
+            "y-textarea": El<{
+                name?: string;
+                value?: string;
+                rows?: string | number;
+                placeholder?: string;
+                disabled?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                size?: "small" | "medium" | "large";
+                "label-position"?: "top" | "bottom";
             }>;
             "y-table": El<{
                 columns?: unknown[] | string;

@@ -310,6 +310,32 @@ Slot: default (label text)
 
 ---
 
+## y-rating
+
+Form-associated. Renders a row of icons; icons up to `value` are filled, the rest are muted.
+
+| Attribute  | Values / Notes                                                       |
+|-----------|----------------------------------------------------------------------|
+| `icon`    | registered icon name (default: `star`)                               |
+| `color`   | color scheme for filled icons (default: `primary`)                   |
+| `max`     | total number of icons (default: `5`)                                 |
+| `value`   | current rating 0–max (default: `0`)                                  |
+| `size`    | `small` \| `medium` (default) \| `large`                            |
+| `name`    | form field name                                                       |
+| `disabled`| boolean                                                               |
+| `readonly`| boolean — shows value, no interaction                                |
+| `required`| boolean — prevents clearing to 0 by re-clicking current value       |
+
+Events: `change` — `event.detail.value`
+
+```html
+<y-rating name="score" value="3" icon="star" color="warning"></y-rating>
+<y-rating value="4" icon="heart" color="error" readonly></y-rating>
+<y-rating value="0" max="10" icon="star" color="primary"></y-rating>
+```
+
+---
+
 ## y-progress
 
 | Attribute       | Values / Notes                         |

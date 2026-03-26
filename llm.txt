@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 25 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.3.11
@@ -308,6 +308,32 @@ Events: `remove`
 <y-tag color="primary" removable>JavaScript</y-tag>
 <y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
 <y-tag color="base" style-type="flat">Draft</y-tag>
+```
+
+---
+
+### y-rating
+Star/icon rating input. Form-associated.
+
+Tag: `<y-rating>`
+Attributes:
+- `icon` — registered icon name to use for each point (default: `"star"`)
+- `color` — color scheme for filled icons (default: `"primary"`)
+- `max` — total number of icons (default: `5`)
+- `value` — current rating value (default: `0`)
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `name` — form field name
+- `disabled` — boolean
+- `readonly` — boolean, shows value but prevents interaction
+- `required` — boolean, prevents clearing to zero by re-clicking
+
+Events: `change` (detail: `{ value }`)
+
+Icons up to `value` render in the specified color; icons above `value` render muted. Hovering previews the new value. Clicking the current value clears to 0 (unless `required`).
+
+```html
+<y-rating name="score" value="3" icon="star" color="warning" max="5"></y-rating>
+<y-rating value="4" icon="heart" color="error" readonly></y-rating>
 ```
 
 ---

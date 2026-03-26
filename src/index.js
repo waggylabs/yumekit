@@ -27,6 +27,7 @@ export * from "./components/y-menu.js";
 export * from "./components/y-panel.js";
 export * from "./components/y-panelbar.js";
 export * from "./components/y-progress.js";
+export * from "./components/y-rating.js";
 export * from "./components/y-radio.js";
 export * from "./components/y-select.js";
 export * from "./components/y-slider.js";
