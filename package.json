@@ -21,14 +21,16 @@
         "./icons/registry.js": "./dist/icons/registry.js",
         "./styles/*": "./dist/styles/*",
         "./CHANGELOG.md": "./CHANGELOG.md",
-        "./CONTRIBUTING.md": "./CONTRIBUTING.md"
+        "./CONTRIBUTING.md": "./CONTRIBUTING.md",
+        "./FUNDING.md": "./FUNDING.md"
     },
     "sideEffects": true,
     "files": [
         "dist",
         "llm.txt",
         "CHANGELOG.md",
-        "CONTRIBUTING.md"
+        "CONTRIBUTING.md",
+        "FUNDING.md"
     ],
     "publishConfig": {
         "access": "public"
@@ -41,6 +43,10 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/waggylabs/yumekit.git"
+    },
+    "funding": {
+        "type": "github",
+        "url": "https://github.com/sponsors/waggylabs"
     },
     "license": "MIT",
     "homepage": "https://www.yumekit.com",
