@@ -233,7 +233,7 @@ export class YumeProgress extends HTMLElement {
                     width: 100%;
                     height: ${sizeVar};
                     background: var(--base-background-component);
-                    border: var(--component-progress-border-width) solid var(--base-background-border);
+                    border: var(--component-progress-border-width) solid var(--base-border);
                     border-radius: var(--component-progress-border-radius-outer);
                     overflow: hidden;
                     box-sizing: border-box;

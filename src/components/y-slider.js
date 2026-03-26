@@ -318,7 +318,7 @@ export class YumeSlider extends HTMLElement {
                     width: 100%;
                     height: ${trackHeight};
                     background: var(--base-background-component);
-                    border: var(--component-slider-border-width) solid var(--base-background-border);
+                    border: var(--component-slider-border-width) solid var(--base-border);
                     border-radius: var(--component-slider-border-radius-outer);
                     box-sizing: border-box;
                     padding: var(--component-slider-padding);
