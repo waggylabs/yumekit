@@ -66,7 +66,7 @@ describe("YumeCard", () => {
             "--base-background-component",
         );
         expect(el.style.getPropertyValue("--card-border-color")).to.include(
-            "--base-background-border",
+            "--base-border",
         );
     });
 
@@ -77,7 +77,7 @@ describe("YumeCard", () => {
             "--primary-background-component",
         );
         expect(el.style.getPropertyValue("--card-border-color")).to.include(
-            "--primary-background-border",
+            "--primary-border",
         );
     });
 
