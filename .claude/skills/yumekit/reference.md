@@ -216,7 +216,7 @@ SVG icon renderer. Only use icon names from the registry.
 | `weight` | `thin` \| `regular` (default) \| `thick`                        |
 | `label`  | accessible label (sets aria-label); omit for decorative icons    |
 
-Pre-built icon names (loaded with `icons/all.js`): `accessible`, `eye`, `eye-off`, `arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `check`, `close`, `copy`, `download`, `edit`, `trash`, `bell`, `chat`, `email`, `phone`, `camera`, `image`, `mic`, `play`, `pause`, `home`, `menu`, `search`, `settings`, `lock`, `star`, `heart`, `info`, `warning`, `error`, `campfire`, and more.
+Pre-built icon names (loaded with `icons/all.js`): `accessible`, `eye`, `eye-off`, `arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `check`, `close`, `copy`, `download`, `edit`, `trash`, `bell`, `chat`, `email`, `phone`, `camera`, `image`, `mic`, `play`, `pause`, `home`, `menu`, `search`, `settings`, `expand-left`, `expand-right`, `lock`, `star`, `heart`, `info`, `warning`, `error`, `campfire`, and more.
 
 ```html
 <y-icon name="check" size="large" color="success" label="Confirmed"></y-icon>
@@ -264,11 +264,13 @@ Slots: default (badge label text), `anchor` (element being badged)
 
 ## y-tag
 
-| Attribute  | Values / Notes                       |
-|-----------|--------------------------------------|
-| `color`   | color scheme name                     |
-| `size`    | `small` \| `medium` \| `large`      |
-| `removable`| boolean — shows close button        |
+| Attribute    | Values / Notes                                         |
+|-------------|--------------------------------------------------------|
+| `color`     | color scheme name                                       |
+| `size`      | `small` \| `medium` \| `large`                        |
+| `style-type`| `filled` (default) \| `outlined` \| `flat`            |
+| `shape`     | `square` (default) \| `round`                          |
+| `removable` | boolean — shows close button                           |
 
 Events: `remove`
 
@@ -276,6 +278,8 @@ Slot: default (label text)
 
 ```html
 <y-tag color="primary" removable>JavaScript</y-tag>
+<y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
+<y-tag color="base" style-type="flat">Draft</y-tag>
 ```
 
 ---
@@ -416,19 +420,33 @@ Slots: `header`, `footer`, default (body)
 
 ## y-menu
 
-| Attribute  | Values / Notes                                                              |
-|-----------|-----------------------------------------------------------------------------|
-| `open`    | boolean                                                                      |
-| `position`| `bottom-left` (default) \| `bottom-right` \| `top-left` \| `top-right`     |
+Positioned relative to an `anchor` element. Does NOT use slots for items.
 
-Slots: `trigger` (toggle element), default (menu items)
+| Attribute   | Values / Notes                                                              |
+|------------|-----------------------------------------------------------------------------|
+| `items`    | JSON: `[{"text":"Edit","url":"...","selected":true,"children":[...]}]`     |
+| `anchor`   | CSS selector or element ID of the trigger element                           |
+| `visible`  | boolean                                                                      |
+| `direction`| `down` (default) \| `up` \| `left` \| `right`                             |
+| `size`     | `small` \| `medium` \| `large`                                             |
+
+Item object fields: `text`, `url`, `selected`, `children`, `icon-template`, `template`
+
+Use `<template slot="name">` inside `<y-menu>` for custom icon/content templates.
 
 ```html
-<y-menu position="bottom-right">
-  <y-button slot="trigger" style-type="flat" right-icon="chevron-down">Options</y-button>
-  <y-button style-type="flat">Edit</y-button>
-  <y-button style-type="flat" color="error">Delete</y-button>
-</y-menu>
+<y-button id="opts-btn" right-icon="chevron-down">Options</y-button>
+<y-menu
+  id="opts-menu"
+  anchor="#opts-btn"
+  items='[{"text":"Edit"},{"text":"Delete"}]'
+></y-menu>
+
+<script type="module">
+  document.getElementById("opts-btn").addEventListener("click", () => {
+    document.getElementById("opts-menu").visible = true;
+  });
+</script>
 ```
 
 ---
@@ -553,26 +571,28 @@ const svg = getIcon("my-icon");
 Available CSS custom properties (set by y-theme or a theme CSS file):
 
 ```
---y-{scheme}-background-app
---y-{scheme}-background-component
---y-{scheme}-background-hover
---y-{scheme}-background-active
---y-{scheme}-background-border
---y-{scheme}-content
---y-{scheme}-content-inverse
+--{scheme}-background-app
+--{scheme}-background-component
+--{scheme}-background-hover
+--{scheme}-background-active
+--{scheme}-border
+--{scheme}-content--
+--{scheme}-content-inverse
+--{scheme}-content-hover
+--{scheme}-content-active
 ```
 
 Where `{scheme}` is: `base`, `primary`, `secondary`, `success`, `warning`, `error`, `help`
 
 Layout/typography tokens:
 ```
---y-spacing-xs | sm | md | lg | xl
---y-font-size-sm | md | lg
---y-border-radius-sm | md | lg | full
---y-shadow-sm | md | lg
+--spacing-x-small | --spacing-small | --spacing-medium | --spacing-large | --spacing-x-large
+--font-size-small | --font-size-label | --font-size-paragraph
+--radii-small | --radii-medium | --radii-large | --radii-full
+--base-shadow
 ```
 
 Custom theme: define these variables in CSS and point y-theme to the file:
 ```html
-<y-theme theme-path="/my-theme.css"></y-theme>
+<y-theme theme="/my-theme.css"></y-theme>
 ```

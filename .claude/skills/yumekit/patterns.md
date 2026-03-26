@@ -16,7 +16,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   import "@waggylabs/yumekit/icons/all.js";
 </script>
 
-<y-theme theme="blue" mode="light">
+<y-theme theme="blue-light">
   <y-appbar sticky color="primary">
     <span slot="brand">MyApp</span>
     <nav slot="nav">
@@ -58,7 +58,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   import "@waggylabs/yumekit/components/y-toast";
 </script>
 
-<y-theme theme="blue" mode="light">
+<y-theme theme="blue-light">
   <div style="display:flex; justify-content:center; align-items:center; min-height:100vh;">
     <y-card style="width:360px;">
       <span slot="header">Sign In</span>
@@ -101,7 +101,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   import "@waggylabs/yumekit/icons/all.js";
 </script>
 
-<y-theme theme="blue" mode="light">
+<y-theme theme="blue-light">
   <y-table
     id="users-table"
     columns='[{"key":"name","label":"Name"},{"key":"email","label":"Email"},{"key":"role","label":"Role"}]'
@@ -146,7 +146,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   import "@waggylabs/yumekit/components/y-button";
 </script>
 
-<y-theme theme="blue" mode="light" style="display:block; max-width:640px; margin:2rem auto;">
+<y-theme theme="blue-light" style="display:block; max-width:640px; margin:2rem auto;">
   <form id="settings-form">
     <y-panelbar multi>
       <y-panel label="Profile" open>
@@ -198,7 +198,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   import "@waggylabs/yumekit/icons/all.js";
 </script>
 
-<y-theme theme="blue" mode="light" style="display:block; padding:1rem;">
+<y-theme theme="blue-light" style="display:block; padding:1rem;">
   <y-tabs
     options='[{"id":"overview","label":"Overview"},{"id":"activity","label":"Activity"},{"id":"settings","label":"Settings"}]'
     active="overview"
@@ -291,7 +291,7 @@ notify.error("Failed to connect. Please try again.");
 ## Dynamic Theme Switching
 
 ```html
-<y-theme id="app-theme" theme="blue" mode="light">
+<y-theme id="app-theme" theme="blue-light">
   <!-- app -->
 </y-theme>
 
@@ -300,7 +300,8 @@ notify.error("Failed to connect. Please try again.");
 <script type="module">
   const theme = document.getElementById("app-theme");
   document.getElementById("toggle-theme").addEventListener("click", () => {
-    theme.setAttribute("mode", theme.getAttribute("mode") === "light" ? "dark" : "light");
+    const current = theme.getAttribute("theme");
+    theme.setAttribute("theme", current === "blue-light" ? "blue-dark" : "blue-light");
   });
 </script>
 ```
@@ -322,7 +323,7 @@ export function LoginPage() {
   };
 
   return (
-    <y-theme theme="blue" mode="light">
+    <y-theme theme="blue-light">
       <y-card>
         <span slot="header">Sign In</span>
         <form onSubmit={handleSubmit}>

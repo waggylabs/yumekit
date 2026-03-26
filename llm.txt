@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.3.0
+0.3.8
 
 ## License
 MIT
@@ -274,12 +274,16 @@ Tag: `<y-tag>`
 Attributes:
 - `color` — color scheme name
 - `size` — `"small"` | `"medium"` | `"large"`
+- `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
+- `shape` — `"square"` (default) | `"round"`
 - `removable` — boolean, shows close button
 
 Events: `remove`
 
 ```html
 <y-tag color="primary" removable>JavaScript</y-tag>
+<y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
+<y-tag color="base" style-type="flat">Draft</y-tag>
 ```
 
 ---
@@ -387,21 +391,35 @@ Slots: `header`, `footer`, default (body)
 ---
 
 ### y-menu
-Dropdown menu.
+Dropdown menu. Positioned relative to an anchor element.
 
 Tag: `<y-menu>`
 Attributes:
-- `open` — boolean
-- `position` — `"bottom-left"` (default) | `"bottom-right"` | `"top-left"` | `"top-right"`
+- `items` — JSON string: `[{"text": "Edit", "url": "...", "selected": true, "children": [...], "icon-template": "slot-name", "template": "slot-name"}, ...]`
+- `anchor` — CSS selector or element ID of the trigger element
+- `visible` — boolean
+- `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
+- `size` — `"small"` | `"medium"` | `"large"`
 
-Slots: `trigger` (element that toggles the menu), default (menu items)
+Events: none (item clicks fire navigation via `url`, or listen for DOM events on the element)
+
+Item object fields:
+- `text` — display text
+- `url` — optional navigation URL
+- `selected` — boolean, highlights the active item
+- `children` — array of sub-items (nested submenu)
+- `icon-template` — `<template slot="name">` inside `<y-menu>` for a custom icon
+- `template` — `<template slot="name">` inside `<y-menu>` for custom item content
 
 ```html
-<y-menu>
-  <y-button slot="trigger">Options</y-button>
-  <y-button>Edit</y-button>
-  <y-button>Delete</y-button>
-</y-menu>
+<y-button id="options-btn">Options</y-button>
+<y-menu anchor="#options-btn" items='[{"text":"Edit"},{"text":"Delete"}]'></y-menu>
+
+<script>
+  document.getElementById("options-btn").addEventListener("click", () => {
+    document.querySelector("y-menu").visible = true;
+  });
+</script>
 ```
 
 ---
@@ -504,23 +522,25 @@ Attributes:
 Applied by y-theme or by manually including a theme CSS file. Variables follow this naming pattern:
 
 ```
---y-{scheme}-background-app
---y-{scheme}-background-component
---y-{scheme}-background-hover
---y-{scheme}-background-active
---y-{scheme}-background-border
---y-{scheme}-content
---y-{scheme}-content-inverse
+--{scheme}-background-app
+--{scheme}-background-component
+--{scheme}-background-hover
+--{scheme}-background-active
+--{scheme}-border
+--{scheme}-content--
+--{scheme}-content-inverse
+--{scheme}-content-hover
+--{scheme}-content-active
 ```
 
 Where `{scheme}` is: `base`, `primary`, `secondary`, `success`, `warning`, `error`, `help`
 
 Additional tokens:
 ```
---y-spacing-xs, --y-spacing-sm, --y-spacing-md, --y-spacing-lg, --y-spacing-xl
---y-font-size-sm, --y-font-size-md, --y-font-size-lg
---y-border-radius-sm, --y-border-radius-md, --y-border-radius-lg, --y-border-radius-full
---y-shadow-sm, --y-shadow-md, --y-shadow-lg
+--spacing-xs-small, --spacing-small, --spacing-medium, --spacing-large, --spacing-x-large
+--font-size-small, --font-size-paragraph, --font-size-label
+--radii-small, --radii-medium, --radii-large, --radii-full
+--base-shadow
 ```
 
 To create a custom theme, define these CSS variables in a stylesheet and point y-theme at it:
@@ -559,7 +579,7 @@ Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`
 - Actions (check, close, copy, download, edit, trash, …)
 - Communication (bell, chat, email, phone, …)
 - Media (camera, image, mic, play, pause, …)
-- Navigation (home, menu, search, settings, …)
+- Navigation (home, menu, search, settings, expand-left, expand-right, …)
 - UI (lock, star, heart, info, warning, error, …)
 
 ---
