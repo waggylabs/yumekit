@@ -17,7 +17,7 @@
 
 ## Overview
 
-YumeKit is a collection of 25 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
+YumeKit is a collection of 26 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
@@ -64,7 +64,7 @@ import "@waggylabs/yumekit/components/y-input";
 Then use the `<y-theme>` component to apply a theme:
 
 ```html
-<y-theme name="blue-light">
+<y-theme theme="blue-light">
     <!-- your app content -->
 </y-theme>
 ```
@@ -90,10 +90,12 @@ Then use the `<y-theme>` component to apply a theme:
 | Panel Bar | `<y-panelbar>` | Accordion panel group                      |
 | Progress  | `<y-progress>` | Progress bar                               |
 | Radio     | `<y-radio>`    | Radio button input                         |
+| Rating    | `<y-rating>`   | Star / icon rating input                   |
 | Select    | `<y-select>`   | Select / dropdown input                    |
 | Slider    | `<y-slider>`   | Range slider input                         |
 | Switch    | `<y-switch>`   | Toggle switch                              |
-| Table     | `<y-table>`    | Data table                                 |
+| Table     | `<y-table>`    | Sortable data table                        |
+| Textarea  | `<y-textarea>` | Multi-line text input                      |
 | Tabs      | `<y-tabs>`     | Tabbed interface                           |
 | Tag       | `<y-tag>`      | Tag / chip label                           |
 | Theme     | `<y-theme>`    | Theme provider                             |
