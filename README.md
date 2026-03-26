@@ -17,7 +17,7 @@
 
 ## Overview
 
-YumeKit is a collection of 23 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
+YumeKit is a collection of 25 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
