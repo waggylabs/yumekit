@@ -165,12 +165,35 @@ describe("YumeTable", () => {
         expect(el.size).to.equal("large");
     });
 
-    it("shows sort icon on sortable headers", async () => {
+    it("shows no sort icon on unsorted headers", async () => {
         const el = await fixture(html`
             <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
         `);
         const svg = el.shadowRoot.querySelector("thead th .sort-icon");
-        expect(svg).to.not.be.null;
+        expect(svg).to.be.null;
+    });
+
+    it("shows sort icon only on the active sorted column", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
+        `);
+        el.shadowRoot.querySelector("thead th").click();
+
+        const icons = el.shadowRoot.querySelectorAll("thead th .sort-icon");
+        expect(icons.length).to.equal(1);
+    });
+
+    it("removes sort icon when sort is cleared", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
+        `);
+        const nameHeader = el.shadowRoot.querySelector("thead th");
+        nameHeader.click(); // asc
+        nameHeader.click(); // desc
+        el.shadowRoot.querySelector("thead th").click(); // none
+
+        const svg = el.shadowRoot.querySelector("thead th .sort-icon");
+        expect(svg).to.be.null;
     });
 
     it("sets aria-sort attribute on sorted column", async () => {

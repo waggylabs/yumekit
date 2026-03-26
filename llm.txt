@@ -304,6 +304,8 @@ Attributes:
 
 Events: `remove`
 
+The `flat` style uses `--{color}-background-app` as the background, so it automatically adapts to the active theme without any additional variable overrides.
+
 ```html
 <y-tag color="primary" removable>JavaScript</y-tag>
 <y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
@@ -548,19 +550,23 @@ Slots: default (panel body content)
 ---
 
 ### y-table
-Data table.
+Data table with optional client-side sorting.
 
 Tag: `<y-table>`
 Attributes:
-- `columns` — JSON string: `[{"key": "name", "label": "Name"}, ...]`
-- `rows` — JSON string: `[{"name": "Alice", ...}, ...]`
+- `columns` — JSON string: `[{"field": "name", "header": "Name", "sortable": true}, ...]`. `sortable` defaults to `true`; set `false` to disable sorting on a column.
+- `data` — JSON string: `[{"name": "Alice", ...}, ...]`
 - `striped` — boolean
 - `size` — `"small"` | `"medium"` | `"large"`
 
+Events: `sort` (detail: `{ field, direction }`) — fired on header click when `sortable` is true. Direction cycles `asc` → `desc` → `none`.
+
+Sorting: clicking a sortable column header shows an up arrow (asc) or down arrow (desc); unsorted columns show no icon. Sort is client-side by default.
+
 ```html
 <y-table
-  columns='[{"key":"id","label":"ID"},{"key":"name","label":"Name"}]'
-  rows='[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
+  columns='[{"field":"id","header":"ID"},{"field":"name","header":"Name"}]'
+  data='[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
   striped
 ></y-table>
 ```
@@ -624,7 +630,7 @@ const svg = getIcon("my-icon");
 ```
 
 Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
-- Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`)
+- Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`, `ellipsis-v`, `ellipsis-h`)
 - Actions (`check`, `close`, `trash`, `save`, `pencil`, `filter`, `swap`, `share`, `search`, `plus`, `minus`)
 - Brackets (`up-from-bracket`, `down-from-bracket`, `left-from-bracket`, `right-from-bracket`, `up-to-bracket`, `down-to-bracket`, `left-to-bracket`, `right-to-bracket`)
 - Communication (`bell`, `mail`, `comments`, `paper-airplane`)

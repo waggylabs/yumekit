@@ -1,4 +1,4 @@
-import { gripDots } from "../icons/index.js";
+import { ellipsisV, ellipsisH } from "../icons/index.js";
 
 class YumeDrawer extends HTMLElement {
     static get observedAttributes() {
@@ -220,7 +220,7 @@ class YumeDrawer extends HTMLElement {
     }
 
     _gripSVG() {
-        return gripDots(this._isHorizontal());
+        return this._isHorizontal() ? ellipsisV : ellipsisH;
     }
 
     render() {

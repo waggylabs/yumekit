@@ -1,4 +1,4 @@
-import { sortArrows } from "../icons/index.js";
+import { arrowUp, arrowDown } from "../icons/index.js";
 
 export class YumeTable extends HTMLElement {
     static get observedAttributes() {
@@ -130,17 +130,8 @@ export class YumeTable extends HTMLElement {
     _sortIcon(field) {
         const active = this._sortField === field;
         const dir = active ? this._sortDir : "none";
-
-        const topColor =
-            dir === "asc"
-                ? "var(--component-table-color, #f7f7fa)"
-                : "var(--component-table-color-light, #acaeb2)";
-        const bottomColor =
-            dir === "desc"
-                ? "var(--component-table-color, #f7f7fa)"
-                : "var(--component-table-color-light, #acaeb2)";
-
-        return sortArrows(topColor, bottomColor);
+        if (dir === "none") return "";
+        return dir === "asc" ? arrowUp : arrowDown;
     }
 
     render() {
@@ -268,9 +259,12 @@ export class YumeTable extends HTMLElement {
             inner.textContent = col.header || col.field;
 
             if (sortable) {
-                const iconSpan = document.createElement("span");
-                iconSpan.innerHTML = this._sortIcon(col.field);
-                inner.appendChild(iconSpan);
+                const icon = this._sortIcon(col.field);
+                if (icon) {
+                    const iconSpan = document.createElement("span");
+                    iconSpan.innerHTML = icon;
+                    inner.appendChild(iconSpan);
+                }
             }
 
             th.appendChild(inner);
