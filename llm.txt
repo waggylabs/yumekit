@@ -327,7 +327,7 @@ Tag: `<y-card>`
 Attributes:
 - `color` — color scheme name
 
-Slots: `header`, `footer`, default (body content)
+Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body content)
 
 ---
 

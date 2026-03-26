@@ -110,6 +110,11 @@ export class YumeCard extends HTMLElement {
                 box-shadow: var(--card-box-shadow, none);
             }
 
+            .image {
+                overflow: hidden;
+                border-radius: var(--component-card-border-radius-outer) var(--component-card-border-radius-outer) 0 0;
+            }
+
             .header {
                 padding: var(--component-card-padding-outer);
                 border-bottom: var(--component-card-inner-border-width) solid var(--card-border-color, var(--base-border));
@@ -132,6 +137,9 @@ export class YumeCard extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [sheet];
 
         this.shadowRoot.innerHTML = `
+            <div class="image" part="image">
+                <slot name="image"></slot>
+            </div>
             <div class="header" part="header">
                 <slot name="header"></slot>
             </div>
@@ -143,7 +151,7 @@ export class YumeCard extends HTMLElement {
             </div>
         `;
 
-        const slotsConfig = { header: ".header", footer: ".footer" };
+        const slotsConfig = { image: ".image", header: ".header", footer: ".footer" };
 
         hideEmptySlotContainers(this.shadowRoot, slotsConfig);
 

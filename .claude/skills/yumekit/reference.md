@@ -325,13 +325,20 @@ Slot: default (trigger element)
 |----------|-------------------|
 | `color`  | color scheme name  |
 
-Slots: `header`, `footer`, default (body)
+Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body)
 
 ```html
 <y-card>
   <span slot="header">Card Title</span>
   <p>Card body content here.</p>
   <y-button slot="footer" color="primary">Action</y-button>
+</y-card>
+
+<!-- Card with flush image -->
+<y-card>
+  <img slot="image" src="/photo.jpg" alt="..." style="width:100%;height:160px;object-fit:cover;display:block;" />
+  <span slot="header">Image Card</span>
+  <p>Body content.</p>
 </y-card>
 ```
 

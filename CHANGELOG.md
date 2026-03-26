@@ -31,6 +31,12 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.3.10] – 2026-03-25
+
+### Added
+
+- `y-card`: added `image` slot that displays over the `header` slot if included.
+
 ## [0.3.9] – 2026-03-25
 
 ### Fixed
