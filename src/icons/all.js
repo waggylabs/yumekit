@@ -31,7 +31,6 @@ import circleInfo from "./circle-info.svg";
 import clock from "./clock.svg";
 import close from "./close.svg";
 import cloud from "./cloud.svg";
-import collapseLeft from "./collapse-left.svg";
 import comments from "./comments.svg";
 import compAppbar from "./comp-appbar.svg";
 import compAvatar from "./comp-avatar.svg";
@@ -138,7 +137,6 @@ registerIcons({
     clock,
     close,
     cloud,
-    "collapse-left": collapseLeft,
     comments,
     "comp-appbar": compAppbar,
     "comp-avatar": compAvatar,
