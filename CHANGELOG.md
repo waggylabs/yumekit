@@ -31,6 +31,14 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.3.11] – 2026-03-25
+
+### Added
+
+- New `y-textarea` component — a form-associated multi-line text input. Supports `name`, `value`, `placeholder`, `label`, `label-position`, `rows`, `size`, `disabled`, `required`, and `invalid` attributes. Exposes `input` and `change` events.
+
+---
+
 ## [0.3.10] – 2026-03-25
 
 ### Added

@@ -104,6 +104,32 @@ Events: `change`, `input`
 
 ---
 
+## y-textarea
+
+Form-associated. Multi-line text input. A distinct component from `y-input`.
+
+| Attribute        | Values / Notes                                          |
+|-----------------|----------------------------------------------------------|
+| `name`          | form field name                                          |
+| `value`         | current value                                            |
+| `placeholder`   |                                                          |
+| `label`         | visible label text                                       |
+| `label-position`| `top` (default) \| `bottom` \| `left` \| `right`        |
+| `rows`          | number of visible rows (default: `3`)                   |
+| `size`          | `small` \| `medium` \| `large`                          |
+| `disabled`      | boolean                                                  |
+| `required`      | boolean                                                  |
+| `invalid`       | boolean — applies error state                            |
+
+Events: `change`, `input`
+
+```html
+<y-textarea name="message" label="Message" placeholder="Write something..." rows="4"></y-textarea>
+<y-textarea name="bio" label="Bio" disabled value="Cannot edit this."></y-textarea>
+```
+
+---
+
 ## y-select
 
 Form-associated.

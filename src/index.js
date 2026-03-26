@@ -22,6 +22,7 @@ export * from "./components/y-drawer.js";
 export * from "./components/y-icon.js";
 export { registerIcon, registerIcons, getIcon } from "./icons/registry.js";
 export * from "./components/y-input.js";
+export * from "./components/y-textarea.js";
 export * from "./components/y-menu.js";
 export * from "./components/y-panel.js";
 export * from "./components/y-panelbar.js";

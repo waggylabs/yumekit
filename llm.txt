@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.3.9
+0.3.11
 
 ## License
 MIT
@@ -137,6 +137,30 @@ Events: `change`, `input`
 
 ```html
 <y-input type="email" name="email" label="Email" required></y-input>
+```
+
+---
+
+### y-textarea
+Multi-line text input. Form-associated. A distinct component from y-input.
+
+Tag: `<y-textarea>`
+Attributes:
+- `name` — form field name
+- `value` — current value
+- `placeholder`
+- `label` — visible label text
+- `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
+- `rows` — number of visible rows (default: `"3"`)
+- `size` — `"small"` | `"medium"` | `"large"`
+- `disabled` — boolean
+- `required` — boolean
+- `invalid` — boolean, applies error state
+
+Events: `change`, `input`
+
+```html
+<y-textarea name="message" label="Message" placeholder="Write something..." rows="4"></y-textarea>
 ```
 
 ---
