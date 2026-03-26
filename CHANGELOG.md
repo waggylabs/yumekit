@@ -31,6 +31,14 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.3.9] – 2026-03-25
+
+### Fixed
+
+- `y-card`, `y-switch`, `y-slider`, `y-progress`: restored missing borders after theme variable rename in 0.3.8 changed `--{scheme}-background-border` to `--{scheme}-border` without updating component references.
+
+---
+
 ## [0.3.8] – 2026-03-25
 
 ### Fixed

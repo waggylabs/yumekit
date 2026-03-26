@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.3.8
+0.3.9
 
 ## License
 MIT
