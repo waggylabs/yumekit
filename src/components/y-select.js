@@ -480,7 +480,6 @@ export class YumeSelect extends HTMLElement {
                 flex-wrap: wrap;
                 align-items: center;
                 gap: var(--spacing-x-small);
-                min-height: var(--component-tag-height-small, 22px);
             }
 
             .label-wrapper {
