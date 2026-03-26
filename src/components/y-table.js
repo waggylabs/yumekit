@@ -262,6 +262,7 @@ export class YumeTable extends HTMLElement {
                 const icon = this._sortIcon(col.field);
                 if (icon) {
                     const iconSpan = document.createElement("span");
+                    iconSpan.className = "sort-icon";
                     iconSpan.innerHTML = icon;
                     inner.appendChild(iconSpan);
                 }
