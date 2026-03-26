@@ -37,8 +37,8 @@ Delete any empty sections before publishing.
 
 - New `y-textarea` component — a form-associated multi-line text input. Supports `name`, `value`, `placeholder`, `label`, `label-position`, `rows`, `size`, `disabled`, `required`, and `invalid` attributes. Exposes `input` and `change` events.
 - New `y-rating` component — a form-associated star/icon rating input. Supports `icon`, `color`, `max`, `value`, `size`, `disabled`, `readonly`, `required`, and `name` attributes. Click-to-clear on the active icon (unless `required`). Full ARIA support (`role="radiogroup"` / `role="img"` when readonly, per-icon `role="radio"` with labels).
-
----
+- 12 new bundled icons: `heart`, `thumbs-up`, `thumbs-down`, `flask`, `briefcase`, `thumbtack`, `map-marker`, `pencil`, `code`, `circle-question`, `comp-textarea`, `comp-rating`.
+- React TypeScript definitions (`react.d.ts`) for `y-textarea` and `y-rating`.
 
 ### Fixed
 
@@ -55,8 +55,6 @@ Delete any empty sections before publishing.
 ### Fixed
 
 - `y-card`, `y-switch`, `y-slider`, `y-progress`: restored missing borders after theme variable rename in 0.3.8 changed `--{scheme}-background-border` to `--{scheme}-border` without updating component references.
-
----
 
 ## [0.3.8] – 2026-03-25
 
@@ -88,15 +86,11 @@ Delete any empty sections before publishing.
 
 - Removed `features` icon (duplicate of `sun`)
 
----
-
 ## [0.3.5] – 2026-03-20
 
 ### Fixed
 
 - Patch for 0.3.3 with bug fixes
-
----
 
 ## [0.3.4] – 2026-03-20
 
@@ -104,15 +98,11 @@ Delete any empty sections before publishing.
 
 - Patch for 0.3.3 with bug fixes
 
----
-
 ## [0.3.3] – 2026-03-20
 
 ### Fixed
 
 - Several bug fixes and test updates
-
----
 
 ## [0.3.2] – 2026-03-18
 

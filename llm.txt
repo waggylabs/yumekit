@@ -57,7 +57,7 @@ import "@waggylabs/yumekit/components/y-input";
 ### Icons
 ```javascript
 import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
-import "@waggylabs/yumekit/icons/all.js"; // load all 60+ pre-built icons
+import "@waggylabs/yumekit/icons/all.js"; // load all 100+ pre-built icons
 ```
 
 ### React
@@ -624,13 +624,20 @@ const svg = getIcon("my-icon");
 ```
 
 Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
-- Accessibility (accessible, eye, eye-off, …)
-- Arrows (arrow-up/down/left/right, chevrons, …)
-- Actions (check, close, copy, download, edit, trash, …)
-- Communication (bell, chat, email, phone, …)
-- Media (camera, image, mic, play, pause, …)
-- Navigation (home, menu, search, settings, expand-left, expand-right, …)
-- UI (lock, star, heart, info, warning, error, …)
+- Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`)
+- Actions (`check`, `close`, `trash`, `save`, `pencil`, `filter`, `swap`, `share`, `search`, `plus`, `minus`)
+- Brackets (`up-from-bracket`, `down-from-bracket`, `left-from-bracket`, `right-from-bracket`, `up-to-bracket`, `down-to-bracket`, `left-to-bracket`, `right-to-bracket`)
+- Communication (`bell`, `mail`, `comments`, `paper-airplane`)
+- Faces (`face-smile`, `face-neutral`, `face-frown`)
+- Files & data (`archive`, `folder`, `save`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `chart`, `grid`, `layout`, `tag`)
+- Location & navigation (`home`, `menu`, `compass`, `map-marker`, `thumbtack`, `globe`)
+- Media & display (`image`, `monitor`, `smartphone`, `tablet`, `moon`, `sun`, `palette`, `calendar`, `clock`)
+- People (`user`, `users`, `accessibility`)
+- Science & work (`flask`, `briefcase`, `puzzle`, `ai`)
+- Social (`discord`, `figma`, `github`)
+- Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `shield`, `warning`, `circle-exclamation`, `circle-info`, `circle-question`)
+- Component icons (`comp-appbar`, `comp-avatar`, `comp-badge`, `comp-button`, `comp-card`, `comp-checkbox`, `comp-dialog`, `comp-drawer`, `comp-icon`, `comp-input`, `comp-menu`, `comp-panelbar`, `comp-progress`, `comp-radio`, `comp-rating`, `comp-select`, `comp-slider`, `comp-switch`, `comp-table`, `comp-tabs`, `comp-tag`, `comp-textarea`, `comp-theme`, `comp-toast`, `comp-tooltip`)
+- Other (`cloud`, `code`, `campfire`, `settings`)
 
 ---
 

@@ -16,6 +16,7 @@ import arrowLeft from "./arrow-left.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
 import bell from "./bell.svg";
+import briefcase from "./briefcase.svg";
 import bolt from "./bolt.svg";
 import bookmark from "./bookmark.svg";
 import calendar from "./calendar.svg";
@@ -28,9 +29,11 @@ import chevronRight from "./chevron-right.svg";
 import chevronUp from "./chevron-up.svg";
 import circleExclamation from "./circle-exclamation.svg";
 import circleInfo from "./circle-info.svg";
+import circleQuestion from "./circle-question.svg";
 import clock from "./clock.svg";
 import close from "./close.svg";
 import cloud from "./cloud.svg";
+import code from "./code.svg";
 import comments from "./comments.svg";
 import compAppbar from "./comp-appbar.svg";
 import compAvatar from "./comp-avatar.svg";
@@ -55,6 +58,8 @@ import compTag from "./comp-tag.svg";
 import compTheme from "./comp-theme.svg";
 import compToast from "./comp-toast.svg";
 import compTooltip from "./comp-tooltip.svg";
+import compTextarea from "./comp-textarea.svg";
+import compRating from "./comp-rating.svg";
 import compass from "./compass.svg";
 import diagram from "./diagram.svg";
 import discord from "./discord.svg";
@@ -69,9 +74,11 @@ import faceNeutral from "./face-neutral.svg";
 import faceFrown from "./face-frown.svg";
 import figma from "./figma.svg";
 import filter from "./filter.svg";
+import flask from "./flask.svg";
 import folder from "./folder.svg";
 
 import github from "./github.svg";
+import heart from "./heart.svg";
 import globe from "./globe.svg";
 import grid from "./grid.svg";
 import home from "./home.svg";
@@ -84,11 +91,13 @@ import listBullet from "./list-bullet.svg";
 import listCheck from "./list-check.svg";
 import lock from "./lock.svg";
 import mail from "./mail.svg";
+import mapMarker from "./map-marker.svg";
 import menu from "./menu.svg";
 import minus from "./minus.svg";
 import monitor from "./monitor.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
+import pencil from "./pencil.svg";
 import paperAirplane from "./paper-airplane.svg";
 import plus from "./plus.svg";
 import puzzle from "./puzzle.svg";
@@ -102,6 +111,9 @@ import shield from "./shield.svg";
 import smartphone from "./smartphone.svg";
 import stack from "./stack.svg";
 import star from "./star.svg";
+import thumbsDown from "./thumbs-down.svg";
+import thumbsUp from "./thumbs-up.svg";
+import thumbtack from "./thumbtack.svg";
 import sun from "./sun.svg";
 import swap from "./swap.svg";
 import tablet from "./tablet.svg";
@@ -123,6 +135,7 @@ registerIcons({
     "arrow-up": arrowUp,
     bell,
     bolt,
+    briefcase,
     bookmark,
     calendar,
     campfire,
@@ -130,6 +143,7 @@ registerIcons({
     check,
     "circle-exclamation": circleExclamation,
     "circle-info": circleInfo,
+    "circle-question": circleQuestion,
     "chevron-down": chevronDown,
     "chevron-left": chevronLeft,
     "chevron-right": chevronRight,
@@ -137,6 +151,7 @@ registerIcons({
     clock,
     close,
     cloud,
+    code,
     comments,
     "comp-appbar": compAppbar,
     "comp-avatar": compAvatar,
@@ -161,6 +176,8 @@ registerIcons({
     "comp-theme": compTheme,
     "comp-toast": compToast,
     "comp-tooltip": compTooltip,
+    "comp-textarea": compTextarea,
+    "comp-rating": compRating,
     compass,
     diagram,
     discord,
@@ -175,10 +192,12 @@ registerIcons({
     "face-smile": faceSmile,
     figma,
     filter,
+    flask,
     folder,
 
     github,
     globe,
+    heart,
     grid,
     home,
     image,
@@ -190,12 +209,14 @@ registerIcons({
     "list-check": listCheck,
     lock,
     mail,
+    "map-marker": mapMarker,
     menu,
     minus,
     monitor,
     moon,
     palette,
     "paper-airplane": paperAirplane,
+    pencil,
     plus,
     puzzle,
     "right-from-bracket": rightFromBracket,
@@ -209,6 +230,9 @@ registerIcons({
     stack,
     star,
     sun,
+    "thumbs-down": thumbsDown,
+    "thumbs-up": thumbsUp,
+    thumbtack,
     swap,
     tablet,
     tag,
