@@ -1,3 +1,5 @@
+import { contrastTextColor } from "../modules/helpers.js";
+
 export class YumeButton extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -410,6 +412,18 @@ export class YumeButton extends HTMLElement {
             ],
         };
 
+        // Custom CSS color (hex, rgb/rgba, hsl/hsla)
+        if (
+            !colorVars[color] &&
+            color &&
+            (color.startsWith("#") ||
+                color.startsWith("rgb") ||
+                color.startsWith("hsl"))
+        ) {
+            this._applyCustomColorStyles(color, styleType, size);
+            return;
+        }
+
         const styleVars = {
             outlined: {
                 "--background-color": `var(${colorVars[color][3]}, #0c0c0d)`,
@@ -553,6 +567,79 @@ export class YumeButton extends HTMLElement {
             "--button-min-width",
             minSizeMapping[size] || "40px",
         );
+    }
+
+    _applyCustomColorStyles(color, styleType, size) {
+        const text = contrastTextColor(color);
+        const hover = `color-mix(in srgb, ${color} 85%, black)`;
+        const active = `color-mix(in srgb, ${color} 70%, black)`;
+        const subtle = `color-mix(in srgb, ${color} 15%, transparent)`;
+
+        const styles = {
+            filled: {
+                "--background-color": color,
+                "--border-color": color,
+                "--text-color": text,
+                "--hover-background-color": hover,
+                "--hover-border-color": hover,
+                "--hover-text-color": text,
+                "--focus-background-color": active,
+                "--focus-border-color": active,
+                "--focus-text-color": text,
+                "--active-background-color": active,
+                "--active-border-color": active,
+                "--active-text-color": text,
+            },
+            outlined: {
+                "--background-color": "transparent",
+                "--border-color": color,
+                "--text-color": color,
+                "--hover-background-color": subtle,
+                "--hover-border-color": color,
+                "--hover-text-color": color,
+                "--focus-background-color": subtle,
+                "--focus-border-color": color,
+                "--focus-text-color": color,
+                "--active-background-color": color,
+                "--active-border-color": color,
+                "--active-text-color": text,
+            },
+            flat: {
+                "--background-color": "transparent",
+                "--border-color": "transparent",
+                "--text-color": color,
+                "--hover-background-color": subtle,
+                "--hover-border-color": subtle,
+                "--hover-text-color": color,
+                "--focus-background-color": subtle,
+                "--focus-border-color": subtle,
+                "--focus-text-color": color,
+                "--active-background-color": color,
+                "--active-border-color": color,
+                "--active-text-color": text,
+            },
+        };
+
+        Object.entries(styles[styleType] || styles.outlined).forEach(
+            ([key, val]) => this.button.style.setProperty(key, val),
+        );
+
+        const sizeVars = {
+            small: "--component-button-padding-small",
+            medium: "--component-button-padding-medium",
+            large: "--component-button-padding-large",
+        };
+        const pad = sizeVars[size] || sizeVars.medium;
+        this.button.style.setProperty("--button-padding", `var(${pad})`);
+        this.button.style.setProperty("--button-gap", `var(${pad})`);
+
+        const minSize = {
+            small: "var(--sizing-small, 32px)",
+            medium: "var(--sizing-medium, 40px)",
+            large: "var(--sizing-large, 56px)",
+        }[size] || "var(--sizing-medium, 40px)";
+        this.button.style.setProperty("--button-min-height", minSize);
+        this.button.style.setProperty("--button-min-width", minSize);
     }
 }
 

@@ -16,15 +16,18 @@ export class YumeSelect extends HTMLElement {
             "display-mode",
             "close-on-click-outside",
             "size",
+            "searchable",
+            "clearable",
         ];
     }
 
     constructor() {
         super();
         this._internals = this.attachInternals();
-        this.attachShadow({ mode: "open" });
         this.selectedValues = new Set();
         this._onDocumentClick = this._onDocumentClick.bind(this);
+
+        this.attachShadow({ mode: "open" });
         this.render();
     }
 
@@ -57,11 +60,15 @@ export class YumeSelect extends HTMLElement {
         if (name === "value") {
             if (this.hasAttribute("multiple")) {
                 this.selectedValues = new Set(
-                    (newValue || "").split(",").map((v) => v.trim()).filter(Boolean),
+                    (newValue || "")
+                        .split(",")
+                        .map((v) => v.trim())
+                        .filter(Boolean),
                 );
             } else {
                 this._value = newValue || "";
             }
+
             this.updateDisplay();
             this._internals.setFormValue(newValue, this.getAttribute("name"));
             this.updateSelectedStyles();
@@ -76,6 +83,8 @@ export class YumeSelect extends HTMLElement {
                 "placeholder",
                 "options",
                 "size",
+                "searchable",
+                "clearable",
             ].includes(name)
         ) {
             this.render();
@@ -123,7 +132,28 @@ export class YumeSelect extends HTMLElement {
     }
 
     set options(val) {
-        this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
+        this.setAttribute(
+            "options",
+            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
+        );
+    }
+
+    /** @type {boolean} Whether the dropdown shows an inline search filter input. */
+    get searchable() {
+        return this.hasAttribute("searchable");
+    }
+    set searchable(val) {
+        if (val) this.setAttribute("searchable", "");
+        else this.removeAttribute("searchable");
+    }
+
+    /** @type {boolean} Whether to show a clear button when a value is selected. */
+    get clearable() {
+        return this.hasAttribute("clearable");
+    }
+    set clearable(val) {
+        if (val) this.setAttribute("clearable", "");
+        else this.removeAttribute("clearable");
     }
 
     /**
@@ -164,20 +194,41 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
+    /** Opens the dropdown without toggling. */
+    _openDropdown() {
+        if (this.dropdown.classList.contains("open")) return;
+        this.dropdown.classList.add("open");
+        this.selectContainer.classList.add("open");
+        this._positionDropdown();
+        this._onScrollOrResize = this._positionDropdown.bind(this);
+
+        // For single searchable: clear input so user can type fresh
+        if (
+            this.searchable &&
+            !this.hasAttribute("multiple") &&
+            this.searchInput
+        ) {
+            const currentLabel = this.value ? this.getDisplayText() : "";
+            this.searchInput.placeholder =
+                currentLabel || this.getAttribute("placeholder") || "Select...";
+            this.searchInput.value = "";
+            this._filterOptions("");
+        }
+
+        window.addEventListener("scroll", this._onScrollOrResize, true);
+        window.addEventListener("resize", this._onScrollOrResize);
+        document.addEventListener("click", this._onDocumentClick, true);
+    }
+
     /** Toggles the dropdown open or closed. */
     toggleDropdown() {
-        const isOpen = this.dropdown.classList.contains("open");
-        if (isOpen) {
+        if (this.dropdown.classList.contains("open")) {
             this.closeDropdown();
         } else {
-            this.dropdown.classList.add("open");
-            this.selectContainer.classList.add("open");
-            this._positionDropdown();
-            this._onScrollOrResize = this._positionDropdown.bind(this);
-
-            window.addEventListener("scroll", this._onScrollOrResize, true);
-            window.addEventListener("resize", this._onScrollOrResize);
-            document.addEventListener("click", this._onDocumentClick, true);
+            this._openDropdown();
+            if (this.searchable && this.searchInput) {
+                setTimeout(() => this.searchInput.focus(), 0);
+            }
         }
     }
 
@@ -186,6 +237,21 @@ export class YumeSelect extends HTMLElement {
         this.dropdown?.classList.remove("open");
         this.selectContainer?.classList.remove("open");
         document.removeEventListener("click", this._onDocumentClick, true);
+
+        if (this.searchable) {
+            const isMulti = this.hasAttribute("multiple");
+            if (!isMulti && this.searchInput) {
+                // Restore selected label in the inline input
+                const selectedLabel = this.value ? this.getDisplayText() : "";
+                this.searchInput.value = selectedLabel;
+                this.searchInput.placeholder = selectedLabel
+                    ? ""
+                    : this.getAttribute("placeholder") || "Select...";
+            } else if (isMulti && this.searchInput) {
+                this.searchInput.value = "";
+            }
+            this._filterOptions("");
+        }
 
         if (this._onScrollOrResize) {
             window.removeEventListener("scroll", this._onScrollOrResize, true);
@@ -213,24 +279,102 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
+    _filterOptions(query) {
+        if (!this.dropdown) return;
+        const q = query.toLowerCase();
+        let visibleCount = 0;
+
+        this.dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
+            const matches = !q || item.textContent.toLowerCase().includes(q);
+            item.style.display = matches ? "" : "none";
+            if (matches) visibleCount++;
+        });
+
+        const noResults = this.dropdown.querySelector(".no-results");
+        if (noResults)
+            noResults.style.display = visibleCount === 0 ? "" : "none";
+    }
+
     queryRefs() {
         this.selectContainer =
             this.shadowRoot.querySelector(".select-container");
         this.dropdown = this.shadowRoot.querySelector(".dropdown");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
         this.displayElement = this.shadowRoot.querySelector(".value-display");
+        this.searchInput = this.shadowRoot.querySelector(".search-input");
+        this.clearButton = this.shadowRoot.querySelector(".clear-button");
     }
 
     attachEventListeners() {
-        this.selectContainer.addEventListener("click", () =>
-            this.toggleDropdown(),
-        );
+        const isSearchable = this.searchable;
+        const isMulti = this.hasAttribute("multiple");
+        const isTagMode = this.getAttribute("display-mode") === "tag";
+
+        if (isSearchable) {
+            // Container click → focus the search input (input focus will open the dropdown)
+            this.selectContainer.addEventListener("click", (e) => {
+                if (!e.target.closest(".chevron-icon")) {
+                    this.searchInput?.focus();
+                }
+            });
+
+            // Chevron → toggle
+            const chevronEl = this.shadowRoot.querySelector(".chevron-icon");
+            chevronEl?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.toggleDropdown();
+            });
+
+            // Input focus → open dropdown
+            this.searchInput?.addEventListener("focus", () => {
+                if (!this.dropdown.classList.contains("open")) {
+                    this._openDropdown();
+                }
+            });
+
+            // Input → filter
+            this.searchInput?.addEventListener("input", (e) => {
+                this._filterOptions(e.target.value);
+            });
+
+            // Prevent input click from bubbling to container (avoid re-focusing)
+            this.searchInput?.addEventListener("click", (e) =>
+                e.stopPropagation(),
+            );
+        } else {
+            this.selectContainer.addEventListener("click", () =>
+                this.toggleDropdown(),
+            );
+        }
+
+        // Clear button click → clear selection
+        this.clearButton?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.value = "";
+            this._filterOptions("");
+            if (this.searchInput) {
+                this.searchInput.value = "";
+                this.searchInput.placeholder =
+                    this.getAttribute("placeholder") || "Select...";
+                this.searchInput.focus();
+                if (!this.dropdown.classList.contains("open")) {
+                    this._openDropdown();
+                }
+            }
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: "" },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+            this.updateValidation();
+        });
 
         this.dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
             item.addEventListener("click", () => {
                 const val = item.getAttribute("data-value");
                 const isRequired = this.hasAttribute("required");
-                const isMulti = this.hasAttribute("multiple");
 
                 if (isMulti) {
                     if (this.selectedValues.has(val)) {
@@ -263,7 +407,18 @@ export class YumeSelect extends HTMLElement {
                 );
 
                 this.updateValidation();
-                this.closeDropdown();
+
+                if (isSearchable && isMulti && isTagMode) {
+                    // Keep dropdown open for multi-tag searchable; clear and refocus input
+                    if (this.searchInput) {
+                        this.searchInput.value = "";
+                        this._filterOptions("");
+                        this.searchInput.focus();
+                    }
+                    this.updateSelectedStyles();
+                } else {
+                    this.closeDropdown();
+                }
             });
         });
     }
@@ -274,7 +429,14 @@ export class YumeSelect extends HTMLElement {
 
         if (!isMulti || !isTagMode || !this.displayElement) return;
 
+        const isSearchable = this.searchable;
         const options = this.getOptions();
+
+        // Preserve the search input node before clearing
+        const existingInput = isSearchable
+            ? this.displayElement.querySelector(".search-input")
+            : null;
+
         this.displayElement.innerHTML = "";
 
         const selected = options.filter((opt) =>
@@ -285,7 +447,7 @@ export class YumeSelect extends HTMLElement {
             const tag = document.createElement("y-tag");
             tag.setAttribute("removable", "");
             tag.setAttribute("size", "small");
-            tag.setAttribute("color", "primary");
+            tag.setAttribute("color", opt.color || "primary");
             tag.setAttribute("style-type", "filled");
             tag.textContent = opt.label;
             tag.dataset.value = opt.value;
@@ -311,13 +473,41 @@ export class YumeSelect extends HTMLElement {
 
             this.displayElement.appendChild(tag);
         });
+
+        // Re-append the search input after the tags
+        if (existingInput) {
+            this.displayElement.appendChild(existingInput);
+        }
     }
 
     updateDisplay() {
         const isTagMode = this.getAttribute("display-mode") === "tag";
+        const isSearchable = this.searchable;
+        const isMulti = this.hasAttribute("multiple");
+
+        const isClearable = this.clearable;
 
         if (isTagMode) {
             this.renderTags();
+        } else if (isSearchable && !isMulti && this.searchInput) {
+            // Update inline search input to reflect current selection
+            const isOpen = this.dropdown?.classList.contains("open");
+            if (!isOpen) {
+                const selectedLabel = this.value ? this.getDisplayText() : "";
+                this.searchInput.value = selectedLabel;
+                this.searchInput.placeholder = selectedLabel
+                    ? ""
+                    : this.getAttribute("placeholder") || "Select...";
+            }
+            if (this.clearButton) {
+                this.clearButton.style.display = this.value ? "flex" : "none";
+            }
+        } else if (isClearable && !isMulti && this.displayElement) {
+            // Clearable without search: update text and clear button visibility
+            this.displayElement.textContent = this.getDisplayText();
+            if (this.clearButton) {
+                this.clearButton.style.display = this.value ? "flex" : "none";
+            }
         } else if (this.displayElement) {
             this.displayElement.textContent = this.getDisplayText();
         }
@@ -360,6 +550,8 @@ export class YumeSelect extends HTMLElement {
         this.queryRefs();
         this.attachEventListeners();
         this.updateValidationState();
+        this.updateDisplay();
+        this.updateSelectedStyles();
     }
 
     applyStyles() {
@@ -458,6 +650,13 @@ export class YumeSelect extends HTMLElement {
                 display: block;
             }
 
+            .no-results {
+                padding: var(--spacing-small, 6px);
+                color: var(--component-select-label-color);
+                text-align: center;
+                font-size: 0.875em;
+            }
+
             .dropdown-item {
                 padding: var(--spacing-small, 6px);
                 cursor: pointer;
@@ -480,6 +679,40 @@ export class YumeSelect extends HTMLElement {
                 flex-wrap: wrap;
                 align-items: center;
                 gap: var(--spacing-x-small);
+            }
+
+            .search-input {
+                flex: 1;
+                min-width: 60px;
+                border: none;
+                background: transparent;
+                color: inherit;
+                font-family: inherit;
+                font-size: 1em;
+                outline: none;
+                padding: 0;
+                cursor: text;
+            }
+
+            .search-input::placeholder {
+                color: var(--component-select-label-color);
+            }
+
+            .clear-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: none;
+                border: none;
+                padding: 2px;
+                cursor: pointer;
+                color: inherit;
+                opacity: 0.6;
+                flex-shrink: 0;
+            }
+
+            .clear-button:hover {
+                opacity: 1;
             }
 
             .label-wrapper {
@@ -514,14 +747,48 @@ export class YumeSelect extends HTMLElement {
         const isLabelTop = labelPosition === "top";
         const isInvalid = this.hasAttribute("invalid");
         const isMulti = this.hasAttribute("multiple");
+        const isTagMode = this.getAttribute("display-mode") === "tag";
+        const isSearchable = this.searchable;
 
+        const isClearable = this.clearable;
+        const showClearButton = (isSearchable || isClearable) && !isMulti;
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
+        const placeholder = this.getAttribute("placeholder") || "Select...";
+
+        let containerInner;
+        if (isSearchable && !isMulti) {
+            // Single searchable: inline input replacing the value display
+            containerInner = `
+                <input class="search-input" type="text" placeholder="${placeholder}" autocomplete="off">
+                <button class="clear-button" style="display:none" tabindex="-1" type="button">
+                    <y-icon name="close" size="small"></y-icon>
+                </button>
+            `;
+        } else if (isSearchable && isMulti && isTagMode) {
+            // Multi-tag searchable: input lives inside the value display after tags
+            containerInner = `
+                <div class="value-display">
+                    <input class="search-input" type="text" placeholder="${placeholder}" autocomplete="off">
+                </div>
+            `;
+        } else if (showClearButton) {
+            // Clearable but not searchable: value display + clear button
+            containerInner = `
+                <div class="value-display">${this.getDisplayText()}</div>
+                <button class="clear-button" style="display:none" tabindex="-1" type="button">
+                    <y-icon name="close" size="small"></y-icon>
+                </button>
+            `;
+        } else {
+            // Default
+            containerInner = `<div class="value-display">${this.getDisplayText()}</div>`;
+        }
 
         return `
             <div class="select-wrapper">
                 ${isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
-                <div class="select-container ${isInvalid ? "is-invalid" : ""}" tabindex="0">
-                    <div class="value-display">${this.getDisplayText()}</div>
+                <div class="select-container ${isInvalid ? "is-invalid" : ""}" tabindex="${isSearchable ? "-1" : "0"}">
+                    ${containerInner}
                     <div class="chevron-icon" part="chevron-icon">
                         ${chevronDown}
                     </div>
@@ -537,6 +804,7 @@ export class YumeSelect extends HTMLElement {
                     `,
                         )
                         .join("")}
+                    <div class="no-results" style="display:none">No results</div>
                 </div>
             </div>
         `;

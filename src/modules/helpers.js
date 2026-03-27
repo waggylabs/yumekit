@@ -20,6 +20,15 @@ export function getColorVarPair(color, fallbackColor = "base") {
         help: ["var(--help-content--)", "var(--help-content-inverse)"],
     };
     if (map[color]) return map[color];
+    // Custom CSS color (hex, rgb/rgba, hsl/hsla) — use raw value with auto-contrasted text
+    if (
+        color &&
+        (color.startsWith("#") ||
+            color.startsWith("rgb") ||
+            color.startsWith("hsl"))
+    ) {
+        return [color, contrastTextColor(color)];
+    }
     if (fallbackColor === null) return [color, "var(--base-content-inverse)"];
     return map[fallbackColor] || map.base;
 }

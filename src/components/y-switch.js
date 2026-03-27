@@ -10,6 +10,7 @@ class YumeSwitch extends HTMLElement {
             "label-position",
             "size",
             "value",
+            "color",
         ];
     }
 
@@ -167,6 +168,20 @@ class YumeSwitch extends HTMLElement {
         this.style.setProperty("--switch-font-size", fontMap[size]);
     }
 
+    _resolveToggleColor() {
+        const color = this.getAttribute("color") || "primary";
+        const predefined = {
+            primary: "var(--primary-content--)",
+            secondary: "var(--secondary-content--)",
+            base: "var(--base-content--)",
+            success: "var(--success-content--)",
+            warning: "var(--warning-content--)",
+            error: "var(--error-content--)",
+            help: "var(--help-content--)",
+        };
+        return predefined[color] || color;
+    }
+
     updateTogglePosition() {
         const isChecked = this.checked;
         const showToggleLabels =
@@ -182,9 +197,7 @@ class YumeSwitch extends HTMLElement {
         );
         this.style.setProperty(
             "--toggle-bg",
-            isChecked
-                ? "var(--primary-content--)"
-                : "var(--base-content-light)",
+            isChecked ? this._resolveToggleColor() : "var(--base-content-light)",
         );
         this.style.setProperty(
             "--toggle-transition",

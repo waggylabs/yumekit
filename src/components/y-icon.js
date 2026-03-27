@@ -202,7 +202,15 @@ export class YumeIcon extends HTMLElement {
             error: "var(--error-content--, #b80421)",
             help: "var(--help-content--, #5405ff)",
         };
-        return map[color] || map.base;
+        if (map[color]) return map[color];
+        if (
+            color &&
+            (color.startsWith("#") ||
+                color.startsWith("rgb") ||
+                color.startsWith("hsl"))
+        )
+            return color;
+        return map.base;
     }
 
     _getSize(size) {

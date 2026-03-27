@@ -1,4 +1,5 @@
 import { close as closeSvg } from "../icons/index.js";
+import { parseColor, contrastTextColor } from "../modules/helpers.js";
 
 export class YumeTag extends HTMLElement {
     static get observedAttributes() {
@@ -114,7 +115,12 @@ export class YumeTag extends HTMLElement {
             ],
         };
 
-        const [content, hover, background, inverse, flatBackground] = vars[color] || vars.base;
+        const varEntry = vars[color];
+        const isCustomColor =
+            !varEntry &&
+            (color.startsWith("#") ||
+                color.startsWith("rgb") ||
+                color.startsWith("hsl"));
 
         const borderRadius =
             shape === "round"
@@ -171,6 +177,14 @@ export class YumeTag extends HTMLElement {
             }
         `;
 
+        // Custom color (hex / rgb / hsl not in the predefined set)
+        if (isCustomColor) {
+            return baseStyle + this._getCustomColorVariant(color, styleType);
+        }
+
+        const [content, hover, background, inverse, flatBackground] =
+            varEntry || vars.base;
+
         const styleVariants = {
             filled: `
                 .tag {
@@ -204,6 +218,48 @@ export class YumeTag extends HTMLElement {
         };
 
         return baseStyle + (styleVariants[styleType] || styleVariants.filled);
+    }
+
+    /**
+     * Generates style variant CSS for a custom (non-predefined) color value.
+     * @param {string} color — any valid CSS color (hex, rgb, rgba, etc.)
+     * @param {string} styleType — "filled" | "outlined" | "flat"
+     * @returns {string}
+     */
+    _getCustomColorVariant(color, styleType) {
+        const textColor = contrastTextColor(color);
+        const variants = {
+            filled: `
+                .tag {
+                    background: ${color};
+                    color: ${textColor};
+                }
+                .remove {
+                    color: ${textColor};
+                }
+            `,
+            outlined: `
+                .tag {
+                    border: 1px solid ${color};
+                    background: transparent;
+                    color: ${color};
+                }
+                .remove {
+                    color: ${color};
+                }
+            `,
+            flat: `
+                .tag {
+                    background: color-mix(in srgb, ${color} 20%, transparent);
+                    border-color: transparent;
+                    color: ${color};
+                }
+                .remove {
+                    color: ${color};
+                }
+            `,
+        };
+        return variants[styleType] || variants.filled;
     }
 }
 
