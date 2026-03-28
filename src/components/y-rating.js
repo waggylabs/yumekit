@@ -106,6 +106,12 @@ export class YumeRating extends HTMLElement {
         const iconSizePx = { small: "18px", medium: "24px", large: "32px" }[size] || "24px";
         const gapPx = { small: "2px", medium: "4px", large: "6px" }[size] || "4px";
 
+        const isCustomColor =
+            color.startsWith("#") ||
+            color.startsWith("rgb") ||
+            color.startsWith("hsl");
+        const filledColor = isCustomColor ? color : `var(--${color}-content--)`;
+
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
@@ -134,7 +140,7 @@ export class YumeRating extends HTMLElement {
             }
 
             .icon.filled {
-                color: var(--${color}-content--);
+                color: ${filledColor};
             }
 
             .icon svg {
