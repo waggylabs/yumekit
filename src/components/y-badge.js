@@ -1,3 +1,5 @@
+import { contrastTextColor } from "../modules/helpers.js";
+
 export class YumeBadge extends HTMLElement {
     static get observedAttributes() {
         return ["value", "position", "alignment", "color", "size"];
@@ -69,7 +71,7 @@ export class YumeBadge extends HTMLElement {
             error: ["var(--error-content--)", "var(--error-content-inverse)"],
             help: ["var(--help-content--)", "var(--help-content-inverse)"],
         };
-        return colorMap[color] || [color, "var(--neutral-white, #fff)"];
+        return colorMap[color] || [color, contrastTextColor(color)];
     }
 
     getBadgePosition(position, alignment) {
