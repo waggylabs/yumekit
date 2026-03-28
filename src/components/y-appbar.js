@@ -9,6 +9,30 @@ import {
     menu,
 } from "../icons/index.js";
 
+const SIZE_CONFIG = {
+    small: {
+        padding: "var(--spacing-x-small, 4px)",
+        collapsedWidth: "var(--component-appbar-collapsed-width-small, 40px)",
+        bodyGap: "2px",
+        buttonSize: "small",
+        iconSize: "small",
+    },
+    medium: {
+        padding: "var(--spacing-small, 6px)",
+        collapsedWidth: "var(--component-appbar-collapsed-width-medium, 52px)",
+        bodyGap: "3px",
+        buttonSize: "medium",
+        iconSize: "medium",
+    },
+    large: {
+        padding: "var(--spacing-medium, 8px)",
+        collapsedWidth: "var(--component-appbar-collapsed-width-large, 64px)",
+        bodyGap: "4px",
+        buttonSize: "large",
+        iconSize: "large",
+    },
+};
+
 export class YumeAppbar extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -198,6 +222,130 @@ export class YumeAppbar extends HTMLElement {
         });
     }
 
+    _initRender() {
+        this.shadowRoot.innerHTML = "";
+        this._idCounter = 0;
+    }
+
+    _makeSlot(name) {
+        const slot = document.createElement("slot");
+        slot.name = name;
+        return slot;
+    }
+
+    _buildHeader(cfg) {
+        const header = document.createElement("div");
+        header.className = "appbar-header";
+        header.setAttribute("part", "header");
+
+        const headerContent = document.createElement("div");
+        headerContent.className = "header-content";
+
+        const logoWrapper = document.createElement("div");
+        logoWrapper.className = "logo-wrapper";
+        logoWrapper.appendChild(this._makeSlot("logo"));
+        headerContent.appendChild(logoWrapper);
+
+        const titleWrapper = document.createElement("div");
+        titleWrapper.className = "header-title";
+        titleWrapper.appendChild(this._makeSlot("title"));
+        headerContent.appendChild(titleWrapper);
+
+        header.appendChild(headerContent);
+        header.appendChild(this._makeSlot("header"));
+        return header;
+    }
+
+    _buildNavItem(item, cfg, isVertical, isCollapsed, menuDir) {
+        const hasChildren = item.children?.length > 0;
+        const wrapper = document.createElement("div");
+        const btn = document.createElement("y-button");
+        const btnId = this._uid("appbar-btn");
+
+        wrapper.className = "nav-item";
+        btn.id = btnId;
+        btn.setAttribute("color", this._isItemActive(item) ? "primary" : "base");
+        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("size", cfg.buttonSize);
+
+        if (item.icon) {
+            if (item.icon.trim().startsWith("<")) {
+                const iconEl = document.createElement("span");
+                iconEl.slot = "left-icon";
+                iconEl.setAttribute("part", "icon");
+                iconEl.innerHTML = item.icon;
+                btn.appendChild(iconEl);
+            } else {
+                const iconEl = document.createElement("y-icon");
+                iconEl.slot = "left-icon";
+                iconEl.setAttribute("part", "icon");
+                iconEl.setAttribute("name", item.icon);
+                iconEl.setAttribute("size", cfg.iconSize);
+                btn.appendChild(iconEl);
+            }
+        }
+
+        if (item.text && !isCollapsed) {
+            btn.appendChild(document.createTextNode(item.text));
+        }
+
+        if (hasChildren && !isCollapsed) {
+            const arrow = document.createElement("span");
+            arrow.slot = "right-icon";
+            arrow.innerHTML = isVertical ? chevronRight : chevronDown;
+            btn.appendChild(arrow);
+        }
+
+        if (item.href && !hasChildren) {
+            btn.addEventListener("click", () => {
+                window.location.href = item.href;
+            });
+        }
+
+        if (item.slot) {
+            const slot = this._makeSlot(item.slot);
+            slot.appendChild(btn);
+            wrapper.appendChild(slot);
+        } else {
+            wrapper.appendChild(btn);
+        }
+
+        if (hasChildren) {
+            const menuEl = document.createElement("y-menu");
+            menuEl.setAttribute("anchor", btnId);
+            menuEl.setAttribute("direction", menuDir);
+            menuEl.setAttribute("size", cfg.buttonSize);
+            menuEl.items = item.children;
+            wrapper.appendChild(menuEl);
+        }
+
+        return wrapper;
+    }
+
+    _buildCollapseButton(cfg, isCollapsed) {
+        const btn = document.createElement("y-button");
+        btn.setAttribute("color", "base");
+        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("size", cfg.buttonSize);
+        btn.setAttribute(
+            "aria-label",
+            isCollapsed ? "Expand sidebar" : "Collapse sidebar",
+        );
+        btn.className = "collapse-btn";
+
+        const icon = document.createElement("span");
+        icon.slot = "left-icon";
+        icon.innerHTML = isCollapsed ? expandRight : expandLeft;
+        btn.appendChild(icon);
+
+        if (!isCollapsed) {
+            btn.appendChild(document.createTextNode("Collapse"));
+        }
+
+        btn.addEventListener("click", this._onCollapseClick);
+        return btn;
+    }
+
     render() {
         if (this._isMobile) {
             this._renderMobile();
@@ -207,32 +355,10 @@ export class YumeAppbar extends HTMLElement {
     }
 
     _renderMobile() {
-        const size = this.size;
+        this._initRender();
+        const cfg = SIZE_CONFIG[this.size] || SIZE_CONFIG.medium;
 
-        const sizeConfig = {
-            small: {
-                padding: "var(--spacing-x-small, 4px)",
-                buttonSize: "small",
-                iconSize: "small",
-            },
-            medium: {
-                padding: "var(--spacing-small, 6px)",
-                buttonSize: "medium",
-                iconSize: "medium",
-            },
-            large: {
-                padding: "var(--spacing-medium, 8px)",
-                buttonSize: "large",
-                iconSize: "large",
-            },
-        };
-
-        this.shadowRoot.innerHTML = "";
-        this._idCounter = 0;
-
-        const cfg = sizeConfig[size] || sizeConfig.medium;
         const style = document.createElement("style");
-
         style.textContent = `
             :host {
                 display: block;
@@ -297,6 +423,11 @@ export class YumeAppbar extends HTMLElement {
             ::slotted(*) {
                 display: block;
             }
+            span[slot="left-icon"] svg,
+            span[slot="right-icon"] svg {
+                width: var(--component-icon-size-large, 1.25em);
+                height: var(--component-icon-size-large, 1.25em);
+            }
         `;
         this.shadowRoot.appendChild(style);
 
@@ -321,7 +452,6 @@ export class YumeAppbar extends HTMLElement {
         menuIcon.slot = "left-icon";
         menuIcon.innerHTML = menu;
         menuBtn.appendChild(menuIcon);
-
         startSection.appendChild(menuBtn);
 
         const navItems = this.items;
@@ -333,75 +463,33 @@ export class YumeAppbar extends HTMLElement {
             mobileMenu.items = this._toMenuItems(navItems);
             startSection.appendChild(mobileMenu);
         }
-
         bar.appendChild(startSection);
 
         /* ── Center: logo + title ── */
         const centerSection = document.createElement("div");
         centerSection.className = "mobile-center";
-
-        const logoSlot = document.createElement("slot");
-        logoSlot.name = "logo";
-        centerSection.appendChild(logoSlot);
-
-        const titleSlot = document.createElement("slot");
-        titleSlot.name = "title";
-        centerSection.appendChild(titleSlot);
-
+        centerSection.appendChild(this._makeSlot("logo"));
+        centerSection.appendChild(this._makeSlot("title"));
         bar.appendChild(centerSection);
 
         /* ── Right: footer slot ── */
         const endSection = document.createElement("div");
         endSection.className = "mobile-end";
         endSection.setAttribute("part", "footer");
-
-        const footerSlot = document.createElement("slot");
-        footerSlot.name = "footer";
-        endSection.appendChild(footerSlot);
-
+        endSection.appendChild(this._makeSlot("footer"));
         bar.appendChild(endSection);
+
         this.shadowRoot.appendChild(bar);
     }
 
     _renderDesktop() {
+        this._initRender();
         const isVertical = this.orientation === "vertical";
         const isCollapsed = this.collapsed && isVertical;
-        const size = this.size;
+        const cfg = SIZE_CONFIG[this.size] || SIZE_CONFIG.medium;
         const menuDir = this.menuDirection || (isVertical ? "right" : "down");
 
-        const sizeConfig = {
-            small: {
-                padding: "var(--spacing-x-small, 4px)",
-                collapsedWidth:
-                    "var(--component-appbar-collapsed-width-small, 40px)",
-                bodyGap: "2px",
-                buttonSize: "small",
-                iconSize: "small",
-            },
-            medium: {
-                padding: "var(--spacing-small, 6px)",
-                collapsedWidth:
-                    "var(--component-appbar-collapsed-width-medium, 52px)",
-                bodyGap: "3px",
-                buttonSize: "medium",
-                iconSize: "medium",
-            },
-            large: {
-                padding: "var(--spacing-medium, 8px)",
-                collapsedWidth:
-                    "var(--component-appbar-collapsed-width-large, 64px)",
-                bodyGap: "4px",
-                buttonSize: "large",
-                iconSize: "large",
-            },
-        };
-
-        this.shadowRoot.innerHTML = "";
-        this._idCounter = 0;
-
-        const cfg = sizeConfig[size] || sizeConfig.medium;
         const style = document.createElement("style");
-
         style.textContent = `
             :host {
                 display: block;
@@ -508,7 +596,7 @@ export class YumeAppbar extends HTMLElement {
 
             .appbar.vertical .appbar-header {
                 border-bottom: var(--component-appbar-inner-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                padding: var(--_appbar-padding) 0;
+                padding-bottom: var(--_appbar-padding);
                 margin-bottom: var(--_appbar-padding);
             }
             .appbar.vertical .appbar-footer {
@@ -535,9 +623,9 @@ export class YumeAppbar extends HTMLElement {
                 gap: var(--spacing-small, 8px);
                 overflow: hidden;
             }
-            .appbar.horizontal .header-content,
             .appbar.vertical .header-content {
-                flex-direction: row;
+                padding: var(--_button-padding) 0;
+                gap: var(--_button-padding);
             }
             .logo-wrapper {
                 width: var(--_icon-col-width);
@@ -545,6 +633,9 @@ export class YumeAppbar extends HTMLElement {
                 justify-content: center;
                 align-items: center;
                 flex-shrink: 0;
+            }
+            .appbar.vertical .logo-wrapper {
+                margin-left: var(--component-button-border-width, 2px);
             }
 
             .header-title {
@@ -627,164 +718,46 @@ export class YumeAppbar extends HTMLElement {
             ::slotted(*) {
                 display: block;
             }
+            span[slot="left-icon"] svg,
+            span[slot="right-icon"] svg {
+                width: var(--component-icon-size-large, 1.25em);
+                height: var(--component-icon-size-large, 1.25em);
+            }
         `;
         this.shadowRoot.appendChild(style);
 
         const bar = document.createElement("div");
         bar.className = `appbar ${isVertical ? "vertical" : "horizontal"}`;
-
         if (isCollapsed) bar.classList.add("collapsed");
-
         bar.setAttribute("role", "navigation");
         bar.style.setProperty("--_appbar-padding", cfg.padding);
         bar.style.setProperty("--_appbar-collapsed-width", cfg.collapsedWidth);
         bar.style.setProperty("--_appbar-body-gap", cfg.bodyGap);
+        bar.style.setProperty("--_button-padding", `var(--component-button-padding-${cfg.buttonSize})`);
         bar.style.setProperty(
             "--_icon-col-width",
             `calc(${cfg.collapsedWidth} - 2 * var(--_appbar-padding) - 2 * var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) - 2 * var(--component-button-border-width, 1px))`,
         );
 
-        const header = document.createElement("div");
-        header.className = "appbar-header";
-        header.setAttribute("part", "header");
-
-        const headerContent = document.createElement("div");
-        headerContent.className = "header-content";
-
-        const logoWrapper = document.createElement("div");
-        logoWrapper.className = "logo-wrapper";
-
-        const logoSlot = document.createElement("slot");
-        logoSlot.name = "logo";
-        logoWrapper.appendChild(logoSlot);
-        headerContent.appendChild(logoWrapper);
-
-        const titleWrapper = document.createElement("div");
-        titleWrapper.className = "header-title";
-
-        const titleSlot = document.createElement("slot");
-        titleSlot.name = "title";
-        titleWrapper.appendChild(titleSlot);
-        headerContent.appendChild(titleWrapper);
-
-        const headerSlot = document.createElement("slot");
-        headerSlot.name = "header";
-        header.appendChild(headerContent);
-        header.appendChild(headerSlot);
-        bar.appendChild(header);
+        bar.appendChild(this._buildHeader(cfg));
 
         const body = document.createElement("div");
         body.className = "appbar-body";
         body.setAttribute("part", "body");
-
-        const navItems = this.items;
-
-        navItems.forEach((item) => {
-            const hasChildren = item.children?.length > 0;
-            const wrapper = document.createElement("div");
-            const btn = document.createElement("y-button");
-            const btnId = this._uid("appbar-btn");
-            const isActive = this._isItemActive(item);
-
-            wrapper.className = "nav-item";
-            btn.id = btnId;
-
-            btn.setAttribute("color", isActive ? "primary" : "base");
-            btn.setAttribute("style-type", "flat");
-            btn.setAttribute("size", cfg.buttonSize);
-
-            if (item.icon) {
-                if (item.icon.trim().startsWith("<")) {
-                    const iconEl = document.createElement("span");
-                    iconEl.slot = "left-icon";
-                    iconEl.setAttribute("part", "icon");
-                    iconEl.innerHTML = item.icon;
-                    btn.appendChild(iconEl);
-                } else {
-                    const iconEl = document.createElement("y-icon");
-                    iconEl.slot = "left-icon";
-                    iconEl.setAttribute("part", "icon");
-                    iconEl.setAttribute("name", item.icon);
-                    iconEl.setAttribute("size", cfg.iconSize);
-                    btn.appendChild(iconEl);
-                }
-            }
-
-            if (item.text && !isCollapsed) {
-                const label = document.createTextNode(item.text);
-                btn.appendChild(label);
-            }
-
-            if (hasChildren && !isCollapsed) {
-                const arrow = document.createElement("span");
-                arrow.slot = "right-icon";
-                arrow.innerHTML = isVertical ? chevronRight : chevronDown;
-                btn.appendChild(arrow);
-            }
-
-            if (item.href && !hasChildren) {
-                btn.addEventListener("click", () => {
-                    window.location.href = item.href;
-                });
-            }
-
-            if (item.slot) {
-                const slot = document.createElement("slot");
-                slot.name = item.slot;
-                slot.appendChild(btn);
-                wrapper.appendChild(slot);
-            } else {
-                wrapper.appendChild(btn);
-            }
-
-            if (hasChildren) {
-                const menu = document.createElement("y-menu");
-                menu.setAttribute("anchor", btnId);
-                menu.setAttribute("direction", menuDir);
-                menu.setAttribute("size", cfg.buttonSize);
-                menu.items = item.children;
-                wrapper.appendChild(menu);
-            }
-
-            body.appendChild(wrapper);
+        this.items.forEach((item) => {
+            body.appendChild(this._buildNavItem(item, cfg, isVertical, isCollapsed, menuDir));
         });
-
         bar.appendChild(body);
 
         const footer = document.createElement("div");
         footer.className = "appbar-footer";
         footer.setAttribute("part", "footer");
-
-        const footerSlot = document.createElement("slot");
-        footerSlot.name = "footer";
-        footer.appendChild(footerSlot);
-
+        footer.appendChild(this._makeSlot("footer"));
         if (isVertical) {
-            const collapseBtn = document.createElement("y-button");
-            collapseBtn.setAttribute("color", "base");
-            collapseBtn.setAttribute("style-type", "flat");
-            collapseBtn.setAttribute("size", cfg.buttonSize);
-            collapseBtn.setAttribute(
-                "aria-label",
-                isCollapsed ? "Expand sidebar" : "Collapse sidebar",
-            );
-            collapseBtn.className = "collapse-btn";
-
-            const collapseIcon = document.createElement("span");
-            collapseIcon.slot = "left-icon";
-            collapseIcon.innerHTML = isCollapsed ? expandRight : expandLeft;
-            collapseBtn.appendChild(collapseIcon);
-
-            if (!isCollapsed) {
-                const collapseLabel = document.createTextNode("Collapse");
-                collapseBtn.appendChild(collapseLabel);
-            }
-
-            collapseBtn.addEventListener("click", this._onCollapseClick);
-            footer.appendChild(collapseBtn);
+            footer.appendChild(this._buildCollapseButton(cfg, isCollapsed));
         }
-
         bar.appendChild(footer);
+
         this.shadowRoot.appendChild(bar);
     }
 }
