@@ -156,13 +156,13 @@ export class YumeIcon extends HTMLElement {
 
     _getColor(color) {
         const map = {
-            base:      "var(--base-content--, #f7f7fa)",
-            primary:   "var(--primary-content--, #0576ff)",
+            base: "var(--base-content--, #f7f7fa)",
+            primary: "var(--primary-content--, #0576ff)",
             secondary: "var(--secondary-content--, #04b8b8)",
-            success:   "var(--success-content--, #2dba73)",
-            warning:   "var(--warning-content--, #d17f04)",
-            error:     "var(--error-content--, #b80421)",
-            help:      "var(--help-content--, #5405ff)",
+            success: "var(--success-content--, #2dba73)",
+            warning: "var(--warning-content--, #d17f04)",
+            error: "var(--error-content--, #b80421)",
+            help: "var(--help-content--, #5405ff)",
         };
         if (map[color]) return map[color];
         if (color && (color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl"))) {
@@ -174,9 +174,9 @@ export class YumeIcon extends HTMLElement {
     _getSize(size) {
         const map = {
             "x-small": "var(--component-icon-size-x-small, 10px)",
-            small:     "var(--component-icon-size-small, 14px)",
-            medium:    "var(--component-icon-size-medium, 18px)",
-            large:     "var(--component-icon-size-large, 22px)",
+            small: "var(--component-icon-size-small, 14px)",
+            medium: "var(--component-icon-size-medium, 18px)",
+            large: "var(--component-icon-size-large, 22px)",
             "x-large": "var(--component-icon-size-x-large, 28px)",
         };
         return map[size] || map.medium;

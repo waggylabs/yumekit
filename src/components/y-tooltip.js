@@ -17,9 +17,9 @@ export class YumeTooltip extends HTMLElement {
         this._visible = false;
         this._onMouseEnter = this._onMouseEnter.bind(this);
         this._onMouseLeave = this._onMouseLeave.bind(this);
-        this._onFocusIn    = this._onFocusIn.bind(this);
-        this._onFocusOut   = this._onFocusOut.bind(this);
-        this._onKeyDown    = this._onKeyDown.bind(this);
+        this._onFocusIn = this._onFocusIn.bind(this);
+        this._onFocusOut = this._onFocusOut.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
     }
 
     connectedCallback() {

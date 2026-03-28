@@ -115,12 +115,12 @@ export class YumeCard extends HTMLElement {
 
     _updateColorStyles() {
         const colorVars = {
-            primary:   ["--base-content--", "--primary-background-component",   "--primary-border"],
+            primary: ["--base-content--", "--primary-background-component", "--primary-border"],
             secondary: ["--base-content--", "--secondary-background-component", "--secondary-border"],
-            base:      ["--base-content--", "--base-background-component",      "--base-border"],
-            success:   ["--base-content--", "--success-background-component",   "--success-border"],
-            error:     ["--base-content--", "--error-background-component",     "--error-border"],
-            warning:   ["--base-content--", "--warning-background-component",   "--warning-border"],
+            base: ["--base-content--", "--base-background-component", "--base-border"],
+            success: ["--base-content--", "--success-background-component", "--success-border"],
+            error: ["--base-content--", "--error-background-component", "--error-border"],
+            warning: ["--base-content--", "--warning-background-component", "--warning-border"],
         };
 
         const [contentVar, bgVar, borderVar] = colorVars[this.color] || colorVars.base;

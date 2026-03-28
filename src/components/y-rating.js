@@ -7,6 +7,10 @@ export class YumeRating extends HTMLElement {
         return ["icon", "color", "max", "value", "size", "disabled", "readonly", "name"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this._internals = this.attachInternals();
@@ -34,28 +38,74 @@ export class YumeRating extends HTMLElement {
         this.render();
     }
 
-    /** @type {number} The current rating value. */
-    get value() {
-        return parseInt(this.getAttribute("value") || "0", 10);
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
+
+    /** Color theme for the icons (default "primary"). */
+    get color() { return this.getAttribute("color") || "primary"; }
+    set color(val) { this.setAttribute("color", val); }
+
+    /** Whether the rating is disabled. */
+    get disabled() { return this.hasAttribute("disabled"); }
+    set disabled(val) {
+        if (val) this.setAttribute("disabled", "");
+        else this.removeAttribute("disabled");
     }
 
+    /** Icon name used for the rating stars (default "star"). */
+    get icon() { return this.getAttribute("icon") || "star"; }
+    set icon(val) { this.setAttribute("icon", val); }
+
+    /** Maximum rating value (default 5). */
+    get max() { return Math.max(1, parseInt(this.getAttribute("max") || "5", 10)); }
+    set max(val) { this.setAttribute("max", String(val)); }
+
+    /** The form name of the rating. */
+    get name() { return this.getAttribute("name") || ""; }
+    set name(val) { this.setAttribute("name", val); }
+
+    /** Whether the rating is read-only. */
+    get readonly() { return this.hasAttribute("readonly"); }
+    set readonly(val) {
+        if (val) this.setAttribute("readonly", "");
+        else this.removeAttribute("readonly");
+    }
+
+    /** Icon size: "small" | "medium" | "large" (default "medium"). */
+    get size() { return this.getAttribute("size") || "medium"; }
+    set size(val) { this.setAttribute("size", val); }
+
+    /** Current rating value (default 0). */
+    get value() { return parseInt(this.getAttribute("value") || "0", 10); }
     set value(val) {
         this.setAttribute("value", String(val));
         this._internals.setFormValue(String(val), this.getAttribute("name"));
     }
 
-    _updateIcons(activeIndex) {
-        this.shadowRoot.querySelectorAll(".icon").forEach((el) => {
-            const idx = parseInt(el.dataset.index, 10);
-            el.classList.toggle("filled", idx <= activeIndex);
-        });
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
+
+    render() {
+        const isInteractive = !this.disabled && !this.readonly;
+        const iconSvg = getIcon(this.icon);
+        const filledColor = this._getFilledColor(this.color);
+        const iconSizePx = this._getIconSize(this.size);
+        const gapPx = this._getIconGap(this.size);
+
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx)];
+        this.shadowRoot.innerHTML = this._buildHTML(isInteractive, iconSvg);
+        this._attachIconListeners();
     }
 
-    _attachIconListeners() {
-        const isDisabled = this.hasAttribute("disabled");
-        const isReadonly = this.hasAttribute("readonly");
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
 
-        if (isDisabled || isReadonly) return;
+    _attachIconListeners() {
+        const isInteractive = !this.disabled && !this.readonly;
+        if (!isInteractive) return;
 
         this.shadowRoot.querySelectorAll(".icon").forEach((el) => {
             const idx = parseInt(el.dataset.index, 10);
@@ -71,17 +121,14 @@ export class YumeRating extends HTMLElement {
             });
 
             el.addEventListener("click", () => {
-                // Clicking the current value clears the rating (unless required)
                 const next = idx === this.value && !this.hasAttribute("required") ? 0 : idx;
                 this.value = next;
                 this._updateIcons(next);
-                this.dispatchEvent(
-                    new CustomEvent("change", {
-                        detail: { value: next },
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
+                this.dispatchEvent(new CustomEvent("change", {
+                    detail: { value: next },
+                    bubbles: true,
+                    composed: true,
+                }));
             });
         });
 
@@ -91,34 +138,30 @@ export class YumeRating extends HTMLElement {
         });
     }
 
-    render() {
-        const iconName = this.getAttribute("icon") || "star";
-        const color = this.getAttribute("color") || "primary";
-        const max = Math.max(1, parseInt(this.getAttribute("max") || "5", 10));
-        const value = this.value;
-        const size = this.getAttribute("size") || "medium";
-        const isDisabled = this.hasAttribute("disabled");
-        const isReadonly = this.hasAttribute("readonly");
-        const isInteractive = !isDisabled && !isReadonly;
+    _buildHTML(isInteractive, iconSvg) {
+        const { max, value } = this;
+        const icons = Array.from({ length: max }, (_, i) => {
+            const idx = i + 1;
+            const isFilled = idx <= value;
+            return `<span
+                class="icon${isFilled ? " filled" : ""}"
+                data-index="${idx}"
+                part="icon"
+                ${isInteractive ? `role="radio" aria-label="${idx} of ${max}" tabindex="0"` : `aria-hidden="true"`}
+            >${iconSvg}</span>`;
+        }).join("");
 
-        const iconSvg = getIcon(iconName);
+        return `<div class="rating" part="rating" role="${isInteractive ? "radiogroup" : "img"}" aria-label="Rating: ${value} of ${max}">${icons}</div>`;
+    }
 
-        const iconSizePx = { small: "18px", medium: "24px", large: "32px" }[size] || "24px";
-        const gapPx = { small: "2px", medium: "4px", large: "6px" }[size] || "4px";
-
-        const isCustomColor =
-            color.startsWith("#") ||
-            color.startsWith("rgb") ||
-            color.startsWith("hsl");
-        const filledColor = isCustomColor ? color : `var(--${color}-content--)`;
-
+    _buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body);
-                opacity: ${isDisabled ? "0.5" : "1"};
-                pointer-events: ${isDisabled ? "none" : "auto"};
+                opacity: ${this.disabled ? "0.5" : "1"};
+                pointer-events: ${this.disabled ? "none" : "auto"};
             }
 
             .rating {
@@ -155,27 +198,27 @@ export class YumeRating extends HTMLElement {
             }
             ` : ""}
         `);
+        return sheet;
+    }
 
-        this.shadowRoot.adoptedStyleSheets = [sheet];
+    _getFilledColor(color) {
+        const isCustomColor = color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl");
+        return isCustomColor ? color : `var(--${color}-content--)`;
+    }
 
-        const icons = Array.from({ length: max }, (_, i) => {
-            const idx = i + 1;
-            const isFilled = idx <= value;
-            return `<span
-                class="icon${isFilled ? " filled" : ""}"
-                data-index="${idx}"
-                part="icon"
-                ${isInteractive ? `role="radio" aria-label="${idx} of ${max}" tabindex="0"` : `aria-hidden="true"`}
-            >${iconSvg}</span>`;
-        }).join("");
+    _getIconGap(size) {
+        return { small: "2px", medium: "4px", large: "6px" }[size] || "4px";
+    }
 
-        this.shadowRoot.innerHTML = `
-            <div class="rating" part="rating" role="${isInteractive ? "radiogroup" : "img"}" aria-label="Rating: ${value} of ${max}">
-                ${icons}
-            </div>
-        `;
+    _getIconSize(size) {
+        return { small: "18px", medium: "24px", large: "32px" }[size] || "24px";
+    }
 
-        this._attachIconListeners();
+    _updateIcons(activeIndex) {
+        this.shadowRoot.querySelectorAll(".icon").forEach((el) => {
+            const idx = parseInt(el.dataset.index, 10);
+            el.classList.toggle("filled", idx <= activeIndex);
+        });
     }
 }
 

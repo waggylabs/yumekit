@@ -267,7 +267,7 @@ class YumeSwitch extends HTMLElement {
             toggle.innerHTML = "";
 
             const offSlot = this.querySelector('[slot="off-label"]');
-            const onSlot  = this.querySelector('[slot="on-label"]');
+            const onSlot = this.querySelector('[slot="on-label"]');
 
             const offWrapper = document.createElement("span");
             offWrapper.className = "off";
@@ -284,13 +284,13 @@ class YumeSwitch extends HTMLElement {
 
     _resolveToggleColor() {
         const predefined = {
-            primary:   "var(--primary-content--)",
+            primary: "var(--primary-content--)",
             secondary: "var(--secondary-content--)",
-            base:      "var(--base-content--)",
-            success:   "var(--success-content--)",
-            warning:   "var(--warning-content--)",
-            error:     "var(--error-content--)",
-            help:      "var(--help-content--)",
+            base: "var(--base-content--)",
+            success: "var(--success-content--)",
+            warning: "var(--warning-content--)",
+            error: "var(--error-content--)",
+            help: "var(--help-content--)",
         };
         return predefined[this.color] || this.color;
     }
@@ -333,12 +333,12 @@ class YumeSwitch extends HTMLElement {
     }
 
     _updateSizeStyles() {
-        const heightMap = { small: "24px",  medium: "32px",  large: "40px" };
-        const widthMap  = { small: "44px",  medium: "56px",  large: "72px" };
-        const fontMap   = {
-            small:  "var(--font-size-small)",
+        const heightMap = { small: "24px", medium: "32px", large: "40px" };
+        const widthMap = { small: "44px", medium: "56px", large: "72px" };
+        const fontMap = {
+            small: "var(--font-size-small)",
             medium: "var(--font-size-label)",
-            large:  "var(--font-size-h4)",
+            large: "var(--font-size-h4)",
         };
         this.style.setProperty("--switch-height", heightMap[this.size]);
         this.style.setProperty("--switch-width-fixed", widthMap[this.size]);
@@ -349,10 +349,10 @@ class YumeSwitch extends HTMLElement {
     _updateToggleLabelDisplay() {
         const show = this.toggleLabel;
         this.style.setProperty("--show-toggle-label", show ? "inline-flex" : "none");
-        this.style.setProperty("--switch-width",    show ? "max-content"                      : "var(--switch-width-fixed)");
-        this.style.setProperty("--toggle-width",    show ? "auto"                             : "var(--toggle-size)");
-        this.style.setProperty("--toggle-padding",  show ? "0 var(--spacing-small)"           : "0");
-        this.style.setProperty("--toggle-radius",   show ? "var(--component-switch-border-radius)" : "9999px");
+        this.style.setProperty("--switch-width", show ? "max-content" : "var(--switch-width-fixed)");
+        this.style.setProperty("--toggle-width", show ? "auto" : "var(--toggle-size)");
+        this.style.setProperty("--toggle-padding", show ? "0 var(--spacing-small)" : "0");
+        this.style.setProperty("--toggle-radius", show ? "var(--component-switch-border-radius)" : "9999px");
     }
 
     _updateTogglePosition() {

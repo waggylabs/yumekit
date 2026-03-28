@@ -111,9 +111,9 @@ export class YumeAvatar extends HTMLElement {
 
     _getDimensions(size) {
         const map = {
-            small:  "var(--component-avatar-size-small, 27px)",
+            small: "var(--component-avatar-size-small, 27px)",
             medium: "var(--component-avatar-size-medium, 35px)",
-            large:  "var(--component-avatar-size-large, 51px)",
+            large: "var(--component-avatar-size-large, 51px)",
         };
         return map[size] || map.medium;
     }

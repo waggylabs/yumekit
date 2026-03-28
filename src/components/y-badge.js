@@ -99,13 +99,13 @@ export class YumeBadge extends HTMLElement {
 
     _getBadgeColors(color) {
         const colorMap = {
-            primary:   ["var(--primary-content--)",   "var(--primary-content-inverse)"],
+            primary: ["var(--primary-content--)", "var(--primary-content-inverse)"],
             secondary: ["var(--secondary-content--)", "var(--secondary-content-inverse)"],
-            base:      ["var(--base-content--)",      "var(--base-content-inverse)"],
-            success:   ["var(--success-content--)",   "var(--success-content-inverse)"],
-            warning:   ["var(--warning-content--)",   "var(--warning-content-inverse)"],
-            error:     ["var(--error-content--)",     "var(--error-content-inverse)"],
-            help:      ["var(--help-content--)",      "var(--help-content-inverse)"],
+            base: ["var(--base-content--)", "var(--base-content-inverse)"],
+            success: ["var(--success-content--)", "var(--success-content-inverse)"],
+            warning: ["var(--warning-content--)", "var(--warning-content-inverse)"],
+            error: ["var(--error-content--)", "var(--error-content-inverse)"],
+            help: ["var(--help-content--)", "var(--help-content-inverse)"],
         };
         return colorMap[color] || [color, contrastTextColor(color)];
     }
