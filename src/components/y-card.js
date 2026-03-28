@@ -5,6 +5,10 @@ export class YumeCard extends HTMLElement {
         return ["color", "raised"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -12,91 +16,64 @@ export class YumeCard extends HTMLElement {
     }
 
     connectedCallback() {
-        this.updateColorStyles();
-        this.updateElevationStyles();
+        this._updateColorStyles();
+        this._updateElevationStyles();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue) {
-            if (name === "color") {
-                this.updateColorStyles();
-            }
-            if (name === "raised") {
-                this.updateElevationStyles();
-            }
-            this.render();
-        }
+        if (oldValue === newValue) return;
+        if (name === "color") this._updateColorStyles();
+        if (name === "raised") this._updateElevationStyles();
+        this.render();
     }
 
-    updateColorStyles() {
-        const color = this.getAttribute("color") || "base";
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
-        const colorVars = {
-            primary: [
-                "--base-content--",
-                "--primary-background-component",
-                "--primary-border",
-                "--primary-background-active",
-            ],
-            secondary: [
-                "--base-content--",
-                "--secondary-background-component",
-                "--secondary-border",
-                "--secondary-background-active",
-            ],
-            base: [
-                "--base-content--",
-                "--base-background-component",
-                "--base-border",
-                "--base-background-active",
-            ],
-            success: [
-                "--base-content--",
-                "--success-background-component",
-                "--success-border",
-                "--success-background-active",
-            ],
-            error: [
-                "--base-content--",
-                "--error-background-component",
-                "--error-border",
-                "--error-background-active",
-            ],
-            warning: [
-                "--base-content--",
-                "--warning-background-component",
-                "--warning-border",
-                "--warning-background-active",
-            ],
-        };
+    /** Color theme for the card surface. */
+    get color() { return this.getAttribute("color") || "base"; }
+    set color(val) { this.setAttribute("color", val); }
 
-        const selected = colorVars[color] || colorVars.base;
-
-        this.style.setProperty("--card-content-color", `var(${selected[0]})`);
-        this.style.setProperty("--card-border-color", `var(${selected[2]})`);
-        this.style.setProperty("--card-background", `var(${selected[1]})`);
-        this.style.setProperty(
-            "--card-section-background",
-            `var(${selected[2]})`,
-        );
+    /** Whether the card uses a raised shadow instead of a border. */
+    get raised() { return this.hasAttribute("raised"); }
+    set raised(val) {
+        if (val) this.setAttribute("raised", "");
+        else this.removeAttribute("raised");
     }
 
-    updateElevationStyles() {
-        const isRaised = this.hasAttribute("raised");
-
-        if (isRaised) {
-            this.style.setProperty("--card-border-width", "0");
-            this.style.setProperty("--card-box-shadow", "var(--base-shadow)");
-        } else {
-            this.style.setProperty(
-                "--card-border-width",
-                "var(--component-card-border-width)",
-            );
-            this.style.setProperty("--card-box-shadow", "none");
-        }
-    }
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     render() {
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+
+        this.shadowRoot.innerHTML = `
+            <div class="image" part="image"><slot name="image"></slot></div>
+            <div class="header" part="header"><slot name="header"></slot></div>
+            <div class="body" part="body"><slot></slot></div>
+            <div class="footer" part="footer"><slot name="footer"></slot></div>
+        `;
+
+        const slotsConfig = { image: ".image", header: ".header", footer: ".footer" };
+        hideEmptySlotContainers(this.shadowRoot, slotsConfig);
+        this._bindSlotListeners(slotsConfig);
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _bindSlotListeners(slotsConfig) {
+        this.shadowRoot.querySelectorAll("slot").forEach((slot) => {
+            slot.addEventListener("slotchange", () =>
+                hideEmptySlotContainers(this.shadowRoot, slotsConfig),
+            );
+        });
+    }
+
+    _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
@@ -133,33 +110,34 @@ export class YumeCard extends HTMLElement {
                 margin: 0;
             }
         `);
+        return sheet;
+    }
 
-        this.shadowRoot.adoptedStyleSheets = [sheet];
+    _updateColorStyles() {
+        const colorVars = {
+            primary:   ["--base-content--", "--primary-background-component",   "--primary-border"],
+            secondary: ["--base-content--", "--secondary-background-component", "--secondary-border"],
+            base:      ["--base-content--", "--base-background-component",      "--base-border"],
+            success:   ["--base-content--", "--success-background-component",   "--success-border"],
+            error:     ["--base-content--", "--error-background-component",     "--error-border"],
+            warning:   ["--base-content--", "--warning-background-component",   "--warning-border"],
+        };
 
-        this.shadowRoot.innerHTML = `
-            <div class="image" part="image">
-                <slot name="image"></slot>
-            </div>
-            <div class="header" part="header">
-                <slot name="header"></slot>
-            </div>
-            <div class="body" part="body">
-                <slot></slot>
-            </div>
-            <div class="footer" part="footer">
-                <slot name="footer"></slot>
-            </div>
-        `;
+        const [contentVar, bgVar, borderVar] = colorVars[this.color] || colorVars.base;
+        this.style.setProperty("--card-content-color",    `var(${contentVar})`);
+        this.style.setProperty("--card-background",       `var(${bgVar})`);
+        this.style.setProperty("--card-border-color",     `var(${borderVar})`);
+        this.style.setProperty("--card-section-background", `var(${borderVar})`);
+    }
 
-        const slotsConfig = { image: ".image", header: ".header", footer: ".footer" };
-
-        hideEmptySlotContainers(this.shadowRoot, slotsConfig);
-
-        this.shadowRoot.querySelectorAll("slot").forEach((slot) => {
-            slot.addEventListener("slotchange", () =>
-                hideEmptySlotContainers(this.shadowRoot, slotsConfig),
-            );
-        });
+    _updateElevationStyles() {
+        if (this.raised) {
+            this.style.setProperty("--card-border-width", "0");
+            this.style.setProperty("--card-box-shadow", "var(--base-shadow)");
+        } else {
+            this.style.setProperty("--card-border-width", "var(--component-card-border-width)");
+            this.style.setProperty("--card-box-shadow", "none");
+        }
     }
 }
 
