@@ -5,6 +5,10 @@ export class YumeTooltip extends HTMLElement {
         return ["text", "position", "delay", "color"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -13,25 +17,25 @@ export class YumeTooltip extends HTMLElement {
         this._visible = false;
         this._onMouseEnter = this._onMouseEnter.bind(this);
         this._onMouseLeave = this._onMouseLeave.bind(this);
-        this._onFocusIn = this._onFocusIn.bind(this);
-        this._onFocusOut = this._onFocusOut.bind(this);
-        this._onKeyDown = this._onKeyDown.bind(this);
+        this._onFocusIn    = this._onFocusIn.bind(this);
+        this._onFocusOut   = this._onFocusOut.bind(this);
+        this._onKeyDown    = this._onKeyDown.bind(this);
     }
 
     connectedCallback() {
         this.render();
         this.addEventListener("mouseenter", this._onMouseEnter);
         this.addEventListener("mouseleave", this._onMouseLeave);
-        this.addEventListener("focusin", this._onFocusIn);
-        this.addEventListener("focusout", this._onFocusOut);
+        this.addEventListener("focusin",    this._onFocusIn);
+        this.addEventListener("focusout",   this._onFocusOut);
         document.addEventListener("keydown", this._onKeyDown);
     }
 
     disconnectedCallback() {
         this.removeEventListener("mouseenter", this._onMouseEnter);
         this.removeEventListener("mouseleave", this._onMouseLeave);
-        this.removeEventListener("focusin", this._onFocusIn);
-        this.removeEventListener("focusout", this._onFocusOut);
+        this.removeEventListener("focusin",    this._onFocusIn);
+        this.removeEventListener("focusout",   this._onFocusOut);
         document.removeEventListener("keydown", this._onKeyDown);
         clearTimeout(this._showTimeout);
         clearTimeout(this._hideTimeout);
@@ -42,53 +46,29 @@ export class YumeTooltip extends HTMLElement {
         this.render();
     }
 
-    /** The tooltip text content. */
-    get text() {
-        return this.getAttribute("text") || "";
-    }
-    set text(val) {
-        this.setAttribute("text", val);
-    }
-
-    /** Placement relative to the trigger: "top" | "bottom" | "left" | "right". */
-    get position() {
-        return this.getAttribute("position") || "top";
-    }
-    set position(val) {
-        this.setAttribute("position", val);
-    }
-
-    /** Delay in milliseconds before the tooltip appears. */
-    get delay() {
-        return parseInt(this.getAttribute("delay") ?? "200", 10);
-    }
-    set delay(val) {
-        this.setAttribute("delay", String(val));
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
     /** Color theme for the tooltip (e.g. "base", "primary", "error"). */
-    get color() {
-        return this.getAttribute("color") || "base";
-    }
-    set color(val) {
-        this.setAttribute("color", val);
-    }
+    get color() { return this.getAttribute("color") || "base"; }
+    set color(val) { this.setAttribute("color", val); }
 
-    /** Programmatically shows the tooltip after the configured delay. */
-    show() {
-        clearTimeout(this._hideTimeout);
+    /** Delay in milliseconds before the tooltip appears. */
+    get delay() { return parseInt(this.getAttribute("delay") ?? "200", 10); }
+    set delay(val) { this.setAttribute("delay", String(val)); }
 
-        this._showTimeout = setTimeout(() => {
-            this._visible = true;
-            const tip = this.shadowRoot.querySelector(".tooltip");
+    /** Placement relative to the trigger: "top" | "bottom" | "left" | "right". */
+    get position() { return this.getAttribute("position") || "top"; }
+    set position(val) { this.setAttribute("position", val); }
 
-            if (tip) {
-                const [, fg] = getColorVarPair(this.color);
-                tip.style.color = fg;
-                tip.classList.add("visible");
-            }
-        }, this.delay);
-    }
+    /** The tooltip text content. */
+    get text() { return this.getAttribute("text") || ""; }
+    set text(val) { this.setAttribute("text", val); }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     /** Immediately hides the tooltip. */
     hide() {
@@ -98,135 +78,135 @@ export class YumeTooltip extends HTMLElement {
         if (tip) tip.classList.remove("visible");
     }
 
-    _onMouseEnter() {
-        this.show();
-    }
-    _onMouseLeave() {
-        this.hide();
-    }
-    _onFocusIn() {
-        this.show();
-    }
-    _onFocusOut() {
-        this.hide();
-    }
-    _onKeyDown(e) {
-        if (e.key === "Escape" && this._visible) {
-            this.hide();
-        }
-    }
-
     render() {
-        const pos = this.position;
         const [bg, fg] = getColorVarPair(this.color);
-
         this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: inline-block;
-                    position: relative;
-                    font-family: var(--font-family-body, sans-serif);
-                }
-
-                .trigger {
-                    display: inline-block;
-                }
-
-                .tooltip {
-                    position: absolute;
-                    z-index: var(--component-tooltip-z-index, 7000);
-                    white-space: nowrap;
-                    pointer-events: none;
-                    opacity: 0;
-                    transform: scale(0.95);
-                    transition: opacity 0.15s ease, transform 0.15s ease;
-                    padding: var(--component-tooltip-padding, var(--spacing-x-small, 4px)) var(--component-tooltip-padding-h, var(--spacing-medium, 8px));
-                    border-radius: var(--component-tooltip-border-radius, var(--radii-small, 4px));
-                    font-size: var(--font-size-small, 0.8em);
-                    background: ${bg};
-                    color: ${fg};
-                    line-height: 1.4;
-                }
-
-                .tooltip.visible {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-
-                .tooltip::after {
-                    content: "";
-                    position: absolute;
-                    border: 5px solid transparent;
-                }
-
-                .tooltip.top {
-                    bottom: 100%;
-                    left: 50%;
-                    transform: translateX(-50%) scale(0.95);
-                    margin-bottom: 6px;
-                }
-                .tooltip.top.visible {
-                    transform: translateX(-50%) scale(1);
-                }
-                .tooltip.top::after {
-                    top: 100%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    border-top-color: ${bg};
-                }
-
-                .tooltip.bottom {
-                    top: 100%;
-                    left: 50%;
-                    transform: translateX(-50%) scale(0.95);
-                    margin-top: 6px;
-                }
-                .tooltip.bottom.visible {
-                    transform: translateX(-50%) scale(1);
-                }
-                .tooltip.bottom::after {
-                    bottom: 100%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    border-bottom-color: ${bg};
-                }
-
-                .tooltip.left {
-                    right: 100%;
-                    top: 50%;
-                    transform: translateY(-50%) scale(0.95);
-                    margin-right: 6px;
-                }
-                .tooltip.left.visible {
-                    transform: translateY(-50%) scale(1);
-                }
-                .tooltip.left::after {
-                    left: 100%;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    border-left-color: ${bg};
-                }
-
-                .tooltip.right {
-                    left: 100%;
-                    top: 50%;
-                    transform: translateY(-50%) scale(0.95);
-                    margin-left: 6px;
-                }
-                .tooltip.right.visible {
-                    transform: translateY(-50%) scale(1);
-                }
-                .tooltip.right::after {
-                    right: 100%;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    border-right-color: ${bg};
-                }
-            </style>
+            <style>${this._buildStyles(bg, fg)}</style>
             <slot class="trigger"></slot>
-            <div class="tooltip ${pos}" role="tooltip" part="tooltip">${this.text}</div>
+            <div class="tooltip ${this.position}" role="tooltip" part="tooltip">${this.text}</div>
         `;
     }
+
+    /** Programmatically shows the tooltip after the configured delay. */
+    show() {
+        clearTimeout(this._hideTimeout);
+        this._showTimeout = setTimeout(() => {
+            this._visible = true;
+            const tip = this.shadowRoot.querySelector(".tooltip");
+            if (tip) {
+                const [, fg] = getColorVarPair(this.color);
+                tip.style.color = fg;
+                tip.classList.add("visible");
+            }
+        }, this.delay);
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _buildStyles(bg, fg) {
+        return `
+            :host {
+                display: inline-block;
+                position: relative;
+                font-family: var(--font-family-body, sans-serif);
+            }
+
+            .trigger {
+                display: inline-block;
+            }
+
+            .tooltip {
+                position: absolute;
+                z-index: var(--component-tooltip-z-index, 7000);
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transform: scale(0.95);
+                transition: opacity 0.15s ease, transform 0.15s ease;
+                padding: var(--component-tooltip-padding, var(--spacing-x-small, 4px)) var(--component-tooltip-padding-h, var(--spacing-medium, 8px));
+                border-radius: var(--component-tooltip-border-radius, var(--radii-small, 4px));
+                font-size: var(--font-size-small, 0.8em);
+                background: ${bg};
+                color: ${fg};
+                line-height: 1.4;
+            }
+
+            .tooltip.visible {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            .tooltip::after {
+                content: "";
+                position: absolute;
+                border: 5px solid transparent;
+            }
+
+            .tooltip.top {
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%) scale(0.95);
+                margin-bottom: 6px;
+            }
+            .tooltip.top.visible { transform: translateX(-50%) scale(1); }
+            .tooltip.top::after {
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border-top-color: ${bg};
+            }
+
+            .tooltip.bottom {
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%) scale(0.95);
+                margin-top: 6px;
+            }
+            .tooltip.bottom.visible { transform: translateX(-50%) scale(1); }
+            .tooltip.bottom::after {
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border-bottom-color: ${bg};
+            }
+
+            .tooltip.left {
+                right: 100%;
+                top: 50%;
+                transform: translateY(-50%) scale(0.95);
+                margin-right: 6px;
+            }
+            .tooltip.left.visible { transform: translateY(-50%) scale(1); }
+            .tooltip.left::after {
+                left: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+                border-left-color: ${bg};
+            }
+
+            .tooltip.right {
+                left: 100%;
+                top: 50%;
+                transform: translateY(-50%) scale(0.95);
+                margin-left: 6px;
+            }
+            .tooltip.right.visible { transform: translateY(-50%) scale(1); }
+            .tooltip.right::after {
+                right: 100%;
+                top: 50%;
+                transform: translateY(-50%);
+                border-right-color: ${bg};
+            }
+        `;
+    }
+
+    _onFocusIn()  { this.show(); }
+    _onFocusOut() { this.hide(); }
+    _onKeyDown(e) { if (e.key === "Escape" && this._visible) this.hide(); }
+    _onMouseEnter() { this.show(); }
+    _onMouseLeave() { this.hide(); }
 }
 
 if (!customElements.get("y-tooltip")) {

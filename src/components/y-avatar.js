@@ -5,6 +5,10 @@ export class YumeAvatar extends HTMLElement {
         return ["src", "alt", "size", "shape", "color"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -12,92 +16,113 @@ export class YumeAvatar extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue) {
-            this.render();
-        }
+        if (oldValue !== newValue) this.render();
     }
 
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
+
+    /** Initials fallback text when no src is provided (default "AN"). */
+    get alt() { return this.getAttribute("alt") || "AN"; }
+    set alt(val) { this.setAttribute("alt", val); }
+
+    /** Color theme for the initials avatar background. */
+    get color() { return this.getAttribute("color") || "primary"; }
+    set color(val) { this.setAttribute("color", val); }
+
+    /** Shape of the avatar: "circle" | "square" | "rounded" (default "circle"). */
+    get shape() { return this.getAttribute("shape") || "circle"; }
+    set shape(val) { this.setAttribute("shape", val); }
+
+    /** Avatar size: "small" | "medium" | "large" (default "medium"). */
+    get size() { return this.getAttribute("size") || "medium"; }
+    set size(val) { this.setAttribute("size", val); }
+
+    /** Image URL. When set, renders an <img> instead of initials. */
+    get src() { return this.getAttribute("src"); }
+    set src(val) {
+        if (val) this.setAttribute("src", val);
+        else this.removeAttribute("src");
+    }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
+
     render() {
-        const src = this.getAttribute("src");
-        const altRaw = this.getAttribute("alt") || "AN";
-        const shape = this.getAttribute("shape") || "circle";
-        const color = this.getAttribute("color") || "primary";
-        const borderRadius = `var(--component-avatar-border-radius-${shape}, 9999px)`;
-        const [bgColor, textColor] = getColorVarPair(color);
+        const dimensions = this._getDimensions(this.size);
+        const borderRadius = `var(--component-avatar-border-radius-${this.shape}, 9999px)`;
+        const [bgColor, textColor] = getColorVarPair(this.color);
 
-        let dimensions;
-        const size = this.getAttribute("size") || "medium";
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(dimensions, borderRadius, bgColor, textColor)];
+        this.shadowRoot.innerHTML = this.src
+            ? `<img src="${this.src}" alt="${this.alt}" part="avatar" />`
+            : `<div class="avatar" part="avatar"><h5>${this._getInitials(this.alt)}</h5></div>`;
+    }
 
-        switch (size) {
-            case "small":
-                dimensions = "var(--component-avatar-size-small, 27px)";
-                break;
-            case "large":
-                dimensions = "var(--component-avatar-size-large, 51px)";
-                break;
-            case "medium":
-            default:
-                dimensions = "var(--component-avatar-size-medium, 35px)";
-                break;
-        }
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
 
-        const componentSheet = new CSSStyleSheet();
-        let componentStyles = "";
+    _buildStyleSheet(dimensions, borderRadius, bgColor, textColor) {
+        const sheet = new CSSStyleSheet();
+        const css = this.src
+            ? `
+              :host {
+                display: inline-block;
+                height: ${dimensions};
+                min-width: ${dimensions};
+              }
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: ${borderRadius};
+              }
+            `
+            : `
+              :host {
+                display: inline-block;
+                width: ${dimensions};
+                height: ${dimensions};
+                min-width: ${dimensions};
+                font-family: var(--font-family-header, "Lexend"), sans-serif;
+                text-transform: uppercase;
+              }
+              .avatar {
+                width: 100%;
+                height: 100%;
+                border-radius: ${borderRadius};
+                background-color: ${bgColor};
+                color: ${textColor};
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .avatar h5 {
+                margin: 0;
+                font-size: calc(${dimensions} * 0.5);
+              }
+            `;
+        sheet.replaceSync(css);
+        return sheet;
+    }
 
-        if (src) {
-            componentStyles = `
-          :host {
-            display: inline-block;
-            height: ${dimensions};
-            min-width: ${dimensions};
-          }
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: ${borderRadius};
-          }
-        `;
-        } else {
-            componentStyles = `
-          :host {
-            display: inline-block;
-            width: ${dimensions};
-            height: ${dimensions};
-            min-width: ${dimensions};
-            font-family: var(--font-family-header, "Lexend"), sans-serif;
-            text-transform: uppercase;
-          }
-          .avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: ${borderRadius};
-            background-color: ${bgColor};
-            color: ${textColor};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          .avatar h5 {
-            margin: 0;
-            font-size: calc(${dimensions} * 0.5);
-          }
-        `;
-        }
+    _getDimensions(size) {
+        const map = {
+            small:  "var(--component-avatar-size-small, 27px)",
+            medium: "var(--component-avatar-size-medium, 35px)",
+            large:  "var(--component-avatar-size-large, 51px)",
+        };
+        return map[size] || map.medium;
+    }
 
-        componentSheet.replaceSync(componentStyles);
-        this.shadowRoot.adoptedStyleSheets = [componentSheet];
-
-        if (src) {
-            this.shadowRoot.innerHTML = `<img src="${src}" alt="${altRaw}" part="avatar" />`;
-        } else {
-            const words = altRaw.trim().split(/\s+/);
-            const displayText =
-                words.length >= 2
-                    ? words[0].charAt(0) + words[1].charAt(0)
-                    : altRaw.substring(0, 2);
-            this.shadowRoot.innerHTML = `<div class="avatar" part="avatar"><h5>${displayText}</h5></div>`;
-        }
+    _getInitials(alt) {
+        const words = alt.trim().split(/\s+/);
+        return words.length >= 2
+            ? words[0].charAt(0) + words[1].charAt(0)
+            : alt.substring(0, 2);
     }
 }
 
