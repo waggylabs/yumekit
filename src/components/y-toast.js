@@ -5,6 +5,10 @@ export class YumeToast extends HTMLElement {
         return ["position", "duration", "max"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -20,28 +24,38 @@ export class YumeToast extends HTMLElement {
         this.render();
     }
 
-    /** Screen position for the toast stack (e.g. "top-right", "bottom-center"). */
-    get position() {
-        return this.getAttribute("position") || "bottom-right";
-    }
-    set position(val) {
-        this.setAttribute("position", val);
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
     /** Default auto-dismiss duration in milliseconds. */
-    get duration() {
-        return parseInt(this.getAttribute("duration") ?? "4000", 10);
-    }
-    set duration(val) {
-        this.setAttribute("duration", String(val));
-    }
+    get duration() { return parseInt(this.getAttribute("duration") ?? "4000", 10); }
+    set duration(val) { this.setAttribute("duration", String(val)); }
 
     /** Maximum number of toasts visible at once. */
-    get max() {
-        return parseInt(this.getAttribute("max") ?? "5", 10);
+    get max() { return parseInt(this.getAttribute("max") ?? "5", 10); }
+    set max(val) { this.setAttribute("max", String(val)); }
+
+    /** Screen position for the toast stack (e.g. "top-right", "bottom-center"). */
+    get position() { return this.getAttribute("position") || "bottom-right"; }
+    set position(val) { this.setAttribute("position", val); }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
+
+    /** Dismisses all visible toasts. */
+    clear() {
+        const container = this.shadowRoot.querySelector(".toast-container");
+        if (!container) return;
+        container.querySelectorAll(".toast").forEach((t) => this._removeToast(t));
     }
-    set max(val) {
-        this.setAttribute("max", String(val));
+
+    render() {
+        this.shadowRoot.innerHTML = `
+            <style>${this._buildStyles()}</style>
+            <div class="toast-container"></div>
+        `;
     }
 
     /**
@@ -113,56 +127,81 @@ export class YumeToast extends HTMLElement {
         });
 
         if (duration > 0) {
-            toast._timeout = setTimeout(
-                () => this._removeToast(toast),
-                duration,
-            );
+            toast._timeout = setTimeout(() => this._removeToast(toast), duration);
         }
 
-        this.dispatchEvent(
-            new CustomEvent("y-toast-show", {
-                detail: { message, color },
-                bubbles: true,
-            }),
-        );
+        this.dispatchEvent(new CustomEvent("y-toast-show", {
+            detail: { message, color },
+            bubbles: true,
+        }));
 
         return toast;
     }
 
-    /** Dismisses all visible toasts. */
-    clear() {
-        const container = this.shadowRoot.querySelector(".toast-container");
-        if (!container) return;
-        container
-            .querySelectorAll(".toast")
-            .forEach((t) => this._removeToast(t));
-    }
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
 
-    _removeToast(toast) {
-        if (!toast || toast._removing) return;
-
-        toast._removing = true;
-
-        clearTimeout(toast._timeout);
-
-        toast.classList.remove("visible");
-        toast.classList.add("exit");
-        toast.addEventListener(
-            "transitionend",
-            () => {
-                toast.remove();
-                this.dispatchEvent(
-                    new CustomEvent("y-toast-dismiss", { bubbles: true }),
-                );
-            },
-            { once: true },
-        );
-        // Fallback if transition doesn't fire
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.remove();
+    _buildStyles() {
+        return `
+            :host {
+                font-family: var(--font-family-body, sans-serif);
             }
-        }, 350);
+
+            .toast-container {
+                ${this._getPositionStyles()}
+            }
+
+            .toast {
+                pointer-events: auto;
+                display: flex;
+                align-items: center;
+                gap: var(--spacing-medium, 8px);
+                padding: var(--component-toast-padding, var(--spacing-medium, 8px));
+                border-radius: var(--component-toast-border-radius, var(--radii-small, 4px));
+                font-size: var(--font-size-paragraph, 1em);
+                line-height: 1.4;
+                opacity: 0;
+                transform: translateY(8px);
+                transition: opacity 0.25s ease, transform 0.25s ease;
+                box-shadow: var(--base-shadow, 0 2px 6px rgba(0,0,0,0.15));
+            }
+
+            .toast.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .toast.exit {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            .toast-icon {
+                flex-shrink: 0;
+                font-size: 1.1em;
+            }
+
+            .toast-message {
+                flex: 1;
+            }
+
+            .toast-close {
+                flex-shrink: 0;
+                align-self: flex-start;
+                background: none;
+                border: none;
+                color: inherit;
+                font-size: 1.2em;
+                cursor: pointer;
+                padding: 0 0 0 var(--spacing-small, 6px);
+                opacity: 0.7;
+                line-height: 1;
+            }
+            .toast-close:hover {
+                opacity: 1;
+            }
+        `;
     }
 
     _getPositionStyles() {
@@ -182,69 +221,29 @@ export class YumeToast extends HTMLElement {
         return map[pos] || map["bottom-right"];
     }
 
-    render() {
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    font-family: var(--font-family-body, sans-serif);
-                }
+    _removeToast(toast) {
+        if (!toast || toast._removing) return;
 
-                .toast-container {
-                    ${this._getPositionStyles()}
-                }
+        toast._removing = true;
 
-                .toast {
-                    pointer-events: auto;
-                    display: flex;
-                    align-items: center;
-                    gap: var(--spacing-medium, 8px);
-                    padding: var(--component-toast-padding, var(--spacing-medium, 8px));
-                    border-radius: var(--component-toast-border-radius, var(--radii-small, 4px));
-                    font-size: var(--font-size-paragraph, 1em);
-                    line-height: 1.4;
-                    opacity: 0;
-                    transform: translateY(8px);
-                    transition: opacity 0.25s ease, transform 0.25s ease;
-                    box-shadow: var(--base-shadow, 0 2px 6px rgba(0,0,0,0.15));
-                }
+        clearTimeout(toast._timeout);
 
-                .toast.visible {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-
-                .toast.exit {
-                    opacity: 0;
-                    transform: translateY(-8px);
-                }
-
-                .toast-icon {
-                    flex-shrink: 0;
-                    font-size: 1.1em;
-                }
-
-                .toast-message {
-                    flex: 1;
-                }
-
-                .toast-close {
-                    flex-shrink: 0;
-                    align-self: flex-start;
-                    background: none;
-                    border: none;
-                    color: inherit;
-                    font-size: 1.2em;
-                    cursor: pointer;
-                    padding: 0 0 0 var(--spacing-small, 6px);
-                    opacity: 0.7;
-                    line-height: 1;
-                }
-                .toast-close:hover {
-                    opacity: 1;
-                }
-            </style>
-            <div class="toast-container"></div>
-        `;
+        toast.classList.remove("visible");
+        toast.classList.add("exit");
+        toast.addEventListener(
+            "transitionend",
+            () => {
+                toast.remove();
+                this.dispatchEvent(new CustomEvent("y-toast-dismiss", { bubbles: true }));
+            },
+            { once: true },
+        );
+        // Fallback if transition doesn't fire
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 350);
     }
 }
 

@@ -5,6 +5,10 @@ class YumeMenu extends HTMLElement {
         return ["items", "anchor", "visible", "direction", "size"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -46,15 +50,24 @@ class YumeMenu extends HTMLElement {
             this._setupAnchor();
         }
 
-        if (name === "visible") {
-            this._updatePosition();
-        }
-
-        if (name === "direction") {
+        if (name === "visible" || name === "direction") {
             this._updatePosition();
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
+
+    /** Which anchor element ID triggers this menu. */
+    get anchor() { return this.getAttribute("anchor"); }
+    set anchor(val) { this.setAttribute("anchor", val); }
+
+    /** Direction for menu placement: "down" | "up" | "left" | "right" (default "down"). */
+    get direction() { return this.getAttribute("direction") || "down"; }
+    set direction(val) { this.setAttribute("direction", val); }
+
+    /** Menu items array (JSON attribute). */
     get items() {
         try {
             return JSON.parse(this.getAttribute("items")) || [];
@@ -66,36 +79,116 @@ class YumeMenu extends HTMLElement {
         this.setAttribute("items", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
     }
 
-    get anchor() {
-        return this.getAttribute("anchor");
-    }
-    set anchor(val) {
-        this.setAttribute("anchor", val);
-    }
-
-    get visible() {
-        return this.hasAttribute("visible");
-    }
-    set visible(val) {
-        if (val) this.setAttribute("visible", "");
-        else this.removeAttribute("visible");
-    }
-
-    get direction() {
-        return this.getAttribute("direction") || "down";
-    }
-    set direction(val) {
-        this.setAttribute("direction", val);
-    }
-
+    /** Size: "small" | "medium" | "large" (default "medium"). */
     get size() {
         const sz = this.getAttribute("size");
         return ["small", "medium", "large"].includes(sz) ? sz : "medium";
     }
     set size(val) {
-        if (["small", "medium", "large"].includes(val))
-            this.setAttribute("size", val);
-        else this.setAttribute("size", "medium");
+        this.setAttribute("size", ["small", "medium", "large"].includes(val) ? val : "medium");
+    }
+
+    /** Whether the menu is currently visible. */
+    get visible() { return this.hasAttribute("visible"); }
+    set visible(val) {
+        if (val) this.setAttribute("visible", "");
+        else this.removeAttribute("visible");
+    }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
+
+    render() {
+        this.shadowRoot.innerHTML = "";
+
+        const style = document.createElement("style");
+        style.textContent = this._buildStyles();
+        this.shadowRoot.appendChild(style);
+
+        const rootUl = this._createMenuList(this.items);
+        rootUl.classList.add("menu");
+        rootUl.setAttribute("role", "menu");
+        rootUl.setAttribute("part", "menu");
+
+        this.shadowRoot.appendChild(rootUl);
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _buildStyles() {
+        const paddingVar = `var(--component-button-padding-${this.size}, 0.5rem)`;
+        return `
+            ul.menu,
+            ul.submenu {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                background: var(--component-menu-background, #0c0c0d);
+                border: var(--component-menu-border-width, 1px) solid var(--component-menu-border-color, #37383a);
+                border-radius: var(--component-menu-border-radius, 4px);
+                box-shadow: var(--component-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
+                min-width: 150px;
+            }
+
+            li.menuitem {
+                cursor: pointer;
+                padding: ${paddingVar};
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                white-space: nowrap;
+                color: var(--component-menu-color, #f7f7fa);
+                font-size: var(--font-size-button, 1em);
+                position: relative;
+            }
+
+            li.menuitem:hover {
+                background: var(--component-menu-hover-background, #292a2b);
+            }
+
+            li.menuitem.selected {
+                background: var(--component-menu-selected-background);
+                color: var(--component-menu-selected-color);
+            }
+
+            li.menuitem.selected:hover {
+                background: var(--component-menu-selected-background);
+            }
+
+            ul.submenu {
+                position: absolute;
+                top: 0;
+                left: 100%;
+                display: none;
+                z-index: var(--component-menu-z-index, 1001);
+            }
+
+            li.menuitem:hover > ul.submenu {
+                display: block;
+            }
+
+            .submenu-indicator {
+                display: inline-flex;
+                align-items: center;
+                margin-left: 0.5rem;
+                opacity: 0.6;
+            }
+
+            .item-content {
+                flex: 1;
+            }
+        `;
+    }
+
+    static _closeAll(except) {
+        document.querySelectorAll("y-menu").forEach((menu) => {
+            if (menu !== except && menu.visible) {
+                menu.visible = false;
+            }
+        });
     }
 
     _createMenuList(items) {
@@ -171,14 +264,6 @@ class YumeMenu extends HTMLElement {
             YumeMenu._closeAll(this);
         }
         this.visible = !this.visible;
-    }
-
-    static _closeAll(except) {
-        document.querySelectorAll("y-menu").forEach((menu) => {
-            if (menu !== except && menu.visible) {
-                menu.visible = false;
-            }
-        });
     }
 
     _onDocumentClick(e) {
@@ -281,84 +366,6 @@ class YumeMenu extends HTMLElement {
         this.style.top = `${top}px`;
         this.style.left = `${left}px`;
         this.style.display = "block";
-    }
-
-    render() {
-        this.shadowRoot.innerHTML = "";
-
-        const paddingVar = `var(--component-button-padding-${this.size}, 0.5rem)`;
-        const style = document.createElement("style");
-
-        style.textContent = `
-            ul.menu,
-            ul.submenu {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-                background: var(--component-menu-background, #0c0c0d);
-                border: var(--component-menu-border-width, 1px) solid var(--component-menu-border-color, #37383a);
-                border-radius: var(--component-menu-border-radius, 4px);
-                box-shadow: var(--component-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
-                min-width: 150px;
-            }
-
-            li.menuitem {
-                cursor: pointer;
-                padding: ${paddingVar};
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                white-space: nowrap;
-                color: var(--component-menu-color, #f7f7fa);
-                font-size: var(--font-size-button, 1em);
-                position: relative;
-            }
-
-            li.menuitem:hover {
-                background: var(--component-menu-hover-background, #292a2b);
-            }
-
-            li.menuitem.selected {
-                background: var(--component-menu-selected-background);
-                color: var(--component-menu-selected-color);
-            }
-
-            li.menuitem.selected:hover {
-                background: var(--component-menu-selected-background);
-            }
-
-            ul.submenu {
-                position: absolute;
-                top: 0;
-                left: 100%;
-                display: none;
-                z-index: var(--component-menu-z-index, 1001);
-            }
-
-            li.menuitem:hover > ul.submenu {
-                display: block;
-            }
-
-            .submenu-indicator {
-                display: inline-flex;
-                align-items: center;
-                margin-left: 0.5rem;
-                opacity: 0.6;
-            }
-
-            .item-content {
-                flex: 1;
-            }
-        `;
-
-        this.shadowRoot.appendChild(style);
-
-        const rootUl = this._createMenuList(this.items);
-        rootUl.classList.add("menu");
-        rootUl.setAttribute("role", "menu");
-        rootUl.setAttribute("part", "menu");
-
-        this.shadowRoot.appendChild(rootUl);
     }
 }
 

@@ -46,6 +46,10 @@ export class YumeAppbar extends HTMLElement {
         ];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -73,21 +77,18 @@ export class YumeAppbar extends HTMLElement {
         this.render();
     }
 
-    get orientation() {
-        return this.getAttribute("orientation") || "vertical";
-    }
-    set orientation(val) {
-        this.setAttribute("orientation", val);
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
-    get collapsed() {
-        return this.hasAttribute("collapsed");
-    }
+    /** Whether the sidebar is currently collapsed. */
+    get collapsed() { return this.hasAttribute("collapsed"); }
     set collapsed(val) {
         if (val) this.setAttribute("collapsed", "");
         else this.removeAttribute("collapsed");
     }
 
+    /** Nav items array parsed from the "items" attribute. */
     get items() {
         try {
             return JSON.parse(this.getAttribute("items")) || [];
@@ -95,29 +96,40 @@ export class YumeAppbar extends HTMLElement {
             return [];
         }
     }
-    set items(val) {
-        this.setAttribute("items", JSON.stringify(val));
-    }
-
-    get size() {
-        return this.getAttribute("size") || "medium";
-    }
-    set size(val) {
-        this.setAttribute("size", val);
-    }
+    set items(val) { this.setAttribute("items", JSON.stringify(val)); }
 
     /**
      * Direction menus pop out from nav buttons:
      * "right", "down", or unset (auto: vertical → right, horizontal → down).
      */
-    get menuDirection() {
-        return this.getAttribute("menu-direction") || "";
-    }
+    get menuDirection() { return this.getAttribute("menu-direction") || ""; }
     set menuDirection(val) {
         if (val) this.setAttribute("menu-direction", val);
         else this.removeAttribute("menu-direction");
     }
 
+    /** Whether the appbar is currently rendering in mobile mode. */
+    get mobile() { return this._isMobile; }
+
+    /**
+     * Override the mobile breakpoint (in pixels) for this instance.
+     * Falls back to the CSS variable --component-appbar-mobile-breakpoint (default 768).
+     */
+    get mobileBreakpoint() { return this.getAttribute("mobile-breakpoint") || ""; }
+    set mobileBreakpoint(val) {
+        if (val) this.setAttribute("mobile-breakpoint", val);
+        else this.removeAttribute("mobile-breakpoint");
+    }
+
+    /** Layout orientation: "vertical" | "horizontal" (default "vertical"). */
+    get orientation() { return this.getAttribute("orientation") || "vertical"; }
+    set orientation(val) { this.setAttribute("orientation", val); }
+
+    /** Size variant: "small" | "medium" | "large" (default "medium"). */
+    get size() { return this.getAttribute("size") || "medium"; }
+    set size(val) { this.setAttribute("size", val); }
+
+    /** Sticky position: "start" | "end" | false. */
     get sticky() {
         const val = this.getAttribute("sticky");
         return ["start", "end"].includes(val) ? val : false;
@@ -127,110 +139,46 @@ export class YumeAppbar extends HTMLElement {
         else this.removeAttribute("sticky");
     }
 
-    /**
-     * Override the mobile breakpoint (in pixels) for this instance.
-     * Falls back to the CSS variable --component-appbar-mobile-breakpoint (default 768).
-     */
-    get mobileBreakpoint() {
-        return this.getAttribute("mobile-breakpoint") || "";
-    }
-    set mobileBreakpoint(val) {
-        if (val) this.setAttribute("mobile-breakpoint", val);
-        else this.removeAttribute("mobile-breakpoint");
-    }
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
-    /** Whether the appbar is currently rendering in mobile mode. */
-    get mobile() {
-        return this._isMobile;
-    }
-
+    /** Toggles the collapsed state of the sidebar. */
     toggle() {
         this.collapsed = !this.collapsed;
     }
 
-    _onCollapseClick() {
-        this.toggle();
-    }
-
-    _uid(prefix) {
-        return `${prefix}-${this._idCounter++}`;
-    }
-
-    _isItemActive(item) {
-        if (item.selected) return true;
-        if (item.href) {
-            const loc = window.location;
-            const current = loc.pathname + loc.search + loc.hash;
-            return item.href === current || item.href === loc.href;
-        }
-        return false;
-    }
-
-    _getBreakpointPx() {
-        const attr = this.mobileBreakpoint;
-        if (attr) {
-            const px = parseInt(attr, 10);
-            if (!isNaN(px) && px > 0) return px;
-        }
-        const cssVal = getComputedStyle(document.documentElement)
-            .getPropertyValue("--component-appbar-mobile-breakpoint")
-            .trim();
-        if (cssVal) {
-            const px = parseInt(cssVal, 10);
-            if (!isNaN(px) && px > 0) return px;
-        }
-        return 768;
-    }
-
-    _setupMediaQuery() {
-        this._teardownMediaQuery();
-        if (this.orientation !== "horizontal") {
-            this._isMobile = false;
-            return;
-        }
-        const bp = this._getBreakpointPx();
-        this._mql = window.matchMedia(`(max-width: ${bp}px)`);
-        this._isMobile = this._mql.matches;
-        this._mql.addEventListener("change", this._onMediaChange);
-    }
-
-    _teardownMediaQuery() {
-        if (this._mql) {
-            this._mql.removeEventListener("change", this._onMediaChange);
-            this._mql = null;
+    render() {
+        if (this._isMobile) {
+            this._renderMobile();
+        } else {
+            this._renderDesktop();
         }
     }
 
-    _onMediaChange(e) {
-        this._isMobile = e.matches;
-        this.render();
-    }
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
 
-    /**
-     * Convert appbar nav items to y-menu item format.
-     * Maps `href` → `url` and recursively converts children.
-     */
-    _toMenuItems(items) {
-        return items.map((item) => {
-            const mi = { text: item.text || "" };
-            if (item.href) mi.url = item.href;
-            if (item.icon) mi.icon = item.icon;
-            if (item.children?.length) {
-                mi.children = this._toMenuItems(item.children);
-            }
-            return mi;
-        });
-    }
+    _buildCollapseButton(cfg, isCollapsed) {
+        const btn = document.createElement("y-button");
+        btn.setAttribute("color", "base");
+        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("size", cfg.buttonSize);
+        btn.setAttribute("aria-label", isCollapsed ? "Expand sidebar" : "Collapse sidebar");
+        btn.className = "collapse-btn";
 
-    _initRender() {
-        this.shadowRoot.innerHTML = "";
-        this._idCounter = 0;
-    }
+        const icon = document.createElement("span");
+        icon.slot = "left-icon";
+        icon.innerHTML = isCollapsed ? expandRight : expandLeft;
+        btn.appendChild(icon);
 
-    _makeSlot(name) {
-        const slot = document.createElement("slot");
-        slot.name = name;
-        return slot;
+        if (!isCollapsed) {
+            btn.appendChild(document.createTextNode("Collapse"));
+        }
+
+        btn.addEventListener("click", this._onCollapseClick);
+        return btn;
     }
 
     _buildHeader(cfg) {
@@ -322,164 +270,50 @@ export class YumeAppbar extends HTMLElement {
         return wrapper;
     }
 
-    _buildCollapseButton(cfg, isCollapsed) {
-        const btn = document.createElement("y-button");
-        btn.setAttribute("color", "base");
-        btn.setAttribute("style-type", "flat");
-        btn.setAttribute("size", cfg.buttonSize);
-        btn.setAttribute(
-            "aria-label",
-            isCollapsed ? "Expand sidebar" : "Collapse sidebar",
-        );
-        btn.className = "collapse-btn";
-
-        const icon = document.createElement("span");
-        icon.slot = "left-icon";
-        icon.innerHTML = isCollapsed ? expandRight : expandLeft;
-        btn.appendChild(icon);
-
-        if (!isCollapsed) {
-            btn.appendChild(document.createTextNode("Collapse"));
+    _getBreakpointPx() {
+        const attr = this.mobileBreakpoint;
+        if (attr) {
+            const px = parseInt(attr, 10);
+            if (!isNaN(px) && px > 0) return px;
         }
-
-        btn.addEventListener("click", this._onCollapseClick);
-        return btn;
+        const cssVal = getComputedStyle(document.documentElement)
+            .getPropertyValue("--component-appbar-mobile-breakpoint")
+            .trim();
+        if (cssVal) {
+            const px = parseInt(cssVal, 10);
+            if (!isNaN(px) && px > 0) return px;
+        }
+        return 768;
     }
 
-    render() {
-        if (this._isMobile) {
-            this._renderMobile();
-        } else {
-            this._renderDesktop();
-        }
+    _initRender() {
+        this.shadowRoot.innerHTML = "";
+        this._idCounter = 0;
     }
 
-    _renderMobile() {
-        this._initRender();
-        const cfg = SIZE_CONFIG[this.size] || SIZE_CONFIG.medium;
-
-        const style = document.createElement("style");
-        style.textContent = `
-            :host {
-                display: block;
-                font-family: var(--font-family-body, sans-serif);
-                color: var(--component-appbar-color, #f7f7fa);
-            }
-
-            :host([sticky]),
-            :host([sticky="start"]),
-            :host([sticky="end"]) {
-                position: sticky;
-                top: 0;
-                left: 0;
-                width: 100%;
-                z-index: var(--component-appbar-z-index, 100);
-            }
-
-            :host([sticky]) .appbar {
-                border-radius: 0;
-                border: none;
-                border-bottom: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-            }
-
-            .appbar {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                background: var(--component-appbar-background, #0c0c0d);
-                border: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                border-radius: var(--component-appbar-border-radius, var(--component-sidebar-border-radius, 4px));
-                overflow: visible;
-                padding: var(--_appbar-padding);
-                box-sizing: border-box;
-                width: 100%;
-                height: auto;
-            }
-
-            .mobile-start {
-                display: flex;
-                align-items: center;
-                flex-shrink: 0;
-            }
-
-            .mobile-center {
-                flex: 1;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                overflow: hidden;
-            }
-
-            .mobile-end {
-                display: flex;
-                align-items: center;
-                flex-shrink: 0;
-            }
-
-            .mobile-end ::slotted(*) {
-                display: block;
-            }
-
-            ::slotted(*) {
-                display: block;
-            }
-            span[slot="left-icon"] svg,
-            span[slot="right-icon"] svg {
-                width: var(--component-icon-size-large, 1.25em);
-                height: var(--component-icon-size-large, 1.25em);
-            }
-        `;
-        this.shadowRoot.appendChild(style);
-
-        const bar = document.createElement("div");
-        bar.className = "appbar";
-        bar.setAttribute("role", "navigation");
-        bar.style.setProperty("--_appbar-padding", cfg.padding);
-
-        /* ── Left: hamburger button ── */
-        const startSection = document.createElement("div");
-        startSection.className = "mobile-start";
-
-        const menuBtn = document.createElement("y-button");
-        const menuBtnId = this._uid("appbar-mobile-menu");
-        menuBtn.id = menuBtnId;
-        menuBtn.setAttribute("color", "base");
-        menuBtn.setAttribute("style-type", "flat");
-        menuBtn.setAttribute("size", cfg.buttonSize);
-        menuBtn.setAttribute("aria-label", "Open menu");
-
-        const menuIcon = document.createElement("span");
-        menuIcon.slot = "left-icon";
-        menuIcon.innerHTML = menu;
-        menuBtn.appendChild(menuIcon);
-        startSection.appendChild(menuBtn);
-
-        const navItems = this.items;
-        if (navItems.length > 0) {
-            const mobileMenu = document.createElement("y-menu");
-            mobileMenu.setAttribute("anchor", menuBtnId);
-            mobileMenu.setAttribute("direction", "down");
-            mobileMenu.setAttribute("size", cfg.buttonSize);
-            mobileMenu.items = this._toMenuItems(navItems);
-            startSection.appendChild(mobileMenu);
+    _isItemActive(item) {
+        if (item.selected) return true;
+        if (item.href) {
+            const loc = window.location;
+            const current = loc.pathname + loc.search + loc.hash;
+            return item.href === current || item.href === loc.href;
         }
-        bar.appendChild(startSection);
+        return false;
+    }
 
-        /* ── Center: logo + title ── */
-        const centerSection = document.createElement("div");
-        centerSection.className = "mobile-center";
-        centerSection.appendChild(this._makeSlot("logo"));
-        centerSection.appendChild(this._makeSlot("title"));
-        bar.appendChild(centerSection);
+    _makeSlot(name) {
+        const slot = document.createElement("slot");
+        slot.name = name;
+        return slot;
+    }
 
-        /* ── Right: footer slot ── */
-        const endSection = document.createElement("div");
-        endSection.className = "mobile-end";
-        endSection.setAttribute("part", "footer");
-        endSection.appendChild(this._makeSlot("footer"));
-        bar.appendChild(endSection);
+    _onCollapseClick() {
+        this.toggle();
+    }
 
-        this.shadowRoot.appendChild(bar);
+    _onMediaChange(e) {
+        this._isMobile = e.matches;
+        this.render();
     }
 
     _renderDesktop() {
@@ -759,6 +593,173 @@ export class YumeAppbar extends HTMLElement {
         bar.appendChild(footer);
 
         this.shadowRoot.appendChild(bar);
+    }
+
+    _renderMobile() {
+        this._initRender();
+        const cfg = SIZE_CONFIG[this.size] || SIZE_CONFIG.medium;
+
+        const style = document.createElement("style");
+        style.textContent = `
+            :host {
+                display: block;
+                font-family: var(--font-family-body, sans-serif);
+                color: var(--component-appbar-color, #f7f7fa);
+            }
+
+            :host([sticky]),
+            :host([sticky="start"]),
+            :host([sticky="end"]) {
+                position: sticky;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: var(--component-appbar-z-index, 100);
+            }
+
+            :host([sticky]) .appbar {
+                border-radius: 0;
+                border: none;
+                border-bottom: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+            }
+
+            .appbar {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                background: var(--component-appbar-background, #0c0c0d);
+                border: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+                border-radius: var(--component-appbar-border-radius, var(--component-sidebar-border-radius, 4px));
+                overflow: visible;
+                padding: var(--_appbar-padding);
+                box-sizing: border-box;
+                width: 100%;
+                height: auto;
+            }
+
+            .mobile-start {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .mobile-center {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+            }
+
+            .mobile-end {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .mobile-end ::slotted(*) {
+                display: block;
+            }
+
+            ::slotted(*) {
+                display: block;
+            }
+            span[slot="left-icon"] svg,
+            span[slot="right-icon"] svg {
+                width: var(--component-icon-size-large, 1.25em);
+                height: var(--component-icon-size-large, 1.25em);
+            }
+        `;
+        this.shadowRoot.appendChild(style);
+
+        const bar = document.createElement("div");
+        bar.className = "appbar";
+        bar.setAttribute("role", "navigation");
+        bar.style.setProperty("--_appbar-padding", cfg.padding);
+
+        /* ── Left: hamburger button ── */
+        const startSection = document.createElement("div");
+        startSection.className = "mobile-start";
+
+        const menuBtn = document.createElement("y-button");
+        const menuBtnId = this._uid("appbar-mobile-menu");
+        menuBtn.id = menuBtnId;
+        menuBtn.setAttribute("color", "base");
+        menuBtn.setAttribute("style-type", "flat");
+        menuBtn.setAttribute("size", cfg.buttonSize);
+        menuBtn.setAttribute("aria-label", "Open menu");
+
+        const menuIcon = document.createElement("span");
+        menuIcon.slot = "left-icon";
+        menuIcon.innerHTML = menu;
+        menuBtn.appendChild(menuIcon);
+        startSection.appendChild(menuBtn);
+
+        const navItems = this.items;
+        if (navItems.length > 0) {
+            const mobileMenu = document.createElement("y-menu");
+            mobileMenu.setAttribute("anchor", menuBtnId);
+            mobileMenu.setAttribute("direction", "down");
+            mobileMenu.setAttribute("size", cfg.buttonSize);
+            mobileMenu.items = this._toMenuItems(navItems);
+            startSection.appendChild(mobileMenu);
+        }
+        bar.appendChild(startSection);
+
+        /* ── Center: logo + title ── */
+        const centerSection = document.createElement("div");
+        centerSection.className = "mobile-center";
+        centerSection.appendChild(this._makeSlot("logo"));
+        centerSection.appendChild(this._makeSlot("title"));
+        bar.appendChild(centerSection);
+
+        /* ── Right: footer slot ── */
+        const endSection = document.createElement("div");
+        endSection.className = "mobile-end";
+        endSection.setAttribute("part", "footer");
+        endSection.appendChild(this._makeSlot("footer"));
+        bar.appendChild(endSection);
+
+        this.shadowRoot.appendChild(bar);
+    }
+
+    _setupMediaQuery() {
+        this._teardownMediaQuery();
+        if (this.orientation !== "horizontal") {
+            this._isMobile = false;
+            return;
+        }
+        const bp = this._getBreakpointPx();
+        this._mql = window.matchMedia(`(max-width: ${bp}px)`);
+        this._isMobile = this._mql.matches;
+        this._mql.addEventListener("change", this._onMediaChange);
+    }
+
+    _teardownMediaQuery() {
+        if (this._mql) {
+            this._mql.removeEventListener("change", this._onMediaChange);
+            this._mql = null;
+        }
+    }
+
+    /**
+     * Convert appbar nav items to y-menu item format.
+     * Maps `href` → `url` and recursively converts children.
+     */
+    _toMenuItems(items) {
+        return items.map((item) => {
+            const mi = { text: item.text || "" };
+            if (item.href) mi.url = item.href;
+            if (item.icon) mi.icon = item.icon;
+            if (item.children?.length) {
+                mi.children = this._toMenuItems(item.children);
+            }
+            return mi;
+        });
+    }
+
+    _uid(prefix) {
+        return `${prefix}-${this._idCounter++}`;
     }
 }
 
