@@ -174,7 +174,7 @@ export class YumeRadio extends HTMLElement {
 
     _handleKey(e, index, radios) {
         const len = radios.length;
-        let newIndex = index;
+        let newIndex;
 
         if (e.key === "ArrowDown" || e.key === "ArrowRight") {
             e.preventDefault();

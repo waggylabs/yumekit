@@ -181,7 +181,7 @@ export class YumeAppbar extends HTMLElement {
         return btn;
     }
 
-    _buildHeader(cfg) {
+    _buildHeader() {
         const header = document.createElement("div");
         header.className = "appbar-header";
         header.setAttribute("part", "header");
@@ -573,7 +573,7 @@ export class YumeAppbar extends HTMLElement {
             `calc(${cfg.collapsedWidth} - 2 * var(--_appbar-padding) - 2 * var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) - 2 * var(--component-button-border-width, 1px))`,
         );
 
-        bar.appendChild(this._buildHeader(cfg));
+        bar.appendChild(this._buildHeader());
 
         const body = document.createElement("div");
         body.className = "appbar-body";

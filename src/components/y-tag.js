@@ -101,13 +101,13 @@ export class YumeTag extends HTMLElement {
         const { color, styleType, shape, size } = this;
 
         const vars = {
-            primary: ["--primary-content--", "--primary-content-hover", "--primary-background-component", "--primary-content-inverse", "--primary-background-app"],
-            secondary: ["--secondary-content--", "--secondary-content-hover", "--secondary-background-component", "--secondary-content-inverse", "--secondary-background-app"],
-            base: ["--base-content--", "--base-content-lighter", "--base-background-component", "--base-content-inverse", "--base-background-app"],
-            success: ["--success-content--", "--success-content-hover", "--success-background-component", "--success-content-inverse", "--success-background-app"],
-            error: ["--error-content--", "--error-content-hover", "--error-background-component", "--error-content-inverse", "--error-background-app"],
-            warning: ["--warning-content--", "--warning-content-hover", "--warning-background-component", "--warning-content-inverse", "--warning-background-app"],
-            help: ["--help-content--", "--help-content-hover", "--help-background-component", "--help-content-inverse", "--help-background-app"],
+            primary: ["--primary-content--", "--primary-content-inverse", "--primary-background-app"],
+            secondary: ["--secondary-content--", "--secondary-content-inverse", "--secondary-background-app"],
+            base: ["--base-content--", "--base-content-inverse", "--base-background-app"],
+            success: ["--success-content--", "--success-content-inverse", "--success-background-app"],
+            error: ["--error-content--", "--error-content-inverse", "--error-background-app"],
+            warning: ["--warning-content--", "--warning-content-inverse", "--warning-background-app"],
+            help: ["--help-content--", "--help-content-inverse", "--help-background-app"],
         };
 
         const varEntry = vars[color];
@@ -154,7 +154,7 @@ export class YumeTag extends HTMLElement {
 
         if (isCustomColor) return baseStyle + this._getCustomColorVariant(color, styleType);
 
-        const [content, , background, inverse, flatBackground] = varEntry || vars.base;
+        const [content, inverse, flatBackground] = varEntry || vars.base;
 
         const styleVariants = {
             filled: `
