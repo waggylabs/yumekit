@@ -13,6 +13,10 @@ export class YumeInput extends HTMLElement {
         ];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this._internals = this.attachInternals();
@@ -21,12 +25,8 @@ export class YumeInput extends HTMLElement {
     }
 
     connectedCallback() {
-        if (!this.hasAttribute("size")) {
-            this.setAttribute("size", "medium");
-        }
-        if (!this.hasAttribute("label-position")) {
-            this.setAttribute("label-position", "top");
-        }
+        if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
+        if (!this.hasAttribute("label-position")) this.setAttribute("label-position", "top");
         this._internals.setFormValue(this.value);
     }
 
@@ -36,10 +36,7 @@ export class YumeInput extends HTMLElement {
         if (name === "value") {
             if (this.input) this.input.value = newValue;
             if (this._internals) {
-                this._internals.setFormValue(
-                    newValue,
-                    this.getAttribute("name"),
-                );
+                this._internals.setFormValue(newValue, this.getAttribute("name"));
             }
             return;
         }
@@ -50,23 +47,58 @@ export class YumeInput extends HTMLElement {
         }
 
         if (name === "invalid") {
-            this.updateValidationState();
+            this._updateValidationState();
             return;
         }
 
         this.render();
     }
 
-    /** @type {string} The current input value. */
-    get value() {
-        return this.input?.value || "";
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
+
+    /** @type {boolean} Whether the input is disabled. */
+    get disabled() { return this.hasAttribute("disabled"); }
+    set disabled(val) {
+        if (val) this.setAttribute("disabled", "");
+        else this.removeAttribute("disabled");
     }
 
+    /** @type {boolean} Whether the input is in an invalid state. */
+    get invalid() { return this.hasAttribute("invalid"); }
+    set invalid(val) {
+        if (val) this.setAttribute("invalid", "");
+        else this.removeAttribute("invalid");
+    }
+
+    /** @type {string} Label position: "top" | "bottom" (default "top"). */
+    get labelPosition() { return this.getAttribute("label-position") || "top"; }
+    set labelPosition(val) { this.setAttribute("label-position", val); }
+
+    /** @type {string} The form field name. */
+    get name() { return this.getAttribute("name") || ""; }
+    set name(val) { this.setAttribute("name", val); }
+
+    /** @type {string} Input size: "small" | "medium" | "large" (default "medium"). */
+    get size() { return this.getAttribute("size") || "medium"; }
+    set size(val) { this.setAttribute("size", val); }
+
+    /** @type {string} Input type (default "text"). */
+    get type() { return this.getAttribute("type") || "text"; }
+    set type(val) { this.setAttribute("type", val); }
+
+    /** @type {string} The current input value. */
+    get value() { return this.input?.value || ""; }
     set value(val) {
         if (this.input) this.input.value = val;
         else this.setAttribute("value", val);
         this._internals.setFormValue(val, this.getAttribute("name"));
     }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     /**
      * Checks the validity of the underlying input element.
@@ -74,15 +106,6 @@ export class YumeInput extends HTMLElement {
      */
     checkValidity() {
         return this.input?.checkValidity?.() ?? true;
-    }
-
-    updateValidationState() {
-        const isManuallyInvalid = this.hasAttribute("invalid");
-        const isAutomaticallyInvalid = this.input && !this.checkValidity();
-        const isInvalid = isManuallyInvalid || isAutomaticallyInvalid;
-
-        this.inputContainer?.classList.toggle("is-invalid", isInvalid);
-        this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }
 
     render() {
@@ -93,21 +116,55 @@ export class YumeInput extends HTMLElement {
         const isDisabled = this.hasAttribute("disabled");
         const isLabelTop = labelPosition === "top";
 
-        const paddingVar = {
-            small: "--component-inputs-padding-small",
-            medium: "--component-inputs-padding-medium",
-            large: "--component-inputs-padding-large",
-        }[size];
+        const paddingVar = this._getPaddingVar(size);
+        const minHeightVar = this._getMinHeightVar(size);
 
-        const minHeightVar =
-            {
-                small: "var(--sizing-small, 32px)",
-                medium: "var(--sizing-medium, 40px)",
-                large: "var(--sizing-large, 56px)",
-            }[size] || "var(--sizing-medium, 40px)";
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(isDisabled, paddingVar, minHeightVar)];
+        this.shadowRoot.innerHTML = this._buildHTML(type, value, isLabelTop, isDisabled);
 
+        this.input = this.shadowRoot.querySelector("input");
+        this.inputContainer = this.shadowRoot.querySelector(".input-container");
+        this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+
+        if (!isDisabled) {
+            this._bindInputListeners();
+            this._updateValidationState();
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _bindInputListeners() {
+        this.input.addEventListener("input", (e) => {
+            this.setAttribute("value", e.target.value);
+            this.dispatchEvent(new CustomEvent("input", {
+                detail: { value: e.target.value },
+                bubbles: true,
+                composed: true,
+            }));
+            this._updateValidationState();
+        });
+    }
+
+    _buildHTML(type, value, isLabelTop, isDisabled) {
+        const labelSlot = '<div class="label-wrapper"><slot name="label"></slot></div>';
+        return `
+            <div class="input-wrapper">
+                ${isLabelTop ? labelSlot : ""}
+                <div class="input-container">
+                    <slot name="left-icon"></slot>
+                    <input part="input" type="${type}" value="${value}" ${isDisabled ? "disabled" : ""} />
+                    <slot name="right-icon"></slot>
+                </div>
+                ${!isLabelTop ? labelSlot : ""}
+            </div>
+        `;
+    }
+
+    _buildStyleSheet(isDisabled, paddingVar, minHeightVar) {
         const sheet = new CSSStyleSheet();
-
         sheet.replaceSync(`
             :host {
                 display: block;
@@ -195,40 +252,34 @@ export class YumeInput extends HTMLElement {
                 color: var(--component-input-icon-color);
             }
         `);
+        return sheet;
+    }
 
-        this.shadowRoot.adoptedStyleSheets = [sheet];
+    _getMinHeightVar(size) {
+        const map = {
+            small: "var(--sizing-small, 32px)",
+            medium: "var(--sizing-medium, 40px)",
+            large: "var(--sizing-large, 56px)",
+        };
+        return map[size] || map.medium;
+    }
 
-        this.shadowRoot.innerHTML = `
-            <div class="input-wrapper">
-                ${isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
-                <div class="input-container">
-                    <slot name="left-icon"></slot>
-                    <input part="input" type="${type}" value="${value}" ${isDisabled ? "disabled" : ""} />
-                    <slot name="right-icon"></slot>
-                </div>
-                ${!isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
-            </div>
-        `;
+    _getPaddingVar(size) {
+        const map = {
+            small: "--component-inputs-padding-small",
+            medium: "--component-inputs-padding-medium",
+            large: "--component-inputs-padding-large",
+        };
+        return map[size] || map.medium;
+    }
 
-        this.input = this.shadowRoot.querySelector("input");
-        this.inputContainer = this.shadowRoot.querySelector(".input-container");
-        this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+    _updateValidationState() {
+        const isManuallyInvalid = this.hasAttribute("invalid");
+        const isAutomaticallyInvalid = this.input && !this.checkValidity();
+        const isInvalid = isManuallyInvalid || isAutomaticallyInvalid;
 
-        if (!isDisabled) {
-            this.input.addEventListener("input", (e) => {
-                this.setAttribute("value", e.target.value);
-                this.dispatchEvent(
-                    new CustomEvent("input", {
-                        detail: { value: e.target.value },
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
-                this.updateValidationState();
-            });
-
-            this.updateValidationState();
-        }
+        this.inputContainer?.classList.toggle("is-invalid", isInvalid);
+        this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }
 }
 

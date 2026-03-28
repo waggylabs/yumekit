@@ -5,10 +5,10 @@ import orangeLightCSS from "../../styles/orange-light.css";
 import orangeDarkCSS from "../../styles/orange-dark.css";
 
 const THEMES = {
-    "blue-light":   blueLightCSS,
-    "blue-dark":    blueDarkCSS,
+    "blue-light": blueLightCSS,
+    "blue-dark": blueDarkCSS,
     "orange-light": orangeLightCSS,
-    "orange-dark":  orangeDarkCSS,
+    "orange-dark": orangeDarkCSS,
 };
 
 export class YumeTheme extends HTMLElement {
@@ -40,15 +40,21 @@ export class YumeTheme extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Whether cross-origin theme-path URLs are allowed. */
-    get crossOrigin() { return this.hasAttribute("cross-origin"); }
+    get crossOrigin() {
+        return this.hasAttribute("cross-origin");
+    }
     set crossOrigin(val) {
         if (val) this.setAttribute("cross-origin", "");
         else this.removeAttribute("cross-origin");
     }
 
     /** The active theme name or URL path. */
-    get theme() { return this.getAttribute("theme") || "blue-light"; }
-    set theme(val) { this.setAttribute("theme", val); }
+    get theme() {
+        return this.getAttribute("theme") || "blue-light";
+    }
+    set theme(val) {
+        this.setAttribute("theme", val);
+    }
 
     // -------------------------------------------------------------------------
     // Public
@@ -96,11 +102,11 @@ export class YumeTheme extends HTMLElement {
 
         const baseStyle = document.createElement("style");
         baseStyle.textContent = `${variablesCSS}
-                :host {
-                    font-family: var(--font-family-body, sans-serif);
-                    color: var(--base-content--, inherit);
-                    font-weight: var(--font-weight-body, 400);
-                }`;
+            :host {
+                font-family: var(--font-family-body, sans-serif);
+                color: var(--base-content--, inherit);
+                font-weight: var(--font-weight-body, 400);
+            }`;
         this.shadowRoot.appendChild(baseStyle);
 
         if (themeCSS) {
@@ -118,7 +124,8 @@ export class YumeTheme extends HTMLElement {
         if (!this.hasAttribute("no-default-font")) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
-            link.href = "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap";
+            link.href =
+                "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap";
             link.setAttribute("data-yumekit-font", "");
             document.head.appendChild(link);
         }
@@ -137,7 +144,7 @@ export class YumeTheme extends HTMLElement {
             if (!this.crossOrigin && url.origin !== window.location.origin) {
                 console.error(
                     `Blocked cross-origin theme load from ${url.origin}. ` +
-                    `Add the "cross-origin" attribute to <y-theme> to allow this.`,
+                        `Add the "cross-origin" attribute to <y-theme> to allow this.`,
                 );
                 return "";
             }

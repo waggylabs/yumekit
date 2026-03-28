@@ -26,16 +26,16 @@ export class YumeTooltip extends HTMLElement {
         this.render();
         this.addEventListener("mouseenter", this._onMouseEnter);
         this.addEventListener("mouseleave", this._onMouseLeave);
-        this.addEventListener("focusin",    this._onFocusIn);
-        this.addEventListener("focusout",   this._onFocusOut);
+        this.addEventListener("focusin", this._onFocusIn);
+        this.addEventListener("focusout", this._onFocusOut);
         document.addEventListener("keydown", this._onKeyDown);
     }
 
     disconnectedCallback() {
         this.removeEventListener("mouseenter", this._onMouseEnter);
         this.removeEventListener("mouseleave", this._onMouseLeave);
-        this.removeEventListener("focusin",    this._onFocusIn);
-        this.removeEventListener("focusout",   this._onFocusOut);
+        this.removeEventListener("focusin", this._onFocusIn);
+        this.removeEventListener("focusout", this._onFocusOut);
         document.removeEventListener("keydown", this._onKeyDown);
         clearTimeout(this._showTimeout);
         clearTimeout(this._hideTimeout);
@@ -51,20 +51,36 @@ export class YumeTooltip extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Color theme for the tooltip (e.g. "base", "primary", "error"). */
-    get color() { return this.getAttribute("color") || "base"; }
-    set color(val) { this.setAttribute("color", val); }
+    get color() {
+        return this.getAttribute("color") || "base";
+    }
+    set color(val) {
+        this.setAttribute("color", val);
+    }
 
     /** Delay in milliseconds before the tooltip appears. */
-    get delay() { return parseInt(this.getAttribute("delay") ?? "200", 10); }
-    set delay(val) { this.setAttribute("delay", String(val)); }
+    get delay() {
+        return parseInt(this.getAttribute("delay") ?? "200", 10);
+    }
+    set delay(val) {
+        this.setAttribute("delay", String(val));
+    }
 
     /** Placement relative to the trigger: "top" | "bottom" | "left" | "right". */
-    get position() { return this.getAttribute("position") || "top"; }
-    set position(val) { this.setAttribute("position", val); }
+    get position() {
+        return this.getAttribute("position") || "top";
+    }
+    set position(val) {
+        this.setAttribute("position", val);
+    }
 
     /** The tooltip text content. */
-    get text() { return this.getAttribute("text") || ""; }
-    set text(val) { this.setAttribute("text", val); }
+    get text() {
+        return this.getAttribute("text") || "";
+    }
+    set text(val) {
+        this.setAttribute("text", val);
+    }
 
     // -------------------------------------------------------------------------
     // Public
@@ -202,11 +218,21 @@ export class YumeTooltip extends HTMLElement {
         `;
     }
 
-    _onFocusIn()  { this.show(); }
-    _onFocusOut() { this.hide(); }
-    _onKeyDown(e) { if (e.key === "Escape" && this._visible) this.hide(); }
-    _onMouseEnter() { this.show(); }
-    _onMouseLeave() { this.hide(); }
+    _onFocusIn() {
+        this.show();
+    }
+    _onFocusOut() {
+        this.hide();
+    }
+    _onKeyDown(e) {
+        if (e.key === "Escape" && this._visible) this.hide();
+    }
+    _onMouseEnter() {
+        this.show();
+    }
+    _onMouseLeave() {
+        this.hide();
+    }
 }
 
 if (!customElements.get("y-tooltip")) {

@@ -21,6 +21,10 @@ export class YumeSelect extends HTMLElement {
         ];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this._internals = this.attachInternals();
@@ -44,49 +48,34 @@ export class YumeSelect extends HTMLElement {
         this.closeDropdown();
     }
 
-    _onDocumentClick(e) {
-        if (this.getAttribute("close-on-click-outside") === "false") return;
-
-        const path = e.composedPath();
-
-        if (!path.includes(this) && this.dropdown?.classList.contains("open")) {
-            this.closeDropdown();
-        }
-    }
-
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
 
         if (name === "value") {
             if (this.hasAttribute("multiple")) {
                 this.selectedValues = new Set(
-                    (newValue || "")
-                        .split(",")
-                        .map((v) => v.trim())
-                        .filter(Boolean),
+                    (newValue || "").split(",").map((v) => v.trim()).filter(Boolean),
                 );
             } else {
                 this._value = newValue || "";
             }
 
-            this.updateDisplay();
+            this._updateDisplay();
             this._internals.setFormValue(newValue, this.getAttribute("name"));
-            this.updateSelectedStyles();
+            this._updateSelectedStyles();
         }
 
-        if (
-            [
-                "label-position",
-                "disabled",
-                "invalid",
-                "required",
-                "placeholder",
-                "options",
-                "size",
-                "searchable",
-                "clearable",
-            ].includes(name)
-        ) {
+        if ([
+            "label-position",
+            "disabled",
+            "invalid",
+            "required",
+            "placeholder",
+            "options",
+            "size",
+            "searchable",
+            "clearable",
+        ].includes(name)) {
             this.render();
         }
 
@@ -95,6 +84,84 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
+
+    /** @type {boolean} Whether to show a clear button when a value is selected. */
+    get clearable() { return this.hasAttribute("clearable"); }
+    set clearable(val) {
+        if (val) this.setAttribute("clearable", "");
+        else this.removeAttribute("clearable");
+    }
+
+    /** @type {boolean} Whether the select is disabled. */
+    get disabled() { return this.hasAttribute("disabled"); }
+    set disabled(val) {
+        if (val) this.setAttribute("disabled", "");
+        else this.removeAttribute("disabled");
+    }
+
+    /** @type {string} Display mode: "tag" for multi-select tag display. */
+    get displayMode() { return this.getAttribute("display-mode") || ""; }
+    set displayMode(val) { this.setAttribute("display-mode", val); }
+
+    /** @type {boolean} Whether the select is in an invalid state. */
+    get invalid() { return this.hasAttribute("invalid"); }
+    set invalid(val) {
+        if (val) this.setAttribute("invalid", "");
+        else this.removeAttribute("invalid");
+    }
+
+    /** @type {string} Label position: "top" | "bottom" (default "top"). */
+    get labelPosition() { return this.getAttribute("label-position") || "top"; }
+    set labelPosition(val) { this.setAttribute("label-position", val); }
+
+    /** @type {boolean} Whether multiple values can be selected. */
+    get multiple() { return this.hasAttribute("multiple"); }
+    set multiple(val) {
+        if (val) this.setAttribute("multiple", "");
+        else this.removeAttribute("multiple");
+    }
+
+    /** @type {string} The form field name. */
+    get name() { return this.getAttribute("name") || ""; }
+    set name(val) { this.setAttribute("name", val); }
+
+    /** @type {Array<{value: string, label: string}>} The options array for the select. */
+    get options() {
+        try {
+            return JSON.parse(this.getAttribute("options") || "[]");
+        } catch {
+            return [];
+        }
+    }
+    set options(val) {
+        this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
+    }
+
+    /** @type {string} Placeholder text when no value is selected. */
+    get placeholder() { return this.getAttribute("placeholder") || "Select..."; }
+    set placeholder(val) { this.setAttribute("placeholder", val); }
+
+    /** @type {boolean} Whether the select requires a value. */
+    get required() { return this.hasAttribute("required"); }
+    set required(val) {
+        if (val) this.setAttribute("required", "");
+        else this.removeAttribute("required");
+    }
+
+    /** @type {boolean} Whether the dropdown shows an inline search filter input. */
+    get searchable() { return this.hasAttribute("searchable"); }
+    set searchable(val) {
+        if (val) this.setAttribute("searchable", "");
+        else this.removeAttribute("searchable");
+    }
+
+    /** @type {string} Select size: "small" | "medium" | "large" (default "medium"). */
+    get size() { return this.getAttribute("size") || "medium"; }
+    set size(val) { this.setAttribute("size", val); }
+
     /** @type {string} The current selected value, or comma-separated values when multiple. */
     get value() {
         if (this.hasAttribute("multiple")) {
@@ -102,13 +169,10 @@ export class YumeSelect extends HTMLElement {
         }
         return this._value || "";
     }
-
     set value(val) {
         if (this.hasAttribute("multiple")) {
             if (typeof val === "string") {
-                this.selectedValues = new Set(
-                    val.split(",").map((v) => v.trim()),
-                );
+                this.selectedValues = new Set(val.split(",").map((v) => v.trim()));
             } else if (Array.isArray(val)) {
                 this.selectedValues = new Set(val);
             }
@@ -118,119 +182,13 @@ export class YumeSelect extends HTMLElement {
 
         this.setAttribute("value", val);
         this._internals.setFormValue(this.value, this.getAttribute("name"));
-        this.updateDisplay();
-        this.updateSelectedStyles();
+        this._updateDisplay();
+        this._updateSelectedStyles();
     }
 
-    /** @type {Array<{value: string, label: string}>} The options array for the select. */
-    get options() {
-        try {
-            return JSON.parse(this.getAttribute("options") || "[]");
-        } catch (e) {
-            return [];
-        }
-    }
-
-    set options(val) {
-        this.setAttribute(
-            "options",
-            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
-        );
-    }
-
-    /** @type {boolean} Whether the dropdown shows an inline search filter input. */
-    get searchable() {
-        return this.hasAttribute("searchable");
-    }
-    set searchable(val) {
-        if (val) this.setAttribute("searchable", "");
-        else this.removeAttribute("searchable");
-    }
-
-    /** @type {boolean} Whether to show a clear button when a value is selected. */
-    get clearable() {
-        return this.hasAttribute("clearable");
-    }
-    set clearable(val) {
-        if (val) this.setAttribute("clearable", "");
-        else this.removeAttribute("clearable");
-    }
-
-    /**
-     * Returns the parsed options array from the "options" attribute.
-     * @returns {Array<{value: string, label: string}>}
-     */
-    getOptions() {
-        return this.options;
-    }
-
-    /**
-     * Returns the display text for the current selection.
-     * @returns {string}
-     */
-    getDisplayText() {
-        const options = this.getOptions();
-        const isMulti = this.hasAttribute("multiple");
-        const isTagMode = this.getAttribute("display-mode") === "tag";
-
-        if (isMulti && isTagMode) {
-            return "";
-        }
-
-        if (isMulti) {
-            const count = options.filter((opt) =>
-                this.selectedValues.has(opt.value),
-            ).length;
-            return count > 0
-                ? `${count} Selected`
-                : this.getAttribute("placeholder") || "Select...";
-        } else {
-            const selected = options.find((opt) => opt.value === this.value);
-            return (
-                selected?.label ||
-                this.getAttribute("placeholder") ||
-                "Select..."
-            );
-        }
-    }
-
-    /** Opens the dropdown without toggling. */
-    _openDropdown() {
-        if (this.dropdown.classList.contains("open")) return;
-        this.dropdown.classList.add("open");
-        this.selectContainer.classList.add("open");
-        this._positionDropdown();
-        this._onScrollOrResize = this._positionDropdown.bind(this);
-
-        // For single searchable: clear input so user can type fresh
-        if (
-            this.searchable &&
-            !this.hasAttribute("multiple") &&
-            this.searchInput
-        ) {
-            const currentLabel = this.value ? this.getDisplayText() : "";
-            this.searchInput.placeholder =
-                currentLabel || this.getAttribute("placeholder") || "Select...";
-            this.searchInput.value = "";
-            this._filterOptions("");
-        }
-
-        window.addEventListener("scroll", this._onScrollOrResize, true);
-        window.addEventListener("resize", this._onScrollOrResize);
-        document.addEventListener("click", this._onDocumentClick, true);
-    }
-
-    /** Toggles the dropdown open or closed. */
-    toggleDropdown() {
-        if (this.dropdown.classList.contains("open")) {
-            this.closeDropdown();
-        } else {
-            this._openDropdown();
-            if (this.searchable && this.searchInput) {
-                setTimeout(() => this.searchInput.focus(), 0);
-            }
-        }
-    }
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     /** Closes the dropdown. */
     closeDropdown() {
@@ -241,8 +199,7 @@ export class YumeSelect extends HTMLElement {
         if (this.searchable) {
             const isMulti = this.hasAttribute("multiple");
             if (!isMulti && this.searchInput) {
-                // Restore selected label in the inline input
-                const selectedLabel = this.value ? this.getDisplayText() : "";
+                const selectedLabel = this.value ? this._getDisplayText() : "";
                 this.searchInput.value = selectedLabel;
                 this.searchInput.placeholder = selectedLabel
                     ? ""
@@ -260,269 +217,30 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
-    _positionDropdown() {
-        const rect = this.selectContainer.getBoundingClientRect();
-        const gap = 4;
+    render() {
+        this.closeDropdown();
+        this._applyStyles();
+        this.shadowRoot.innerHTML = this._generateTemplate();
+        this._queryRefs();
+        this._attachEventListeners();
+        this._updateValidationState();
+        this._updateDisplay();
+        this._updateSelectedStyles();
+    }
 
-        this.dropdown.style.left = `${rect.left}px`;
-        this.dropdown.style.width = `${rect.width}px`;
-
-        const spaceBelow = window.innerHeight - rect.bottom - gap;
-        const maxH = 200;
-
-        if (spaceBelow >= maxH || spaceBelow >= rect.top) {
-            this.dropdown.style.top = `${rect.bottom + gap}px`;
-            this.dropdown.style.bottom = "auto";
+    /** Toggles the dropdown open or closed. */
+    toggleDropdown() {
+        if (this.dropdown.classList.contains("open")) {
+            this.closeDropdown();
         } else {
-            this.dropdown.style.bottom = `${window.innerHeight - rect.top + gap}px`;
-            this.dropdown.style.top = "auto";
+            this._openDropdown();
+            if (this.searchable && this.searchInput) {
+                setTimeout(() => this.searchInput.focus(), 0);
+            }
         }
     }
 
-    _filterOptions(query) {
-        if (!this.dropdown) return;
-        const q = query.toLowerCase();
-        let visibleCount = 0;
-
-        this.dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
-            const matches = !q || item.textContent.toLowerCase().includes(q);
-            item.style.display = matches ? "" : "none";
-            if (matches) visibleCount++;
-        });
-
-        const noResults = this.dropdown.querySelector(".no-results");
-        if (noResults)
-            noResults.style.display = visibleCount === 0 ? "" : "none";
-    }
-
-    queryRefs() {
-        this.selectContainer =
-            this.shadowRoot.querySelector(".select-container");
-        this.dropdown = this.shadowRoot.querySelector(".dropdown");
-        this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
-        this.displayElement = this.shadowRoot.querySelector(".value-display");
-        this.searchInput = this.shadowRoot.querySelector(".search-input");
-        this.clearButton = this.shadowRoot.querySelector(".clear-button");
-    }
-
-    attachEventListeners() {
-        const isSearchable = this.searchable;
-        const isMulti = this.hasAttribute("multiple");
-        const isTagMode = this.getAttribute("display-mode") === "tag";
-
-        if (isSearchable) {
-            // Container click → focus the search input (input focus will open the dropdown)
-            this.selectContainer.addEventListener("click", (e) => {
-                if (!e.target.closest(".chevron-icon")) {
-                    this.searchInput?.focus();
-                }
-            });
-
-            // Chevron → toggle
-            const chevronEl = this.shadowRoot.querySelector(".chevron-icon");
-            chevronEl?.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.toggleDropdown();
-            });
-
-            // Input focus → open dropdown
-            this.searchInput?.addEventListener("focus", () => {
-                if (!this.dropdown.classList.contains("open")) {
-                    this._openDropdown();
-                }
-            });
-
-            // Input → filter
-            this.searchInput?.addEventListener("input", (e) => {
-                this._filterOptions(e.target.value);
-            });
-
-            // Prevent input click from bubbling to container (avoid re-focusing)
-            this.searchInput?.addEventListener("click", (e) =>
-                e.stopPropagation(),
-            );
-        } else {
-            this.selectContainer.addEventListener("click", () =>
-                this.toggleDropdown(),
-            );
-        }
-
-        // Clear button click → clear selection
-        this.clearButton?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.value = "";
-            this._filterOptions("");
-            if (this.searchInput) {
-                this.searchInput.value = "";
-                this.searchInput.placeholder =
-                    this.getAttribute("placeholder") || "Select...";
-                this.searchInput.focus();
-                if (!this.dropdown.classList.contains("open")) {
-                    this._openDropdown();
-                }
-            }
-            this.dispatchEvent(
-                new CustomEvent("change", {
-                    detail: { value: "" },
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
-            this.updateValidation();
-        });
-
-        this.dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
-            item.addEventListener("click", () => {
-                const val = item.getAttribute("data-value");
-                const isRequired = this.hasAttribute("required");
-
-                if (isMulti) {
-                    if (this.selectedValues.has(val)) {
-                        if (!isRequired || this.selectedValues.size > 1) {
-                            this.selectedValues.delete(val);
-                        }
-                    } else {
-                        this.selectedValues.add(val);
-                    }
-
-                    this.setAttribute(
-                        "value",
-                        Array.from(this.selectedValues).join(","),
-                    );
-                } else {
-                    const isSelected = val === this.value;
-                    if (isSelected && !isRequired) {
-                        this.value = "";
-                    } else {
-                        this.value = val;
-                    }
-                }
-
-                this.dispatchEvent(
-                    new CustomEvent("change", {
-                        detail: { value: this.value },
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
-
-                this.updateValidation();
-
-                if (isSearchable && isMulti && isTagMode) {
-                    // Keep dropdown open for multi-tag searchable; clear and refocus input
-                    if (this.searchInput) {
-                        this.searchInput.value = "";
-                        this._filterOptions("");
-                        this.searchInput.focus();
-                    }
-                    this.updateSelectedStyles();
-                } else {
-                    this.closeDropdown();
-                }
-            });
-        });
-    }
-
-    renderTags() {
-        const isMulti = this.hasAttribute("multiple");
-        const isTagMode = this.getAttribute("display-mode") === "tag";
-
-        if (!isMulti || !isTagMode || !this.displayElement) return;
-
-        const isSearchable = this.searchable;
-        const options = this.getOptions();
-
-        // Preserve the search input node before clearing
-        const existingInput = isSearchable
-            ? this.displayElement.querySelector(".search-input")
-            : null;
-
-        this.displayElement.innerHTML = "";
-
-        const selected = options.filter((opt) =>
-            this.selectedValues.has(opt.value),
-        );
-
-        selected.forEach((opt) => {
-            const tag = document.createElement("y-tag");
-            tag.setAttribute("removable", "");
-            tag.setAttribute("size", "small");
-            tag.setAttribute("color", opt.color || "primary");
-            tag.setAttribute("style-type", "filled");
-            tag.textContent = opt.label;
-            tag.dataset.value = opt.value;
-
-            tag.addEventListener("remove", () => {
-                this.selectedValues.delete(opt.value);
-                this.setAttribute(
-                    "value",
-                    Array.from(this.selectedValues).join(","),
-                );
-                this.renderTags();
-                this.updateSelectedStyles();
-                this.updateValidation();
-
-                this.dispatchEvent(
-                    new CustomEvent("change", {
-                        detail: { value: this.value },
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
-            });
-
-            this.displayElement.appendChild(tag);
-        });
-
-        // Re-append the search input after the tags
-        if (existingInput) {
-            this.displayElement.appendChild(existingInput);
-        }
-    }
-
-    updateDisplay() {
-        const isTagMode = this.getAttribute("display-mode") === "tag";
-        const isSearchable = this.searchable;
-        const isMulti = this.hasAttribute("multiple");
-
-        const isClearable = this.clearable;
-
-        if (isTagMode) {
-            this.renderTags();
-        } else if (isSearchable && !isMulti && this.searchInput) {
-            // Update inline search input to reflect current selection
-            const isOpen = this.dropdown?.classList.contains("open");
-            if (!isOpen) {
-                const selectedLabel = this.value ? this.getDisplayText() : "";
-                this.searchInput.value = selectedLabel;
-                this.searchInput.placeholder = selectedLabel
-                    ? ""
-                    : this.getAttribute("placeholder") || "Select...";
-            }
-            if (this.clearButton) {
-                this.clearButton.style.display = this.value ? "flex" : "none";
-            }
-        } else if (isClearable && !isMulti && this.displayElement) {
-            // Clearable without search: update text and clear button visibility
-            this.displayElement.textContent = this.getDisplayText();
-            if (this.clearButton) {
-                this.clearButton.style.display = this.value ? "flex" : "none";
-            }
-        } else if (this.displayElement) {
-            this.displayElement.textContent = this.getDisplayText();
-        }
-    }
-
-    updateSelectedStyles() {
-        const isMulti = this.hasAttribute("multiple");
-        const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
-
-        this.dropdown?.querySelectorAll(".dropdown-item").forEach((item) => {
-            const val = item.getAttribute("data-value");
-            item.classList.toggle("selected", valueSet.has(val));
-        });
-    }
-
+    /** Validates the current selection and sets/removes the invalid attribute. */
     updateValidation() {
         const required = this.hasAttribute("required");
         const isMulti = this.hasAttribute("multiple");
@@ -537,40 +255,25 @@ export class YumeSelect extends HTMLElement {
         }
     }
 
-    updateValidationState() {
-        const isInvalid = this.hasAttribute("invalid");
-        this.selectContainer?.classList.toggle("is-invalid", isInvalid);
-        this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
-    }
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
 
-    render() {
-        this.closeDropdown();
-        this.applyStyles();
-        this.shadowRoot.innerHTML = this.generateTemplate();
-        this.queryRefs();
-        this.attachEventListeners();
-        this.updateValidationState();
-        this.updateDisplay();
-        this.updateSelectedStyles();
-    }
-
-    applyStyles() {
+    _applyStyles() {
         const isDisabled = this.hasAttribute("disabled");
         const size = this.getAttribute("size") || "medium";
 
-        const paddingVar =
-            {
-                small: "--component-inputs-padding-small",
-                medium: "--component-inputs-padding-medium",
-                large: "--component-inputs-padding-large",
-            }[size] || "--component-inputs-padding-medium";
+        const paddingVar = {
+            small: "--component-inputs-padding-small",
+            medium: "--component-inputs-padding-medium",
+            large: "--component-inputs-padding-large",
+        }[size] || "--component-inputs-padding-medium";
 
-        const minHeightVar =
-            {
-                small: "var(--sizing-small, 32px)",
-                medium: "var(--sizing-medium, 40px)",
-                large: "var(--sizing-large, 56px)",
-            }[size] || "var(--sizing-medium, 40px)";
+        const minHeightVar = {
+            small: "var(--sizing-small, 32px)",
+            medium: "var(--sizing-medium, 40px)",
+            large: "var(--sizing-large, 56px)",
+        }[size] || "var(--sizing-medium, 40px)";
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -742,14 +445,134 @@ export class YumeSelect extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [sheet];
     }
 
-    generateTemplate() {
+    _attachEventListeners() {
+        const isSearchable = this.searchable;
+        const isMulti = this.hasAttribute("multiple");
+        const isTagMode = this.getAttribute("display-mode") === "tag";
+
+        if (isSearchable) {
+            // Container click → focus the search input (input focus will open the dropdown)
+            this.selectContainer.addEventListener("click", (e) => {
+                if (!e.target.closest(".chevron-icon")) {
+                    this.searchInput?.focus();
+                }
+            });
+
+            // Chevron → toggle
+            const chevronEl = this.shadowRoot.querySelector(".chevron-icon");
+            chevronEl?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.toggleDropdown();
+            });
+
+            // Input focus → open dropdown
+            this.searchInput?.addEventListener("focus", () => {
+                if (!this.dropdown.classList.contains("open")) {
+                    this._openDropdown();
+                }
+            });
+
+            // Input → filter
+            this.searchInput?.addEventListener("input", (e) => {
+                this._filterOptions(e.target.value);
+            });
+
+            // Prevent input click from bubbling to container (avoid re-focusing)
+            this.searchInput?.addEventListener("click", (e) => e.stopPropagation());
+        } else {
+            this.selectContainer.addEventListener("click", () => this.toggleDropdown());
+        }
+
+        // Clear button click → clear selection
+        this.clearButton?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.value = "";
+            this._filterOptions("");
+            if (this.searchInput) {
+                this.searchInput.value = "";
+                this.searchInput.placeholder = this.getAttribute("placeholder") || "Select...";
+                this.searchInput.focus();
+                if (!this.dropdown.classList.contains("open")) {
+                    this._openDropdown();
+                }
+            }
+            this.dispatchEvent(new CustomEvent("change", {
+                detail: { value: "" },
+                bubbles: true,
+                composed: true,
+            }));
+            this.updateValidation();
+        });
+
+        this.dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
+            item.addEventListener("click", () => {
+                const val = item.getAttribute("data-value");
+                const isRequired = this.hasAttribute("required");
+
+                if (isMulti) {
+                    if (this.selectedValues.has(val)) {
+                        if (!isRequired || this.selectedValues.size > 1) {
+                            this.selectedValues.delete(val);
+                        }
+                    } else {
+                        this.selectedValues.add(val);
+                    }
+
+                    this.setAttribute("value", Array.from(this.selectedValues).join(","));
+                } else {
+                    const isSelected = val === this.value;
+                    if (isSelected && !isRequired) {
+                        this.value = "";
+                    } else {
+                        this.value = val;
+                    }
+                }
+
+                this.dispatchEvent(new CustomEvent("change", {
+                    detail: { value: this.value },
+                    bubbles: true,
+                    composed: true,
+                }));
+
+                this.updateValidation();
+
+                if (isSearchable && isMulti && isTagMode) {
+                    // Keep dropdown open for multi-tag searchable; clear and refocus input
+                    if (this.searchInput) {
+                        this.searchInput.value = "";
+                        this._filterOptions("");
+                        this.searchInput.focus();
+                    }
+                    this._updateSelectedStyles();
+                } else {
+                    this.closeDropdown();
+                }
+            });
+        });
+    }
+
+    _filterOptions(query) {
+        if (!this.dropdown) return;
+        const q = query.toLowerCase();
+        let visibleCount = 0;
+
+        this.dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
+            const matches = !q || item.textContent.toLowerCase().includes(q);
+            item.style.display = matches ? "" : "none";
+            if (matches) visibleCount++;
+        });
+
+        const noResults = this.dropdown.querySelector(".no-results");
+        if (noResults) noResults.style.display = visibleCount === 0 ? "" : "none";
+    }
+
+    _generateTemplate() {
         const labelPosition = this.getAttribute("label-position") || "top";
         const isLabelTop = labelPosition === "top";
         const isInvalid = this.hasAttribute("invalid");
         const isMulti = this.hasAttribute("multiple");
         const isTagMode = this.getAttribute("display-mode") === "tag";
         const isSearchable = this.searchable;
-
         const isClearable = this.clearable;
         const showClearButton = (isSearchable || isClearable) && !isMulti;
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
@@ -774,14 +597,14 @@ export class YumeSelect extends HTMLElement {
         } else if (showClearButton) {
             // Clearable but not searchable: value display + clear button
             containerInner = `
-                <div class="value-display">${this.getDisplayText()}</div>
+                <div class="value-display">${this._getDisplayText()}</div>
                 <button class="clear-button" style="display:none" tabindex="-1" type="button">
                     <y-icon name="close" size="small"></y-icon>
                 </button>
             `;
         } else {
             // Default
-            containerInner = `<div class="value-display">${this.getDisplayText()}</div>`;
+            containerInner = `<div class="value-display">${this._getDisplayText()}</div>`;
         }
 
         return `
@@ -795,19 +618,189 @@ export class YumeSelect extends HTMLElement {
                 </div>
                 ${!isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
                 <div class="dropdown" part="dropdown">
-                    ${this.getOptions()
-                        .map(
-                            (opt) => `
+                    ${this.options
+                        .map((opt) => `
                         <div class="dropdown-item ${valueSet.has(opt.value) ? "selected" : ""}" data-value="${opt.value}">
                             ${opt.label}
                         </div>
-                    `,
-                        )
+                    `)
                         .join("")}
                     <div class="no-results" style="display:none">No results</div>
                 </div>
             </div>
         `;
+    }
+
+    _getDisplayText() {
+        const isMulti = this.hasAttribute("multiple");
+        const isTagMode = this.getAttribute("display-mode") === "tag";
+
+        if (isMulti && isTagMode) return "";
+
+        if (isMulti) {
+            const count = this.options.filter((opt) => this.selectedValues.has(opt.value)).length;
+            return count > 0
+                ? `${count} Selected`
+                : this.getAttribute("placeholder") || "Select...";
+        } else {
+            const selected = this.options.find((opt) => opt.value === this.value);
+            return selected?.label || this.getAttribute("placeholder") || "Select...";
+        }
+    }
+
+    _onDocumentClick(e) {
+        if (this.getAttribute("close-on-click-outside") === "false") return;
+
+        const path = e.composedPath();
+
+        if (!path.includes(this) && this.dropdown?.classList.contains("open")) {
+            this.closeDropdown();
+        }
+    }
+
+    _openDropdown() {
+        if (this.dropdown.classList.contains("open")) return;
+        this.dropdown.classList.add("open");
+        this.selectContainer.classList.add("open");
+        this._positionDropdown();
+        this._onScrollOrResize = this._positionDropdown.bind(this);
+
+        // For single searchable: clear input so user can type fresh
+        if (this.searchable && !this.hasAttribute("multiple") && this.searchInput) {
+            const currentLabel = this.value ? this._getDisplayText() : "";
+            this.searchInput.placeholder = currentLabel || this.getAttribute("placeholder") || "Select...";
+            this.searchInput.value = "";
+            this._filterOptions("");
+        }
+
+        window.addEventListener("scroll", this._onScrollOrResize, true);
+        window.addEventListener("resize", this._onScrollOrResize);
+        document.addEventListener("click", this._onDocumentClick, true);
+    }
+
+    _positionDropdown() {
+        const rect = this.selectContainer.getBoundingClientRect();
+        const gap = 4;
+
+        this.dropdown.style.left = `${rect.left}px`;
+        this.dropdown.style.width = `${rect.width}px`;
+
+        const spaceBelow = window.innerHeight - rect.bottom - gap;
+        const maxH = 200;
+
+        if (spaceBelow >= maxH || spaceBelow >= rect.top) {
+            this.dropdown.style.top = `${rect.bottom + gap}px`;
+            this.dropdown.style.bottom = "auto";
+        } else {
+            this.dropdown.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+            this.dropdown.style.top = "auto";
+        }
+    }
+
+    _queryRefs() {
+        this.selectContainer = this.shadowRoot.querySelector(".select-container");
+        this.dropdown = this.shadowRoot.querySelector(".dropdown");
+        this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+        this.displayElement = this.shadowRoot.querySelector(".value-display");
+        this.searchInput = this.shadowRoot.querySelector(".search-input");
+        this.clearButton = this.shadowRoot.querySelector(".clear-button");
+    }
+
+    _renderTags() {
+        const isMulti = this.hasAttribute("multiple");
+        const isTagMode = this.getAttribute("display-mode") === "tag";
+
+        if (!isMulti || !isTagMode || !this.displayElement) return;
+
+        const isSearchable = this.searchable;
+
+        // Preserve the search input node before clearing
+        const existingInput = isSearchable
+            ? this.displayElement.querySelector(".search-input")
+            : null;
+
+        this.displayElement.innerHTML = "";
+
+        const selected = this.options.filter((opt) => this.selectedValues.has(opt.value));
+
+        selected.forEach((opt) => {
+            const tag = document.createElement("y-tag");
+            tag.setAttribute("removable", "");
+            tag.setAttribute("size", "small");
+            tag.setAttribute("color", opt.color || "primary");
+            tag.setAttribute("style-type", "filled");
+            tag.textContent = opt.label;
+            tag.dataset.value = opt.value;
+
+            tag.addEventListener("remove", () => {
+                this.selectedValues.delete(opt.value);
+                this.setAttribute("value", Array.from(this.selectedValues).join(","));
+                this._renderTags();
+                this._updateSelectedStyles();
+                this.updateValidation();
+
+                this.dispatchEvent(new CustomEvent("change", {
+                    detail: { value: this.value },
+                    bubbles: true,
+                    composed: true,
+                }));
+            });
+
+            this.displayElement.appendChild(tag);
+        });
+
+        // Re-append the search input after the tags
+        if (existingInput) {
+            this.displayElement.appendChild(existingInput);
+        }
+    }
+
+    _updateDisplay() {
+        const isTagMode = this.getAttribute("display-mode") === "tag";
+        const isSearchable = this.searchable;
+        const isMulti = this.hasAttribute("multiple");
+        const isClearable = this.clearable;
+
+        if (isTagMode) {
+            this._renderTags();
+        } else if (isSearchable && !isMulti && this.searchInput) {
+            // Update inline search input to reflect current selection
+            const isOpen = this.dropdown?.classList.contains("open");
+            if (!isOpen) {
+                const selectedLabel = this.value ? this._getDisplayText() : "";
+                this.searchInput.value = selectedLabel;
+                this.searchInput.placeholder = selectedLabel
+                    ? ""
+                    : this.getAttribute("placeholder") || "Select...";
+            }
+            if (this.clearButton) {
+                this.clearButton.style.display = this.value ? "flex" : "none";
+            }
+        } else if (isClearable && !isMulti && this.displayElement) {
+            // Clearable without search: update text and clear button visibility
+            this.displayElement.textContent = this._getDisplayText();
+            if (this.clearButton) {
+                this.clearButton.style.display = this.value ? "flex" : "none";
+            }
+        } else if (this.displayElement) {
+            this.displayElement.textContent = this._getDisplayText();
+        }
+    }
+
+    _updateSelectedStyles() {
+        const isMulti = this.hasAttribute("multiple");
+        const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
+
+        this.dropdown?.querySelectorAll(".dropdown-item").forEach((item) => {
+            const val = item.getAttribute("data-value");
+            item.classList.toggle("selected", valueSet.has(val));
+        });
+    }
+
+    _updateValidationState() {
+        const isInvalid = this.hasAttribute("invalid");
+        this.selectContainer?.classList.toggle("is-invalid", isInvalid);
+        this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }
 }
 
