@@ -126,6 +126,28 @@ class YumeDialog extends HTMLElement {
     }
 
     render() {
+        this.shadowRoot.innerHTML = "";
+        this.shadowRoot.appendChild(this._buildStyles());
+
+        const dialog = document.createElement("div");
+        dialog.className = "dialog";
+        dialog.setAttribute("role", "dialog");
+        dialog.setAttribute("aria-modal", "true");
+        dialog.setAttribute("tabindex", "-1");
+
+        const header = this._buildHeader();
+        const body = this._buildSection("body", "body");
+        const footer = this._buildSection("footer", "footer");
+
+        dialog.append(header, body, footer);
+        this.shadowRoot.appendChild(dialog);
+
+        if (!this.closable) this._hideIfEmpty(header);
+        this._hideIfEmpty(body);
+        this._hideIfEmpty(footer);
+    }
+
+    _buildStyles() {
         const style = document.createElement("style");
         style.textContent = `
             :host {
@@ -209,16 +231,10 @@ class YumeDialog extends HTMLElement {
                 margin: 0;
             }
         `;
+        return style;
+    }
 
-        this.shadowRoot.innerHTML = "";
-        this.shadowRoot.appendChild(style);
-
-        const dialog = document.createElement("div");
-        dialog.className = "dialog";
-        dialog.setAttribute("role", "dialog");
-        dialog.setAttribute("aria-modal", "true");
-        dialog.setAttribute("tabindex", "-1");
-
+    _buildHeader() {
         const header = document.createElement("div");
         header.className = "header";
         header.setAttribute("part", "header");
@@ -240,38 +256,28 @@ class YumeDialog extends HTMLElement {
             header.appendChild(closeBtn);
         }
 
-        const body = document.createElement("div");
-        body.className = "body";
-        body.setAttribute("part", "body");
-        body.innerHTML = `<slot name="body"></slot>`;
+        return header;
+    }
 
-        const footer = document.createElement("div");
-        footer.className = "footer";
-        footer.setAttribute("part", "footer");
-        footer.innerHTML = `<slot name="footer"></slot>`;
+    _buildSection(slotName, partName) {
+        const section = document.createElement("div");
+        section.className = slotName;
+        section.setAttribute("part", partName);
+        section.innerHTML = `<slot name="${slotName}"></slot>`;
+        return section;
+    }
 
-        dialog.appendChild(header);
-        dialog.appendChild(body);
-        dialog.appendChild(footer);
-        this.shadowRoot.appendChild(dialog);
+    _hideIfEmpty(wrapper) {
+        const slot = wrapper.querySelector("slot");
+        if (!slot) return;
 
-        const hideIfEmpty = (wrapper) => {
-            const slot = wrapper.querySelector("slot");
-            if (!slot) return;
-
-            const update = () => {
-                const hasContent =
-                    slot.assignedNodes({ flatten: true }).length > 0;
-                wrapper.style.display = hasContent ? "" : "none";
-            };
-
-            slot.addEventListener("slotchange", update);
-            update();
+        const update = () => {
+            const hasContent = slot.assignedNodes({ flatten: true }).length > 0;
+            wrapper.style.display = hasContent ? "" : "none";
         };
 
-        if (!this.closable) hideIfEmpty(header);
-        hideIfEmpty(body);
-        hideIfEmpty(footer);
+        slot.addEventListener("slotchange", update);
+        update();
     }
 }
 
