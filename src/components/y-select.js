@@ -1,6 +1,18 @@
 import { chevronDown } from "../icons/index.js";
 import { contrastTextColor } from "../modules/helpers.js";
 
+const SEMANTIC_COLOR_VARS = {
+    primary: ["var(--primary-content--)", "var(--primary-content-inverse)"],
+    secondary: [
+        "var(--secondary-content--)",
+        "var(--secondary-content-inverse)",
+    ],
+    success: ["var(--success-content--)", "var(--success-content-inverse)"],
+    warning: ["var(--warning-content--)", "var(--warning-content-inverse)"],
+    error: ["var(--error-content--)", "var(--error-content-inverse)"],
+    help: ["var(--help-content--)", "var(--help-content-inverse)"],
+};
+
 export class YumeSelect extends HTMLElement {
     static formAssociated = true;
 
@@ -692,10 +704,15 @@ export class YumeSelect extends HTMLElement {
                     ${this.options
                         .map((opt) => {
                             const isSelected = valueSet.has(opt.value);
-                            const customColor = isSelected && opt.color && !["base","primary","secondary","success","warning","error","help"].includes(opt.color);
-                            const inlineStyle = customColor
-                                ? `style="background:${opt.color};color:${contrastTextColor(opt.color)}"`
-                                : "";
+                            let inlineStyle = "";
+                            if (isSelected && opt.color) {
+                                const semantic = SEMANTIC_COLOR_VARS[opt.color];
+                                if (semantic) {
+                                    inlineStyle = `style="background:${semantic[0]};color:${semantic[1]}"`;
+                                } else {
+                                    inlineStyle = `style="background:${opt.color};color:${contrastTextColor(opt.color)}"`;
+                                }
+                            }
                             return `<div class="dropdown-item ${isSelected ? "selected" : ""}" data-value="${opt.value}" data-color="${opt.color || ""}" ${inlineStyle}>${opt.label}</div>`;
                         })
                         .join("")}
@@ -890,15 +907,20 @@ export class YumeSelect extends HTMLElement {
         const isMulti = this.hasAttribute("multiple");
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
 
-        const namedColors = new Set(["base","primary","secondary","success","warning","error","help"]);
         this.dropdown?.querySelectorAll(".dropdown-item").forEach((item) => {
             const val = item.getAttribute("data-value");
             const isSelected = valueSet.has(val);
             item.classList.toggle("selected", isSelected);
             const color = item.getAttribute("data-color");
-            if (isSelected && color && !namedColors.has(color)) {
-                item.style.background = color;
-                item.style.color = contrastTextColor(color);
+            if (isSelected && color) {
+                const semantic = SEMANTIC_COLOR_VARS[color];
+                if (semantic) {
+                    item.style.background = semantic[0];
+                    item.style.color = semantic[1];
+                } else {
+                    item.style.background = color;
+                    item.style.color = contrastTextColor(color);
+                }
             } else {
                 item.style.background = "";
                 item.style.color = "";

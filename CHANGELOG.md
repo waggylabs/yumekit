@@ -31,6 +31,13 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.4.1] – 2026-03-31
+
+### Fixed
+
+- `y-table` sort indicator no longer resizes columns when applied
+- `y-icon` removed artifact from accessibility icon
+
 ## [0.4.0] – 2026-03-29
 
 ### Added
