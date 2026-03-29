@@ -486,14 +486,22 @@ export class YumeSelect extends HTMLElement {
         // Clear button click → clear selection
         this.clearButton?.addEventListener("click", (e) => {
             e.stopPropagation();
-            this.value = "";
-            this._filterOptions("");
-            if (this.searchInput) {
-                this.searchInput.value = "";
-                this.searchInput.placeholder = this.getAttribute("placeholder") || "Select...";
-                this.searchInput.focus();
-                if (!this.dropdown.classList.contains("open")) {
-                    this._openDropdown();
+            if (this.hasAttribute("multiple")) {
+                this.selectedValues = new Set();
+                this.setAttribute("value", "");
+                this._renderTags();
+                this._updateSelectedStyles();
+                if (this.clearButton) this.clearButton.style.display = "none";
+            } else {
+                this.value = "";
+                this._filterOptions("");
+                if (this.searchInput) {
+                    this.searchInput.value = "";
+                    this.searchInput.placeholder = this.getAttribute("placeholder") || "Select...";
+                    this.searchInput.focus();
+                    if (!this.dropdown.classList.contains("open")) {
+                        this._openDropdown();
+                    }
                 }
             }
             this.dispatchEvent(new CustomEvent("change", {
@@ -577,15 +585,14 @@ export class YumeSelect extends HTMLElement {
         const showClearButton = (isSearchable || isClearable) && !isMulti;
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
         const placeholder = this.getAttribute("placeholder") || "Select...";
+        const clearButtonHTML = `<button class="clear-button" style="display:none" tabindex="-1" type="button"><y-icon name="close" size="small"></y-icon></button>`;
 
         let containerInner;
         if (isSearchable && !isMulti) {
             // Single searchable: inline input replacing the value display
             containerInner = `
                 <input class="search-input" type="text" placeholder="${placeholder}" autocomplete="off">
-                <button class="clear-button" style="display:none" tabindex="-1" type="button">
-                    <y-icon name="close" size="small"></y-icon>
-                </button>
+                ${clearButtonHTML}
             `;
         } else if (isSearchable && isMulti && isTagMode) {
             // Multi-tag searchable: input lives inside the value display after tags
@@ -593,6 +600,13 @@ export class YumeSelect extends HTMLElement {
                 <div class="value-display">
                     <input class="search-input" type="text" placeholder="${placeholder}" autocomplete="off">
                 </div>
+                ${isClearable ? clearButtonHTML : ""}
+            `;
+        } else if (isMulti && isTagMode) {
+            // Multi-tag (non-searchable): tags + optional clear button
+            containerInner = `
+                <div class="value-display"></div>
+                ${isClearable ? clearButtonHTML : ""}
             `;
         } else if (showClearButton) {
             // Clearable but not searchable: value display + clear button
@@ -763,6 +777,9 @@ export class YumeSelect extends HTMLElement {
 
         if (isTagMode) {
             this._renderTags();
+            if (isClearable && this.clearButton) {
+                this.clearButton.style.display = this.selectedValues.size > 0 ? "flex" : "none";
+            }
         } else if (isSearchable && !isMulti && this.searchInput) {
             // Update inline search input to reflect current selection
             const isOpen = this.dropdown?.classList.contains("open");

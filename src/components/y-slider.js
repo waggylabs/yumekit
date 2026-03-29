@@ -300,7 +300,7 @@ export class YumeSlider extends HTMLElement {
             error: "var(--error-background-hover)",
             help: "var(--help-background-hover)",
         };
-        return colorMap[color] || color;
+        return colorMap[color] || `color-mix(in srgb, ${color} 40%, transparent)`;
     }
 
     _snapToStep(val) {

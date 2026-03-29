@@ -78,7 +78,6 @@ import figma from "./figma.svg";
 import filter from "./filter.svg";
 import flask from "./flask.svg";
 import folder from "./folder.svg";
-
 import github from "./github.svg";
 import heart from "./heart.svg";
 import globe from "./globe.svg";

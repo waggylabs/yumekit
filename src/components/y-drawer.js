@@ -49,25 +49,37 @@ class YumeDrawer extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Which anchor element ID triggers this drawer. */
-    get anchor() { return this.getAttribute("anchor"); }
-    set anchor(id) { this.setAttribute("anchor", id); }
+    get anchor() {
+        return this.getAttribute("anchor");
+    }
+    set anchor(id) {
+        this.setAttribute("anchor", id);
+    }
 
     /**
      * Which edge the drawer slides in from.
      * Accepted values: "left" | "right" | "top" | "bottom" (default "left").
      */
-    get position() { return this.getAttribute("position") || "left"; }
-    set position(val) { this.setAttribute("position", val); }
+    get position() {
+        return this.getAttribute("position") || "left";
+    }
+    set position(val) {
+        this.setAttribute("position", val);
+    }
 
     /** Whether the drawer is resizable by dragging. */
-    get resizable() { return this.hasAttribute("resizable"); }
+    get resizable() {
+        return this.hasAttribute("resizable");
+    }
     set resizable(val) {
         if (val) this.setAttribute("resizable", "");
         else this.removeAttribute("resizable");
     }
 
     /** Whether the drawer is currently visible. */
-    get visible() { return this.hasAttribute("visible"); }
+    get visible() {
+        return this.hasAttribute("visible");
+    }
     set visible(val) {
         if (val) this.setAttribute("visible", "");
         else this.removeAttribute("visible");
@@ -276,6 +288,13 @@ class YumeDrawer extends HTMLElement {
                 padding: var(--component-drawer-handle-padding, 4px);
                 cursor: ew-resize;
             }
+
+            .drawer-panel[data-position="left"] > .resize-handle svg,
+            .drawer-panel[data-position="right"] > .resize-handle svg {
+                width: 16px;
+                height: 24px;
+                flex-shrink: 0;
+            }
             .drawer-panel[data-position="left"] > .resize-handle {
                 order: 99;
             }
@@ -288,6 +307,13 @@ class YumeDrawer extends HTMLElement {
                 height: var(--component-drawer-handle-width, 6px);
                 padding: var(--component-drawer-handle-padding, 4px);
                 cursor: ns-resize;
+            }
+
+            .drawer-panel[data-position="top"] > .resize-handle svg,
+            .drawer-panel[data-position="bottom"] > .resize-handle svg {
+                width: 24px;
+                height: 16px;
+                flex-shrink: 0;
             }
             .drawer-panel[data-position="top"] > .resize-handle {
                 order: 99;
