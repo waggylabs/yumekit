@@ -160,6 +160,8 @@ declare module "react" {
                 options?: Array<{ value: string; label: string }> | string;
                 invalid?: boolean | string;
                 required?: boolean | string;
+                searchable?: boolean | string;
+                clearable?: boolean | string;
                 "label-position"?: "top" | "bottom";
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
@@ -204,7 +206,14 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
             }>;
             "y-tabs": El<{
-                options?: Array<{ id: string; label: string; slot?: string; disabled?: boolean }> | string;
+                options?:
+                    | Array<{
+                          id: string;
+                          label: string;
+                          slot?: string;
+                          disabled?: boolean;
+                      }>
+                    | string;
                 size?: "small" | "medium" | "large";
                 position?: "top" | "bottom" | "left" | "right";
             }>;
