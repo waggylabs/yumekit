@@ -2,7 +2,7 @@ class YumeSwitch extends HTMLElement {
     static formAssociated = true;
 
     static get observedAttributes() {
-        return ["checked", "disabled", "animate", "toggle-label", "label-position", "size", "value", "color"];
+        return ["checked", "disabled", "animate", "toggle-label", "label-position", "size", "value", "on-color", "off-color"];
     }
 
     // -------------------------------------------------------------------------
@@ -45,9 +45,16 @@ class YumeSwitch extends HTMLElement {
         this._update();
     }
 
-    /** @type {string} Color theme for the active toggle. */
-    get color() { return this.getAttribute("color") || "primary"; }
-    set color(val) { this.setAttribute("color", val); }
+    /** @type {string} Color theme for the active (on) toggle. */
+    get onColor() { return this.getAttribute("on-color") || "primary"; }
+    set onColor(val) { this.setAttribute("on-color", val); }
+
+    /** @type {string} Color theme for the inactive (off) toggle. Defaults to base. */
+    get offColor() { return this.getAttribute("off-color") || ""; }
+    set offColor(val) {
+        if (val) this.setAttribute("off-color", val);
+        else this.removeAttribute("off-color");
+    }
 
     /** @type {boolean} Whether the switch is disabled. */
     get disabled() { return this.hasAttribute("disabled"); }
@@ -282,7 +289,7 @@ class YumeSwitch extends HTMLElement {
         });
     }
 
-    _resolveToggleColor() {
+    _resolveColor(color, fallback) {
         const predefined = {
             primary: "var(--primary-content--)",
             secondary: "var(--secondary-content--)",
@@ -292,7 +299,7 @@ class YumeSwitch extends HTMLElement {
             error: "var(--error-content--)",
             help: "var(--help-content--)",
         };
-        return predefined[this.color] || this.color;
+        return predefined[color] || color || fallback;
     }
 
     _update() {
@@ -364,7 +371,9 @@ class YumeSwitch extends HTMLElement {
                 : "0",
         );
         this.style.setProperty("--toggle-bg",
-            this.checked ? this._resolveToggleColor() : "var(--base-content-light)",
+            this.checked
+                ? this._resolveColor(this.onColor, "var(--primary-content--)")
+                : this._resolveColor(this.offColor, "var(--base-content-light)"),
         );
         this.style.setProperty("--toggle-transition",
             this.animate ? "transform 0.25s ease, background 0.25s ease" : "none",

@@ -1,4 +1,5 @@
 import { chevronDown } from "../icons/index.js";
+import { contrastTextColor } from "../modules/helpers.js";
 
 export class YumeSelect extends HTMLElement {
     static formAssociated = true;
@@ -689,13 +690,14 @@ export class YumeSelect extends HTMLElement {
                 ${!isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
                 <div class="dropdown" part="dropdown">
                     ${this.options
-                        .map(
-                            (opt) => `
-                        <div class="dropdown-item ${valueSet.has(opt.value) ? "selected" : ""}" data-value="${opt.value}">
-                            ${opt.label}
-                        </div>
-                    `,
-                        )
+                        .map((opt) => {
+                            const isSelected = valueSet.has(opt.value);
+                            const customColor = isSelected && opt.color && !["base","primary","secondary","success","warning","error","help"].includes(opt.color);
+                            const inlineStyle = customColor
+                                ? `style="background:${opt.color};color:${contrastTextColor(opt.color)}"`
+                                : "";
+                            return `<div class="dropdown-item ${isSelected ? "selected" : ""}" data-value="${opt.value}" data-color="${opt.color || ""}" ${inlineStyle}>${opt.label}</div>`;
+                        })
                         .join("")}
                     <div class="no-results" style="display:none">No results</div>
                 </div>
@@ -888,9 +890,19 @@ export class YumeSelect extends HTMLElement {
         const isMulti = this.hasAttribute("multiple");
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
 
+        const namedColors = new Set(["base","primary","secondary","success","warning","error","help"]);
         this.dropdown?.querySelectorAll(".dropdown-item").forEach((item) => {
             const val = item.getAttribute("data-value");
-            item.classList.toggle("selected", valueSet.has(val));
+            const isSelected = valueSet.has(val);
+            item.classList.toggle("selected", isSelected);
+            const color = item.getAttribute("data-color");
+            if (isSelected && color && !namedColors.has(color)) {
+                item.style.background = color;
+                item.style.color = contrastTextColor(color);
+            } else {
+                item.style.background = "";
+                item.style.color = "";
+            }
         });
     }
 
