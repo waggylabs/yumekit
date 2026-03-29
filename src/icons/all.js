@@ -65,6 +65,8 @@ import diagram from "./diagram.svg";
 import discord from "./discord.svg";
 import downFromBracket from "./down-from-bracket.svg";
 import downToBracket from "./down-to-bracket.svg";
+import ellipsisH from "./ellipsis-h.svg";
+import ellipsisV from "./ellipsis-v.svg";
 import expandDown from "./expand-down.svg";
 import expandLeft from "./expand-left.svg";
 import expandRight from "./expand-right.svg";
@@ -183,6 +185,8 @@ registerIcons({
     discord,
     "down-from-bracket": downFromBracket,
     "down-to-bracket": downToBracket,
+    "ellipsis-h": ellipsisH,
+    "ellipsis-v": ellipsisV,
     "expand-down": expandDown,
     "expand-left": expandLeft,
     "expand-right": expandRight,
