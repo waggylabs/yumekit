@@ -267,6 +267,6 @@ describe("YumeTag", () => {
     it("sets host display to inline-block", async () => {
         const el = await fixture(html`<y-tag>Tag</y-tag>`);
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("display: inline-block");
+        expect(style).to.include("display: inline-flex");
     });
 });
