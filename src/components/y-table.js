@@ -140,12 +140,14 @@ export class YumeTable extends HTMLElement {
 
             if (sortable) {
                 const icon = this._sortIcon(col.field);
+                const iconSpan = document.createElement("span");
+                iconSpan.className = "sort-icon";
                 if (icon) {
-                    const iconSpan = document.createElement("span");
-                    iconSpan.className = "sort-icon";
                     iconSpan.innerHTML = icon;
-                    inner.appendChild(iconSpan);
+                } else {
+                    iconSpan.classList.add("sort-icon--placeholder");
                 }
+                inner.appendChild(iconSpan);
             }
 
             th.appendChild(inner);
@@ -209,6 +211,13 @@ export class YumeTable extends HTMLElement {
             .sort-icon svg {
                 width: 14px;
                 height: 14px;
+            }
+
+            .sort-icon--placeholder {
+                visibility: hidden;
+                width: 14px;
+                height: 14px;
+                display: inline-block;
             }
 
             tbody td {

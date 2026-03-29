@@ -169,8 +169,11 @@ describe("YumeTable", () => {
         const el = await fixture(html`
             <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
         `);
-        const svg = el.shadowRoot.querySelector("thead th .sort-icon");
-        expect(svg).to.be.null;
+        const icons = el.shadowRoot.querySelectorAll("thead th .sort-icon");
+        icons.forEach((icon) => {
+            expect(icon.classList.contains("sort-icon--placeholder")).to.be.true;
+            expect(icon.querySelector("svg")).to.be.null;
+        });
     });
 
     it("shows sort icon only on the active sorted column", async () => {
@@ -179,8 +182,8 @@ describe("YumeTable", () => {
         `);
         el.shadowRoot.querySelector("thead th").click();
 
-        const icons = el.shadowRoot.querySelectorAll("thead th .sort-icon");
-        expect(icons.length).to.equal(1);
+        const activeIcons = el.shadowRoot.querySelectorAll("thead th .sort-icon:not(.sort-icon--placeholder)");
+        expect(activeIcons.length).to.equal(1);
     });
 
     it("removes sort icon when sort is cleared", async () => {
@@ -190,10 +193,10 @@ describe("YumeTable", () => {
         const nameHeader = el.shadowRoot.querySelector("thead th");
         nameHeader.click(); // asc
         nameHeader.click(); // desc
-        el.shadowRoot.querySelector("thead th").click(); // none
+        nameHeader.click(); // none
 
-        const svg = el.shadowRoot.querySelector("thead th .sort-icon");
-        expect(svg).to.be.null;
+        const activeIcons = el.shadowRoot.querySelectorAll("thead th .sort-icon:not(.sort-icon--placeholder)");
+        expect(activeIcons.length).to.equal(0);
     });
 
     it("sets aria-sort attribute on sorted column", async () => {
