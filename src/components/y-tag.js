@@ -149,6 +149,9 @@ export class YumeTag extends HTMLElement {
             }
             .remove svg {
                 pointer-events: none;
+                width: 1.1em;
+                height: 1.1em;
+                stroke-width: 2.5;
             }
         `;
 
