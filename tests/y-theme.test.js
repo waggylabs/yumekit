@@ -241,5 +241,90 @@ describe("<y-theme>", () => {
             // Only one <style> tag (variables only, no theme)
             expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
         });
+
+        it("blocks a cross-origin theme URL and returns empty CSS when cross-origin attribute is absent", async () => {
+            // A URL with a different origin will be blocked without cross-origin attr
+            const el = await fixture(
+                html`<y-theme theme="https://evil.example.com/theme.css"></y-theme>`,
+            );
+
+            // Wait for _applyTheme to settle
+            await waitUntil(
+                () => el.shadowRoot.querySelectorAll("style").length >= 1,
+            );
+
+            // Only the base style should be present (no theme CSS loaded)
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+        });
+
+        it("allows a cross-origin theme URL when the cross-origin attribute is present", async () => {
+            // Stub fetch to return a known cross-origin CSS payload
+            window.fetch = async () => ({ text: async () => `:root { --xo-var: lime; }` });
+
+            const el = await fixture(
+                html`<y-theme cross-origin theme="https://other.example.com/theme.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--xo-var") === "lime",
+            );
+
+            expect(el.style.getPropertyValue("--xo-var")).to.equal("lime");
+        });
+    });
+
+    describe("crossOrigin and theme property setters", () => {
+        it("crossOrigin setter adds cross-origin attribute when set to true", async () => {
+            const el = await fixture(html`<y-theme></y-theme>`);
+            el.crossOrigin = true;
+            expect(el.hasAttribute("cross-origin")).to.be.true;
+        });
+
+        it("crossOrigin setter removes cross-origin attribute when set to false", async () => {
+            const el = await fixture(html`<y-theme cross-origin></y-theme>`);
+            el.crossOrigin = false;
+            expect(el.hasAttribute("cross-origin")).to.be.false;
+        });
+
+        it("theme setter updates the theme attribute", async () => {
+            const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
+            el.theme = "blue-dark";
+            expect(el.getAttribute("theme")).to.equal("blue-dark");
+        });
+
+        it("theme getter returns 'blue-light' when no attribute is set", async () => {
+            const el = await fixture(html`<y-theme></y-theme>`);
+            el.removeAttribute("theme");
+            expect(el.theme).to.equal("blue-light");
+        });
+    });
+
+    describe("clearThemeProperties", () => {
+        it("removes all inline CSS custom properties previously applied", async () => {
+            const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
+
+            // Variables should have been applied by connectedCallback
+            expect(el.style.getPropertyValue("--spacing-medium").trim()).to.equal("8px");
+
+            el.clearThemeProperties();
+
+            // After clearing, the property should no longer be set inline
+            expect(el.style.getPropertyValue("--spacing-medium")).to.equal("");
+        });
+
+        it("resets the _themeProps array to empty after clearing", async () => {
+            const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
+
+            el.clearThemeProperties();
+
+            expect(el._themeProps).to.deep.equal([]);
+        });
+
+        it("does not throw when called before any theme has been applied", async () => {
+            const el = await fixture(html`<y-theme></y-theme>`);
+            // Remove _themeProps to simulate a fresh element with no prior _applyTheme
+            el._themeProps = undefined;
+            expect(() => el.clearThemeProperties()).to.not.throw();
+        });
     });
 });

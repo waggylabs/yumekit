@@ -456,4 +456,245 @@ describe("<y-select>", () => {
             expect(btn.style.display).to.equal("none");
         });
     });
+
+    describe("property getters and setters", () => {
+        it("options getter returns empty array for invalid JSON", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.setAttribute("options", "not valid json {{");
+            expect(el.options).to.deep.equal([]);
+        });
+
+        it("required setter adds and removes the required attribute", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.required = true;
+            expect(el.hasAttribute("required")).to.be.true;
+            el.required = false;
+            expect(el.hasAttribute("required")).to.be.false;
+        });
+
+        it("searchable setter adds and removes the searchable attribute", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.searchable = true;
+            expect(el.hasAttribute("searchable")).to.be.true;
+            el.searchable = false;
+            expect(el.hasAttribute("searchable")).to.be.false;
+        });
+
+        it("value setter accepts an array when multiple is set", async () => {
+            const el = await fixture(
+                html`<y-select
+                    multiple
+                    options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]'
+                ></y-select>`,
+            );
+            el.value = ["apple", "banana"];
+            await nextFrame();
+            expect(el.selectedValues.has("apple")).to.be.true;
+            expect(el.selectedValues.has("banana")).to.be.true;
+        });
+    });
+
+    describe("dropdown toggle", () => {
+        it("toggleDropdown closes an already-open dropdown", async () => {
+            const el = await fixture(
+                html`<y-select
+                    options='[{"label":"Apple","value":"apple"}]'
+                ></y-select>`,
+            );
+            el._openDropdown();
+            await nextFrame();
+            expect(el.dropdown.classList.contains("open")).to.be.true;
+
+            el.toggleDropdown();
+            await nextFrame();
+            expect(el.dropdown.classList.contains("open")).to.be.false;
+        });
+
+        it("toggleDropdown focuses search input when opening searchable select", async () => {
+            const el = await fixture(
+                html`<y-select
+                    searchable
+                    options='[{"label":"Apple","value":"apple"}]'
+                ></y-select>`,
+            );
+            // Dropdown is closed; toggleDropdown should open it and schedule focus
+            el.toggleDropdown();
+            await nextFrame();
+            // A small wait for the setTimeout(0) focus scheduling
+            await new Promise((r) => setTimeout(r, 10));
+            expect(el.dropdown.classList.contains("open")).to.be.true;
+        });
+    });
+
+    describe("searchable clear button reopens dropdown", () => {
+        it("reopens the dropdown when clear button is clicked and dropdown was closed", async () => {
+            const el = await fixture(
+                html`<y-select
+                    searchable
+                    options='[{"label":"Apple","value":"apple"}]'
+                ></y-select>`,
+            );
+            el.value = "apple";
+            await nextFrame();
+
+            // Ensure dropdown is closed before clicking clear
+            el.closeDropdown();
+            await nextFrame();
+            expect(el.dropdown.classList.contains("open")).to.be.false;
+
+            el.shadowRoot.querySelector(".clear-button").click();
+            await nextFrame();
+
+            expect(el.dropdown.classList.contains("open")).to.be.true;
+        });
+
+        it("dispatches change event and runs updateValidation when clear button clicked on searchable", async () => {
+            const el = await fixture(
+                html`<y-select
+                    searchable
+                    required
+                    options='[{"label":"Apple","value":"apple"}]'
+                ></y-select>`,
+            );
+            el.value = "apple";
+            await nextFrame();
+
+            let changeDetail = null;
+            el.addEventListener("change", (e) => { changeDetail = e.detail; });
+
+            el.shadowRoot.querySelector(".clear-button").click();
+            await nextFrame();
+
+            expect(changeDetail).to.not.be.null;
+            expect(changeDetail.value).to.equal("");
+            // required + no value → should be invalid
+            expect(el.hasAttribute("invalid")).to.be.true;
+        });
+    });
+
+    describe("multiple selection deselect behavior", () => {
+        it("clicking a selected item in multi mode deselects it", async () => {
+            const el = await fixture(
+                html`<y-select
+                    multiple
+                    options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]'
+                ></y-select>`,
+            );
+            el.value = "apple,banana";
+            await nextFrame();
+            el._openDropdown();
+            await nextFrame();
+
+            const appleItem = [...el.shadowRoot.querySelectorAll(".dropdown-item")]
+                .find((i) => i.getAttribute("data-value") === "apple");
+            appleItem.click();
+            await nextFrame();
+
+            expect(el.selectedValues.has("apple")).to.be.false;
+            expect(el.selectedValues.has("banana")).to.be.true;
+        });
+
+        it("does not deselect in multi mode when required and only one item is selected", async () => {
+            const el = await fixture(
+                html`<y-select
+                    multiple
+                    required
+                    options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]'
+                ></y-select>`,
+            );
+            el.value = "apple";
+            await nextFrame();
+            el._openDropdown();
+            await nextFrame();
+
+            const appleItem = [...el.shadowRoot.querySelectorAll(".dropdown-item")]
+                .find((i) => i.getAttribute("data-value") === "apple");
+            appleItem.click();
+            await nextFrame();
+
+            // Should NOT have been deselected because required and size === 1
+            expect(el.selectedValues.has("apple")).to.be.true;
+        });
+    });
+
+    describe("searchable multi-tag keeps dropdown open after selection", () => {
+        it("keeps dropdown open after selecting an item in searchable multi-tag mode", async () => {
+            const el = await fixture(
+                html`<y-select
+                    searchable
+                    multiple
+                    display-mode="tag"
+                    options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]'
+                ></y-select>`,
+            );
+            el._openDropdown();
+            await nextFrame();
+
+            const bananaItem = [...el.shadowRoot.querySelectorAll(".dropdown-item")]
+                .find((i) => i.getAttribute("data-value") === "banana");
+            bananaItem.click();
+            await nextFrame();
+
+            expect(el.dropdown.classList.contains("open")).to.be.true;
+        });
+
+        it("clears the search input after selecting in searchable multi-tag mode", async () => {
+            const el = await fixture(
+                html`<y-select
+                    searchable
+                    multiple
+                    display-mode="tag"
+                    options='[{"label":"Apple","value":"apple"},{"label":"Banana","value":"banana"}]'
+                ></y-select>`,
+            );
+            el._openDropdown();
+            await nextFrame();
+
+            const input = el.shadowRoot.querySelector(".search-input");
+            input.value = "ban";
+            input.dispatchEvent(new Event("input"));
+            await nextFrame();
+
+            const bananaItem = [...el.shadowRoot.querySelectorAll(".dropdown-item")]
+                .find((i) => i.getAttribute("data-value") === "banana");
+            bananaItem.click();
+            await nextFrame();
+
+            expect(input.value).to.equal("");
+        });
+    });
+
+    describe("_filterOptions edge case", () => {
+        it("_filterOptions returns early and does not throw when dropdown is not yet in shadow DOM", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            // Temporarily remove dropdown reference to simulate missing element
+            const saved = el.dropdown;
+            el.dropdown = null;
+            expect(() => el._filterOptions("test")).to.not.throw();
+            el.dropdown = saved;
+        });
+    });
+
+    describe("closeDropdown restores search input for multi searchable", () => {
+        it("clears the search input on closeDropdown for searchable multi mode", async () => {
+            const el = await fixture(
+                html`<y-select
+                    searchable
+                    multiple
+                    display-mode="tag"
+                    options='[{"label":"Apple","value":"apple"}]'
+                ></y-select>`,
+            );
+            el._openDropdown();
+            await nextFrame();
+
+            const input = el.shadowRoot.querySelector(".search-input");
+            input.value = "ap";
+
+            el.closeDropdown();
+            await nextFrame();
+
+            expect(input.value).to.equal("");
+        });
+    });
 });

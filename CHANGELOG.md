@@ -40,7 +40,7 @@ Delete any empty sections before publishing.
 - 12 new bundled icons: `heart`, `thumbs-up`, `thumbs-down`, `flask`, `briefcase`, `thumbtack`, `map-marker`, `pencil`, `code`, `circle-question`, `comp-textarea`, `comp-rating`.
 - Two new icons: `ellipsis-v` (three vertical dots) and `ellipsis-h` (three horizontal dots). Both are available in the icon registry via `all.js`.
 - `y-select`: new `searchable` attribute — enables autocomplete-style inline filtering. In single mode the value display is replaced by a text input that clears on open (showing the current selection as a placeholder) and restores the selected label on close. In multi-tag mode the input appears after the last tag and the dropdown stays open after each selection.
-- `y-select`: new `clearable` attribute — shows a clear button (using the `close` icon) when a value is selected. Works independently of `searchable`.
+- `y-select`: new `clearable` attribute — shows a clear button (using the `close` icon) when a value is selected.
 - `y-select` tag display mode: per-option `color` field — each option object in the `options` array may now include a `color` key (predefined scheme or CSS color) to individually color its tag.
 - `y-switch`: new `on-color` and `off-color` attributes for the toggle indicator when checked and unchecked respectively. Accepts predefined scheme names or custom CSS colors. Defaults to `"primary"` for on.
 - Custom CSS color support (`#hex`, `rgb()`, `hsl()`) added to the `color` attribute of `y-avatar`, `y-button`, `y-icon`, `y-tag`, `y-toast`, and `y-tooltip`. Predefined scheme names continue to resolve through design tokens; custom values use WCAG-based luminance to auto-contrast the text color. `y-slider` already supported custom color passthrough.

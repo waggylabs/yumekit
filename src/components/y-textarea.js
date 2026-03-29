@@ -92,7 +92,7 @@ export class YumeTextarea extends HTMLElement {
     get value() { return this.textarea?.value || ""; }
     set value(val) {
         if (this.textarea) this.textarea.value = val;
-        else this.setAttribute("value", val);
+        this.setAttribute("value", val);
         this._internals.setFormValue(val, this.getAttribute("name"));
     }
 

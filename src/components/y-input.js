@@ -92,7 +92,7 @@ export class YumeInput extends HTMLElement {
     get value() { return this.input?.value || ""; }
     set value(val) {
         if (this.input) this.input.value = val;
-        else this.setAttribute("value", val);
+        this.setAttribute("value", val);
         this._internals.setFormValue(val, this.getAttribute("name"));
     }
 

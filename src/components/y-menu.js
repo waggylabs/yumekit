@@ -221,10 +221,10 @@ class YumeMenu extends HTMLElement {
                 if (textTpl) {
                     contentWrapper.appendChild(textTpl.content.cloneNode(true));
                 } else {
-                    contentWrapper.textContent = item.text;
+                    contentWrapper.append(item.text);
                 }
             } else {
-                contentWrapper.textContent = item.text;
+                contentWrapper.append(item.text);
             }
 
             li.appendChild(contentWrapper);

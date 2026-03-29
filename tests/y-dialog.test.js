@@ -143,4 +143,57 @@ describe("YumeDialog", () => {
         expect(styles.alignItems).to.equal("flex-start");
         expect(styles.justifyContent).to.equal("center");
     });
+
+    it("closable setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        el.closable = true;
+        expect(el.hasAttribute("closable")).to.be.true;
+        el.closable = false;
+        expect(el.hasAttribute("closable")).to.be.false;
+    });
+
+    it("visible setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        el.visible = true;
+        expect(el.hasAttribute("visible")).to.be.true;
+        el.visible = false;
+        expect(el.hasAttribute("visible")).to.be.false;
+    });
+
+    it("renders a close button in the header when closable is set", async () => {
+        const el = await fixture(html`<y-dialog closable></y-dialog>`);
+        const closeBtn = el.shadowRoot.querySelector("y-button");
+        expect(closeBtn).to.exist;
+        expect(closeBtn.getAttribute("aria-label")).to.equal("Close");
+    });
+
+    it("close button hides the dialog when clicked", async () => {
+        const el = await fixture(html`<y-dialog visible closable></y-dialog>`);
+        expect(el.visible).to.be.true;
+        const closeBtn = el.shadowRoot.querySelector("y-button");
+        closeBtn.click();
+        expect(el.visible).to.be.false;
+    });
+
+    it("does not render a close button when closable is not set", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        const closeBtn = el.shadowRoot.querySelector("y-button");
+        expect(closeBtn).to.not.exist;
+    });
+
+    it("re-uses existing anchor listener when anchor attribute is changed", async () => {
+        const container = await fixture(html`
+            <div>
+                <button id="btn-a">A</button>
+                <button id="btn-b">B</button>
+                <y-dialog anchor="btn-a"></y-dialog>
+            </div>
+        `);
+        const dialog = container.querySelector("y-dialog");
+        // Change to a different anchor — triggers _setupAnchor cleanup branch
+        dialog.setAttribute("anchor", "btn-b");
+        const btnB = container.querySelector("#btn-b");
+        btnB.click();
+        expect(dialog.hasAttribute("visible")).to.be.true;
+    });
 });

@@ -250,4 +250,41 @@ describe("YumeTextarea", () => {
             el.shadowRoot.querySelector("textarea").hasAttribute("disabled"),
         ).to.be.true;
     });
+
+    it("disabled setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        el.disabled = true;
+        expect(el.hasAttribute("disabled")).to.be.true;
+        el.disabled = false;
+        expect(el.hasAttribute("disabled")).to.be.false;
+    });
+
+    it("invalid setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        el.invalid = true;
+        expect(el.hasAttribute("invalid")).to.be.true;
+        el.invalid = false;
+        expect(el.hasAttribute("invalid")).to.be.false;
+    });
+
+    it("size setter updates attribute", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+    });
+
+    it("labelPosition setter updates attribute", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        el.labelPosition = "bottom";
+        expect(el.getAttribute("label-position")).to.equal("bottom");
+    });
+
+    it("value setter falls back to setAttribute when textarea element is not yet available", async () => {
+        const el = document.createElement("y-textarea");
+        el.value = "preset";
+        document.body.appendChild(el);
+        await new Promise((r) => setTimeout(r, 0));
+        expect(el.value).to.equal("preset");
+        document.body.removeChild(el);
+    });
 });

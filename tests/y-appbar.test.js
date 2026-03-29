@@ -512,4 +512,228 @@ describe("YumeAppbar", () => {
         // No slot wrapper around the button
         expect(wrapper.querySelector("slot")).to.be.null;
     });
+
+    // ── sticky attribute ─────────────────────────────────────────
+
+    it("sticky getter returns false when sticky attribute is absent", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        expect(el.sticky).to.be.false;
+    });
+
+    it("sticky getter returns 'start' when sticky='start'", async () => {
+        const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
+        expect(el.sticky).to.equal("start");
+    });
+
+    it("sticky getter returns 'end' when sticky='end'", async () => {
+        const el = await fixture(html`<y-appbar sticky="end"></y-appbar>`);
+        expect(el.sticky).to.equal("end");
+    });
+
+    it("sticky getter returns false for an invalid sticky value", async () => {
+        const el = await fixture(html`<y-appbar sticky="middle"></y-appbar>`);
+        expect(el.sticky).to.be.false;
+    });
+
+    it("sticky setter sets the sticky attribute to 'start'", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        el.sticky = "start";
+        expect(el.getAttribute("sticky")).to.equal("start");
+    });
+
+    it("sticky setter sets the sticky attribute to 'end'", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        el.sticky = "end";
+        expect(el.getAttribute("sticky")).to.equal("end");
+    });
+
+    it("sticky setter removes the attribute when set to false", async () => {
+        const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
+        el.sticky = false;
+        expect(el.hasAttribute("sticky")).to.be.false;
+    });
+
+    it("sticky setter removes the attribute when set to an invalid value", async () => {
+        const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
+        el.sticky = "middle";
+        expect(el.hasAttribute("sticky")).to.be.false;
+    });
+
+    it("includes sticky CSS rules in the rendered style block", async () => {
+        const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include(":host([sticky])");
+        expect(style).to.include("position: sticky");
+    });
+
+    // ── mobileBreakpoint getter/setter ───────────────────────────
+
+    it("mobileBreakpoint getter returns empty string when attribute is absent", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        expect(el.mobileBreakpoint).to.equal("");
+    });
+
+    it("mobileBreakpoint setter stores the value as an attribute", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        el.mobileBreakpoint = "1024";
+        expect(el.getAttribute("mobile-breakpoint")).to.equal("1024");
+    });
+
+    it("mobileBreakpoint setter removes the attribute when set to empty", async () => {
+        const el = await fixture(html`<y-appbar mobile-breakpoint="600"></y-appbar>`);
+        el.mobileBreakpoint = "";
+        expect(el.hasAttribute("mobile-breakpoint")).to.be.false;
+    });
+
+    // ── mobile getter ────────────────────────────────────────────
+
+    it("mobile getter is false for vertical orientation", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        expect(el.mobile).to.be.false;
+    });
+
+    it("mobile getter is false for horizontal orientation in a large viewport", async () => {
+        // In test environments the viewport is large enough that matchMedia won't trigger
+        const el = await fixture(
+            html`<y-appbar orientation="horizontal" mobile-breakpoint="1"></y-appbar>`
+        );
+        // Breakpoint of 1px means no current viewport will match
+        expect(el.mobile).to.be.false;
+    });
+
+    // ── _renderMobile path ───────────────────────────────────────
+
+    it("renders mobile layout when _isMobile is set to true and render() is called", async () => {
+        const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const appbar = el.shadowRoot.querySelector(".appbar");
+        expect(appbar).to.not.be.null;
+        // Mobile layout uses mobile-start / mobile-center / mobile-end sections
+        expect(el.shadowRoot.querySelector(".mobile-start")).to.not.be.null;
+        expect(el.shadowRoot.querySelector(".mobile-center")).to.not.be.null;
+        expect(el.shadowRoot.querySelector(".mobile-end")).to.not.be.null;
+    });
+
+    it("mobile layout contains a hamburger y-button with aria-label 'Open menu'", async () => {
+        const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
+        expect(menuBtn).to.not.be.null;
+        expect(menuBtn.getAttribute("aria-label")).to.equal("Open menu");
+    });
+
+    it("mobile layout renders a y-menu when items are present", async () => {
+        const el = await fixture(
+            html`<y-appbar orientation="horizontal" .items=${sampleItems}></y-appbar>`
+        );
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const mobileMenu = el.shadowRoot.querySelector(".mobile-start y-menu");
+        expect(mobileMenu).to.not.be.null;
+        expect(mobileMenu.getAttribute("direction")).to.equal("down");
+    });
+
+    it("mobile layout does not render a y-menu when there are no items", async () => {
+        const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const mobileMenu = el.shadowRoot.querySelector(".mobile-start y-menu");
+        expect(mobileMenu).to.be.null;
+    });
+
+    it("mobile layout includes logo and title slots in the center section", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal">
+                <img slot="logo" src="" alt="Logo" />
+                <span slot="title">App</span>
+            </y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const center = el.shadowRoot.querySelector(".mobile-center");
+        const logoSlot = center.querySelector('slot[name="logo"]');
+        const titleSlot = center.querySelector('slot[name="title"]');
+        expect(logoSlot).to.not.be.null;
+        expect(titleSlot).to.not.be.null;
+    });
+
+    it("mobile layout includes footer slot in the end section", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal">
+                <span slot="footer">User</span>
+            </y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const endSection = el.shadowRoot.querySelector(".mobile-end");
+        const footerSlot = endSection.querySelector('slot[name="footer"]');
+        expect(footerSlot).to.not.be.null;
+        const assigned = footerSlot.assignedNodes({ flatten: true });
+        expect(assigned.length).to.be.greaterThan(0);
+    });
+
+    it("_toMenuItems maps href to url and preserves text", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        const result = el._toMenuItems([
+            { text: "Home", href: "/home", icon: "home" },
+            { text: "About" },
+        ]);
+        expect(result[0].url).to.equal("/home");
+        expect(result[0].text).to.equal("Home");
+        expect(result[0].icon).to.equal("home");
+        expect(result[1].url).to.be.undefined;
+    });
+
+    it("_toMenuItems recursively converts children", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        const result = el._toMenuItems([
+            {
+                text: "Parent",
+                href: "/parent",
+                children: [{ text: "Child", href: "/child" }],
+            },
+        ]);
+        expect(result[0].children).to.be.an("array").with.length(1);
+        expect(result[0].children[0].url).to.equal("/child");
+    });
+
+    it("mobile layout passes size to the hamburger menu button", async () => {
+        const el = await fixture(
+            html`<y-appbar orientation="horizontal" size="large"></y-appbar>`
+        );
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
+        expect(menuBtn.getAttribute("size")).to.equal("large");
+    });
+
+    it("mobile layout sticky CSS uses position sticky and full width", async () => {
+        const el = await fixture(
+            html`<y-appbar orientation="horizontal" sticky="start"></y-appbar>`
+        );
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include(":host([sticky])");
+        expect(style).to.include("position: sticky");
+        expect(style).to.include("width: 100%");
+    });
 });

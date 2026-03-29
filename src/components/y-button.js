@@ -17,6 +17,7 @@ export class YumeButton extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this.selectedValues = new Set();
         this._init();
     }
 

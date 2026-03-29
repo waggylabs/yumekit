@@ -127,4 +127,59 @@ describe("YumeAvatar", () => {
         const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
         expect(cssText).to.include("--success-content--");
     });
+
+    it("sets size attribute via the size setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-size-large");
+    });
+
+    it("sets shape attribute via the shape setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.shape = "square";
+        expect(el.getAttribute("shape")).to.equal("square");
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-border-radius-square");
+    });
+
+    it("sets color attribute via the color setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.color = "error";
+        expect(el.getAttribute("color")).to.equal("error");
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--error-content--");
+    });
+
+    it("sets alt attribute via the alt setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.alt = "Jane Doe";
+        expect(el.getAttribute("alt")).to.equal("Jane Doe");
+
+        const h5 = el.shadowRoot.querySelector("h5");
+        expect(h5.textContent).to.equal("JD");
+    });
+
+    it("sets src via the src setter and renders an img", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.src = "/img/test.png";
+        expect(el.getAttribute("src")).to.equal("/img/test.png");
+        expect(el.shadowRoot.querySelector("img")).to.exist;
+    });
+
+    it("removes src attribute when src setter is called with a falsy value", async () => {
+        const el = await fixture(
+            html`<y-avatar src="/img/test.png" alt="AB"></y-avatar>`,
+        );
+        el.src = null;
+        expect(el.hasAttribute("src")).to.be.false;
+        expect(el.shadowRoot.querySelector(".avatar")).to.exist;
+    });
 });

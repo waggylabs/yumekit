@@ -186,4 +186,105 @@ describe("YumeSlider", () => {
         );
         expect(el.value).to.equal(90);
     });
+
+    it("disabled setter sets the disabled attribute", async () => {
+        const el = await fixture(html`<y-slider></y-slider>`);
+        expect(el.disabled).to.be.false;
+
+        el.disabled = true;
+        expect(el.hasAttribute("disabled")).to.be.true;
+        expect(el.disabled).to.be.true;
+    });
+
+    it("disabled setter removes the disabled attribute when set to false", async () => {
+        const el = await fixture(html`<y-slider disabled></y-slider>`);
+        expect(el.disabled).to.be.true;
+
+        el.disabled = false;
+        expect(el.hasAttribute("disabled")).to.be.false;
+        expect(el.disabled).to.be.false;
+    });
+
+    it("step setter removes the step attribute when set to null", async () => {
+        const el = await fixture(html`<y-slider step="10"></y-slider>`);
+        expect(el.step).to.equal(10);
+
+        el.step = null;
+        expect(el.hasAttribute("step")).to.be.false;
+        expect(el.step).to.be.null;
+    });
+
+    it("step setter removes the step attribute when set to undefined", async () => {
+        const el = await fixture(html`<y-slider step="5"></y-slider>`);
+        el.step = undefined;
+        expect(el.hasAttribute("step")).to.be.false;
+    });
+
+    it("keyboard events do not fire on a disabled slider", async () => {
+        const el = await fixture(
+            html`<y-slider value="50" step="10" disabled></y-slider>`,
+        );
+        const track = el.shadowRoot.querySelector(".slider-track");
+        let inputFired = false;
+        el.addEventListener("input", () => { inputFired = true; });
+        track.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+        );
+        expect(inputFired).to.be.false;
+        expect(el.value).to.equal(50);
+    });
+
+    it("dispatches change event on keyboard navigation", async () => {
+        const el = await fixture(
+            html`<y-slider value="50" step="10"></y-slider>`,
+        );
+        const track = el.shadowRoot.querySelector(".slider-track");
+        let changeFired = false;
+        el.addEventListener("change", () => { changeFired = true; });
+        track.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
+        );
+        expect(changeFired).to.be.true;
+        expect(el.value).to.equal(40);
+    });
+
+    it("unhandled key does not fire input event", async () => {
+        const el = await fixture(html`<y-slider value="50"></y-slider>`);
+        const track = el.shadowRoot.querySelector(".slider-track");
+        let inputFired = false;
+        el.addEventListener("input", () => { inputFired = true; });
+        track.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "Tab", bubbles: true }),
+        );
+        expect(inputFired).to.be.false;
+    });
+
+    it("_updateVisuals updates fill width and thumb position after value change", async () => {
+        const el = await fixture(html`<y-slider value="0" min="0" max="100"></y-slider>`);
+        el.value = 75;
+
+        const fill = el.shadowRoot.querySelector(".fill");
+        const thumb = el.shadowRoot.querySelector(".thumb");
+        const track = el.shadowRoot.querySelector(".slider-track");
+
+        expect(fill.style.width).to.equal("75%");
+        expect(thumb.style.left).to.equal("75%");
+        expect(track.getAttribute("aria-valuenow")).to.equal("75");
+    });
+
+    it("percentage returns 0 when range is zero", async () => {
+        const el = await fixture(
+            html`<y-slider value="5" min="5" max="5"></y-slider>`,
+        );
+        expect(el.percentage).to.equal(0);
+    });
+
+    it("pointerdown on a disabled slider does not start dragging", async () => {
+        const el = await fixture(
+            html`<y-slider value="50" disabled></y-slider>`,
+        );
+        const track = el.shadowRoot.querySelector(".slider-track");
+        track.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: 0 }));
+        expect(el._dragging).to.be.false;
+    });
 });

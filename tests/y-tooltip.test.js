@@ -189,4 +189,42 @@ describe("YumeTooltip", () => {
         expect(el.color).to.equal("base");
         expect(el.text).to.equal("Tip");
     });
+
+    it("sets color via the color setter", async () => {
+        const el = await fixture(
+            html`<y-tooltip text="Tip"><button>C</button></y-tooltip>`,
+        );
+        el.color = "error";
+        expect(el.getAttribute("color")).to.equal("error");
+        expect(el.color).to.equal("error");
+    });
+
+    it("sets delay via the delay setter", async () => {
+        const el = await fixture(
+            html`<y-tooltip text="Tip"><button>D</button></y-tooltip>`,
+        );
+        el.delay = 300;
+        expect(el.getAttribute("delay")).to.equal("300");
+        expect(el.delay).to.equal(300);
+    });
+
+    it("sets position via the position setter", async () => {
+        const el = await fixture(
+            html`<y-tooltip text="Tip"><button>P</button></y-tooltip>`,
+        );
+        el.position = "bottom";
+        expect(el.getAttribute("position")).to.equal("bottom");
+        const tip = el.shadowRoot.querySelector(".tooltip");
+        expect(tip.classList.contains("bottom")).to.be.true;
+    });
+
+    it("sets text via the text setter", async () => {
+        const el = await fixture(
+            html`<y-tooltip text="Old"><button>T</button></y-tooltip>`,
+        );
+        el.text = "Updated";
+        expect(el.getAttribute("text")).to.equal("Updated");
+        const tip = el.shadowRoot.querySelector(".tooltip");
+        expect(tip.textContent).to.equal("Updated");
+    });
 });

@@ -122,4 +122,30 @@ describe("YumeCard", () => {
             "--base-shadow",
         );
     });
+
+    it("sets color attribute via the color setter", async () => {
+        const el = await fixture(html`<y-card></y-card>`);
+        el.color = "primary";
+        expect(el.getAttribute("color")).to.equal("primary");
+        expect(el.style.getPropertyValue("--card-background")).to.include(
+            "--primary-background-component",
+        );
+    });
+
+    it("sets raised to true via the raised setter", async () => {
+        const el = await fixture(html`<y-card></y-card>`);
+        el.raised = true;
+        expect(el.hasAttribute("raised")).to.be.true;
+        expect(el.style.getPropertyValue("--card-box-shadow")).to.include(
+            "--base-shadow",
+        );
+    });
+
+    it("removes raised attribute via the raised setter when set to false", async () => {
+        const el = await fixture(html`<y-card raised></y-card>`);
+        expect(el.raised).to.be.true;
+        el.raised = false;
+        expect(el.hasAttribute("raised")).to.be.false;
+        expect(el.style.getPropertyValue("--card-box-shadow")).to.equal("none");
+    });
 });
