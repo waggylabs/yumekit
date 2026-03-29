@@ -165,12 +165,35 @@ describe("YumeTable", () => {
         expect(el.size).to.equal("large");
     });
 
-    it("shows sort icon on sortable headers", async () => {
+    it("shows no sort icon on unsorted headers", async () => {
         const el = await fixture(html`
             <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
         `);
         const svg = el.shadowRoot.querySelector("thead th .sort-icon");
-        expect(svg).to.not.be.null;
+        expect(svg).to.be.null;
+    });
+
+    it("shows sort icon only on the active sorted column", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
+        `);
+        el.shadowRoot.querySelector("thead th").click();
+
+        const icons = el.shadowRoot.querySelectorAll("thead th .sort-icon");
+        expect(icons.length).to.equal(1);
+    });
+
+    it("removes sort icon when sort is cleared", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
+        `);
+        const nameHeader = el.shadowRoot.querySelector("thead th");
+        nameHeader.click(); // asc
+        nameHeader.click(); // desc
+        el.shadowRoot.querySelector("thead th").click(); // none
+
+        const svg = el.shadowRoot.querySelector("thead th .sort-icon");
+        expect(svg).to.be.null;
     });
 
     it("sets aria-sort attribute on sorted column", async () => {
@@ -227,5 +250,108 @@ describe("YumeTable", () => {
             .querySelector("tbody tr")
             .querySelectorAll("td")[1].textContent;
         expect(Number(firstAge)).to.equal(25);
+    });
+
+    it("columns setter accepts an array and serialises it", async () => {
+        const el = await fixture(html`
+            <y-table></y-table>
+        `);
+        el.columns = [{ field: "title", header: "Title" }];
+        const ths = el.shadowRoot.querySelectorAll("thead th");
+        expect(ths.length).to.equal(1);
+        expect(ths[0].textContent).to.include("Title");
+    });
+
+    it("columns setter accepts a JSON string directly", async () => {
+        const el = await fixture(html`<y-table></y-table>`);
+        el.columns = JSON.stringify([{ field: "x", header: "X" }]);
+        const ths = el.shadowRoot.querySelectorAll("thead th");
+        expect(ths.length).to.equal(1);
+    });
+
+    it("data setter accepts an array and serialises it", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}"></y-table>
+        `);
+        el.data = [{ name: "Eve", age: 28, city: "Miami" }];
+        const rows = el.shadowRoot.querySelectorAll("tbody tr");
+        expect(rows.length).to.equal(1);
+        expect(rows[0].querySelector("td").textContent).to.equal("Eve");
+    });
+
+    it("data setter accepts a JSON string directly", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}"></y-table>
+        `);
+        el.data = JSON.stringify([{ name: "Frank", age: 22, city: "Boston" }]);
+        const rows = el.shadowRoot.querySelectorAll("tbody tr");
+        expect(rows.length).to.equal(1);
+    });
+
+    it("striped setter sets the striped attribute", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>
+        `);
+        expect(el.striped).to.be.false;
+
+        el.striped = true;
+        expect(el.hasAttribute("striped")).to.be.true;
+        expect(el.striped).to.be.true;
+
+        const css = el.shadowRoot.querySelector("style").textContent;
+        expect(css).to.include("nth-child(even)");
+    });
+
+    it("striped setter removes the striped attribute when set to false", async () => {
+        const el = await fixture(html`
+            <y-table columns="${sampleColumns}" data="${sampleData}" striped></y-table>
+        `);
+        expect(el.striped).to.be.true;
+
+        el.striped = false;
+        expect(el.hasAttribute("striped")).to.be.false;
+        expect(el.striped).to.be.false;
+    });
+
+    it("sorts rows with null values to the end in ascending order", async () => {
+        const colsWithNull = JSON.stringify([
+            { field: "name", header: "Name" },
+            { field: "score", header: "Score" },
+        ]);
+        const dataWithNull = JSON.stringify([
+            { name: "Alice", score: 10 },
+            { name: "Bob", score: null },
+            { name: "Charlie", score: 5 },
+        ]);
+        const el = await fixture(html`
+            <y-table columns="${colsWithNull}" data="${dataWithNull}"></y-table>
+        `);
+        const scoreHeader = el.shadowRoot.querySelectorAll("thead th")[1];
+        scoreHeader.click(); // sort by score asc
+
+        const rows = el.shadowRoot.querySelectorAll("tbody tr");
+        const lastRowScore = rows[2].querySelectorAll("td")[1].textContent;
+        // null sorts to the bottom
+        expect(lastRowScore).to.equal("");
+    });
+
+    it("sorts two rows both having null values as equal (stable)", async () => {
+        const colsWithNull = JSON.stringify([
+            { field: "name", header: "Name" },
+            { field: "score", header: "Score" },
+        ]);
+        const dataWithNull = JSON.stringify([
+            { name: "Alice", score: null },
+            { name: "Bob", score: null },
+        ]);
+        const el = await fixture(html`
+            <y-table columns="${colsWithNull}" data="${dataWithNull}"></y-table>
+        `);
+        const scoreHeader = el.shadowRoot.querySelectorAll("thead th")[1];
+        scoreHeader.click();
+
+        const rows = el.shadowRoot.querySelectorAll("tbody tr");
+        // Both have null score — just check neither throws and two rows render
+        expect(rows.length).to.equal(2);
     });
 });

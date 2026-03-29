@@ -133,6 +133,17 @@ declare module "react" {
                 indeterminate?: boolean | string;
                 disabled?: boolean | string;
             }>;
+            "y-rating": El<{
+                name?: string;
+                value?: string | number;
+                max?: string | number;
+                icon?: string;
+                color?: string;
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                readonly?: boolean | string;
+                required?: boolean | string;
+            }>;
             "y-radio": El<{
                 name?: string;
                 value?: string;
@@ -149,6 +160,8 @@ declare module "react" {
                 options?: Array<{ value: string; label: string }> | string;
                 invalid?: boolean | string;
                 required?: boolean | string;
+                searchable?: boolean | string;
+                clearable?: boolean | string;
                 "label-position"?: "top" | "bottom";
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
@@ -175,6 +188,17 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-textarea": El<{
+                name?: string;
+                value?: string;
+                rows?: string | number;
+                placeholder?: string;
+                disabled?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                size?: "small" | "medium" | "large";
+                "label-position"?: "top" | "bottom";
+            }>;
             "y-table": El<{
                 columns?: unknown[] | string;
                 data?: unknown[] | string;
@@ -182,7 +206,14 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
             }>;
             "y-tabs": El<{
-                options?: Array<{ id: string; label: string; slot?: string; disabled?: boolean }> | string;
+                options?:
+                    | Array<{
+                          id: string;
+                          label: string;
+                          slot?: string;
+                          disabled?: boolean;
+                      }>
+                    | string;
                 size?: "small" | "medium" | "large";
                 position?: "top" | "bottom" | "left" | "right";
             }>;

@@ -104,6 +104,32 @@ Events: `change`, `input`
 
 ---
 
+## y-textarea
+
+Form-associated. Multi-line text input. A distinct component from `y-input`.
+
+| Attribute        | Values / Notes                                          |
+|-----------------|----------------------------------------------------------|
+| `name`          | form field name                                          |
+| `value`         | current value                                            |
+| `placeholder`   |                                                          |
+| `label`         | visible label text                                       |
+| `label-position`| `top` (default) \| `bottom` \| `left` \| `right`        |
+| `rows`          | number of visible rows (default: `3`)                   |
+| `size`          | `small` \| `medium` \| `large`                          |
+| `disabled`      | boolean                                                  |
+| `required`      | boolean                                                  |
+| `invalid`       | boolean — applies error state                            |
+
+Events: `change`, `input`
+
+```html
+<y-textarea name="message" label="Message" placeholder="Write something..." rows="4"></y-textarea>
+<y-textarea name="bio" label="Bio" disabled value="Cannot edit this."></y-textarea>
+```
+
+---
+
 ## y-select
 
 Form-associated.
@@ -284,6 +310,32 @@ Slot: default (label text)
 
 ---
 
+## y-rating
+
+Form-associated. Renders a row of icons; icons up to `value` are filled, the rest are muted.
+
+| Attribute  | Values / Notes                                                       |
+|-----------|----------------------------------------------------------------------|
+| `icon`    | registered icon name (default: `star`)                               |
+| `color`   | color scheme for filled icons (default: `primary`)                   |
+| `max`     | total number of icons (default: `5`)                                 |
+| `value`   | current rating 0–max (default: `0`)                                  |
+| `size`    | `small` \| `medium` (default) \| `large`                            |
+| `name`    | form field name                                                       |
+| `disabled`| boolean                                                               |
+| `readonly`| boolean — shows value, no interaction                                |
+| `required`| boolean — prevents clearing to 0 by re-clicking current value       |
+
+Events: `change` — `event.detail.value`
+
+```html
+<y-rating name="score" value="3" icon="star" color="warning"></y-rating>
+<y-rating value="4" icon="heart" color="error" readonly></y-rating>
+<y-rating value="0" max="10" icon="star" color="primary"></y-rating>
+```
+
+---
+
 ## y-progress
 
 | Attribute       | Values / Notes                         |
@@ -325,13 +377,20 @@ Slot: default (trigger element)
 |----------|-------------------|
 | `color`  | color scheme name  |
 
-Slots: `header`, `footer`, default (body)
+Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body)
 
 ```html
 <y-card>
   <span slot="header">Card Title</span>
   <p>Card body content here.</p>
   <y-button slot="footer" color="primary">Action</y-button>
+</y-card>
+
+<!-- Card with flush image -->
+<y-card>
+  <img slot="image" src="/photo.jpg" alt="..." style="width:100%;height:160px;object-fit:cover;display:block;" />
+  <span slot="header">Image Card</span>
+  <p>Body content.</p>
 </y-card>
 ```
 

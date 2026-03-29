@@ -267,6 +267,104 @@ describe("YumeTag", () => {
     it("sets host display to inline-block", async () => {
         const el = await fixture(html`<y-tag>Tag</y-tag>`);
         const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("display: inline-block");
+        expect(style).to.include("display: inline-flex");
+    });
+
+    // ── removable setter ──────────────────────────────────────
+    it("removable setter sets the removable attribute", async () => {
+        const el = await fixture(html`<y-tag>Tag</y-tag>`);
+        expect(el.removable).to.be.false;
+
+        el.removable = true;
+        expect(el.hasAttribute("removable")).to.be.true;
+        expect(el.removable).to.be.true;
+        expect(el.shadowRoot.querySelector(".remove")).to.exist;
+    });
+
+    it("removable setter removes the removable attribute when set to false", async () => {
+        const el = await fixture(html`<y-tag removable>Tag</y-tag>`);
+        expect(el.removable).to.be.true;
+
+        el.removable = false;
+        expect(el.hasAttribute("removable")).to.be.false;
+        expect(el.removable).to.be.false;
+        expect(el.shadowRoot.querySelector(".remove")).to.not.exist;
+    });
+
+    // ── Property setters ─────────────────────────────────────
+    it("color setter updates the color attribute", async () => {
+        const el = await fixture(html`<y-tag>Tag</y-tag>`);
+        el.color = "primary";
+        expect(el.getAttribute("color")).to.equal("primary");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("--primary-content--");
+    });
+
+    it("shape setter updates the shape attribute", async () => {
+        const el = await fixture(html`<y-tag>Tag</y-tag>`);
+        el.shape = "round";
+        expect(el.getAttribute("shape")).to.equal("round");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("--component-tag-border-radius-circle");
+    });
+
+    it("size setter updates the size attribute", async () => {
+        const el = await fixture(html`<y-tag>Tag</y-tag>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("--component-tag-height-large");
+    });
+
+    it("styleType setter updates the style-type attribute", async () => {
+        const el = await fixture(html`<y-tag color="primary">Tag</y-tag>`);
+        el.styleType = "outlined";
+        expect(el.getAttribute("style-type")).to.equal("outlined");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("border: 1px solid var(--primary-content--)");
+    });
+
+    // ── Custom color variants ─────────────────────────────────
+    it("renders with custom hex color using filled style-type", async () => {
+        const el = await fixture(
+            html`<y-tag color="#ff0000" style-type="filled">Tag</y-tag>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("background: #ff0000");
+    });
+
+    it("renders with custom hex color using outlined style-type", async () => {
+        const el = await fixture(
+            html`<y-tag color="#00aaff" style-type="outlined">Tag</y-tag>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("border: 1px solid #00aaff");
+        expect(style).to.include("background: transparent");
+        expect(style).to.include("color: #00aaff");
+    });
+
+    it("renders with custom hex color using flat style-type", async () => {
+        const el = await fixture(
+            html`<y-tag color="#00cc44" style-type="flat">Tag</y-tag>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("color-mix(in srgb, #00cc44 20%, transparent)");
+        expect(style).to.include("color: #00cc44");
+    });
+
+    it("renders with custom rgb color using filled style-type", async () => {
+        const el = await fixture(
+            html`<y-tag color="rgb(255,0,0)" style-type="filled">Tag</y-tag>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("background: rgb(255,0,0)");
+    });
+
+    it("falls back to filled for custom color with unknown style-type", async () => {
+        const el = await fixture(
+            html`<y-tag color="#abcdef" style-type="custom">Tag</y-tag>`,
+        );
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("background: #abcdef");
     });
 });

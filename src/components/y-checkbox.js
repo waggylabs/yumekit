@@ -7,15 +7,12 @@ export class YumeCheckbox extends HTMLElement {
     static formAssociated = true;
 
     static get observedAttributes() {
-        return [
-            "checked",
-            "disabled",
-            "indeterminate",
-            "label-position",
-            "name",
-            "value",
-        ];
+        return ["checked", "disabled", "indeterminate", "label-position", "name", "value"];
     }
+
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
 
     constructor() {
         super();
@@ -25,10 +22,7 @@ export class YumeCheckbox extends HTMLElement {
     }
 
     connectedCallback() {
-        if (!this.hasAttribute("label-position")) {
-            this.setAttribute("label-position", "right");
-        }
-
+        if (!this.hasAttribute("label-position")) this.setAttribute("label-position", "right");
         this._internals.setFormValue(this.checked ? this.value : null);
     }
 
@@ -36,64 +30,51 @@ export class YumeCheckbox extends HTMLElement {
         if (name === "checked" || name === "value") {
             this._internals.setFormValue(this.checked ? this.value : null);
         }
-
-        if (name === "indeterminate") {
-            this.updateIcon();
-        }
-
-        if (name === "label-position") {
-            this.render();
-        }
-
-        this.updateState();
+        if (name === "indeterminate") this._updateIcon();
+        if (name === "label-position") this.render();
+        this._updateState();
     }
+
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the checkbox is checked. */
-    get checked() {
-        return this.hasAttribute("checked");
-    }
-
+    get checked() { return this.hasAttribute("checked"); }
     set checked(val) {
         if (val) this.setAttribute("checked", "");
         else this.removeAttribute("checked");
     }
 
     /** @type {boolean} Whether the checkbox is disabled. */
-    get disabled() {
-        return this.hasAttribute("disabled");
-    }
-
+    get disabled() { return this.hasAttribute("disabled"); }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** @type {boolean} Whether the checkbox is in an indeterminate state. */
-    get indeterminate() {
-        return this.hasAttribute("indeterminate");
-    }
-
+    get indeterminate() { return this.hasAttribute("indeterminate"); }
     set indeterminate(val) {
         if (val) this.setAttribute("indeterminate", "");
         else this.removeAttribute("indeterminate");
     }
 
-    /** @type {string} The form value submitted when checked. Defaults to "on". */
-    get value() {
-        return this.getAttribute("value") || "on";
-    }
-
-    set value(val) {
-        this.setAttribute("value", val);
-    }
+    /** @type {string} Label position: "top" | "bottom" | "left" | "right" (default "right"). */
+    get labelPosition() { return this.getAttribute("label-position") || "right"; }
+    set labelPosition(val) { this.setAttribute("label-position", val); }
 
     /** @type {string|null} The form name of the checkbox. */
-    get name() {
-        return this.getAttribute("name");
-    }
-    set name(val) {
-        this.setAttribute("name", val);
-    }
+    get name() { return this.getAttribute("name"); }
+    set name(val) { this.setAttribute("name", val); }
+
+    /** @type {string} The form value submitted when checked. Defaults to "on". */
+    get value() { return this.getAttribute("value") || "on"; }
+    set value(val) { this.setAttribute("value", val); }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     /** Toggles the checked state and dispatches a "change" event. */
     toggle() {
@@ -104,37 +85,47 @@ export class YumeCheckbox extends HTMLElement {
         } else {
             this.checked = !this.checked;
         }
-
-        this.dispatchEvent(
-            new Event("change", { bubbles: true, composed: true }),
-        );
-    }
-
-    updateIcon() {
-        const icon = this.shadowRoot.querySelector(".icon");
-        if (!icon) return;
-
-        if (this.indeterminate) {
-            icon.innerHTML = indeterminateSvg;
-        } else if (this.checked) {
-            icon.innerHTML = check;
-        } else {
-            icon.innerHTML = "";
-        }
-    }
-
-    updateState() {
-        const box = this.shadowRoot.querySelector(".checkbox");
-        box.setAttribute(
-            "aria-checked",
-            this.indeterminate ? "mixed" : this.checked ? "true" : "false",
-        );
-        this.updateIcon();
+        this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     }
 
     render() {
-        const labelPosition = this.getAttribute("label-position") || "right";
-        const isDisabled = this.disabled;
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.innerHTML = `
+            <div class="wrapper">
+                <div class="checkbox" role="checkbox" tabindex="0">
+                    <span class="icon"></span>
+                </div>
+                <label part="label">
+                    <slot></slot>
+                </label>
+            </div>
+        `;
+        this._bindCheckboxListeners();
+        this._updateState();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _bindCheckboxListeners() {
+        const box = this.shadowRoot.querySelector(".checkbox");
+        box.addEventListener("click", () => this.toggle());
+        box.addEventListener("keydown", (e) => {
+            if (e.key === " " || e.key === "Enter") {
+                e.preventDefault();
+                this.toggle();
+            }
+        });
+    }
+
+    _buildStyleSheet() {
+        const flexDir = {
+            top:    "column",
+            bottom: "column-reverse",
+            left:   "row-reverse",
+            right:  "row",
+        }[this.labelPosition] || "row";
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -144,8 +135,8 @@ export class YumeCheckbox extends HTMLElement {
                 line-height: 1;
                 vertical-align: middle;
                 font-family: var(--font-family-body);
-                cursor: ${isDisabled ? "not-allowed" : "pointer"};
-                opacity: ${isDisabled ? "0.6" : "1"};
+                cursor: ${this.disabled ? "not-allowed" : "pointer"};
+                opacity: ${this.disabled ? "0.6" : "1"};
             }
 
             .wrapper {
@@ -153,15 +144,7 @@ export class YumeCheckbox extends HTMLElement {
                 align-items: center;
                 gap: var(--spacing-x-small, 6px);
                 line-height: 1;
-                flex-direction: ${
-                    labelPosition === "top"
-                        ? "column"
-                        : labelPosition === "bottom"
-                          ? "column-reverse"
-                          : labelPosition === "left"
-                            ? "row-reverse"
-                            : "row"
-                };
+                flex-direction: ${flexDir};
             }
 
             .checkbox {
@@ -215,35 +198,23 @@ export class YumeCheckbox extends HTMLElement {
                 height: 100%;
                 line-height: 0;
             }
-
         `);
+        return sheet;
+    }
 
-        this.shadowRoot.adoptedStyleSheets = [sheet];
+    _updateIcon() {
+        const icon = this.shadowRoot.querySelector(".icon");
+        if (!icon) return;
+        if (this.indeterminate) icon.innerHTML = indeterminateSvg;
+        else if (this.checked) icon.innerHTML = check;
+        else icon.innerHTML = "";
+    }
 
-        this.shadowRoot.innerHTML = `
-            <div class="wrapper">
-                <div class="checkbox" role="checkbox" tabindex="0">
-                    <span class="icon"></span>
-                </div>
-                <label part="label">
-                    <slot></slot>
-                </label>
-            </div>
-        `;
-
-        this.shadowRoot
-            .querySelector(".checkbox")
-            .addEventListener("click", () => this.toggle());
-        this.shadowRoot
-            .querySelector(".checkbox")
-            .addEventListener("keydown", (e) => {
-                if (e.key === " " || e.key === "Enter") {
-                    e.preventDefault();
-                    this.toggle();
-                }
-            });
-
-        this.updateState();
+    _updateState() {
+        const box = this.shadowRoot.querySelector(".checkbox");
+        if (!box) return;
+        box.setAttribute("aria-checked", this.indeterminate ? "mixed" : this.checked ? "true" : "false");
+        this._updateIcon();
     }
 }
 

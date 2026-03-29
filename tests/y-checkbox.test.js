@@ -71,4 +71,34 @@ describe("<y-checkbox>", () => {
         const data = new FormData(form);
         expect(data.get("agree")).to.equal(null);
     });
+
+    it("disabled setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-checkbox>Label</y-checkbox>`);
+        el.disabled = true;
+        expect(el.hasAttribute("disabled")).to.be.true;
+        el.disabled = false;
+        expect(el.hasAttribute("disabled")).to.be.false;
+    });
+
+    it("indeterminate setter sets and removes attribute via _onInputChange-style toggle", async () => {
+        const el = await fixture(html`<y-checkbox>Label</y-checkbox>`);
+        el.indeterminate = true;
+        expect(el.hasAttribute("indeterminate")).to.be.true;
+        const box = el.shadowRoot.querySelector(".checkbox");
+        box.click();
+        expect(el.hasAttribute("indeterminate")).to.be.false;
+        expect(el.checked).to.be.true;
+    });
+
+    it("indeterminate sets aria-checked to mixed", async () => {
+        const el = await fixture(html`<y-checkbox indeterminate>Label</y-checkbox>`);
+        const box = el.shadowRoot.querySelector(".checkbox");
+        expect(box.getAttribute("aria-checked")).to.equal("mixed");
+    });
+
+    it("indeterminate false via setter removes attribute", async () => {
+        const el = await fixture(html`<y-checkbox indeterminate>Label</y-checkbox>`);
+        el.indeterminate = false;
+        expect(el.hasAttribute("indeterminate")).to.be.false;
+    });
 });

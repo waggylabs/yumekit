@@ -5,25 +5,27 @@ export class YumePanel extends HTMLElement {
         return ["selected", "expanded", "href", "history"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
-
         this._expanded = false;
-        this._checkRouteMatchBound = this.checkRouteMatch.bind(this);
-
+        this._checkRouteMatchBound = this._checkRouteMatch.bind(this);
         this.render();
     }
 
     connectedCallback() {
-        this.addHeaderListeners();
-        this.checkForChildren();
-        this.updateChildState();
-        this.updateSelectedState();
-        this.updateExpandedState();
+        this._addHeaderListeners();
+        this._checkForChildren();
+        this._updateChildState();
+        this._updateSelectedState();
+        this._updateExpandedState();
 
         if (this.hasAttribute("href")) {
-            this.checkRouteMatch();
+            this._checkRouteMatch();
             window.addEventListener("popstate", this._checkRouteMatchBound);
         }
     }
@@ -36,160 +38,123 @@ export class YumePanel extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
-
-        if (name === "selected") {
-            this.updateSelectedState();
-        }
-
-        if (name === "expanded") {
-            this.updateExpandedState();
-        }
-
-        if (name === "href") {
-            this.checkRouteMatch();
-        }
+        if (name === "selected") this._updateSelectedState();
+        if (name === "expanded") this._updateExpandedState();
+        if (name === "href") this._checkRouteMatch();
     }
 
-    /** @type {boolean} Whether the panel is in a selected/active state. */
-    get selected() {
-        return this.hasAttribute("selected");
-    }
-
-    set selected(val) {
-        if (val) this.setAttribute("selected", "");
-        else this.removeAttribute("selected");
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the panel's children slot is visible. */
-    get expanded() {
-        return this.hasAttribute("expanded");
-    }
-
+    get expanded() { return this.hasAttribute("expanded"); }
     set expanded(val) {
         if (val) this.setAttribute("expanded", "");
         else this.removeAttribute("expanded");
     }
 
-    /** Toggles the expanded state (collapses siblings when inside an exclusive panelbar). */
-    toggle() {
-        if (!this.hasChildren()) return;
-
-        if (!this._expanded) {
-            const parentBar = this.closest("y-panelbar");
-            if (parentBar && parentBar.hasAttribute("exclusive")) {
-                const parent = this.parentElement;
-                const siblingPanels = parent
-                    ? Array.from(parent.children).filter(
-                          (el) => el.tagName === "Y-PANEL",
-                      )
-                    : [];
-                siblingPanels.forEach((panel) => {
-                    if (panel !== this && panel.expanded) {
-                        panel.collapse();
-                    }
-                });
-            }
-            this.expand();
-        } else {
-            this.collapse();
-        }
-
-        this.dispatchEvent(
-            new CustomEvent("toggle", {
-                detail: { expanded: this._expanded },
-                bubbles: true,
-                composed: true,
-            }),
-        );
+    /** @type {boolean} Whether the panel is in a selected/active state. */
+    get selected() { return this.hasAttribute("selected"); }
+    set selected(val) {
+        if (val) this.setAttribute("selected", "");
+        else this.removeAttribute("selected");
     }
 
-    /** Expands the panel to show its children. */
-    expand() {
-        if (!this.hasChildren()) return;
-        this.expanded = true;
-        this._expanded = true;
-        this.updateExpandedState();
-        this.dispatchEvent(
-            new CustomEvent("expand", {
-                detail: { expanded: true },
-                bubbles: true,
-                composed: true,
-            }),
-        );
-    }
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     /** Collapses the panel to hide its children. */
     collapse() {
         this.expanded = false;
         this._expanded = false;
-        this.updateExpandedState();
-        this.dispatchEvent(
-            new CustomEvent("collapse", {
-                detail: { expanded: false },
-                bubbles: true,
-                composed: true,
-            }),
-        );
+        this._updateExpandedState();
+        this.dispatchEvent(new CustomEvent("collapse", {
+            detail: { expanded: false },
+            bubbles: true,
+            composed: true,
+        }));
     }
 
-    updateSelectedState() {
-        this.classList.toggle("selected", this.selected);
+    /** Expands the panel to show its children. */
+    expand() {
+        if (!this._hasChildren()) return;
+        this.expanded = true;
+        this._expanded = true;
+        this._updateExpandedState();
+        this.dispatchEvent(new CustomEvent("expand", {
+            detail: { expanded: true },
+            bubbles: true,
+            composed: true,
+        }));
     }
 
-    updateChildState() {
-        let depth = 0;
-        let el = this.parentElement;
-        while (el) {
-            const parent = el.closest("y-panel");
-            if (parent && parent !== this) {
-                depth++;
-                el = parent.parentElement;
-            } else {
-                break;
-            }
-        }
-
-        this.setAttribute("data-is-child", depth > 0 ? "true" : "false");
-        this.style.setProperty("--panel-depth", depth);
+    /** Rebuilds the shadow DOM. */
+    render() {
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.innerHTML = `
+            <div class="header" part="header" role="button" tabindex="0">
+                <slot name="icon"></slot>
+                <slot name="label"><slot></slot></slot>
+                <button class="arrow" id="arrow" part="arrow" tabindex="0" aria-expanded="false" aria-label="Toggle children">
+                    ${chevronDown}
+                </button>
+            </div>
+            <div class="children" id="childrenContainer" part="children">
+                <slot name="children"></slot>
+            </div>
+        `;
     }
 
-    checkRouteMatch() {
-        const href = this.getAttribute("href");
-        if (href && window.location.pathname === href) {
-            this.selected = true;
+    /** Toggles the expanded state (collapses siblings when inside an exclusive panelbar). */
+    toggle() {
+        if (!this._hasChildren()) return;
+
+        if (!this._expanded) {
+            this._collapseExclusiveSiblings();
+            this.expand();
         } else {
-            this.selected = false;
+            this.collapse();
         }
+
+        this.dispatchEvent(new CustomEvent("toggle", {
+            detail: { expanded: this._expanded },
+            bubbles: true,
+            composed: true,
+        }));
     }
 
-    addHeaderListeners() {
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _addArrowListeners() {
+        const arrow = this.shadowRoot.querySelector(".arrow");
+        if (!arrow) return;
+
+        arrow.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.toggle();
+        });
+        arrow.addEventListener("keydown", (e) => {
+            if (e.key === " " || e.key === "Enter") {
+                e.preventDefault();
+                this.toggle();
+            }
+        });
+    }
+
+    _addChildrenSlotListener() {
+        const slot = this.shadowRoot.querySelector('slot[name="children"]');
+        if (slot) slot.addEventListener("slotchange", () => this._checkForChildren());
+    }
+
+    _addHeaderListeners() {
         const header = this.shadowRoot.querySelector(".header");
         if (!header) return;
 
-        header.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (this.hasAttribute("href")) {
-                const href = this.getAttribute("href");
-                if (this.getAttribute("history") !== "false") {
-                    history.pushState({}, "", href);
-                    window.dispatchEvent(
-                        new PopStateEvent("popstate", { state: {} }),
-                    );
-                } else {
-                    window.location.href = href;
-                }
-                return;
-            }
-
-            this.dispatchEvent(
-                new CustomEvent("select", {
-                    detail: { selected: true },
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
-        });
-
+        header.addEventListener("click", (e) => this._handleHeaderClick(e));
         header.addEventListener("keydown", (e) => {
             if (e.key === " " || e.key === "Enter") {
                 e.preventDefault();
@@ -197,77 +162,12 @@ export class YumePanel extends HTMLElement {
             }
         });
 
-        const arrow = this.shadowRoot.querySelector(".arrow");
-        if (arrow) {
-            arrow.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.toggle();
-            });
-
-            arrow.addEventListener("keydown", (e) => {
-                if (e.key === " " || e.key === "Enter") {
-                    e.preventDefault();
-                    this.toggle();
-                }
-            });
-        }
-
-        const childrenSlot = this.shadowRoot.querySelector(
-            'slot[name="children"]',
-        );
-
-        if (childrenSlot) {
-            childrenSlot.addEventListener("slotchange", () =>
-                this.checkForChildren(),
-            );
-        }
+        this._addArrowListeners();
+        this._addChildrenSlotListener();
     }
 
-    /**
-     * Checks whether the panel has slotted children content.
-     * @returns {boolean}
-     */
-    hasChildren() {
-        const childrenSlot = this.shadowRoot.querySelector(
-            'slot[name="children"]',
-        );
-
-        if (!childrenSlot) return false;
-
-        const nodes = childrenSlot.assignedNodes({ flatten: true });
-        return nodes.some((n) => {
-            if (n.nodeType === Node.TEXT_NODE) {
-                return n.textContent.trim() !== "";
-            }
-            return true;
-        });
-    }
-
-    checkForChildren() {
-        const hasChildren = this.hasChildren();
-
-        this.setAttribute("data-has-children", hasChildren ? "true" : "false");
-
-        if (!hasChildren && this.expanded) {
-            this.expanded = false;
-        }
-    }
-
-    updateExpandedState() {
-        const hasChildren = this.hasChildren();
-        const arrow = this.shadowRoot.querySelector(".arrow");
-        const isExpanded = this.expanded && hasChildren;
-
-        this._expanded = isExpanded;
-
-        if (arrow) {
-            arrow.setAttribute("aria-expanded", String(isExpanded));
-        }
-    }
-
-    render() {
+    _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
-
         sheet.replaceSync(`
             :host {
                 display: block;
@@ -374,20 +274,95 @@ export class YumePanel extends HTMLElement {
                 visibility: hidden;
             }
         `);
+        return sheet;
+    }
 
-        this.shadowRoot.adoptedStyleSheets = [sheet];
-        this.shadowRoot.innerHTML = `
-            <div class="header" part="header" role="button" tabindex="0">
-                <slot name="icon"></slot>
-                <slot name="label"><slot></slot></slot>
-                <button class="arrow" id="arrow" part="arrow" tabindex="0" aria-expanded="false" aria-label="Toggle children">
-                    ${chevronDown}
-                </button>
-            </div>
-            <div class="children" id="childrenContainer" part="children">
-                <slot name="children"></slot>
-            </div>
-        `;
+    _calcNestingDepth() {
+        let depth = 0;
+        let el = this.parentElement;
+        while (el) {
+            const parent = el.closest("y-panel");
+            if (parent && parent !== this) {
+                depth++;
+                el = parent.parentElement;
+            } else {
+                break;
+            }
+        }
+        return depth;
+    }
+
+    _checkForChildren() {
+        const hasChildren = this._hasChildren();
+        this.setAttribute("data-has-children", hasChildren ? "true" : "false");
+        if (!hasChildren && this.expanded) this.expanded = false;
+    }
+
+    _checkRouteMatch() {
+        const href = this.getAttribute("href");
+        this.selected = !!(href && window.location.pathname === href);
+    }
+
+    _collapseExclusiveSiblings() {
+        const parentBar = this.closest("y-panelbar");
+        if (!parentBar?.hasAttribute("exclusive")) return;
+        const siblings = this.parentElement
+            ? Array.from(this.parentElement.children).filter((el) => el.tagName === "Y-PANEL")
+            : [];
+        siblings.forEach((panel) => {
+            if (panel !== this && panel.expanded) panel.collapse();
+        });
+    }
+
+    _handleHeaderClick(e) {
+        e.stopPropagation();
+        if (this.hasAttribute("href")) {
+            this._navigateToHref();
+            return;
+        }
+        this.dispatchEvent(new CustomEvent("select", {
+            detail: { selected: true },
+            bubbles: true,
+            composed: true,
+        }));
+    }
+
+    _hasChildren() {
+        const slot = this.shadowRoot.querySelector('slot[name="children"]');
+        if (!slot) return false;
+        return slot.assignedNodes({ flatten: true }).some((n) => {
+            if (n.nodeType === Node.TEXT_NODE) return n.textContent.trim() !== "";
+            return true;
+        });
+    }
+
+    _navigateToHref() {
+        const href = this.getAttribute("href");
+        if (this.getAttribute("history") !== "false") {
+            history.pushState({}, "", href);
+            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+        } else {
+            window.location.href = href;
+        }
+    }
+
+    _updateChildState() {
+        const depth = this._calcNestingDepth();
+        this.setAttribute("data-is-child", depth > 0 ? "true" : "false");
+        this.style.setProperty("--panel-depth", depth);
+    }
+
+    _updateExpandedState() {
+        const hasChildren = this._hasChildren();
+        const isExpanded = this.expanded && hasChildren;
+        this._expanded = isExpanded;
+
+        const arrow = this.shadowRoot.querySelector(".arrow");
+        if (arrow) arrow.setAttribute("aria-expanded", String(isExpanded));
+    }
+
+    _updateSelectedState() {
+        this.classList.toggle("selected", this.selected);
     }
 }
 

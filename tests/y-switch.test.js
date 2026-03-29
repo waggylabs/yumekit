@@ -106,4 +106,44 @@ describe("<y-switch>", () => {
         const visible = el.shadowRoot.querySelector(".toggle .on");
         expect(visible.textContent.trim()).to.equal("OnlyOn");
     });
+
+    it("disabled setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-switch></y-switch>`);
+        el.disabled = true;
+        expect(el.hasAttribute("disabled")).to.be.true;
+        el.disabled = false;
+        expect(el.hasAttribute("disabled")).to.be.false;
+    });
+
+    it("size setter updates attribute", async () => {
+        const el = await fixture(html`<y-switch></y-switch>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+    });
+
+    it("labelPosition setter updates attribute", async () => {
+        const el = await fixture(html`<y-switch></y-switch>`);
+        el.labelPosition = "bottom";
+        expect(el.getAttribute("label-position")).to.equal("bottom");
+    });
+
+    it("toggleLabel setter sets attribute when true and removes it when false", async () => {
+        const el = await fixture(html`<y-switch></y-switch>`);
+        el.toggleLabel = true;
+        expect(el.getAttribute("toggle-label")).to.equal("true");
+        el.toggleLabel = false;
+        expect(el.hasAttribute("toggle-label")).to.be.false;
+    });
+
+    it("value setter updates attribute and form value", async () => {
+        const form = await fixture(html`
+            <form>
+                <y-switch name="pref" checked></y-switch>
+            </form>
+        `);
+        const sw = form.querySelector("y-switch");
+        sw.value = "enabled";
+        expect(sw.getAttribute("value")).to.equal("enabled");
+        expect(new FormData(form).get("pref")).to.equal("enabled");
+    });
 });

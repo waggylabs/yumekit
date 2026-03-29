@@ -9,6 +9,30 @@ import {
     menu,
 } from "../icons/index.js";
 
+const SIZE_CONFIG = {
+    small: {
+        padding: "var(--spacing-x-small, 4px)",
+        collapsedWidth: "var(--component-appbar-collapsed-width-small, 40px)",
+        bodyGap: "2px",
+        buttonSize: "small",
+        iconSize: "small",
+    },
+    medium: {
+        padding: "var(--spacing-small, 6px)",
+        collapsedWidth: "var(--component-appbar-collapsed-width-medium, 52px)",
+        bodyGap: "3px",
+        buttonSize: "medium",
+        iconSize: "medium",
+    },
+    large: {
+        padding: "var(--spacing-medium, 8px)",
+        collapsedWidth: "var(--component-appbar-collapsed-width-large, 64px)",
+        bodyGap: "4px",
+        buttonSize: "large",
+        iconSize: "large",
+    },
+};
+
 export class YumeAppbar extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -21,6 +45,10 @@ export class YumeAppbar extends HTMLElement {
             "mobile-breakpoint",
         ];
     }
+
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
 
     constructor() {
         super();
@@ -49,21 +77,18 @@ export class YumeAppbar extends HTMLElement {
         this.render();
     }
 
-    get orientation() {
-        return this.getAttribute("orientation") || "vertical";
-    }
-    set orientation(val) {
-        this.setAttribute("orientation", val);
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
-    get collapsed() {
-        return this.hasAttribute("collapsed");
-    }
+    /** Whether the sidebar is currently collapsed. */
+    get collapsed() { return this.hasAttribute("collapsed"); }
     set collapsed(val) {
         if (val) this.setAttribute("collapsed", "");
         else this.removeAttribute("collapsed");
     }
 
+    /** Nav items array parsed from the "items" attribute. */
     get items() {
         try {
             return JSON.parse(this.getAttribute("items")) || [];
@@ -71,29 +96,40 @@ export class YumeAppbar extends HTMLElement {
             return [];
         }
     }
-    set items(val) {
-        this.setAttribute("items", JSON.stringify(val));
-    }
-
-    get size() {
-        return this.getAttribute("size") || "medium";
-    }
-    set size(val) {
-        this.setAttribute("size", val);
-    }
+    set items(val) { this.setAttribute("items", JSON.stringify(val)); }
 
     /**
      * Direction menus pop out from nav buttons:
      * "right", "down", or unset (auto: vertical → right, horizontal → down).
      */
-    get menuDirection() {
-        return this.getAttribute("menu-direction") || "";
-    }
+    get menuDirection() { return this.getAttribute("menu-direction") || ""; }
     set menuDirection(val) {
         if (val) this.setAttribute("menu-direction", val);
         else this.removeAttribute("menu-direction");
     }
 
+    /** Whether the appbar is currently rendering in mobile mode. */
+    get mobile() { return this._isMobile; }
+
+    /**
+     * Override the mobile breakpoint (in pixels) for this instance.
+     * Falls back to the CSS variable --component-appbar-mobile-breakpoint (default 768).
+     */
+    get mobileBreakpoint() { return this.getAttribute("mobile-breakpoint") || ""; }
+    set mobileBreakpoint(val) {
+        if (val) this.setAttribute("mobile-breakpoint", val);
+        else this.removeAttribute("mobile-breakpoint");
+    }
+
+    /** Layout orientation: "vertical" | "horizontal" (default "vertical"). */
+    get orientation() { return this.getAttribute("orientation") || "vertical"; }
+    set orientation(val) { this.setAttribute("orientation", val); }
+
+    /** Size variant: "small" | "medium" | "large" (default "medium"). */
+    get size() { return this.getAttribute("size") || "medium"; }
+    set size(val) { this.setAttribute("size", val); }
+
+    /** Sticky position: "start" | "end" | false. */
     get sticky() {
         const val = this.getAttribute("sticky");
         return ["start", "end"].includes(val) ? val : false;
@@ -103,43 +139,135 @@ export class YumeAppbar extends HTMLElement {
         else this.removeAttribute("sticky");
     }
 
-    /**
-     * Override the mobile breakpoint (in pixels) for this instance.
-     * Falls back to the CSS variable --component-appbar-mobile-breakpoint (default 768).
-     */
-    get mobileBreakpoint() {
-        return this.getAttribute("mobile-breakpoint") || "";
-    }
-    set mobileBreakpoint(val) {
-        if (val) this.setAttribute("mobile-breakpoint", val);
-        else this.removeAttribute("mobile-breakpoint");
-    }
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
-    /** Whether the appbar is currently rendering in mobile mode. */
-    get mobile() {
-        return this._isMobile;
-    }
-
+    /** Toggles the collapsed state of the sidebar. */
     toggle() {
         this.collapsed = !this.collapsed;
     }
 
-    _onCollapseClick() {
-        this.toggle();
-    }
-
-    _uid(prefix) {
-        return `${prefix}-${this._idCounter++}`;
-    }
-
-    _isItemActive(item) {
-        if (item.selected) return true;
-        if (item.href) {
-            const loc = window.location;
-            const current = loc.pathname + loc.search + loc.hash;
-            return item.href === current || item.href === loc.href;
+    render() {
+        if (this._isMobile) {
+            this._renderMobile();
+        } else {
+            this._renderDesktop();
         }
-        return false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _buildCollapseButton(cfg, isCollapsed) {
+        const btn = document.createElement("y-button");
+        btn.setAttribute("color", "base");
+        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("size", cfg.buttonSize);
+        btn.setAttribute("aria-label", isCollapsed ? "Expand sidebar" : "Collapse sidebar");
+        btn.className = "collapse-btn";
+
+        const icon = document.createElement("span");
+        icon.slot = "left-icon";
+        icon.innerHTML = isCollapsed ? expandRight : expandLeft;
+        btn.appendChild(icon);
+
+        if (!isCollapsed) {
+            btn.appendChild(document.createTextNode("Collapse"));
+        }
+
+        btn.addEventListener("click", this._onCollapseClick);
+        return btn;
+    }
+
+    _buildHeader() {
+        const header = document.createElement("div");
+        header.className = "appbar-header";
+        header.setAttribute("part", "header");
+
+        const headerContent = document.createElement("div");
+        headerContent.className = "header-content";
+
+        const logoWrapper = document.createElement("div");
+        logoWrapper.className = "logo-wrapper";
+        logoWrapper.appendChild(this._makeSlot("logo"));
+        headerContent.appendChild(logoWrapper);
+
+        const titleWrapper = document.createElement("div");
+        titleWrapper.className = "header-title";
+        titleWrapper.appendChild(this._makeSlot("title"));
+        headerContent.appendChild(titleWrapper);
+
+        header.appendChild(headerContent);
+        header.appendChild(this._makeSlot("header"));
+        return header;
+    }
+
+    _buildNavItem(item, cfg, isVertical, isCollapsed, menuDir) {
+        const hasChildren = item.children?.length > 0;
+        const wrapper = document.createElement("div");
+        const btn = document.createElement("y-button");
+        const btnId = this._uid("appbar-btn");
+
+        wrapper.className = "nav-item";
+        btn.id = btnId;
+        btn.setAttribute("color", this._isItemActive(item) ? "primary" : "base");
+        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("size", cfg.buttonSize);
+
+        if (item.icon) {
+            if (item.icon.trim().startsWith("<")) {
+                const iconEl = document.createElement("span");
+                iconEl.slot = "left-icon";
+                iconEl.setAttribute("part", "icon");
+                iconEl.innerHTML = item.icon;
+                btn.appendChild(iconEl);
+            } else {
+                const iconEl = document.createElement("y-icon");
+                iconEl.slot = "left-icon";
+                iconEl.setAttribute("part", "icon");
+                iconEl.setAttribute("name", item.icon);
+                iconEl.setAttribute("size", cfg.iconSize);
+                btn.appendChild(iconEl);
+            }
+        }
+
+        if (item.text && !isCollapsed) {
+            btn.appendChild(document.createTextNode(item.text));
+        }
+
+        if (hasChildren && !isCollapsed) {
+            const arrow = document.createElement("span");
+            arrow.slot = "right-icon";
+            arrow.innerHTML = isVertical ? chevronRight : chevronDown;
+            btn.appendChild(arrow);
+        }
+
+        if (item.href && !hasChildren) {
+            btn.addEventListener("click", () => {
+                window.location.href = item.href;
+            });
+        }
+
+        if (item.slot) {
+            const slot = this._makeSlot(item.slot);
+            slot.appendChild(btn);
+            wrapper.appendChild(slot);
+        } else {
+            wrapper.appendChild(btn);
+        }
+
+        if (hasChildren) {
+            const menuEl = document.createElement("y-menu");
+            menuEl.setAttribute("anchor", btnId);
+            menuEl.setAttribute("direction", menuDir);
+            menuEl.setAttribute("size", cfg.buttonSize);
+            menuEl.items = item.children;
+            wrapper.appendChild(menuEl);
+        }
+
+        return wrapper;
     }
 
     _getBreakpointPx() {
@@ -158,23 +286,29 @@ export class YumeAppbar extends HTMLElement {
         return 768;
     }
 
-    _setupMediaQuery() {
-        this._teardownMediaQuery();
-        if (this.orientation !== "horizontal") {
-            this._isMobile = false;
-            return;
-        }
-        const bp = this._getBreakpointPx();
-        this._mql = window.matchMedia(`(max-width: ${bp}px)`);
-        this._isMobile = this._mql.matches;
-        this._mql.addEventListener("change", this._onMediaChange);
+    _initRender() {
+        this.shadowRoot.innerHTML = "";
+        this._idCounter = 0;
     }
 
-    _teardownMediaQuery() {
-        if (this._mql) {
-            this._mql.removeEventListener("change", this._onMediaChange);
-            this._mql = null;
+    _isItemActive(item) {
+        if (item.selected) return true;
+        if (item.href) {
+            const loc = window.location;
+            const current = loc.pathname + loc.search + loc.hash;
+            return item.href === current || item.href === loc.href;
         }
+        return false;
+    }
+
+    _makeSlot(name) {
+        const slot = document.createElement("slot");
+        slot.name = name;
+        return slot;
+    }
+
+    _onCollapseClick() {
+        this.toggle();
     }
 
     _onMediaChange(e) {
@@ -182,226 +316,14 @@ export class YumeAppbar extends HTMLElement {
         this.render();
     }
 
-    /**
-     * Convert appbar nav items to y-menu item format.
-     * Maps `href` → `url` and recursively converts children.
-     */
-    _toMenuItems(items) {
-        return items.map((item) => {
-            const mi = { text: item.text || "" };
-            if (item.href) mi.url = item.href;
-            if (item.icon) mi.icon = item.icon;
-            if (item.children?.length) {
-                mi.children = this._toMenuItems(item.children);
-            }
-            return mi;
-        });
-    }
-
-    render() {
-        if (this._isMobile) {
-            this._renderMobile();
-        } else {
-            this._renderDesktop();
-        }
-    }
-
-    _renderMobile() {
-        const size = this.size;
-
-        const sizeConfig = {
-            small: {
-                padding: "var(--spacing-x-small, 4px)",
-                buttonSize: "small",
-                iconSize: "small",
-            },
-            medium: {
-                padding: "var(--spacing-small, 6px)",
-                buttonSize: "medium",
-                iconSize: "medium",
-            },
-            large: {
-                padding: "var(--spacing-medium, 8px)",
-                buttonSize: "large",
-                iconSize: "large",
-            },
-        };
-
-        this.shadowRoot.innerHTML = "";
-        this._idCounter = 0;
-
-        const cfg = sizeConfig[size] || sizeConfig.medium;
-        const style = document.createElement("style");
-
-        style.textContent = `
-            :host {
-                display: block;
-                font-family: var(--font-family-body, sans-serif);
-                color: var(--component-appbar-color, #f7f7fa);
-            }
-
-            :host([sticky]),
-            :host([sticky="start"]),
-            :host([sticky="end"]) {
-                position: sticky;
-                top: 0;
-                left: 0;
-                width: 100%;
-                z-index: var(--component-appbar-z-index, 100);
-            }
-
-            :host([sticky]) .appbar {
-                border-radius: 0;
-                border: none;
-                border-bottom: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-            }
-
-            .appbar {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                background: var(--component-appbar-background, #0c0c0d);
-                border: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                border-radius: var(--component-appbar-border-radius, var(--component-sidebar-border-radius, 4px));
-                overflow: visible;
-                padding: var(--_appbar-padding);
-                box-sizing: border-box;
-                width: 100%;
-                height: auto;
-            }
-
-            .mobile-start {
-                display: flex;
-                align-items: center;
-                flex-shrink: 0;
-            }
-
-            .mobile-center {
-                flex: 1;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                overflow: hidden;
-            }
-
-            .mobile-end {
-                display: flex;
-                align-items: center;
-                flex-shrink: 0;
-            }
-
-            .mobile-end ::slotted(*) {
-                display: block;
-            }
-
-            ::slotted(*) {
-                display: block;
-            }
-        `;
-        this.shadowRoot.appendChild(style);
-
-        const bar = document.createElement("div");
-        bar.className = "appbar";
-        bar.setAttribute("role", "navigation");
-        bar.style.setProperty("--_appbar-padding", cfg.padding);
-
-        /* ── Left: hamburger button ── */
-        const startSection = document.createElement("div");
-        startSection.className = "mobile-start";
-
-        const menuBtn = document.createElement("y-button");
-        const menuBtnId = this._uid("appbar-mobile-menu");
-        menuBtn.id = menuBtnId;
-        menuBtn.setAttribute("color", "base");
-        menuBtn.setAttribute("style-type", "flat");
-        menuBtn.setAttribute("size", cfg.buttonSize);
-        menuBtn.setAttribute("aria-label", "Open menu");
-
-        const menuIcon = document.createElement("span");
-        menuIcon.slot = "left-icon";
-        menuIcon.innerHTML = menu;
-        menuBtn.appendChild(menuIcon);
-
-        startSection.appendChild(menuBtn);
-
-        const navItems = this.items;
-        if (navItems.length > 0) {
-            const mobileMenu = document.createElement("y-menu");
-            mobileMenu.setAttribute("anchor", menuBtnId);
-            mobileMenu.setAttribute("direction", "down");
-            mobileMenu.setAttribute("size", cfg.buttonSize);
-            mobileMenu.items = this._toMenuItems(navItems);
-            startSection.appendChild(mobileMenu);
-        }
-
-        bar.appendChild(startSection);
-
-        /* ── Center: logo + title ── */
-        const centerSection = document.createElement("div");
-        centerSection.className = "mobile-center";
-
-        const logoSlot = document.createElement("slot");
-        logoSlot.name = "logo";
-        centerSection.appendChild(logoSlot);
-
-        const titleSlot = document.createElement("slot");
-        titleSlot.name = "title";
-        centerSection.appendChild(titleSlot);
-
-        bar.appendChild(centerSection);
-
-        /* ── Right: footer slot ── */
-        const endSection = document.createElement("div");
-        endSection.className = "mobile-end";
-        endSection.setAttribute("part", "footer");
-
-        const footerSlot = document.createElement("slot");
-        footerSlot.name = "footer";
-        endSection.appendChild(footerSlot);
-
-        bar.appendChild(endSection);
-        this.shadowRoot.appendChild(bar);
-    }
-
     _renderDesktop() {
+        this._initRender();
         const isVertical = this.orientation === "vertical";
         const isCollapsed = this.collapsed && isVertical;
-        const size = this.size;
+        const cfg = SIZE_CONFIG[this.size] || SIZE_CONFIG.medium;
         const menuDir = this.menuDirection || (isVertical ? "right" : "down");
 
-        const sizeConfig = {
-            small: {
-                padding: "var(--spacing-x-small, 4px)",
-                collapsedWidth:
-                    "var(--component-appbar-collapsed-width-small, 40px)",
-                bodyGap: "2px",
-                buttonSize: "small",
-                iconSize: "small",
-            },
-            medium: {
-                padding: "var(--spacing-small, 6px)",
-                collapsedWidth:
-                    "var(--component-appbar-collapsed-width-medium, 52px)",
-                bodyGap: "3px",
-                buttonSize: "medium",
-                iconSize: "medium",
-            },
-            large: {
-                padding: "var(--spacing-medium, 8px)",
-                collapsedWidth:
-                    "var(--component-appbar-collapsed-width-large, 64px)",
-                bodyGap: "4px",
-                buttonSize: "large",
-                iconSize: "large",
-            },
-        };
-
-        this.shadowRoot.innerHTML = "";
-        this._idCounter = 0;
-
-        const cfg = sizeConfig[size] || sizeConfig.medium;
         const style = document.createElement("style");
-
         style.textContent = `
             :host {
                 display: block;
@@ -508,7 +430,7 @@ export class YumeAppbar extends HTMLElement {
 
             .appbar.vertical .appbar-header {
                 border-bottom: var(--component-appbar-inner-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
-                padding: var(--_appbar-padding) 0;
+                padding-bottom: var(--_appbar-padding);
                 margin-bottom: var(--_appbar-padding);
             }
             .appbar.vertical .appbar-footer {
@@ -535,9 +457,9 @@ export class YumeAppbar extends HTMLElement {
                 gap: var(--spacing-small, 8px);
                 overflow: hidden;
             }
-            .appbar.horizontal .header-content,
             .appbar.vertical .header-content {
-                flex-direction: row;
+                padding: var(--_button-padding) 0;
+                gap: var(--_button-padding);
             }
             .logo-wrapper {
                 width: var(--_icon-col-width);
@@ -545,6 +467,9 @@ export class YumeAppbar extends HTMLElement {
                 justify-content: center;
                 align-items: center;
                 flex-shrink: 0;
+            }
+            .appbar.vertical .logo-wrapper {
+                margin-left: var(--component-button-border-width, 2px);
             }
 
             .header-title {
@@ -627,165 +552,214 @@ export class YumeAppbar extends HTMLElement {
             ::slotted(*) {
                 display: block;
             }
+            span[slot="left-icon"] svg,
+            span[slot="right-icon"] svg {
+                width: var(--component-icon-size-large, 1.25em);
+                height: var(--component-icon-size-large, 1.25em);
+            }
         `;
         this.shadowRoot.appendChild(style);
 
         const bar = document.createElement("div");
         bar.className = `appbar ${isVertical ? "vertical" : "horizontal"}`;
-
         if (isCollapsed) bar.classList.add("collapsed");
-
         bar.setAttribute("role", "navigation");
         bar.style.setProperty("--_appbar-padding", cfg.padding);
         bar.style.setProperty("--_appbar-collapsed-width", cfg.collapsedWidth);
         bar.style.setProperty("--_appbar-body-gap", cfg.bodyGap);
+        bar.style.setProperty("--_button-padding", `var(--component-button-padding-${cfg.buttonSize})`);
         bar.style.setProperty(
             "--_icon-col-width",
             `calc(${cfg.collapsedWidth} - 2 * var(--_appbar-padding) - 2 * var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) - 2 * var(--component-button-border-width, 1px))`,
         );
 
-        const header = document.createElement("div");
-        header.className = "appbar-header";
-        header.setAttribute("part", "header");
-
-        const headerContent = document.createElement("div");
-        headerContent.className = "header-content";
-
-        const logoWrapper = document.createElement("div");
-        logoWrapper.className = "logo-wrapper";
-
-        const logoSlot = document.createElement("slot");
-        logoSlot.name = "logo";
-        logoWrapper.appendChild(logoSlot);
-        headerContent.appendChild(logoWrapper);
-
-        const titleWrapper = document.createElement("div");
-        titleWrapper.className = "header-title";
-
-        const titleSlot = document.createElement("slot");
-        titleSlot.name = "title";
-        titleWrapper.appendChild(titleSlot);
-        headerContent.appendChild(titleWrapper);
-
-        const headerSlot = document.createElement("slot");
-        headerSlot.name = "header";
-        header.appendChild(headerContent);
-        header.appendChild(headerSlot);
-        bar.appendChild(header);
+        bar.appendChild(this._buildHeader());
 
         const body = document.createElement("div");
         body.className = "appbar-body";
         body.setAttribute("part", "body");
-
-        const navItems = this.items;
-
-        navItems.forEach((item) => {
-            const hasChildren = item.children?.length > 0;
-            const wrapper = document.createElement("div");
-            const btn = document.createElement("y-button");
-            const btnId = this._uid("appbar-btn");
-            const isActive = this._isItemActive(item);
-
-            wrapper.className = "nav-item";
-            btn.id = btnId;
-
-            btn.setAttribute("color", isActive ? "primary" : "base");
-            btn.setAttribute("style-type", "flat");
-            btn.setAttribute("size", cfg.buttonSize);
-
-            if (item.icon) {
-                if (item.icon.trim().startsWith("<")) {
-                    const iconEl = document.createElement("span");
-                    iconEl.slot = "left-icon";
-                    iconEl.setAttribute("part", "icon");
-                    iconEl.innerHTML = item.icon;
-                    btn.appendChild(iconEl);
-                } else {
-                    const iconEl = document.createElement("y-icon");
-                    iconEl.slot = "left-icon";
-                    iconEl.setAttribute("part", "icon");
-                    iconEl.setAttribute("name", item.icon);
-                    iconEl.setAttribute("size", cfg.iconSize);
-                    btn.appendChild(iconEl);
-                }
-            }
-
-            if (item.text && !isCollapsed) {
-                const label = document.createTextNode(item.text);
-                btn.appendChild(label);
-            }
-
-            if (hasChildren && !isCollapsed) {
-                const arrow = document.createElement("span");
-                arrow.slot = "right-icon";
-                arrow.innerHTML = isVertical ? chevronRight : chevronDown;
-                btn.appendChild(arrow);
-            }
-
-            if (item.href && !hasChildren) {
-                btn.addEventListener("click", () => {
-                    window.location.href = item.href;
-                });
-            }
-
-            if (item.slot) {
-                const slot = document.createElement("slot");
-                slot.name = item.slot;
-                slot.appendChild(btn);
-                wrapper.appendChild(slot);
-            } else {
-                wrapper.appendChild(btn);
-            }
-
-            if (hasChildren) {
-                const menu = document.createElement("y-menu");
-                menu.setAttribute("anchor", btnId);
-                menu.setAttribute("direction", menuDir);
-                menu.setAttribute("size", cfg.buttonSize);
-                menu.items = item.children;
-                wrapper.appendChild(menu);
-            }
-
-            body.appendChild(wrapper);
+        this.items.forEach((item) => {
+            body.appendChild(this._buildNavItem(item, cfg, isVertical, isCollapsed, menuDir));
         });
-
         bar.appendChild(body);
 
         const footer = document.createElement("div");
         footer.className = "appbar-footer";
         footer.setAttribute("part", "footer");
-
-        const footerSlot = document.createElement("slot");
-        footerSlot.name = "footer";
-        footer.appendChild(footerSlot);
-
+        footer.appendChild(this._makeSlot("footer"));
         if (isVertical) {
-            const collapseBtn = document.createElement("y-button");
-            collapseBtn.setAttribute("color", "base");
-            collapseBtn.setAttribute("style-type", "flat");
-            collapseBtn.setAttribute("size", cfg.buttonSize);
-            collapseBtn.setAttribute(
-                "aria-label",
-                isCollapsed ? "Expand sidebar" : "Collapse sidebar",
-            );
-            collapseBtn.className = "collapse-btn";
+            footer.appendChild(this._buildCollapseButton(cfg, isCollapsed));
+        }
+        bar.appendChild(footer);
 
-            const collapseIcon = document.createElement("span");
-            collapseIcon.slot = "left-icon";
-            collapseIcon.innerHTML = isCollapsed ? expandRight : expandLeft;
-            collapseBtn.appendChild(collapseIcon);
+        this.shadowRoot.appendChild(bar);
+    }
 
-            if (!isCollapsed) {
-                const collapseLabel = document.createTextNode("Collapse");
-                collapseBtn.appendChild(collapseLabel);
+    _renderMobile() {
+        this._initRender();
+        const cfg = SIZE_CONFIG[this.size] || SIZE_CONFIG.medium;
+
+        const style = document.createElement("style");
+        style.textContent = `
+            :host {
+                display: block;
+                font-family: var(--font-family-body, sans-serif);
+                color: var(--component-appbar-color, #f7f7fa);
             }
 
-            collapseBtn.addEventListener("click", this._onCollapseClick);
-            footer.appendChild(collapseBtn);
-        }
+            :host([sticky]),
+            :host([sticky="start"]),
+            :host([sticky="end"]) {
+                position: sticky;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: var(--component-appbar-z-index, 100);
+            }
 
-        bar.appendChild(footer);
+            :host([sticky]) .appbar {
+                border-radius: 0;
+                border: none;
+                border-bottom: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+            }
+
+            .appbar {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                background: var(--component-appbar-background, #0c0c0d);
+                border: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+                border-radius: var(--component-appbar-border-radius, var(--component-sidebar-border-radius, 4px));
+                overflow: visible;
+                padding: var(--_appbar-padding);
+                box-sizing: border-box;
+                width: 100%;
+                height: auto;
+            }
+
+            .mobile-start {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .mobile-center {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                overflow: hidden;
+            }
+
+            .mobile-end {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            .mobile-end ::slotted(*) {
+                display: block;
+            }
+
+            ::slotted(*) {
+                display: block;
+            }
+            span[slot="left-icon"] svg,
+            span[slot="right-icon"] svg {
+                width: var(--component-icon-size-large, 1.25em);
+                height: var(--component-icon-size-large, 1.25em);
+            }
+        `;
+        this.shadowRoot.appendChild(style);
+
+        const bar = document.createElement("div");
+        bar.className = "appbar";
+        bar.setAttribute("role", "navigation");
+        bar.style.setProperty("--_appbar-padding", cfg.padding);
+
+        /* ── Left: hamburger button ── */
+        const startSection = document.createElement("div");
+        startSection.className = "mobile-start";
+
+        const menuBtn = document.createElement("y-button");
+        const menuBtnId = this._uid("appbar-mobile-menu");
+        menuBtn.id = menuBtnId;
+        menuBtn.setAttribute("color", "base");
+        menuBtn.setAttribute("style-type", "flat");
+        menuBtn.setAttribute("size", cfg.buttonSize);
+        menuBtn.setAttribute("aria-label", "Open menu");
+
+        const menuIcon = document.createElement("span");
+        menuIcon.slot = "left-icon";
+        menuIcon.innerHTML = menu;
+        menuBtn.appendChild(menuIcon);
+        startSection.appendChild(menuBtn);
+
+        const navItems = this.items;
+        if (navItems.length > 0) {
+            const mobileMenu = document.createElement("y-menu");
+            mobileMenu.setAttribute("anchor", menuBtnId);
+            mobileMenu.setAttribute("direction", "down");
+            mobileMenu.setAttribute("size", cfg.buttonSize);
+            mobileMenu.items = this._toMenuItems(navItems);
+            startSection.appendChild(mobileMenu);
+        }
+        bar.appendChild(startSection);
+
+        /* ── Center: logo + title ── */
+        const centerSection = document.createElement("div");
+        centerSection.className = "mobile-center";
+        centerSection.appendChild(this._makeSlot("logo"));
+        centerSection.appendChild(this._makeSlot("title"));
+        bar.appendChild(centerSection);
+
+        /* ── Right: footer slot ── */
+        const endSection = document.createElement("div");
+        endSection.className = "mobile-end";
+        endSection.setAttribute("part", "footer");
+        endSection.appendChild(this._makeSlot("footer"));
+        bar.appendChild(endSection);
+
         this.shadowRoot.appendChild(bar);
+    }
+
+    _setupMediaQuery() {
+        this._teardownMediaQuery();
+        if (this.orientation !== "horizontal") {
+            this._isMobile = false;
+            return;
+        }
+        const bp = this._getBreakpointPx();
+        this._mql = window.matchMedia(`(max-width: ${bp}px)`);
+        this._isMobile = this._mql.matches;
+        this._mql.addEventListener("change", this._onMediaChange);
+    }
+
+    _teardownMediaQuery() {
+        if (this._mql) {
+            this._mql.removeEventListener("change", this._onMediaChange);
+            this._mql = null;
+        }
+    }
+
+    /**
+     * Convert appbar nav items to y-menu item format.
+     * Maps `href` → `url` and recursively converts children.
+     */
+    _toMenuItems(items) {
+        return items.map((item) => {
+            const mi = { text: item.text || "" };
+            if (item.href) mi.url = item.href;
+            if (item.icon) mi.icon = item.icon;
+            if (item.children?.length) {
+                mi.children = this._toMenuItems(item.children);
+            }
+            return mi;
+        });
+    }
+
+    _uid(prefix) {
+        return `${prefix}-${this._idCounter++}`;
     }
 }
 

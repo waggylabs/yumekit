@@ -5,6 +5,10 @@ export class YumeRadio extends HTMLElement {
         return ["options", "name", "value", "disabled"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this._internals = this.attachInternals();
@@ -17,36 +21,30 @@ export class YumeRadio extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-        if (oldVal !== newVal) {
-            if (name === "value") {
-                this._value = newVal;
-                this._internals.setFormValue(newVal, this.name);
-                this.updateChecked();
-            } else if (["options", "name", "disabled"].includes(name)) {
-                this.render();
-            }
+        if (oldVal === newVal) return;
+        if (name === "value") {
+            this._value = newVal;
+            this._internals.setFormValue(newVal, this.name);
+            this._updateChecked();
+        } else if (["options", "name", "disabled"].includes(name)) {
+            this.render();
         }
     }
 
-    /** @type {string} The currently selected radio value. */
-    get value() {
-        return this._value;
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
-    set value(val) {
-        this._value = val;
-        this.setAttribute("value", val);
-        this._internals.setFormValue(val, this.name);
-        this.updateChecked();
+    /** @type {boolean} Whether the radio group is disabled. */
+    get disabled() { return this.hasAttribute("disabled"); }
+    set disabled(val) {
+        if (val) this.setAttribute("disabled", "");
+        else this.removeAttribute("disabled");
     }
 
     /** @type {string} The form name of the radio group. */
-    get name() {
-        return this.getAttribute("name") || "";
-    }
-    set name(val) {
-        this.setAttribute("name", val);
-    }
+    get name() { return this.getAttribute("name") || ""; }
+    set name(val) { this.setAttribute("name", val); }
 
     /** @type {Array<{value: string, label: string}>} The radio options parsed from the "options" attribute. */
     get options() {
@@ -56,57 +54,73 @@ export class YumeRadio extends HTMLElement {
             return [];
         }
     }
-
     set options(val) {
         this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
     }
 
-    updateChecked() {
-        const radios = this.shadowRoot.querySelectorAll("input[type=radio]");
-        radios.forEach((input, i) => {
-            const isSelected = input.value === this.value;
-            input.checked = isSelected;
-            input.setAttribute("aria-checked", isSelected);
-            input.setAttribute("tabindex", isSelected ? "0" : "-1");
-        });
+    /** @type {string} The currently selected radio value. */
+    get value() { return this._value; }
+    set value(val) {
+        this._value = val;
+        this.setAttribute("value", val);
+        this._internals.setFormValue(val, this.name);
+        this._updateChecked();
     }
 
-    handleKey(e, index, radios) {
-        const len = radios.length;
-        let newIndex = index;
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
-        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-            e.preventDefault();
-            newIndex = (index + 1) % len;
-        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-            e.preventDefault();
-            newIndex = (index - 1 + len) % len;
-        } else if (e.key === " " || e.key === "Enter") {
-            e.preventDefault();
-            this.value = radios[index].value;
-            this.dispatchEvent(
-                new CustomEvent("change", {
+    render() {
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.innerHTML = `
+            <fieldset role="radiogroup" part="radio">
+                ${this._buildOptionsHTML()}
+            </fieldset>
+        `;
+        this._bindRadioListeners();
+    }
+
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _bindRadioListeners() {
+        this.shadowRoot.querySelectorAll("input[type=radio]").forEach((input, i, list) => {
+            input.addEventListener("keydown", (e) => this._handleKey(e, i, list));
+            input.addEventListener("click", (e) => {
+                this.value = e.target.value;
+                this.dispatchEvent(new CustomEvent("change", {
                     detail: { value: this.value },
                     bubbles: true,
                     composed: true,
-                }),
-            );
-            return;
-        } else {
-            return;
-        }
-
-        // Shift focus only (no selection change)
-        radios[newIndex].focus();
+                }));
+            });
+        });
     }
 
-    render() {
-        const name = this.name;
-        const disabled = this.hasAttribute("disabled");
-        const value = this.value;
-        const options = this.options;
+    _buildOptionsHTML() {
+        const { name, disabled, value, options } = this;
+        return options.map((opt, idx) => `
+            <label part="label">
+                <input
+                    type="radio"
+                    name="${name}"
+                    value="${opt.value}"
+                    ${disabled ? "disabled" : ""}
+                    ${value === opt.value ? "checked" : ""}
+                    tabindex="${value ? (value === opt.value ? "0" : "-1") : idx === 0 ? "0" : "-1"}"
+                    role="radio"
+                    aria-checked="${value === opt.value}"
+                />
+                ${opt.label}
+            </label>
+        `).join("");
+    }
 
-        const style = `
+    _buildStyleSheet() {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: block;
                 font-family: var(--font-family-body);
@@ -154,50 +168,43 @@ export class YumeRadio extends HTMLElement {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
-        `;
+        `);
+        return sheet;
+    }
 
-        this.shadowRoot.innerHTML = `
-            <style>${style}</style>
-            <fieldset role="radiogroup" part="radio">
-                ${options
-                    .map(
-                        (opt, idx) => `
-                    <label part="label">
-                        <input
-                            type="radio"
-                            name="${name}"
-                            value="${opt.value}"
-                            ${disabled ? "disabled" : ""}
-                            ${value === opt.value ? "checked" : ""}
-                            tabindex="${value ? (value === opt.value ? "0" : "-1") : idx === 0 ? "0" : "-1"}"
-                            role="radio"
-                            aria-checked="${value === opt.value}"
-                        />
-                        ${opt.label}
-                    </label>
-                `,
-                    )
-                    .join("")}
-            </fieldset>
-        `;
+    _handleKey(e, index, radios) {
+        const len = radios.length;
+        let newIndex;
 
-        this.shadowRoot
-            .querySelectorAll("input[type=radio]")
-            .forEach((input, i, list) => {
-                input.addEventListener("keydown", (e) =>
-                    this.handleKey(e, i, list),
-                );
-                input.addEventListener("click", (e) => {
-                    this.value = e.target.value;
-                    this.dispatchEvent(
-                        new CustomEvent("change", {
-                            detail: { value: this.value },
-                            bubbles: true,
-                            composed: true,
-                        }),
-                    );
-                });
-            });
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+            e.preventDefault();
+            newIndex = (index + 1) % len;
+        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+            e.preventDefault();
+            newIndex = (index - 1 + len) % len;
+        } else if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            this.value = radios[index].value;
+            this.dispatchEvent(new CustomEvent("change", {
+                detail: { value: this.value },
+                bubbles: true,
+                composed: true,
+            }));
+            return;
+        } else {
+            return;
+        }
+
+        radios[newIndex].focus();
+    }
+
+    _updateChecked() {
+        this.shadowRoot.querySelectorAll("input[type=radio]").forEach((input) => {
+            const isSelected = input.value === this.value;
+            input.checked = isSelected;
+            input.setAttribute("aria-checked", isSelected);
+            input.setAttribute("tabindex", isSelected ? "0" : "-1");
+        });
     }
 }
 

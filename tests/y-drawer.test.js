@@ -168,4 +168,158 @@ describe("YumeDrawer", () => {
         expect(el.hasAttribute("resizable")).to.be.true;
         expect(el.resizable).to.be.true;
     });
+
+    it("pointerdown on resize handle sets _resizing and disables panel transition", async () => {
+        const el = await fixture(html`<y-drawer resizable visible></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 300, clientY: 200, bubbles: true })
+        );
+
+        expect(el._resizing).to.be.true;
+        expect(panel.style.transition).to.equal("none");
+    });
+
+    it("pointermove resizes the panel width for a left drawer", async () => {
+        const el = await fixture(html`<y-drawer resizable visible position="left"></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        // Start resize at clientX=300
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 300, clientY: 0, bubbles: true })
+        );
+
+        // Move pointer right by 50px — should increase width
+        document.dispatchEvent(
+            new PointerEvent("pointermove", { clientX: 350, clientY: 0, bubbles: true })
+        );
+        await new Promise((r) => setTimeout(r, 0));
+
+        // Panel width should be set as a px value
+        expect(panel.style.width).to.match(/\d+px/);
+    });
+
+    it("pointermove resizes the panel width for a right drawer", async () => {
+        const el = await fixture(html`<y-drawer resizable visible position="right"></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 100, clientY: 0, bubbles: true })
+        );
+
+        // Move pointer left by 50px — right drawer grows when dragging left
+        document.dispatchEvent(
+            new PointerEvent("pointermove", { clientX: 50, clientY: 0, bubbles: true })
+        );
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(panel.style.width).to.match(/\d+px/);
+    });
+
+    it("pointermove resizes the panel height for a top drawer", async () => {
+        const el = await fixture(html`<y-drawer resizable visible position="top"></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 0, clientY: 200, bubbles: true })
+        );
+
+        document.dispatchEvent(
+            new PointerEvent("pointermove", { clientX: 0, clientY: 260, bubbles: true })
+        );
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(panel.style.height).to.match(/\d+px/);
+    });
+
+    it("pointermove resizes the panel height for a bottom drawer", async () => {
+        const el = await fixture(html`<y-drawer resizable visible position="bottom"></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 0, clientY: 500, bubbles: true })
+        );
+
+        // Move up by 80px — bottom drawer grows when dragging up
+        document.dispatchEvent(
+            new PointerEvent("pointermove", { clientX: 0, clientY: 420, bubbles: true })
+        );
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(panel.style.height).to.match(/\d+px/);
+    });
+
+    it("pointermove enforces a minimum panel size of 100px", async () => {
+        const el = await fixture(html`<y-drawer resizable visible position="left"></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        // Start at 300px and drag far left so new size would be negative
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 300, clientY: 0, bubbles: true })
+        );
+
+        document.dispatchEvent(
+            new PointerEvent("pointermove", { clientX: 10, clientY: 0, bubbles: true })
+        );
+        await new Promise((r) => setTimeout(r, 0));
+
+        const width = parseInt(panel.style.width, 10);
+        expect(width).to.be.at.least(100);
+    });
+
+    it("pointermove does nothing when _resizing is false", async () => {
+        const el = await fixture(html`<y-drawer resizable visible position="left"></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+        const widthBefore = panel.style.width;
+
+        // Dispatch pointermove without a preceding pointerdown (so _resizing stays false)
+        document.dispatchEvent(
+            new PointerEvent("pointermove", { clientX: 200, clientY: 0, bubbles: true })
+        );
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(panel.style.width).to.equal(widthBefore);
+    });
+
+    it("pointerup clears _resizing and restores panel transition", async () => {
+        const el = await fixture(html`<y-drawer resizable visible></y-drawer>`);
+        await new Promise((r) => setTimeout(r, 50));
+
+        const handle = el.shadowRoot.querySelector(".resize-handle");
+        const panel = el.shadowRoot.querySelector(".drawer-panel");
+
+        handle.dispatchEvent(
+            new PointerEvent("pointerdown", { clientX: 300, clientY: 0, bubbles: true })
+        );
+        expect(el._resizing).to.be.true;
+        expect(panel.style.transition).to.equal("none");
+
+        document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el._resizing).to.be.false;
+        // Transition is restored to empty string (the CSS class takes over)
+        expect(panel.style.transition).to.equal("");
+    });
 });

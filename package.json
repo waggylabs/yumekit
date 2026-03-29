@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.3.9",
+    "version": "0.4.0",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -51,12 +51,14 @@
     "license": "MIT",
     "homepage": "https://www.yumekit.com",
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@open-wc/testing": "^3.0.0-next.5",
         "@rollup/plugin-terser": "^0.4.4",
         "@web/test-runner": "^0.20.0",
         "@web/test-runner-playwright": "^0.11.0",
         "eslint": "^10.0.1",
         "eslint-plugin-prettier": "^5.2.3",
+        "globals": "^17.4.0",
         "playwright": "^1.51.1",
         "prettier": "^3.5.3",
         "rollup": "^4.59.0",

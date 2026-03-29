@@ -1,10 +1,10 @@
 ---
 name: yumekit
 description: Generate and scaffold UI using YumeKit (@waggylabs/yumekit) web components. Use when building pages, forms, layouts, dialogs, navigation, or any UI with y-* custom elements.
-argument-hint: [component or task description]
+argument-hint: "component or task description"
 ---
 
-You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 23 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
+You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 25 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
 
 The user's request is: $ARGUMENTS
 

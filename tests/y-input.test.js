@@ -93,4 +93,36 @@ describe("<y-input>", () => {
 
         expect(formData.get("email")).to.equal("updated");
     });
+
+    it("disabled setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        el.disabled = true;
+        expect(el.hasAttribute("disabled")).to.be.true;
+        el.disabled = false;
+        expect(el.hasAttribute("disabled")).to.be.false;
+    });
+
+    it("invalid setter sets and removes attribute", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        el.invalid = true;
+        expect(el.hasAttribute("invalid")).to.be.true;
+        el.invalid = false;
+        expect(el.hasAttribute("invalid")).to.be.false;
+    });
+
+    it("size setter updates attribute", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+    });
+
+    it("value setter falls back to setAttribute when input element is not yet available", async () => {
+        // Create element but set value before it is connected so this.input may be null
+        const el = document.createElement("y-input");
+        el.value = "preset";
+        document.body.appendChild(el);
+        await new Promise((r) => setTimeout(r, 0));
+        expect(el.value).to.equal("preset");
+        document.body.removeChild(el);
+    });
 });

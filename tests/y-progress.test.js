@@ -200,4 +200,87 @@ describe("YumeProgress", () => {
         const slot = el.shadowRoot.querySelector("slot");
         expect(slot).to.exist;
     });
+
+    it("sets color via the color setter", async () => {
+        const el = await fixture(html`<y-progress value="50"></y-progress>`);
+        el.color = "error";
+        expect(el.getAttribute("color")).to.equal("error");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("var(--error-content--)");
+    });
+
+    it("sets disabled to true via the disabled setter", async () => {
+        const el = await fixture(html`<y-progress value="50"></y-progress>`);
+        el.disabled = true;
+        expect(el.hasAttribute("disabled")).to.be.true;
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("opacity: 0.5");
+    });
+
+    it("removes disabled attribute via the disabled setter when set to false", async () => {
+        const el = await fixture(
+            html`<y-progress value="50" disabled></y-progress>`,
+        );
+        el.disabled = false;
+        expect(el.hasAttribute("disabled")).to.be.false;
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("opacity: 1");
+    });
+
+    it("sets indeterminate to true via the indeterminate setter", async () => {
+        const el = await fixture(html`<y-progress value="50"></y-progress>`);
+        el.indeterminate = true;
+        expect(el.hasAttribute("indeterminate")).to.be.true;
+        const track = el.shadowRoot.querySelector(".track");
+        expect(track.getAttribute("aria-busy")).to.equal("true");
+    });
+
+    it("removes indeterminate attribute via the indeterminate setter when set to false", async () => {
+        const el = await fixture(
+            html`<y-progress value="50" indeterminate></y-progress>`,
+        );
+        el.indeterminate = false;
+        expect(el.hasAttribute("indeterminate")).to.be.false;
+        const track = el.shadowRoot.querySelector(".track");
+        expect(track.getAttribute("aria-busy")).to.be.null;
+    });
+
+    it("sets size via the size setter", async () => {
+        const el = await fixture(html`<y-progress value="50"></y-progress>`);
+        el.size = "small";
+        expect(el.getAttribute("size")).to.equal("small");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("--component-progress-size-small");
+    });
+
+    it("sets value via the value setter", async () => {
+        const el = await fixture(html`<y-progress value="20"></y-progress>`);
+        el.value = 75;
+        expect(el.getAttribute("value")).to.equal("75");
+        const label = el.shadowRoot.querySelector(".value-label");
+        expect(label.textContent).to.equal("75%");
+    });
+
+    it("removes value attribute via the value setter when set to null", async () => {
+        const el = await fixture(html`<y-progress value="50"></y-progress>`);
+        el.value = null;
+        expect(el.hasAttribute("value")).to.be.false;
+        expect(el.value).to.be.null;
+    });
+
+    it("sets step via the step setter", async () => {
+        const el = await fixture(html`<y-progress value="33"></y-progress>`);
+        el.step = 10;
+        expect(el.getAttribute("step")).to.equal("10");
+        expect(el.step).to.equal(10);
+    });
+
+    it("removes step attribute via the step setter when set to null", async () => {
+        const el = await fixture(
+            html`<y-progress value="50" step="10"></y-progress>`,
+        );
+        el.step = null;
+        expect(el.hasAttribute("step")).to.be.false;
+        expect(el.step).to.be.null;
+    });
 });

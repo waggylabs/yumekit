@@ -1,9 +1,9 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 23 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 25 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.3.9
+0.3.11
 
 ## License
 MIT
@@ -57,7 +57,7 @@ import "@waggylabs/yumekit/components/y-input";
 ### Icons
 ```javascript
 import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
-import "@waggylabs/yumekit/icons/all.js"; // load all 60+ pre-built icons
+import "@waggylabs/yumekit/icons/all.js"; // load all 100+ pre-built icons
 ```
 
 ### React
@@ -99,7 +99,7 @@ Pressable button with icon support.
 
 Tag: `<y-button>`
 Attributes:
-- `color` — `"base"` | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"`
+- `color` — predefined scheme (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"`) or any CSS color (`#hex`, `rgb()`, `hsl()`)
 - `size` — `"small"` | `"medium"` (default) | `"large"`
 - `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
 - `left-icon` — icon name (from registry)
@@ -141,25 +141,60 @@ Events: `change`, `input`
 
 ---
 
+### y-textarea
+Multi-line text input. Form-associated. A distinct component from y-input.
+
+Tag: `<y-textarea>`
+Attributes:
+- `name` — form field name
+- `value` — current value
+- `placeholder`
+- `label` — visible label text
+- `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
+- `rows` — number of visible rows (default: `"3"`)
+- `size` — `"small"` | `"medium"` | `"large"`
+- `disabled` — boolean
+- `required` — boolean
+- `invalid` — boolean, applies error state
+
+Events: `change`, `input`
+
+```html
+<y-textarea name="message" label="Message" placeholder="Write something..." rows="4"></y-textarea>
+```
+
+---
+
 ### y-select
 Dropdown/multi-select. Form-associated.
 
 Tag: `<y-select>`
 Attributes:
 - `options` — JSON string: `[{"value": "1", "label": "Option 1"}, ...]`
-- `value` — selected value string (or JSON array for multiple)
+- `value` — selected value string (comma-separated for multiple)
 - `name` — form field name
 - `placeholder`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `disabled` — boolean
 - `required` — boolean
-- `multiple` — boolean
-- `display-mode` — `"dropdown"` (default) | `"inline"`
+- `multiple` — boolean; allows multiple selections
+- `display-mode` — `"tag"` renders selected items as removable tags (requires `multiple`)
+- `searchable` — boolean; replaces the value display with an inline text input that filters the dropdown options as the user types (autocomplete style). In single mode the selected label is shown in the input when closed and cleared when opened. In multi-tag mode the input appears after the last tag.
+- `clearable` — boolean; shows a clear (×) button when a value is selected. Works independently of `searchable`.
+- `label-position` — `"top"` (default) | `"bottom"`
+- `close-on-click-outside` — set to `"false"` to keep the dropdown open when clicking outside
 
 Events: `change`
 
 ```html
+<!-- Basic -->
 <y-select options='[{"value":"a","label":"Option A"},{"value":"b","label":"Option B"}]'></y-select>
+
+<!-- Searchable single select -->
+<y-select searchable clearable placeholder="Search frameworks..." options='[{"value":"react","label":"React"},{"value":"vue","label":"Vue"}]'></y-select>
+
+<!-- Multi-select with tags and inline search -->
+<y-select multiple display-mode="tag" searchable options='[{"value":"a","label":"Alpha"},{"value":"b","label":"Beta"}]'></y-select>
 ```
 
 ---
@@ -198,6 +233,7 @@ Tag: `<y-switch>`
 Attributes:
 - `name`, `value`, `checked`, `disabled`, `required`
 - `size` — `"small"` | `"medium"` | `"large"`
+- `color` — predefined scheme or CSS color for the toggle when checked (default: `"primary"`)
 - `label`, `label-position` — `"right"` | `"left"`
 
 Events: `change`
@@ -212,7 +248,8 @@ Attributes:
 - `name`, `value`, `min`, `max`, `step`
 - `disabled`, `required`
 - `size` — `"small"` | `"medium"` | `"large"`
-- `show-value` — boolean, displays current value
+- `color` — predefined scheme or CSS color for the track fill and thumb (default: `"primary"`)
+- `orientation` — `"horizontal"` (default) | `"vertical"`
 
 Events: `change`, `input`
 
@@ -224,8 +261,8 @@ Renders a registered SVG icon. Sanitizes SVG using an allowlist.
 Tag: `<y-icon>`
 Attributes:
 - `name` — registered icon name (required)
-- `size` — `"small"` | `"medium"` | `"large"`
-- `color` — color scheme name or CSS color
+- `size` — `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"`
+- `color` — predefined scheme or CSS color (`#hex`, `rgb()`, `hsl()`)
 - `weight` — `"thin"` | `"regular"` (default) | `"thick"`
 - `label` — accessible label (sets aria-label)
 
@@ -263,7 +300,7 @@ Attributes:
 - `alt` — alt text / initials fallback
 - `shape` — `"circle"` (default) | `"square"` | `"rounded"`
 - `size` — `"small"` | `"medium"` | `"large"`
-- `color` — color scheme for initials background
+- `color` — predefined scheme or CSS color for the initials background; text color is auto-contrasted
 
 ---
 
@@ -272,7 +309,7 @@ Tag/chip label.
 
 Tag: `<y-tag>`
 Attributes:
-- `color` — color scheme name
+- `color` — predefined scheme or CSS color (`#hex`, `rgb()`, `hsl()`). For `filled`, text is auto-contrasted via WCAG luminance. For `flat`, background is a 20% tint via `color-mix()`.
 - `size` — `"small"` | `"medium"` | `"large"`
 - `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
 - `shape` — `"square"` (default) | `"round"`
@@ -280,10 +317,38 @@ Attributes:
 
 Events: `remove`
 
+The `flat` style uses `--{color}-background-app` as the background, so it automatically adapts to the active theme without any additional variable overrides.
+
 ```html
 <y-tag color="primary" removable>JavaScript</y-tag>
 <y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
 <y-tag color="base" style-type="flat">Draft</y-tag>
+```
+
+---
+
+### y-rating
+Star/icon rating input. Form-associated.
+
+Tag: `<y-rating>`
+Attributes:
+- `icon` — registered icon name to use for each point (default: `"star"`)
+- `color` — color scheme for filled icons (default: `"primary"`)
+- `max` — total number of icons (default: `5`)
+- `value` — current rating value (default: `0`)
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `name` — form field name
+- `disabled` — boolean
+- `readonly` — boolean, shows value but prevents interaction
+- `required` — boolean, prevents clearing to zero by re-clicking
+
+Events: `change` (detail: `{ value }`)
+
+Icons up to `value` render in the specified color; icons above `value` render muted. Hovering previews the new value. Clicking the current value clears to 0 (unless `required`).
+
+```html
+<y-rating name="score" value="3" icon="star" color="warning" max="5"></y-rating>
+<y-rating value="4" icon="heart" color="error" readonly></y-rating>
 ```
 
 ---
@@ -308,7 +373,8 @@ Tag: `<y-tooltip>`
 Attributes:
 - `text` — tooltip content text
 - `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
-- `trigger` — `"hover"` (default) | `"click"` | `"focus"`
+- `color` — predefined scheme or CSS color for the tooltip background; text is auto-contrasted
+- `delay` — show delay in milliseconds (default: `200`)
 
 Slots: default (trigger element)
 
@@ -327,7 +393,7 @@ Tag: `<y-card>`
 Attributes:
 - `color` — color scheme name
 
-Slots: `header`, `footer`, default (body content)
+Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body content)
 
 ---
 
@@ -431,9 +497,9 @@ Tag: `<y-toast>`
 Attributes:
 - `position` — `"top-right"` (default) | `"top-left"` | `"top-center"` | `"bottom-right"` | `"bottom-left"` | `"bottom-center"`
 - `duration` — number (ms), 0 for persistent
-- `color` — color scheme name
+- `color` — predefined scheme or CSS color (per `show()` call option); text is auto-contrasted
 
-Methods: `show(message, options?)`, `hide()`
+Methods: `show(opts)` — `{ message, color, duration, dismissible, icon }` — `hide()`
 
 ```javascript
 document.querySelector("y-toast").show("Saved successfully!", { color: "success" });
@@ -498,19 +564,23 @@ Slots: default (panel body content)
 ---
 
 ### y-table
-Data table.
+Data table with optional client-side sorting.
 
 Tag: `<y-table>`
 Attributes:
-- `columns` — JSON string: `[{"key": "name", "label": "Name"}, ...]`
-- `rows` — JSON string: `[{"name": "Alice", ...}, ...]`
+- `columns` — JSON string: `[{"field": "name", "header": "Name", "sortable": true}, ...]`. `sortable` defaults to `true`; set `false` to disable sorting on a column.
+- `data` — JSON string: `[{"name": "Alice", ...}, ...]`
 - `striped` — boolean
 - `size` — `"small"` | `"medium"` | `"large"`
 
+Events: `sort` (detail: `{ field, direction }`) — fired on header click when `sortable` is true. Direction cycles `asc` → `desc` → `none`.
+
+Sorting: clicking a sortable column header shows an up arrow (asc) or down arrow (desc); unsorted columns show no icon. Sort is client-side by default.
+
 ```html
 <y-table
-  columns='[{"key":"id","label":"ID"},{"key":"name","label":"Name"}]'
-  rows='[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
+  columns='[{"field":"id","header":"ID"},{"field":"name","header":"Name"}]'
+  data='[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
   striped
 ></y-table>
 ```
@@ -574,13 +644,20 @@ const svg = getIcon("my-icon");
 ```
 
 Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
-- Accessibility (accessible, eye, eye-off, …)
-- Arrows (arrow-up/down/left/right, chevrons, …)
-- Actions (check, close, copy, download, edit, trash, …)
-- Communication (bell, chat, email, phone, …)
-- Media (camera, image, mic, play, pause, …)
-- Navigation (home, menu, search, settings, expand-left, expand-right, …)
-- UI (lock, star, heart, info, warning, error, …)
+- Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`, `ellipsis-v`, `ellipsis-h`)
+- Actions (`check`, `close`, `trash`, `save`, `pencil`, `filter`, `swap`, `share`, `search`, `plus`, `minus`)
+- Brackets (`up-from-bracket`, `down-from-bracket`, `left-from-bracket`, `right-from-bracket`, `up-to-bracket`, `down-to-bracket`, `left-to-bracket`, `right-to-bracket`)
+- Communication (`bell`, `mail`, `comments`, `paper-airplane`)
+- Faces (`face-smile`, `face-neutral`, `face-frown`)
+- Files & data (`archive`, `folder`, `save`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `chart`, `grid`, `layout`, `tag`)
+- Location & navigation (`home`, `menu`, `compass`, `map-marker`, `thumbtack`, `globe`)
+- Media & display (`image`, `monitor`, `smartphone`, `tablet`, `moon`, `sun`, `palette`, `calendar`, `clock`)
+- People (`user`, `users`, `accessibility`)
+- Science & work (`flask`, `briefcase`, `puzzle`, `ai`)
+- Social (`discord`, `figma`, `github`)
+- Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `shield`, `warning`, `circle-exclamation`, `circle-info`, `circle-question`)
+- Component icons (`comp-appbar`, `comp-avatar`, `comp-badge`, `comp-button`, `comp-card`, `comp-checkbox`, `comp-dialog`, `comp-drawer`, `comp-icon`, `comp-input`, `comp-menu`, `comp-panelbar`, `comp-progress`, `comp-radio`, `comp-rating`, `comp-select`, `comp-slider`, `comp-switch`, `comp-table`, `comp-tabs`, `comp-tag`, `comp-textarea`, `comp-theme`, `comp-toast`, `comp-tooltip`)
+- Other (`cloud`, `code`, `campfire`, `settings`)
 
 ---
 
@@ -601,7 +678,7 @@ import "@waggylabs/yumekit";
 
 These are not exported in the public API but are used internally:
 
-- `getColorVarPair(color, fallbackColor)` — resolves a color name to CSS var pair
+- `getColorVarPair(color, fallbackColor)` — resolves a color name to `[bg, fg]` CSS value pair. Predefined names return token `var()` pairs; hex/rgb/hsl values return the raw color with a WCAG-contrasted foreground via `contrastTextColor()`
 - `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
 - `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
 - `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}`

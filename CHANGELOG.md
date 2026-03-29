@@ -31,13 +31,49 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.4.0] – 2026-03-29
+
+### Added
+
+- New `y-textarea` component — a form-associated multi-line text input. Supports `name`, `value`, `placeholder`, `label`, `label-position`, `rows`, `size`, `disabled`, `required`, and `invalid` attributes. Exposes `input` and `change` events.
+- New `y-rating` component — a form-associated star/icon rating input. Supports `icon`, `color`, `max`, `value`, `size`, `disabled`, `readonly`, `required`, and `name` attributes. Click-to-clear on the active icon (unless `required`). Full ARIA support (`role="radiogroup"` / `role="img"` when readonly, per-icon `role="radio"` with labels).
+- 12 new bundled icons: `heart`, `thumbs-up`, `thumbs-down`, `flask`, `briefcase`, `thumbtack`, `map-marker`, `pencil`, `code`, `circle-question`, `comp-textarea`, `comp-rating`.
+- Two new icons: `ellipsis-v` (three vertical dots) and `ellipsis-h` (three horizontal dots). Both are available in the icon registry via `all.js`.
+- `y-select`: new `searchable` attribute — enables autocomplete-style inline filtering. In single mode the value display is replaced by a text input that clears on open (showing the current selection as a placeholder) and restores the selected label on close. In multi-tag mode the input appears after the last tag and the dropdown stays open after each selection.
+- `y-select`: new `clearable` attribute — shows a clear button (using the `close` icon) when a value is selected.
+- `y-select` tag display mode: per-option `color` field — each option object in the `options` array may now include a `color` key (predefined scheme or CSS color) to individually color its tag.
+- `y-switch`: new `on-color` and `off-color` attributes for the toggle indicator when checked and unchecked respectively. Accepts predefined scheme names or custom CSS colors. Defaults to `"primary"` for on.
+- Custom CSS color support (`#hex`, `rgb()`, `hsl()`) added to the `color` attribute of `y-avatar`, `y-button`, `y-icon`, `y-tag`, `y-toast`, and `y-tooltip`. Predefined scheme names continue to resolve through design tokens; custom values use WCAG-based luminance to auto-contrast the text color. `y-slider` already supported custom color passthrough.
+
+### Changed
+
+- `y-table` sort indicator: replaced the dual up/down arrow with a single directional arrow that matches the active sort direction. Unsorted columns show no icon.
+- Theme semantic variables reordered for consistency: `--{scheme}-border` now always appears after `--{scheme}-background-active` and before `--{scheme}-content--` across all theme files and the default variables.
+- `y-tag` flat background now resolves directly from `--{color}-background-app` rather than through an intermediate `--component-tag-flat-background-{color}` variable. Custom themes no longer need to define those per-component overrides.
+- Icon system: `.svg` files are now the single source of truth. `src/icons/index.js` re-exports directly from the files rather than duplicating SVG markup as strings. Affected icons had their `stroke-width` and `width`/`height` attributes reconciled between files and component usage.
+- `y-drawer` grip handle now uses static `ellipsisV`/`ellipsisH` icon imports instead of the `gripDots()` function.
+
+### Fixed
+
+- `y-select`: corrected height to match other medium-size components (40 px). Removed a `min-height: 22px` on the inner `.value-display` that forced the container ~3px taller than buttons, inputs, and sliders. Tag mode still expands naturally.
+
+### Removed
+
+- `--component-tag-flat-background-{color}` CSS variables removed from `variables.css` and all theme files. Use `--{color}-background-app` directly if overriding tag flat backgrounds in a custom theme.
+- `gripDots(horizontal)` function removed from `src/icons/index.js`.
+- Stale `--base-background-border` and `--error-background-border` variable references cleaned up across all theme files (renamed to `--base-border` / `--error-border` in 0.3.9).
+
+## [0.3.10] – 2026-03-25
+
+### Added
+
+- `y-card`: added `image` slot that displays over the `header` slot if included.
+
 ## [0.3.9] – 2026-03-25
 
 ### Fixed
 
 - `y-card`, `y-switch`, `y-slider`, `y-progress`: restored missing borders after theme variable rename in 0.3.8 changed `--{scheme}-background-border` to `--{scheme}-border` without updating component references.
-
----
 
 ## [0.3.8] – 2026-03-25
 
@@ -69,15 +105,11 @@ Delete any empty sections before publishing.
 
 - Removed `features` icon (duplicate of `sun`)
 
----
-
 ## [0.3.5] – 2026-03-20
 
 ### Fixed
 
 - Patch for 0.3.3 with bug fixes
-
----
 
 ## [0.3.4] – 2026-03-20
 
@@ -85,15 +117,11 @@ Delete any empty sections before publishing.
 
 - Patch for 0.3.3 with bug fixes
 
----
-
 ## [0.3.3] – 2026-03-20
 
 ### Fixed
 
 - Several bug fixes and test updates
-
----
 
 ## [0.3.2] – 2026-03-18
 

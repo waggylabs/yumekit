@@ -245,3 +245,173 @@ describe("YumePanelBar", () => {
         expect(slot).to.exist;
     });
 });
+
+describe("YumePanel — href / route matching", () => {
+    it("adds a popstate listener when connected with href attribute", async () => {
+        const addSpy = [];
+        const origAdd = window.addEventListener.bind(window);
+        window.addEventListener = (type, ...args) => {
+            addSpy.push(type);
+            return origAdd(type, ...args);
+        };
+
+        const el = await fixture(html`
+            <y-panel href="/some-path">
+                <span slot="label">Link</span>
+            </y-panel>
+        `);
+
+        window.addEventListener = origAdd;
+        expect(addSpy).to.include("popstate");
+    });
+
+    it("removes the popstate listener on disconnectedCallback when href is set", async () => {
+        const removeSpy = [];
+        const origRemove = window.removeEventListener.bind(window);
+        window.removeEventListener = (type, ...args) => {
+            removeSpy.push(type);
+            return origRemove(type, ...args);
+        };
+
+        const el = await fixture(html`
+            <y-panel href="/some-path">
+                <span slot="label">Link</span>
+            </y-panel>
+        `);
+
+        el.remove();
+
+        window.removeEventListener = origRemove;
+        expect(removeSpy).to.include("popstate");
+    });
+
+    it("sets selected=true when href matches the current pathname", async () => {
+        // Patch location.pathname via history
+        history.pushState({}, "", "/test-route");
+
+        const el = await fixture(html`
+            <y-panel href="/test-route">
+                <span slot="label">Route</span>
+            </y-panel>
+        `);
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.selected).to.be.true;
+
+        // Restore
+        history.pushState({}, "", "/");
+    });
+
+    it("sets selected=false when href does not match the current pathname", async () => {
+        history.pushState({}, "", "/");
+
+        const el = await fixture(html`
+            <y-panel href="/different-route">
+                <span slot="label">Route</span>
+            </y-panel>
+        `);
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.selected).to.be.false;
+    });
+
+    it("navigates using pushState when history attribute is not false", async () => {
+        const pushed = [];
+        const origPush = history.pushState.bind(history);
+        history.pushState = (...args) => { pushed.push(args); return origPush(...args); };
+
+        const el = await fixture(html`
+            <y-panel href="/push-route">
+                <span slot="label">Nav</span>
+            </y-panel>
+        `);
+
+        const header = el.shadowRoot.querySelector(".header");
+        header.click();
+        await new Promise((r) => setTimeout(r, 0));
+
+        history.pushState = origPush;
+        expect(pushed.some((a) => a[2] === "/push-route")).to.be.true;
+
+        // Restore
+        history.pushState({}, "", "/");
+    });
+});
+
+describe("YumePanel — keyboard interaction", () => {
+    it("pressing Space on the arrow button toggles the panel", async () => {
+        const el = await fixture(html`
+            <y-panel>
+                <span slot="label">Parent</span>
+                <y-panel slot="children">
+                    <span slot="label">Child</span>
+                </y-panel>
+            </y-panel>
+        `);
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        const arrow = el.shadowRoot.querySelector(".arrow");
+        expect(el.expanded).to.be.false;
+
+        arrow.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.expanded).to.be.true;
+    });
+
+    it("pressing Enter on the arrow button toggles the panel", async () => {
+        const el = await fixture(html`
+            <y-panel>
+                <span slot="label">Parent</span>
+                <y-panel slot="children">
+                    <span slot="label">Child</span>
+                </y-panel>
+            </y-panel>
+        `);
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        const arrow = el.shadowRoot.querySelector(".arrow");
+        arrow.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.expanded).to.be.true;
+    });
+
+    it("pressing Space on the header fires a click (select event)", async () => {
+        const el = await fixture(html`
+            <y-panel>
+                <span slot="label">Leaf</span>
+            </y-panel>
+        `);
+
+        const header = el.shadowRoot.querySelector(".header");
+
+        setTimeout(() => {
+            header.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+        });
+        const event = await oneEvent(el, "select");
+
+        expect(event).to.exist;
+    });
+
+    it("pressing Enter on the header fires a click (select event)", async () => {
+        const el = await fixture(html`
+            <y-panel>
+                <span slot="label">Leaf</span>
+            </y-panel>
+        `);
+
+        const header = el.shadowRoot.querySelector(".header");
+
+        setTimeout(() => {
+            header.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        });
+        const event = await oneEvent(el, "select");
+
+        expect(event).to.exist;
+    });
+});

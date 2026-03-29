@@ -1,9 +1,13 @@
-import { gripDots } from "../icons/index.js";
+import { ellipsisV, ellipsisH } from "../icons/index.js";
 
 class YumeDrawer extends HTMLElement {
     static get observedAttributes() {
         return ["visible", "anchor", "position", "resizable"];
     }
+
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
 
     constructor() {
         super();
@@ -36,22 +40,15 @@ class YumeDrawer extends HTMLElement {
             this._teardownAnchor();
             this._setupAnchor();
         }
-        if (name === "position") {
-            this._applyPosition();
-        }
-        if (name === "resizable") {
-            this._applyResizable();
-        }
+        if (name === "position") this._applyPosition();
+        if (name === "resizable") this._applyResizable();
     }
 
-    get visible() {
-        return this.hasAttribute("visible");
-    }
-    set visible(val) {
-        if (val) this.setAttribute("visible", "");
-        else this.removeAttribute("visible");
-    }
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
+    /** Which anchor element ID triggers this drawer. */
     get anchor() {
         return this.getAttribute("anchor");
     }
@@ -70,6 +67,7 @@ class YumeDrawer extends HTMLElement {
         this.setAttribute("position", val);
     }
 
+    /** Whether the drawer is resizable by dragging. */
     get resizable() {
         return this.hasAttribute("resizable");
     }
@@ -78,81 +76,82 @@ class YumeDrawer extends HTMLElement {
         else this.removeAttribute("resizable");
     }
 
-    _setupAnchor() {
-        const id = this.anchor;
-        if (id) {
-            const el = document.getElementById(id);
-            if (el) {
-                this._anchorEl = el;
-                this._anchorEl.addEventListener("click", this._onAnchorClick);
-            }
+    /** Whether the drawer is currently visible. */
+    get visible() {
+        return this.hasAttribute("visible");
+    }
+    set visible(val) {
+        if (val) this.setAttribute("visible", "");
+        else this.removeAttribute("visible");
+    }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
+
+    render() {
+        this.shadowRoot.innerHTML = "";
+
+        const style = document.createElement("style");
+        style.textContent = this._buildStyles();
+        this.shadowRoot.appendChild(style);
+
+        const overlay = document.createElement("div");
+        overlay.className = "overlay";
+        overlay.setAttribute("part", "overlay");
+        overlay.addEventListener("click", () => this._onOverlayClick());
+        this.shadowRoot.appendChild(overlay);
+
+        const panel = document.createElement("div");
+        panel.className = "drawer-panel";
+        panel.setAttribute("role", "dialog");
+        panel.setAttribute("aria-modal", "true");
+        panel.setAttribute("tabindex", "-1");
+        panel.setAttribute("part", "panel");
+        panel.setAttribute("data-position", this.position);
+
+        const handle = document.createElement("div");
+        handle.className = "resize-handle";
+        handle.innerHTML = this._gripSVG();
+        handle.style.display = this.resizable ? "flex" : "none";
+        handle.addEventListener("pointerdown", this._onResizePointerDown);
+        panel.appendChild(handle);
+
+        const content = document.createElement("div");
+        content.className = "drawer-content";
+
+        const header = document.createElement("div");
+        header.className = "drawer-header";
+        header.setAttribute("part", "header");
+        header.innerHTML = `<slot name="header"></slot>`;
+
+        const body = document.createElement("div");
+        body.className = "drawer-body";
+        body.setAttribute("part", "body");
+        body.innerHTML = `<slot name="body"></slot>`;
+
+        const footer = document.createElement("div");
+        footer.className = "drawer-footer";
+        footer.setAttribute("part", "footer");
+        footer.innerHTML = `<slot name="footer"></slot>`;
+
+        content.appendChild(header);
+        content.appendChild(body);
+        content.appendChild(footer);
+        panel.appendChild(content);
+        this.shadowRoot.appendChild(panel);
+
+        if (this.visible) {
+            requestAnimationFrame(() => {
+                overlay.classList.add("open");
+                panel.classList.add("open");
+            });
         }
     }
 
-    _teardownAnchor() {
-        if (this._anchorEl) {
-            this._anchorEl.removeEventListener("click", this._onAnchorClick);
-            this._anchorEl = null;
-        }
-    }
-
-    _onAnchorClick() {
-        this.visible = !this.visible;
-    }
-
-    _show() {
-        this.style.display = "block";
-        this.offsetHeight;
-
-        const overlay = this.shadowRoot.querySelector(".overlay");
-        const panel = this.shadowRoot.querySelector(".drawer-panel");
-
-        if (overlay) overlay.classList.add("open");
-        if (panel) {
-            panel.classList.add("open");
-            panel.focus();
-        }
-
-        document.addEventListener("keydown", this._onKeyDown);
-    }
-
-    _hide() {
-        const overlay = this.shadowRoot.querySelector(".overlay");
-        const panel = this.shadowRoot.querySelector(".drawer-panel");
-
-        if (overlay) overlay.classList.remove("open");
-        if (panel) panel.classList.remove("open");
-
-        document.removeEventListener("keydown", this._onKeyDown);
-
-        const duration = this._getTransitionDuration(panel);
-        if (duration > 0) {
-            clearTimeout(this._hideTimer);
-            this._hideTimer = setTimeout(() => {
-                if (!this.visible) this.style.display = "none";
-            }, duration);
-        } else {
-            this.style.display = "none";
-        }
-    }
-
-    _getTransitionDuration(el) {
-        if (!el) return 0;
-        const style = getComputedStyle(el);
-        const raw = style.transitionDuration || "0s";
-        const seconds = parseFloat(raw);
-        return isNaN(seconds) ? 0 : seconds * 1000;
-    }
-
-    _onKeyDown(e) {
-        if (e.key === "Escape" && this.visible) {
-            this.visible = false;
-        }
-    }
-
-    _onOverlayClick() {
-        this.visible = false;
-    }
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
 
     _applyPosition() {
         const panel = this.shadowRoot.querySelector(".drawer-panel");
@@ -166,68 +165,8 @@ class YumeDrawer extends HTMLElement {
         handle.style.display = this.resizable ? "flex" : "none";
     }
 
-    _isHorizontal() {
-        return this.position === "left" || this.position === "right";
-    }
-
-    _onResizePointerDown(e) {
-        e.preventDefault();
-        this._resizing = true;
-        this._startPointer = this._isHorizontal() ? e.clientX : e.clientY;
-        const panel = this.shadowRoot.querySelector(".drawer-panel");
-        this._startSize = this._isHorizontal()
-            ? panel.offsetWidth
-            : panel.offsetHeight;
-
-        panel.style.transition = "none";
-        document.addEventListener("pointermove", this._onResizePointerMove);
-        document.addEventListener("pointerup", this._onResizePointerUp);
-    }
-
-    _onResizePointerMove(e) {
-        if (!this._resizing) return;
-        const panel = this.shadowRoot.querySelector(".drawer-panel");
-        const current = this._isHorizontal() ? e.clientX : e.clientY;
-        const delta = current - this._startPointer;
-        let newSize;
-
-        if (this.position === "left") newSize = this._startSize + delta;
-        else if (this.position === "right") newSize = this._startSize - delta;
-        else if (this.position === "top") newSize = this._startSize + delta;
-        else newSize = this._startSize - delta;
-
-        const minSize = 100;
-        newSize = Math.max(minSize, newSize);
-
-        if (this._isHorizontal()) {
-            panel.style.width = `${newSize}px`;
-        } else {
-            panel.style.height = `${newSize}px`;
-        }
-    }
-
-    _onResizePointerUp() {
-        this._resizing = false;
-        const panel = this.shadowRoot.querySelector(".drawer-panel");
-        if (panel) panel.style.transition = "";
-        document.removeEventListener("pointermove", this._onResizePointerMove);
-        document.removeEventListener("pointerup", this._onResizePointerUp);
-    }
-
-    _cleanupResize() {
-        document.removeEventListener("pointermove", this._onResizePointerMove);
-        document.removeEventListener("pointerup", this._onResizePointerUp);
-    }
-
-    _gripSVG() {
-        return gripDots(this._isHorizontal());
-    }
-
-    render() {
-        this.shadowRoot.innerHTML = "";
-
-        const style = document.createElement("style");
-        style.textContent = `
+    _buildStyles() {
+        return `
             :host {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
@@ -327,13 +266,13 @@ class YumeDrawer extends HTMLElement {
             }
 
             .resize-handle {
-                display: none;              /* hidden until resizable attr */
+                display: none;
                 flex-shrink: 0;
                 align-items: center;
                 justify-content: center;
                 color: var(--component-drawer-color, #f7f7fa);
                 opacity: 0.6;
-                touch-action: none;         /* needed for pointer events */
+                touch-action: none;
                 user-select: none;
                 transition: opacity 0.15s, background 0.15s;
             }
@@ -349,6 +288,13 @@ class YumeDrawer extends HTMLElement {
                 padding: var(--component-drawer-handle-padding, 4px);
                 cursor: ew-resize;
             }
+
+            .drawer-panel[data-position="left"] > .resize-handle svg,
+            .drawer-panel[data-position="right"] > .resize-handle svg {
+                width: 16px;
+                height: 24px;
+                flex-shrink: 0;
+            }
             .drawer-panel[data-position="left"] > .resize-handle {
                 order: 99;
             }
@@ -362,6 +308,13 @@ class YumeDrawer extends HTMLElement {
                 padding: var(--component-drawer-handle-padding, 4px);
                 cursor: ns-resize;
             }
+
+            .drawer-panel[data-position="top"] > .resize-handle svg,
+            .drawer-panel[data-position="bottom"] > .resize-handle svg {
+                width: 24px;
+                height: 16px;
+                flex-shrink: 0;
+            }
             .drawer-panel[data-position="top"] > .resize-handle {
                 order: 99;
             }
@@ -369,58 +322,138 @@ class YumeDrawer extends HTMLElement {
                 order: -1;
             }
         `;
-        this.shadowRoot.appendChild(style);
+    }
 
-        const overlay = document.createElement("div");
-        overlay.className = "overlay";
-        overlay.setAttribute("part", "overlay");
-        overlay.addEventListener("click", () => this._onOverlayClick());
-        this.shadowRoot.appendChild(overlay);
+    _cleanupResize() {
+        document.removeEventListener("pointermove", this._onResizePointerMove);
+        document.removeEventListener("pointerup", this._onResizePointerUp);
+    }
 
-        const panel = document.createElement("div");
-        panel.className = "drawer-panel";
-        panel.setAttribute("role", "dialog");
-        panel.setAttribute("aria-modal", "true");
-        panel.setAttribute("tabindex", "-1");
-        panel.setAttribute("part", "panel");
-        panel.setAttribute("data-position", this.position);
+    _getTransitionDuration(el) {
+        if (!el) return 0;
+        const style = getComputedStyle(el);
+        const raw = style.transitionDuration || "0s";
+        const seconds = parseFloat(raw);
+        return isNaN(seconds) ? 0 : seconds * 1000;
+    }
 
-        const handle = document.createElement("div");
-        handle.className = "resize-handle";
-        handle.innerHTML = this._gripSVG();
-        handle.style.display = this.resizable ? "flex" : "none";
-        handle.addEventListener("pointerdown", this._onResizePointerDown);
-        panel.appendChild(handle);
+    _gripSVG() {
+        return this._isHorizontal() ? ellipsisV : ellipsisH;
+    }
 
-        const content = document.createElement("div");
-        content.className = "drawer-content";
+    _hide() {
+        const overlay = this.shadowRoot.querySelector(".overlay");
+        const panel = this.shadowRoot.querySelector(".drawer-panel");
 
-        const header = document.createElement("div");
-        header.className = "drawer-header";
-        header.setAttribute("part", "header");
-        header.innerHTML = `<slot name="header"></slot>`;
+        if (overlay) overlay.classList.remove("open");
+        if (panel) panel.classList.remove("open");
 
-        const body = document.createElement("div");
-        body.className = "drawer-body";
-        body.setAttribute("part", "body");
-        body.innerHTML = `<slot name="body"></slot>`;
+        document.removeEventListener("keydown", this._onKeyDown);
 
-        const footer = document.createElement("div");
-        footer.className = "drawer-footer";
-        footer.setAttribute("part", "footer");
-        footer.innerHTML = `<slot name="footer"></slot>`;
+        const duration = this._getTransitionDuration(panel);
+        if (duration > 0) {
+            clearTimeout(this._hideTimer);
+            this._hideTimer = setTimeout(() => {
+                if (!this.visible) this.style.display = "none";
+            }, duration);
+        } else {
+            this.style.display = "none";
+        }
+    }
 
-        content.appendChild(header);
-        content.appendChild(body);
-        content.appendChild(footer);
-        panel.appendChild(content);
-        this.shadowRoot.appendChild(panel);
+    _isHorizontal() {
+        return this.position === "left" || this.position === "right";
+    }
 
-        if (this.visible) {
-            requestAnimationFrame(() => {
-                overlay.classList.add("open");
-                panel.classList.add("open");
-            });
+    _onAnchorClick() {
+        this.visible = !this.visible;
+    }
+
+    _onKeyDown(e) {
+        if (e.key === "Escape" && this.visible) {
+            this.visible = false;
+        }
+    }
+
+    _onOverlayClick() {
+        this.visible = false;
+    }
+
+    _onResizePointerDown(e) {
+        e.preventDefault();
+        this._resizing = true;
+        this._startPointer = this._isHorizontal() ? e.clientX : e.clientY;
+        const panel = this.shadowRoot.querySelector(".drawer-panel");
+        this._startSize = this._isHorizontal()
+            ? panel.offsetWidth
+            : panel.offsetHeight;
+
+        panel.style.transition = "none";
+        document.addEventListener("pointermove", this._onResizePointerMove);
+        document.addEventListener("pointerup", this._onResizePointerUp);
+    }
+
+    _onResizePointerMove(e) {
+        if (!this._resizing) return;
+        const panel = this.shadowRoot.querySelector(".drawer-panel");
+        const current = this._isHorizontal() ? e.clientX : e.clientY;
+        const delta = current - this._startPointer;
+        let newSize;
+
+        if (this.position === "left") newSize = this._startSize + delta;
+        else if (this.position === "right") newSize = this._startSize - delta;
+        else if (this.position === "top") newSize = this._startSize + delta;
+        else newSize = this._startSize - delta;
+
+        const minSize = 100;
+        newSize = Math.max(minSize, newSize);
+
+        if (this._isHorizontal()) {
+            panel.style.width = `${newSize}px`;
+        } else {
+            panel.style.height = `${newSize}px`;
+        }
+    }
+
+    _onResizePointerUp() {
+        this._resizing = false;
+        const panel = this.shadowRoot.querySelector(".drawer-panel");
+        if (panel) panel.style.transition = "";
+        document.removeEventListener("pointermove", this._onResizePointerMove);
+        document.removeEventListener("pointerup", this._onResizePointerUp);
+    }
+
+    _setupAnchor() {
+        const id = this.anchor;
+        if (id) {
+            const el = document.getElementById(id);
+            if (el) {
+                this._anchorEl = el;
+                this._anchorEl.addEventListener("click", this._onAnchorClick);
+            }
+        }
+    }
+
+    _show() {
+        this.style.display = "block";
+        this.offsetHeight;
+
+        const overlay = this.shadowRoot.querySelector(".overlay");
+        const panel = this.shadowRoot.querySelector(".drawer-panel");
+
+        if (overlay) overlay.classList.add("open");
+        if (panel) {
+            panel.classList.add("open");
+            panel.focus();
+        }
+
+        document.addEventListener("keydown", this._onKeyDown);
+    }
+
+    _teardownAnchor() {
+        if (this._anchorEl) {
+            this._anchorEl.removeEventListener("click", this._onAnchorClick);
+            this._anchorEl = null;
         }
     }
 }

@@ -3,6 +3,10 @@ export class YumeTabs extends HTMLElement {
         return ["options", "size", "position"];
     }
 
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -11,19 +15,19 @@ export class YumeTabs extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("position"))
-            this.setAttribute("position", "top");
+        if (!this.hasAttribute("position")) this.setAttribute("position", "top");
         this.render();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-        if (
-            (name === "options" || name === "size" || name === "position") &&
-            oldVal !== newVal
-        ) {
+        if ((name === "options" || name === "size" || name === "position") && oldVal !== newVal) {
             this.render();
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Getters / Setters
+    // -------------------------------------------------------------------------
 
     /** @type {Array<Object>} Tab definitions with id, label, slot, and optional disabled flag. */
     get options() {
@@ -33,22 +37,9 @@ export class YumeTabs extends HTMLElement {
             return [];
         }
     }
-
     set options(val) {
         this.setAttribute("options", JSON.stringify(val));
         this.render();
-    }
-
-    /** @type {"small"|"medium"|"large"} Controls tab button padding and gap. */
-    get size() {
-        const sz = this.getAttribute("size");
-        return ["small", "medium", "large"].includes(sz) ? sz : "medium";
-    }
-
-    set size(val) {
-        if (["small", "medium", "large"].includes(val))
-            this.setAttribute("size", val);
-        else this.setAttribute("size", "medium");
     }
 
     /** @type {"top"|"bottom"|"left"|"right"} Which edge the tab strip is placed on. */
@@ -56,12 +47,22 @@ export class YumeTabs extends HTMLElement {
         const pos = this.getAttribute("position");
         return ["top", "bottom", "left", "right"].includes(pos) ? pos : "top";
     }
-
     set position(val) {
-        if (["top", "bottom", "left", "right"].includes(val))
-            this.setAttribute("position", val);
-        else this.setAttribute("position", "top");
+        this.setAttribute("position", ["top", "bottom", "left", "right"].includes(val) ? val : "top");
     }
+
+    /** @type {"small"|"medium"|"large"} Controls tab button padding and gap. */
+    get size() {
+        const sz = this.getAttribute("size");
+        return ["small", "medium", "large"].includes(sz) ? sz : "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", ["small", "medium", "large"].includes(val) ? val : "medium");
+    }
+
+    // -------------------------------------------------------------------------
+    // Public
+    // -------------------------------------------------------------------------
 
     /**
      * Activates a tab by its id.
@@ -75,52 +76,92 @@ export class YumeTabs extends HTMLElement {
         this.render();
     }
 
-    _setupEvents() {
-        const buttons = Array.from(this.shadowRoot.querySelectorAll("button"));
-        buttons.forEach((button) => {
-            if (button.disabled) return;
-            button.addEventListener("click", () =>
-                this.activateTab(button.dataset.id),
-            );
-            button.addEventListener("keydown", (e) => {
-                this._handleTabKeydown(e, buttons);
-            });
-        });
+    render() {
+        const tabs = this.options;
+        this._resolveActiveTab(tabs);
+
+        const activeDef = tabs.find((t) => t.id === this._activeTab);
+
+        this.shadowRoot.innerHTML = "";
+
+        const style = document.createElement("style");
+        style.textContent = this._getStyles();
+        this.shadowRoot.appendChild(style);
+
+        const tablist = document.createElement("div");
+        tablist.className = "tablist";
+        tablist.setAttribute("role", "tablist");
+        tablist.setAttribute("part", "tablist");
+        tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
+        this.shadowRoot.appendChild(tablist);
+
+        this.shadowRoot.appendChild(this._createPanel(activeDef?.slot || ""));
+
+        this._setupEvents();
     }
 
-    _handleTabKeydown(e, buttons) {
-        const idx = buttons.indexOf(e.currentTarget);
-        if (e.key === "ArrowRight") {
-            e.preventDefault();
-            this._findSiblingButton(buttons, idx, 1)?.focus();
-        } else if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            this._findSiblingButton(buttons, idx, -1)?.focus();
-        } else if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            this.activateTab(e.currentTarget.dataset.id);
+    // -------------------------------------------------------------------------
+    // Private
+    // -------------------------------------------------------------------------
+
+    _createPanel(slotName) {
+        const panel = document.createElement("div");
+        panel.className = "tabpanel";
+        panel.id = `panel-${this._activeTab}`;
+        panel.setAttribute("role", "tabpanel");
+        panel.setAttribute("part", "content");
+        panel.setAttribute("aria-labelledby", `tab-${this._activeTab}`);
+
+        const contentSlot = document.createElement("slot");
+        contentSlot.name = slotName;
+        panel.appendChild(contentSlot);
+
+        return panel;
+    }
+
+    _createTabButton(tab) {
+        const isActive = tab.id === this._activeTab;
+        const isDisabled = !!tab.disabled;
+        const btn = document.createElement("button");
+
+        btn.id = `tab-${tab.id}`;
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("part", "tab");
+        btn.setAttribute("aria-selected", isActive);
+        btn.setAttribute("aria-controls", `panel-${tab.id}`);
+        btn.setAttribute("aria-disabled", isDisabled);
+
+        if (isDisabled) btn.disabled = true;
+        btn.tabIndex = isActive && !isDisabled ? 0 : -1;
+        btn.dataset.id = tab.id;
+
+        if (this.querySelector(`[slot="left-icon-${tab.id}"]`)) {
+            const leftSlot = document.createElement("slot");
+            leftSlot.name = `left-icon-${tab.id}`;
+            leftSlot.className = "icon-slot";
+            btn.appendChild(leftSlot);
         }
+
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = tab.label;
+        btn.appendChild(labelSpan);
+
+        if (this.querySelector(`[slot="right-icon-${tab.id}"]`)) {
+            const rightSlot = document.createElement("slot");
+            rightSlot.name = `right-icon-${tab.id}`;
+            rightSlot.className = "icon-slot";
+            btn.appendChild(rightSlot);
+        }
+
+        return btn;
     }
 
     _findSiblingButton(buttons, fromIndex, direction) {
         for (let i = 1; i <= buttons.length; i++) {
-            const b =
-                buttons[
-                    (fromIndex + i * direction + buttons.length) %
-                        buttons.length
-                ];
+            const b = buttons[(fromIndex + i * direction + buttons.length) % buttons.length];
             if (!b.disabled) return b;
         }
         return null;
-    }
-
-    _resolveActiveTab(tabs) {
-        const currentInvalid =
-            !this._activeTab ||
-            tabs.find((t) => t.id === this._activeTab)?.disabled;
-        if (tabs.length && currentInvalid) {
-            this._activeTab = tabs.find((t) => !t.disabled)?.id || "";
-        }
     }
 
     _getStyles() {
@@ -210,80 +251,36 @@ export class YumeTabs extends HTMLElement {
         `;
     }
 
-    _createTabButton(tab) {
-        const isActive = tab.id === this._activeTab;
-        const isDisabled = !!tab.disabled;
-        const btn = document.createElement("button");
-
-        btn.id = `tab-${tab.id}`;
-        btn.setAttribute("role", "tab");
-        btn.setAttribute("part", "tab");
-        btn.setAttribute("aria-selected", isActive);
-        btn.setAttribute("aria-controls", `panel-${tab.id}`);
-        btn.setAttribute("aria-disabled", isDisabled);
-
-        if (isDisabled) btn.disabled = true;
-        btn.tabIndex = isActive && !isDisabled ? 0 : -1;
-        btn.dataset.id = tab.id;
-
-        if (this.querySelector(`[slot="left-icon-${tab.id}"]`)) {
-            const leftSlot = document.createElement("slot");
-            leftSlot.name = `left-icon-${tab.id}`;
-            leftSlot.className = "icon-slot";
-            btn.appendChild(leftSlot);
+    _handleTabKeydown(e, buttons) {
+        const idx = buttons.indexOf(e.currentTarget);
+        if (e.key === "ArrowRight") {
+            e.preventDefault();
+            this._findSiblingButton(buttons, idx, 1)?.focus();
+        } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            this._findSiblingButton(buttons, idx, -1)?.focus();
+        } else if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            this.activateTab(e.currentTarget.dataset.id);
         }
-
-        const labelSpan = document.createElement("span");
-        labelSpan.textContent = tab.label;
-        btn.appendChild(labelSpan);
-
-        if (this.querySelector(`[slot="right-icon-${tab.id}"]`)) {
-            const rightSlot = document.createElement("slot");
-            rightSlot.name = `right-icon-${tab.id}`;
-            rightSlot.className = "icon-slot";
-            btn.appendChild(rightSlot);
-        }
-
-        return btn;
     }
 
-    _createPanel(slotName) {
-        const panel = document.createElement("div");
-        panel.className = "tabpanel";
-        panel.id = `panel-${this._activeTab}`;
-        panel.setAttribute("role", "tabpanel");
-        panel.setAttribute("part", "content");
-        panel.setAttribute("aria-labelledby", `tab-${this._activeTab}`);
-
-        const contentSlot = document.createElement("slot");
-        contentSlot.name = slotName;
-        panel.appendChild(contentSlot);
-
-        return panel;
+    _resolveActiveTab(tabs) {
+        const currentInvalid = !this._activeTab || tabs.find((t) => t.id === this._activeTab)?.disabled;
+        if (tabs.length && currentInvalid) {
+            this._activeTab = tabs.find((t) => !t.disabled)?.id || "";
+        }
     }
 
-    render() {
-        const tabs = this.options;
-        this._resolveActiveTab(tabs);
-
-        const activeDef = tabs.find((t) => t.id === this._activeTab);
-
-        this.shadowRoot.innerHTML = "";
-
-        const style = document.createElement("style");
-        style.textContent = this._getStyles();
-        this.shadowRoot.appendChild(style);
-
-        const tablist = document.createElement("div");
-        tablist.className = "tablist";
-        tablist.setAttribute("role", "tablist");
-        tablist.setAttribute("part", "tablist");
-        tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
-        this.shadowRoot.appendChild(tablist);
-
-        this.shadowRoot.appendChild(this._createPanel(activeDef?.slot || ""));
-
-        this._setupEvents();
+    _setupEvents() {
+        const buttons = Array.from(this.shadowRoot.querySelectorAll("button"));
+        buttons.forEach((button) => {
+            if (button.disabled) return;
+            button.addEventListener("click", () => this.activateTab(button.dataset.id));
+            button.addEventListener("keydown", (e) => {
+                this._handleTabKeydown(e, buttons);
+            });
+        });
     }
 }
 
