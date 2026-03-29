@@ -54,7 +54,10 @@ export class YumeSelect extends HTMLElement {
         if (name === "value") {
             if (this.hasAttribute("multiple")) {
                 this.selectedValues = new Set(
-                    (newValue || "").split(",").map((v) => v.trim()).filter(Boolean),
+                    (newValue || "")
+                        .split(",")
+                        .map((v) => v.trim())
+                        .filter(Boolean),
                 );
             } else {
                 this._value = newValue || "";
@@ -65,17 +68,19 @@ export class YumeSelect extends HTMLElement {
             this._updateSelectedStyles();
         }
 
-        if ([
-            "label-position",
-            "disabled",
-            "invalid",
-            "required",
-            "placeholder",
-            "options",
-            "size",
-            "searchable",
-            "clearable",
-        ].includes(name)) {
+        if (
+            [
+                "label-position",
+                "disabled",
+                "invalid",
+                "required",
+                "placeholder",
+                "options",
+                "size",
+                "searchable",
+                "clearable",
+            ].includes(name)
+        ) {
             this.render();
         }
 
@@ -89,44 +94,64 @@ export class YumeSelect extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether to show a clear button when a value is selected. */
-    get clearable() { return this.hasAttribute("clearable"); }
+    get clearable() {
+        return this.hasAttribute("clearable");
+    }
     set clearable(val) {
         if (val) this.setAttribute("clearable", "");
         else this.removeAttribute("clearable");
     }
 
     /** @type {boolean} Whether the select is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** @type {string} Display mode: "tag" for multi-select tag display. */
-    get displayMode() { return this.getAttribute("display-mode") || ""; }
-    set displayMode(val) { this.setAttribute("display-mode", val); }
+    get displayMode() {
+        return this.getAttribute("display-mode") || "";
+    }
+    set displayMode(val) {
+        this.setAttribute("display-mode", val);
+    }
 
     /** @type {boolean} Whether the select is in an invalid state. */
-    get invalid() { return this.hasAttribute("invalid"); }
+    get invalid() {
+        return this.hasAttribute("invalid");
+    }
     set invalid(val) {
         if (val) this.setAttribute("invalid", "");
         else this.removeAttribute("invalid");
     }
 
     /** @type {string} Label position: "top" | "bottom" (default "top"). */
-    get labelPosition() { return this.getAttribute("label-position") || "top"; }
-    set labelPosition(val) { this.setAttribute("label-position", val); }
+    get labelPosition() {
+        return this.getAttribute("label-position") || "top";
+    }
+    set labelPosition(val) {
+        this.setAttribute("label-position", val);
+    }
 
     /** @type {boolean} Whether multiple values can be selected. */
-    get multiple() { return this.hasAttribute("multiple"); }
+    get multiple() {
+        return this.hasAttribute("multiple");
+    }
     set multiple(val) {
         if (val) this.setAttribute("multiple", "");
         else this.removeAttribute("multiple");
     }
 
     /** @type {string} The form field name. */
-    get name() { return this.getAttribute("name") || ""; }
-    set name(val) { this.setAttribute("name", val); }
+    get name() {
+        return this.getAttribute("name") || "";
+    }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
 
     /** @type {Array<{value: string, label: string}>} The options array for the select. */
     get options() {
@@ -137,30 +162,45 @@ export class YumeSelect extends HTMLElement {
         }
     }
     set options(val) {
-        this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
+        this.setAttribute(
+            "options",
+            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
+        );
     }
 
     /** @type {string} Placeholder text when no value is selected. */
-    get placeholder() { return this.getAttribute("placeholder") || "Select..."; }
-    set placeholder(val) { this.setAttribute("placeholder", val); }
+    get placeholder() {
+        return this.getAttribute("placeholder") || "Select...";
+    }
+    set placeholder(val) {
+        this.setAttribute("placeholder", val);
+    }
 
     /** @type {boolean} Whether the select requires a value. */
-    get required() { return this.hasAttribute("required"); }
+    get required() {
+        return this.hasAttribute("required");
+    }
     set required(val) {
         if (val) this.setAttribute("required", "");
         else this.removeAttribute("required");
     }
 
     /** @type {boolean} Whether the dropdown shows an inline search filter input. */
-    get searchable() { return this.hasAttribute("searchable"); }
+    get searchable() {
+        return this.hasAttribute("searchable");
+    }
     set searchable(val) {
         if (val) this.setAttribute("searchable", "");
         else this.removeAttribute("searchable");
     }
 
     /** @type {string} Select size: "small" | "medium" | "large" (default "medium"). */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** @type {string} The current selected value, or comma-separated values when multiple. */
     get value() {
@@ -172,7 +212,9 @@ export class YumeSelect extends HTMLElement {
     set value(val) {
         if (this.hasAttribute("multiple")) {
             if (typeof val === "string") {
-                this.selectedValues = new Set(val.split(",").map((v) => v.trim()));
+                this.selectedValues = new Set(
+                    val.split(",").map((v) => v.trim()),
+                );
             } else if (Array.isArray(val)) {
                 this.selectedValues = new Set(val);
             }
@@ -263,17 +305,19 @@ export class YumeSelect extends HTMLElement {
         const isDisabled = this.hasAttribute("disabled");
         const size = this.getAttribute("size") || "medium";
 
-        const paddingVar = {
-            small: "--component-inputs-padding-small",
-            medium: "--component-inputs-padding-medium",
-            large: "--component-inputs-padding-large",
-        }[size] || "--component-inputs-padding-medium";
+        const paddingVar =
+            {
+                small: "--component-inputs-padding-small",
+                medium: "--component-inputs-padding-medium",
+                large: "--component-inputs-padding-large",
+            }[size] || "--component-inputs-padding-medium";
 
-        const minHeightVar = {
-            small: "var(--sizing-small, 32px)",
-            medium: "var(--sizing-medium, 40px)",
-            large: "var(--sizing-large, 56px)",
-        }[size] || "var(--sizing-medium, 40px)";
+        const minHeightVar =
+            {
+                small: "var(--sizing-small, 32px)",
+                medium: "var(--sizing-medium, 40px)",
+                large: "var(--sizing-large, 56px)",
+            }[size] || "var(--sizing-medium, 40px)";
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -407,7 +451,6 @@ export class YumeSelect extends HTMLElement {
                 justify-content: center;
                 background: none;
                 border: none;
-                padding: 2px;
                 cursor: pointer;
                 color: inherit;
                 opacity: 0.6;
@@ -478,9 +521,13 @@ export class YumeSelect extends HTMLElement {
             });
 
             // Prevent input click from bubbling to container (avoid re-focusing)
-            this.searchInput?.addEventListener("click", (e) => e.stopPropagation());
+            this.searchInput?.addEventListener("click", (e) =>
+                e.stopPropagation(),
+            );
         } else {
-            this.selectContainer.addEventListener("click", () => this.toggleDropdown());
+            this.selectContainer.addEventListener("click", () =>
+                this.toggleDropdown(),
+            );
         }
 
         // Clear button click → clear selection
@@ -497,18 +544,21 @@ export class YumeSelect extends HTMLElement {
                 this._filterOptions("");
                 if (this.searchInput) {
                     this.searchInput.value = "";
-                    this.searchInput.placeholder = this.getAttribute("placeholder") || "Select...";
+                    this.searchInput.placeholder =
+                        this.getAttribute("placeholder") || "Select...";
                     this.searchInput.focus();
                     if (!this.dropdown.classList.contains("open")) {
                         this._openDropdown();
                     }
                 }
             }
-            this.dispatchEvent(new CustomEvent("change", {
-                detail: { value: "" },
-                bubbles: true,
-                composed: true,
-            }));
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: "" },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
             this.updateValidation();
         });
 
@@ -526,7 +576,10 @@ export class YumeSelect extends HTMLElement {
                         this.selectedValues.add(val);
                     }
 
-                    this.setAttribute("value", Array.from(this.selectedValues).join(","));
+                    this.setAttribute(
+                        "value",
+                        Array.from(this.selectedValues).join(","),
+                    );
                 } else {
                     const isSelected = val === this.value;
                     if (isSelected && !isRequired) {
@@ -536,11 +589,13 @@ export class YumeSelect extends HTMLElement {
                     }
                 }
 
-                this.dispatchEvent(new CustomEvent("change", {
-                    detail: { value: this.value },
-                    bubbles: true,
-                    composed: true,
-                }));
+                this.dispatchEvent(
+                    new CustomEvent("change", {
+                        detail: { value: this.value },
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
 
                 this.updateValidation();
 
@@ -571,7 +626,8 @@ export class YumeSelect extends HTMLElement {
         });
 
         const noResults = this.dropdown.querySelector(".no-results");
-        if (noResults) noResults.style.display = visibleCount === 0 ? "" : "none";
+        if (noResults)
+            noResults.style.display = visibleCount === 0 ? "" : "none";
     }
 
     _generateTemplate() {
@@ -633,11 +689,13 @@ export class YumeSelect extends HTMLElement {
                 ${!isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
                 <div class="dropdown" part="dropdown">
                     ${this.options
-                        .map((opt) => `
+                        .map(
+                            (opt) => `
                         <div class="dropdown-item ${valueSet.has(opt.value) ? "selected" : ""}" data-value="${opt.value}">
                             ${opt.label}
                         </div>
-                    `)
+                    `,
+                        )
                         .join("")}
                     <div class="no-results" style="display:none">No results</div>
                 </div>
@@ -652,13 +710,21 @@ export class YumeSelect extends HTMLElement {
         if (isMulti && isTagMode) return "";
 
         if (isMulti) {
-            const count = this.options.filter((opt) => this.selectedValues.has(opt.value)).length;
+            const count = this.options.filter((opt) =>
+                this.selectedValues.has(opt.value),
+            ).length;
             return count > 0
                 ? `${count} Selected`
                 : this.getAttribute("placeholder") || "Select...";
         } else {
-            const selected = this.options.find((opt) => opt.value === this.value);
-            return selected?.label || this.getAttribute("placeholder") || "Select...";
+            const selected = this.options.find(
+                (opt) => opt.value === this.value,
+            );
+            return (
+                selected?.label ||
+                this.getAttribute("placeholder") ||
+                "Select..."
+            );
         }
     }
 
@@ -680,9 +746,14 @@ export class YumeSelect extends HTMLElement {
         this._onScrollOrResize = this._positionDropdown.bind(this);
 
         // For single searchable: clear input so user can type fresh
-        if (this.searchable && !this.hasAttribute("multiple") && this.searchInput) {
+        if (
+            this.searchable &&
+            !this.hasAttribute("multiple") &&
+            this.searchInput
+        ) {
             const currentLabel = this.value ? this._getDisplayText() : "";
-            this.searchInput.placeholder = currentLabel || this.getAttribute("placeholder") || "Select...";
+            this.searchInput.placeholder =
+                currentLabel || this.getAttribute("placeholder") || "Select...";
             this.searchInput.value = "";
             this._filterOptions("");
         }
@@ -712,7 +783,8 @@ export class YumeSelect extends HTMLElement {
     }
 
     _queryRefs() {
-        this.selectContainer = this.shadowRoot.querySelector(".select-container");
+        this.selectContainer =
+            this.shadowRoot.querySelector(".select-container");
         this.dropdown = this.shadowRoot.querySelector(".dropdown");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
         this.displayElement = this.shadowRoot.querySelector(".value-display");
@@ -735,7 +807,9 @@ export class YumeSelect extends HTMLElement {
 
         this.displayElement.innerHTML = "";
 
-        const selected = this.options.filter((opt) => this.selectedValues.has(opt.value));
+        const selected = this.options.filter((opt) =>
+            this.selectedValues.has(opt.value),
+        );
 
         selected.forEach((opt) => {
             const tag = document.createElement("y-tag");
@@ -748,16 +822,21 @@ export class YumeSelect extends HTMLElement {
 
             tag.addEventListener("remove", () => {
                 this.selectedValues.delete(opt.value);
-                this.setAttribute("value", Array.from(this.selectedValues).join(","));
+                this.setAttribute(
+                    "value",
+                    Array.from(this.selectedValues).join(","),
+                );
                 this._renderTags();
                 this._updateSelectedStyles();
                 this.updateValidation();
 
-                this.dispatchEvent(new CustomEvent("change", {
-                    detail: { value: this.value },
-                    bubbles: true,
-                    composed: true,
-                }));
+                this.dispatchEvent(
+                    new CustomEvent("change", {
+                        detail: { value: this.value },
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
             });
 
             this.displayElement.appendChild(tag);
@@ -778,7 +857,8 @@ export class YumeSelect extends HTMLElement {
         if (isTagMode) {
             this._renderTags();
             if (isClearable && this.clearButton) {
-                this.clearButton.style.display = this.selectedValues.size > 0 ? "flex" : "none";
+                this.clearButton.style.display =
+                    this.selectedValues.size > 0 ? "flex" : "none";
             }
         } else if (isSearchable && !isMulti && this.searchInput) {
             // Update inline search input to reflect current selection
