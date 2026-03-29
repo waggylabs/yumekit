@@ -177,6 +177,11 @@ class YumeMenu extends HTMLElement {
                 opacity: 0.6;
             }
 
+            .submenu-indicator svg {
+                width: 16px;
+                height: 16px;
+            }
+
             .item-content {
                 flex: 1;
             }

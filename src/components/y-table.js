@@ -206,6 +206,11 @@ export class YumeTable extends HTMLElement {
                 vertical-align: middle;
             }
 
+            .sort-icon svg {
+                width: 14px;
+                height: 14px;
+            }
+
             tbody td {
                 padding: ${paddingVar};
                 font-size: var(--font-size-paragraph, 1em);
