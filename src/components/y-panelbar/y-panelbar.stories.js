@@ -1,6 +1,6 @@
-import "./y-panel.js";
+import "../y-panel/y-panel.js";
 import "./y-panelbar.js";
-import "./y-icon.js";
+import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
 export default {

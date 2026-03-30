@@ -1,6 +1,6 @@
 import { html, fixture, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-rating/y-rating.js";
-import { registerIcon } from "../src/icons/registry.js";
+import "./y-rating.js";
+import { registerIcon } from "../../icons/registry.js";
 
 // Register a minimal test icon so getIcon() returns something non-empty
 registerIcon(

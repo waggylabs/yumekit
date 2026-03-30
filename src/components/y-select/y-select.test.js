@@ -1,6 +1,6 @@
 import { fixture, html, expect, nextFrame } from "@open-wc/testing";
-import "../src/components/y-select/y-select.js";
-import "../src/components/y-tag/y-tag.js"; // Needed for tag mode
+import "./y-select.js";
+import "../y-tag/y-tag.js"; // Needed for tag mode
 
 describe("<y-select>", () => {
     it("renders with placeholder", async () => {

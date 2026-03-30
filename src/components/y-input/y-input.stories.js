@@ -1,4 +1,6 @@
 import "./y-input.js";
+import "../y-icon/y-icon.js";
+import "../../icons/all.js";
 
 export default {
     title: "Components/Input",

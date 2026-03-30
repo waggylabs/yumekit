@@ -1,5 +1,5 @@
 import "./y-tabs.js";
-import "./y-icon.js";
+import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
 const defaultOptions = JSON.stringify([

@@ -6,7 +6,7 @@ import {
     getColorVarPair,
     resolveCSSColor,
     hideEmptySlotContainers,
-} from "../src/modules/helpers.js";
+} from "./helpers.js";
 
 describe("helpers", () => {
     // ── parseColor ────────────────────────────────────────────

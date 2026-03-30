@@ -1,5 +1,5 @@
 import "./y-drawer.js";
-import "./y-button.js";
+import "../y-button/y-button.js";
 
 // Force iframe rendering so position:fixed drawer panels sit within the story
 // viewport and anchor IDs don't collide across stories on the docs page.

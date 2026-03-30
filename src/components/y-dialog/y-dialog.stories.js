@@ -1,5 +1,5 @@
 import "./y-dialog.js";
-import "./y-button.js";
+import "../y-button/y-button.js";
 
 // Force iframe rendering so position:fixed dialogs sit within the story viewport
 // and anchor IDs don't collide across stories on the docs page.

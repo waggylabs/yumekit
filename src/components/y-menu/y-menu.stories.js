@@ -1,5 +1,5 @@
 import "./y-menu.js";
-import "./y-button.js";
+import "../y-button/y-button.js";
 
 const defaultItems = JSON.stringify([
     { text: "Edit" },

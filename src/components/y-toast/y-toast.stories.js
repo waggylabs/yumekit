@@ -1,5 +1,5 @@
 import "./y-toast.js";
-import "./y-button.js";
+import "../y-button/y-button.js";
 
 // Helper: create a story that auto-fires .show() on render and includes a button to re-trigger.
 function autoShow(opts, position = "bottom-right", duration = 3000) {

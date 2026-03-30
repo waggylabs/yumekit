@@ -1,5 +1,7 @@
 import "./y-appbar.js";
 import "../../icons/all.js";
+import "../y-icon/y-icon.js";
+import "../y-button/y-button.js";
 
 const navItems = JSON.stringify([
     { text: "Dashboard", icon: "home", selected: true },

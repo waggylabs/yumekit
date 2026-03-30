@@ -1,5 +1,5 @@
 import { html, fixture, expect, aTimeout } from "@open-wc/testing";
-import "../src/components/y-toast/y-toast.js";
+import "./y-toast.js";
 
 describe("YumeToast", () => {
     it("renders a toast container", async () => {

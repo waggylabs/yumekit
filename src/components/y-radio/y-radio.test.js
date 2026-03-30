@@ -1,5 +1,5 @@
 import { fixture, html, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-radio/y-radio.js";
+import "./y-radio.js";
 
 describe("<y-radio>", () => {
     const options = [

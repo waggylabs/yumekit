@@ -1,8 +1,8 @@
 import "./y-theme.js";
-import "./y-button.js";
-import "./y-card.js";
-import "./y-badge.js";
-import "./y-input.js";
+import "../y-button/y-button.js";
+import "../y-card/y-card.js";
+import "../y-badge/y-badge.js";
+import "../y-input/y-input.js";
 
 export default {
     title: "Components/Theme",

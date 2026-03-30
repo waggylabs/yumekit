@@ -30,7 +30,7 @@ function svgStringPlugin() {
 
 export default {
     nodeResolve: true,
-    files: ["tests/**/*.test.js"],
+    files: ["src/**/*.test.js"],
     rootDir: ".",
     browserStartTimeout: 20000,
     browsers: [playwrightLauncher({ product: "chromium" })],

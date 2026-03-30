@@ -1,5 +1,5 @@
 import "./y-tooltip.js";
-import "./y-button.js";
+import "../y-button/y-button.js";
 
 export default {
     title: "Components/Tooltip",

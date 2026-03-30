@@ -1,5 +1,5 @@
 import { fixture, expect, html } from "@open-wc/testing";
-import "../src/components/y-tabs/y-tabs.js"; // path to your component file
+import "./y-tabs.js"; // path to your component file
 
 describe("YumeTabs", () => {
     const options = [

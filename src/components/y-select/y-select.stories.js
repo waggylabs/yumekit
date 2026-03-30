@@ -1,5 +1,5 @@
 import "./y-select.js";
-import "./y-tag.js";
+import "../y-tag/y-tag.js";
 
 const defaultOptions = JSON.stringify([
     { value: "apple", label: "Apple" },

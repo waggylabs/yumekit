@@ -1,4 +1,5 @@
 import "./y-badge.js";
+import "../y-avatar/y-avatar.js";
 
 export default {
     title: "Components/Badge",

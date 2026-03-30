@@ -1,6 +1,6 @@
 import { fixture, html, expect } from "@open-wc/testing";
-import "../src/icons/all.js";
-import "../src/components/y-appbar/y-appbar.js";
+import "../../icons/all.js";
+import "./y-appbar.js";
 
 describe("YumeAppbar", () => {
     const sampleItems = [

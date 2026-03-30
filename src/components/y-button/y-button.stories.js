@@ -1,4 +1,6 @@
 import "./y-button.js";
+import "../y-icon/y-icon.js";
+import "../../icons/all.js";
 
 export default {
     title: "Components/Button",

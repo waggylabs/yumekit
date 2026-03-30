@@ -1,5 +1,5 @@
 import { fixture, html, expect, waitUntil } from "@open-wc/testing";
-import "../src/components/y-theme/y-theme.js";
+import "./y-theme.js";
 
 describe("<y-theme>", () => {
     it("renders slotted content", async () => {
