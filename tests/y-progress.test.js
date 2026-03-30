@@ -1,5 +1,5 @@
 import { html, fixture, expect } from "@open-wc/testing";
-import "../src/components/y-progress.js";
+import "../src/components/y-progress/y-progress.js";
 
 describe("YumeProgress", () => {
     it("renders with default attributes", async () => {

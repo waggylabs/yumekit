@@ -1,6 +1,6 @@
 import { fixture, expect, html, oneEvent } from "@open-wc/testing";
-import "../src/components/y-panelbar.js";
-import "../src/components/y-panel.js";
+import "../src/components/y-panelbar/y-panelbar.js";
+import "../src/components/y-panel/y-panel.js";
 
 describe("YumePanel", () => {
     it("renders a header and arrow button", async () => {

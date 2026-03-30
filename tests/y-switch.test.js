@@ -1,5 +1,5 @@
 import { fixture, html, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-switch.js";
+import "../src/components/y-switch/y-switch.js";
 
 describe("<y-switch>", () => {
     it("renders with default properties", async () => {

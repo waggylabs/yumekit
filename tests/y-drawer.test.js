@@ -1,6 +1,6 @@
 import sinon from "sinon";
 import { fixture, html, expect } from "@open-wc/testing";
-import "../src/components/y-drawer.js";
+import "../src/components/y-drawer/y-drawer.js";
 
 describe("YumeDrawer", () => {
     it("is hidden by default", async () => {

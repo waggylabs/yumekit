@@ -1,6 +1,6 @@
 import { fixture, html, expect } from "@open-wc/testing";
-import "../src/components/y-menu.js";
-import "../src/components/y-button.js";
+import "../src/components/y-menu/y-menu.js";
+import "../src/components/y-button/y-button.js";
 
 describe("YumeMenu", () => {
     const testItems = [

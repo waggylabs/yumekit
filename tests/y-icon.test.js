@@ -1,6 +1,6 @@
 import { html, fixture, expect } from "@open-wc/testing";
 import "../src/icons/all.js";
-import "../src/components/y-icon.js";
+import "../src/components/y-icon/y-icon.js";
 
 describe("YumeIcon", () => {
     it("renders with default attributes", async () => {

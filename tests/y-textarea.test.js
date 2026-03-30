@@ -1,5 +1,5 @@
 import { html, fixture, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-textarea.js";
+import "../src/components/y-textarea/y-textarea.js";
 
 describe("YumeTextarea", () => {
     // ── Structure ─────────────────────────────────────────────

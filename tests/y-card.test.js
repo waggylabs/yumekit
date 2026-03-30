@@ -1,5 +1,5 @@
 import { fixture, expect, html } from "@open-wc/testing";
-import "../src/components/y-card.js";
+import "../src/components/y-card/y-card.js";
 
 describe("YumeCard", () => {
     it("renders header, body, and footer slots", async () => {

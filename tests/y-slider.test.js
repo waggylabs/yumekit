@@ -1,5 +1,5 @@
 import { html, fixture, expect } from "@open-wc/testing";
-import "../src/components/y-slider.js";
+import "../src/components/y-slider/y-slider.js";
 
 describe("YumeSlider", () => {
     it("renders with default attributes", async () => {

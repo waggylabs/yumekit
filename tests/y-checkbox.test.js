@@ -1,5 +1,5 @@
 import { fixture, html, expect } from "@open-wc/testing";
-import "../src/components/y-checkbox.js";
+import "../src/components/y-checkbox/y-checkbox.js";
 
 describe("<y-checkbox>", () => {
     it("renders with default unchecked state", async () => {

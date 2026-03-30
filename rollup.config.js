@@ -31,9 +31,9 @@ function svgString() {
 }
 
 const componentDir = "src/components";
-const componentFiles = readdirSync(componentDir).filter((f) =>
-    f.endsWith(".js"),
-);
+const componentNames = readdirSync(componentDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
 
 // Copy non-JS assets (styles/, modules/) into dist/
 function copyAssets() {
@@ -106,13 +106,17 @@ export default [
     },
 
     // 4. Individual components
-    ...componentFiles.map((file) => ({
-        input: `${componentDir}/${file}`,
+    ...componentNames.map((name) => ({
+        input: `${componentDir}/${name}/${name}.js`,
         output: {
-            file: `dist/components/${file}`,
+            file: `dist/components/${name}.js`,
             format: "esm",
+            paths: {
+                "../../icons/registry.js": "../icons/registry.js",
+                "../../modules/helpers.js": "../modules/helpers.js",
+            },
         },
-        external: ["../icons/registry.js", "../modules/helpers.js"],
+        external: ["../../icons/registry.js", "../../modules/helpers.js"],
         plugins: [cssString(), svgString()],
     })),
 ];

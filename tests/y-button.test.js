@@ -1,5 +1,5 @@
 import { fixture, html, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-button.js";
+import "../src/components/y-button/y-button.js";
 
 describe("KeplerButton", () => {
     it("renders a button with default attributes and slotted label", async () => {

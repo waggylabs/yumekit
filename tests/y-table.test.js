@@ -1,5 +1,5 @@
 import { fixture, html, expect } from "@open-wc/testing";
-import "../src/components/y-table.js";
+import "../src/components/y-table/y-table.js";
 
 const sampleColumns = JSON.stringify([
     { field: "name", header: "Name" },

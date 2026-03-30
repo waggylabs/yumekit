@@ -1,5 +1,5 @@
 import { html, fixture, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-tag.js";
+import "../src/components/y-tag/y-tag.js";
 
 describe("YumeTag", () => {
     // ── Defaults ──────────────────────────────────────────────

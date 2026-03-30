@@ -1,5 +1,5 @@
 import { fixture, expect, html } from "@open-wc/testing";
-import "../src/components/y-avatar.js";
+import "../src/components/y-avatar/y-avatar.js";
 
 describe("YumeAvatar", () => {
     it("renders an img when src is provided", async () => {

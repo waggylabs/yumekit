@@ -1,5 +1,5 @@
 import { html, fixture, expect, aTimeout } from "@open-wc/testing";
-import "../src/components/y-tooltip.js";
+import "../src/components/y-tooltip/y-tooltip.js";
 
 describe("YumeTooltip", () => {
     it("renders with default attributes", async () => {

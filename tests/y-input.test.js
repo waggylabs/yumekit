@@ -1,5 +1,5 @@
 import { fixture, html, expect, oneEvent } from "@open-wc/testing";
-import "../src/components/y-input.js";
+import "../src/components/y-input/y-input.js";
 
 describe("<y-input>", () => {
     it("renders correctly with default props", async () => {

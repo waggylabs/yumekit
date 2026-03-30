@@ -1,5 +1,5 @@
 import { html, fixture, expect } from "@open-wc/testing";
-import "../src/components/y-badge.js"; // adjust path as needed
+import "../src/components/y-badge/y-badge.js"; // adjust path as needed
 
 describe("YumeBadge", () => {
     it("renders with default attributes", async () => {
