@@ -2,7 +2,12 @@ import { readFileSync } from "fs";
 
 export default {
     stories: ["../src/**/*.stories.js"],
-    addons: ["@storybook/addon-docs"],
+    addons: [
+        "@storybook/addon-docs",
+        "@storybook/addon-vitest",
+        "@storybook/addon-a11y",
+        "@chromatic-com/storybook"
+    ],
     framework: {
         name: "@storybook/html-vite",
         options: {},

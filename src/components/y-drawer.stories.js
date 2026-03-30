@@ -1,9 +1,14 @@
 import "./y-drawer.js";
 import "./y-button.js";
 
+// Force iframe rendering so position:fixed drawer panels sit within the story
+// viewport and anchor IDs don't collide across stories on the docs page.
+const docsParams = { docs: { story: { inline: false, height: "320px" } } };
+
 export default {
     title: "Components/Drawer",
     tags: ["autodocs"],
+    parameters: docsParams,
     argTypes: {
         position: {
             control: "select",

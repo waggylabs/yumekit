@@ -1,9 +1,14 @@
 import "./y-dialog.js";
 import "./y-button.js";
 
+// Force iframe rendering so position:fixed dialogs sit within the story viewport
+// and anchor IDs don't collide across stories on the docs page.
+const docsParams = { docs: { story: { inline: false, height: "320px" } } };
+
 export default {
     title: "Components/Dialog",
     tags: ["autodocs"],
+    parameters: docsParams,
     argTypes: {
         closable: {
             control: "boolean",

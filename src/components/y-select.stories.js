@@ -1,4 +1,5 @@
 import "./y-select.js";
+import "./y-tag.js";
 
 const defaultOptions = JSON.stringify([
     { value: "apple", label: "Apple" },
@@ -8,9 +9,14 @@ const defaultOptions = JSON.stringify([
     { value: "elderberry", label: "Elderberry" },
 ]);
 
+// Force iframe rendering so the dropdown (position:fixed) anchors to the story
+// viewport rather than the full docs page.
+const docsParams = { docs: { story: { inline: false, height: "280px" } } };
+
 export default {
     title: "Components/Select",
     tags: ["autodocs"],
+    parameters: docsParams,
     argTypes: {
         options: {
             control: "text",

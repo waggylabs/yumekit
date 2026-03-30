@@ -7,13 +7,17 @@ const defaultItems = JSON.stringify([
     { text: "Delete" },
 ]);
 
+// Force iframe rendering so position:fixed anchors to the story viewport, not the docs page.
+const docsParams = { docs: { story: { inline: false, height: "200px" } } };
+
 export default {
     title: "Components/Menu",
     tags: ["autodocs"],
+    parameters: docsParams,
     argTypes: {
         items: {
             control: "text",
-            description: 'JSON array of `{ text, url?, icon?, selected?, children? }` objects.',
+            description: 'JSON array of `{ text, url?, selected?, children? }` objects.',
         },
         direction: {
             control: "select",
@@ -42,22 +46,6 @@ export default {
 };
 
 export const Default = {};
-
-export const WithIcons = {
-    render: () => `
-        <div style="padding:16px">
-            <y-button id="menu-icons-anchor" color="primary">Actions</y-button>
-            <y-menu
-                anchor="menu-icons-anchor"
-                items='${JSON.stringify([
-                    { text: "Edit", icon: "edit" },
-                    { text: "Copy", icon: "copy" },
-                    { text: "Delete", icon: "trash" },
-                ])}'
-            ></y-menu>
-        </div>
-    `,
-};
 
 export const WithSelected = {
     render: () => `
@@ -97,16 +85,20 @@ export const WithSubmenus = {
             ></y-menu>
         </div>
     `,
+    parameters: { docs: { story: { inline: false, height: "220px" } } },
 };
 
-export const Directions = {
+export const Sizes = {
     render: () => `
-        <div style="display:flex;gap:16px;padding:80px;justify-content:center;flex-wrap:wrap">
-            <y-button id="menu-down" color="base">Down</y-button>
-            <y-menu anchor="menu-down" direction="down" items='${defaultItems}'></y-menu>
+        <div style="display:flex;gap:16px;padding:16px">
+            <y-button id="menu-sm" color="base">Small</y-button>
+            <y-menu anchor="menu-sm" size="small" items='${defaultItems}'></y-menu>
 
-            <y-button id="menu-right" color="base">Right</y-button>
-            <y-menu anchor="menu-right" direction="right" items='${defaultItems}'></y-menu>
+            <y-button id="menu-md" color="base">Medium</y-button>
+            <y-menu anchor="menu-md" size="medium" items='${defaultItems}'></y-menu>
+
+            <y-button id="menu-lg" color="base">Large</y-button>
+            <y-menu anchor="menu-lg" size="large" items='${defaultItems}'></y-menu>
         </div>
     `,
 };

@@ -1,4 +1,6 @@
 import "./y-tabs.js";
+import "./y-icon.js";
+import "../icons/all.js";
 
 const defaultOptions = JSON.stringify([
     { id: "tab1", label: "Overview", slot: "tab1" },

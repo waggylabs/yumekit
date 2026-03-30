@@ -16,8 +16,15 @@ document.head.appendChild(varStyle);
 // (e.g. y-icon without an explicit color) are visible on dark backgrounds.
 const bodyStyle = document.createElement("style");
 bodyStyle.id = "yumekit-storybook-body";
-bodyStyle.textContent = "body { color: var(--base-content--); }";
+bodyStyle.textContent = "body { color: var(--base-content--); font-family: var(--font-family-body, 'Lexend', sans-serif); }";
 document.head.appendChild(bodyStyle);
+
+// Load the Lexend font used by --font-family-body / --font-family-header.
+// y-theme normally does this, but stories that don't use y-theme need it too.
+const fontLink = document.createElement("link");
+fontLink.rel = "stylesheet";
+fontLink.href = "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap";
+document.head.appendChild(fontLink);
 
 const THEME_STYLE_ID = "yumekit-storybook-theme";
 
