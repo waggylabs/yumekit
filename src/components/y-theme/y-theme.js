@@ -3,12 +3,48 @@ import blueLightCSS from "../../../styles/blue-light.css";
 import blueDarkCSS from "../../../styles/blue-dark.css";
 import orangeLightCSS from "../../../styles/orange-light.css";
 import orangeDarkCSS from "../../../styles/orange-dark.css";
+import greenLightCSS from "../../../styles/green-light.css";
+import greenDarkCSS from "../../../styles/green-dark.css";
+import redLightCSS from "../../../styles/red-light.css";
+import redDarkCSS from "../../../styles/red-dark.css";
+import tealLightCSS from "../../../styles/teal-light.css";
+import tealDarkCSS from "../../../styles/teal-dark.css";
+import yellowLightCSS from "../../../styles/yellow-light.css";
+import yellowDarkCSS from "../../../styles/yellow-dark.css";
+import indigoLightCSS from "../../../styles/indigo-light.css";
+import indigoDarkCSS from "../../../styles/indigo-dark.css";
+import purpleLightCSS from "../../../styles/purple-light.css";
+import purpleDarkCSS from "../../../styles/purple-dark.css";
+import pinkLightCSS from "../../../styles/pink-light.css";
+import pinkDarkCSS from "../../../styles/pink-dark.css";
+import brownLightCSS from "../../../styles/brown-light.css";
+import brownDarkCSS from "../../../styles/brown-dark.css";
+import oliveLightCSS from "../../../styles/olive-light.css";
+import oliveDarkCSS from "../../../styles/olive-dark.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
     "blue-dark": blueDarkCSS,
     "orange-light": orangeLightCSS,
     "orange-dark": orangeDarkCSS,
+    "green-light": greenLightCSS,
+    "green-dark": greenDarkCSS,
+    "red-light": redLightCSS,
+    "red-dark": redDarkCSS,
+    "teal-light": tealLightCSS,
+    "teal-dark": tealDarkCSS,
+    "yellow-light": yellowLightCSS,
+    "yellow-dark": yellowDarkCSS,
+    "indigo-light": indigoLightCSS,
+    "indigo-dark": indigoDarkCSS,
+    "purple-light": purpleLightCSS,
+    "purple-dark": purpleDarkCSS,
+    "pink-light": pinkLightCSS,
+    "pink-dark": pinkDarkCSS,
+    "brown-light": brownLightCSS,
+    "brown-dark": brownDarkCSS,
+    "olive-light": oliveLightCSS,
+    "olive-dark": oliveDarkCSS,
 };
 
 export class YumeTheme extends HTMLElement {
