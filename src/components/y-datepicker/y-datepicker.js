@@ -3,18 +3,36 @@ import "../y-icon/y-icon.js";
 import "../y-select/y-select.js";
 
 const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 ];
 const DAYS_SHORT = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export class YumeDatepicker extends HTMLElement {
     static get observedAttributes() {
         return [
-            "mode", "value", "min", "max",
-            "show-time", "show-minutes", "show-seconds",
-            "show-years", "show-months", "show-days",
-            "format", "color",
+            "mode",
+            "value",
+            "min",
+            "max",
+            "show-time",
+            "show-minutes",
+            "show-seconds",
+            "show-years",
+            "show-months",
+            "show-days",
+            "format",
+            "color",
         ];
     }
 
@@ -54,52 +72,106 @@ export class YumeDatepicker extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {string} "single" | "range" (default "single") */
-    get mode() { return this.getAttribute("mode") || "single"; }
-    set mode(v) { this.setAttribute("mode", v); }
+    get mode() {
+        return this.getAttribute("mode") || "single";
+    }
+    set mode(v) {
+        this.setAttribute("mode", v);
+    }
 
     /** @type {string} ISO date string, or "ISO,ISO" for range */
-    get value() { return this.getAttribute("value") || ""; }
-    set value(v) { this.setAttribute("value", v); }
+    get value() {
+        return this.getAttribute("value") || "";
+    }
+    set value(v) {
+        this.setAttribute("value", v);
+    }
 
     /** @type {string} Minimum selectable date (ISO string) */
-    get min() { return this.getAttribute("min") || ""; }
-    set min(v) { this.setAttribute("min", v); }
+    get min() {
+        return this.getAttribute("min") || "";
+    }
+    set min(v) {
+        this.setAttribute("min", v);
+    }
 
     /** @type {string} Maximum selectable date (ISO string) */
-    get max() { return this.getAttribute("max") || ""; }
-    set max(v) { this.setAttribute("max", v); }
+    get max() {
+        return this.getAttribute("max") || "";
+    }
+    set max(v) {
+        this.setAttribute("max", v);
+    }
 
     /** @type {boolean} Show hour time picker */
-    get showTime() { return this.hasAttribute("show-time"); }
-    set showTime(v) { v ? this.setAttribute("show-time", "") : this.removeAttribute("show-time"); }
+    get showTime() {
+        return this.hasAttribute("show-time");
+    }
+    set showTime(v) {
+        v
+            ? this.setAttribute("show-time", "")
+            : this.removeAttribute("show-time");
+    }
 
     /** @type {boolean} Show minute column in time picker (implies show-time) */
-    get showMinutes() { return this.hasAttribute("show-minutes"); }
-    set showMinutes(v) { v ? this.setAttribute("show-minutes", "") : this.removeAttribute("show-minutes"); }
+    get showMinutes() {
+        return this.hasAttribute("show-minutes");
+    }
+    set showMinutes(v) {
+        v
+            ? this.setAttribute("show-minutes", "")
+            : this.removeAttribute("show-minutes");
+    }
 
     /** @type {boolean} Show second column in time picker (implies show-minutes) */
-    get showSeconds() { return this.hasAttribute("show-seconds"); }
-    set showSeconds(v) { v ? this.setAttribute("show-seconds", "") : this.removeAttribute("show-seconds"); }
+    get showSeconds() {
+        return this.hasAttribute("show-seconds");
+    }
+    set showSeconds(v) {
+        v
+            ? this.setAttribute("show-seconds", "")
+            : this.removeAttribute("show-seconds");
+    }
 
     /** @type {boolean} Show year select in header (default true) */
-    get showYears() { return this.getAttribute("show-years") !== "false"; }
-    set showYears(v) { this.setAttribute("show-years", v ? "true" : "false"); }
+    get showYears() {
+        return this.getAttribute("show-years") !== "false";
+    }
+    set showYears(v) {
+        this.setAttribute("show-years", v ? "true" : "false");
+    }
 
     /** @type {boolean} Show month select in header (default true) */
-    get showMonths() { return this.getAttribute("show-months") !== "false"; }
-    set showMonths(v) { this.setAttribute("show-months", v ? "true" : "false"); }
+    get showMonths() {
+        return this.getAttribute("show-months") !== "false";
+    }
+    set showMonths(v) {
+        this.setAttribute("show-months", v ? "true" : "false");
+    }
 
     /** @type {boolean} Show day grid (default true) */
-    get showDays() { return this.getAttribute("show-days") !== "false"; }
-    set showDays(v) { this.setAttribute("show-days", v ? "true" : "false"); }
+    get showDays() {
+        return this.getAttribute("show-days") !== "false";
+    }
+    set showDays(v) {
+        this.setAttribute("show-days", v ? "true" : "false");
+    }
 
     /** @type {string} Date format string (default "MM/DD/YYYY") */
-    get format() { return this.getAttribute("format") || "MM/DD/YYYY"; }
-    set format(v) { this.setAttribute("format", v); }
+    get format() {
+        return this.getAttribute("format") || "MM/DD/YYYY";
+    }
+    set format(v) {
+        this.setAttribute("format", v);
+    }
 
     /** @type {string} Color theme (default "primary") */
-    get color() { return this.getAttribute("color") || "primary"; }
-    set color(v) { this.setAttribute("color", v); }
+    get color() {
+        return this.getAttribute("color") || "primary";
+    }
+    set color(v) {
+        this.setAttribute("color", v);
+    }
 
     // -------------------------------------------------------------------------
     // Public
@@ -125,7 +197,8 @@ export class YumeDatepicker extends HTMLElement {
     }
 
     render() {
-        const showTimeCols = this.showTime || this.showMinutes || this.showSeconds;
+        const showTimeCols =
+            this.showTime || this.showMinutes || this.showSeconds;
         const isRange = this.mode === "range";
 
         this.shadowRoot.innerHTML = `
@@ -146,10 +219,20 @@ export class YumeDatepicker extends HTMLElement {
 
     _applyTimesToDates() {
         if (this._startDate) {
-            this._startDate.setHours(this._startTime.h, this._startTime.m, this._startTime.s, 0);
+            this._startDate.setHours(
+                this._startTime.h,
+                this._startTime.m,
+                this._startTime.s,
+                0,
+            );
         }
         if (this._endDate) {
-            this._endDate.setHours(this._endTime.h, this._endTime.m, this._endTime.s, 0);
+            this._endDate.setHours(
+                this._endTime.h,
+                this._endTime.m,
+                this._endTime.s,
+                0,
+            );
         }
     }
 
@@ -180,7 +263,9 @@ export class YumeDatepicker extends HTMLElement {
         });
 
         root.querySelectorAll(".day-btn").forEach((btn) => {
-            btn.addEventListener("click", () => this._handleDayClick(new Date(btn.dataset.date)));
+            btn.addEventListener("click", () =>
+                this._handleDayClick(new Date(btn.dataset.date)),
+            );
             btn.addEventListener("mouseenter", () => {
                 if (this._awaitingEnd) {
                     this._hoverDate = new Date(btn.dataset.date);
@@ -246,7 +331,9 @@ export class YumeDatepicker extends HTMLElement {
         const firstDow = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        const headers = DAYS_SHORT.map((d) => `<span class="day-hdr">${d}</span>`).join("");
+        const headers = DAYS_SHORT.map(
+            (d) => `<span class="day-hdr">${d}</span>`,
+        ).join("");
         const blanks = Array(firstDow).fill(`<span></span>`).join("");
 
         const cells = Array.from({ length: daysInMonth }, (_, i) => {
@@ -544,13 +631,15 @@ export class YumeDatepicker extends HTMLElement {
             >${h12}:00 ${ampm}</y-button>`;
         }).join("");
 
-        const minutesBtns = this.showMinutes ? `
+        const minutesBtns = this.showMinutes
+            ? `
             <div class="time-col-wrap">
                 <span class="time-col-hdr">Min</span>
                 <div class="time-col" data-col="minutes">
-                    ${Array.from({ length: 12 }, (_, i) => i * 5).map((m) => {
-                        const sel = Math.floor(time.m / 5) * 5 === m;
-                        return `<y-button
+                    ${Array.from({ length: 12 }, (_, i) => i * 5)
+                        .map((m) => {
+                            const sel = Math.floor(time.m / 5) * 5 === m;
+                            return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
                             style-type="${sel ? "filled" : "flat"}"
                             color="${sel ? this.color : "base"}"
@@ -558,18 +647,22 @@ export class YumeDatepicker extends HTMLElement {
                             data-minute="${m}"
                             data-side="${side}"
                         >${String(m).padStart(2, "0")}</y-button>`;
-                    }).join("")}
+                        })
+                        .join("")}
                 </div>
             </div>
-        ` : "";
+        `
+            : "";
 
-        const secondsBtns = this.showSeconds ? `
+        const secondsBtns = this.showSeconds
+            ? `
             <div class="time-col-wrap">
                 <span class="time-col-hdr">Sec</span>
                 <div class="time-col" data-col="seconds">
-                    ${Array.from({ length: 12 }, (_, i) => i * 5).map((s) => {
-                        const sel = Math.floor(time.s / 5) * 5 === s;
-                        return `<y-button
+                    ${Array.from({ length: 12 }, (_, i) => i * 5)
+                        .map((s) => {
+                            const sel = Math.floor(time.s / 5) * 5 === s;
+                            return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
                             style-type="${sel ? "filled" : "flat"}"
                             color="${sel ? this.color : "base"}"
@@ -577,10 +670,12 @@ export class YumeDatepicker extends HTMLElement {
                             data-second="${s}"
                             data-side="${side}"
                         >${String(s).padStart(2, "0")}</y-button>`;
-                    }).join("")}
+                        })
+                        .join("")}
                 </div>
             </div>
-        ` : "";
+        `
+            : "";
 
         return `
             <div class="time-column${disabled ? " time-disabled" : ""}">
@@ -607,16 +702,23 @@ export class YumeDatepicker extends HTMLElement {
         const selected = this._startDate?.getFullYear();
         const minY = this._minDate()?.getFullYear() ?? vd.getFullYear() - 10;
         const maxY = this._maxDate()?.getFullYear() ?? vd.getFullYear() + 10;
-        const years = Array.from({ length: maxY - minY + 1 }, (_, i) => minY + i);
+        const years = Array.from(
+            { length: maxY - minY + 1 },
+            (_, i) => minY + i,
+        );
         return `
             <div class="year-grid">
-                ${years.map((y) => `<y-button
+                ${years
+                    .map(
+                        (y) => `<y-button
                     class="year-btn"
                     style-type="${y === selected ? "filled" : "flat"}"
                     color="${y === selected ? this.color : "base"}"
                     size="small"
                     data-year="${y}"
-                >${y}</y-button>`).join("")}
+                >${y}</y-button>`,
+                    )
+                    .join("")}
             </div>
         `;
     }
@@ -626,18 +728,23 @@ export class YumeDatepicker extends HTMLElement {
         if (value !== this.getAttribute("value")) {
             this.setAttribute("value", value);
         }
-        this.dispatchEvent(new CustomEvent("change", {
-            bubbles: true,
-            composed: true,
-            detail: {
-                value,
-                startDate: this._startDate ? new Date(this._startDate) : null,
-                endDate: this._endDate ? new Date(this._endDate) : null,
-                formatted: this.mode === "range"
-                    ? `${this._formatDate(this._startDate)}${this._endDate ? " – " + this._formatDate(this._endDate) : ""}`
-                    : this._formatDate(this._startDate),
-            },
-        }));
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value,
+                    startDate: this._startDate
+                        ? new Date(this._startDate)
+                        : null,
+                    endDate: this._endDate ? new Date(this._endDate) : null,
+                    formatted:
+                        this.mode === "range"
+                            ? `${this._formatDate(this._startDate)}${this._endDate ? " – " + this._formatDate(this._endDate) : ""}`
+                            : this._formatDate(this._startDate),
+                },
+            }),
+        );
     }
 
     _formatDate(date) {
@@ -683,11 +790,13 @@ export class YumeDatepicker extends HTMLElement {
 
     _inRange(date) {
         if (this.mode !== "range" || !this._startDate) return false;
-        const end = this._endDate || (this._awaitingEnd ? this._hoverDate : null);
+        const end =
+            this._endDate || (this._awaitingEnd ? this._hoverDate : null);
         if (!end) return false;
-        const [lo, hi] = this._startDate <= end
-            ? [this._startDate, end]
-            : [end, this._startDate];
+        const [lo, hi] =
+            this._startDate <= end
+                ? [this._startDate, end]
+                : [end, this._startDate];
         return date > lo && date < hi;
     }
 
@@ -708,12 +817,19 @@ export class YumeDatepicker extends HTMLElement {
     }
 
     _isRangeEdge(date) {
-        return this._sameDay(date, this._startDate) || this._sameDay(date, this._endDate);
+        return (
+            this._sameDay(date, this._startDate) ||
+            this._sameDay(date, this._endDate)
+        );
     }
 
-    _maxDate() { return this.max ? new Date(this.max) : null; }
+    _maxDate() {
+        return this.max ? new Date(this.max) : null;
+    }
 
-    _minDate() { return this.min ? new Date(this.min) : null; }
+    _minDate() {
+        return this.min ? new Date(this.min) : null;
+    }
 
     _navigate(months) {
         this._viewDate.setMonth(this._viewDate.getMonth() + months);
