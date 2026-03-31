@@ -37,6 +37,7 @@ Delete any empty sections before publishing.
 
 - New `y-date` component — a form-associated date (and optional time) input field. Displays a trigger button that opens a `y-datepicker` popup. Supports `name`, `value`, `label`, `label-position`, `placeholder`, `size`, `disabled`, `required`, `invalid`, `clearable`, `show-time`, `min`, `max`, `format`, and `mode` attributes. Emits `change` and `input` events. Fully keyboard accessible with `aria-expanded` management.
 - New `y-datepicker` component — a standalone calendar and optional time picker widget. Supports single date and date range selection via the `mode` attribute. Configurable with `value`, `min`, `max`, `show-time`, `show-seconds`, `format`, `first-day-of-week`, `year-range`, and `panel-count` attributes. Emits a `change` event with the selected date value or `[start, end]` range array. Public API: `clear()`, `formatDate(date)`.
+- 10 new bundled icons: `fan`, `thermometer-high`, `thermometer-low`, `ban`, `bluetooth`, `unlock`, `plug`, `gasoline`, `ev-charger`, `tools`.
 - `comp-date` icon added to the bundled icon registry.
 - Storybook integration — all 28 components now have Storybook stories. Includes a theme background selector that applies the correct design tokens for each active theme.
 - 18 new built-in themes (9 color families × dark + light): `green`, `red`, `teal`, `yellow`, `indigo`, `purple`, `pink`, `brown`, `olive`. All are usable by name in the `theme` attribute of `<y-theme>`.

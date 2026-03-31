@@ -743,9 +743,10 @@ Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`
 - Location & navigation (`home`, `menu`, `compass`, `map-marker`, `thumbtack`, `globe`)
 - Media & display (`image`, `monitor`, `smartphone`, `tablet`, `moon`, `sun`, `palette`, `calendar`, `clock`)
 - People (`user`, `users`, `accessibility`)
-- Science & work (`flask`, `briefcase`, `puzzle`, `ai`)
+- Science & work (`flask`, `briefcase`, `puzzle`, `ai`, `tools`)
 - Social (`discord`, `figma`, `github`)
-- Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `shield`, `warning`, `circle-exclamation`, `circle-info`, `circle-question`)
+- Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `unlock`, `shield`, `ban`, `warning`, `circle-exclamation`, `circle-info`, `circle-question`)
+- Utilities & devices (`plug`, `bluetooth`, `fan`, `thermometer-high`, `thermometer-low`, `gasoline`, `ev-charger`)
 - Component icons (`comp-appbar`, `comp-avatar`, `comp-badge`, `comp-button`, `comp-card`, `comp-checkbox`, `comp-date`, `comp-dialog`, `comp-drawer`, `comp-icon`, `comp-input`, `comp-menu`, `comp-panelbar`, `comp-progress`, `comp-radio`, `comp-rating`, `comp-select`, `comp-slider`, `comp-switch`, `comp-table`, `comp-tabs`, `comp-tag`, `comp-textarea`, `comp-theme`, `comp-toast`, `comp-tooltip`)
 - Other (`cloud`, `code`, `campfire`, `settings`)
 

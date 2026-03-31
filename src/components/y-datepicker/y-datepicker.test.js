@@ -297,4 +297,159 @@ describe("<y-datepicker>", () => {
         expect(el.getAttribute("min")).to.equal("2026-01-01");
         expect(el.getAttribute("max")).to.equal("2026-12-31");
     });
+
+    // -------------------------------------------------------------------------
+    // Range selection workflow
+    // -------------------------------------------------------------------------
+
+    it("view does not snap back to start month after picking start and navigating forward", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-01-15T12:00:00.000Z"></y-datepicker>`);
+
+        // Pick start date — triggers _emitChange which sets value attr
+        const startBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        setTimeout(() => startBtn.click());
+        await oneEvent(el, "change");
+
+        // Navigate forward 6 months
+        for (let i = 0; i < 6; i++) {
+            el.shadowRoot.querySelector("[data-action='next-month']").click();
+            await nextFrame();
+        }
+
+        // View should be at July (6), not snapped back to January (0)
+        const monthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        expect(parseInt(monthSel.value)).to.equal(6);
+    });
+
+    it("view does not snap back after picking end date across many months", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-01-15T12:00:00.000Z"></y-datepicker>`);
+
+        // Pick start in January
+        const startBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        setTimeout(() => startBtn.click());
+        await oneEvent(el, "change");
+
+        // Navigate forward 6 months to reach July (left) / August (right)
+        for (let i = 0; i < 6; i++) {
+            el.shadowRoot.querySelector("[data-action='next-month']").click();
+            await nextFrame();
+        }
+
+        // Pick end in July
+        const endBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        setTimeout(() => endBtn.click());
+        const e = await oneEvent(el, "change");
+
+        expect(e.detail.startDate).to.be.instanceOf(Date);
+        expect(e.detail.endDate).to.be.instanceOf(Date);
+        expect(e.detail.startDate.getMonth()).to.equal(0); // January
+        expect(e.detail.endDate.getMonth()).to.equal(6);   // July
+
+        // View should remain at July, not snap back to January
+        await nextFrame();
+        const monthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        expect(parseInt(monthSel.value)).to.equal(6);
+    });
+
+    it("year-spanning range: view stays at navigated year after picking end date", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-11-01T12:00:00.000Z"></y-datepicker>`);
+
+        // Pick start in November 2026
+        const startBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        setTimeout(() => startBtn.click());
+        await oneEvent(el, "change");
+
+        // Navigate forward 3 months (Nov → Dec → Jan → Feb 2027)
+        for (let i = 0; i < 3; i++) {
+            el.shadowRoot.querySelector("[data-action='next-month']").click();
+            await nextFrame();
+        }
+
+        // Should be viewing February 2027
+        const monthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        const yearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
+        expect(parseInt(monthSel.value)).to.equal(1);    // February
+        expect(parseInt(yearSel.value)).to.equal(2027);
+
+        // Pick end in February 2027
+        const endBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        setTimeout(() => endBtn.click());
+        const e = await oneEvent(el, "change");
+
+        expect(e.detail.startDate.getFullYear()).to.equal(2026);
+        expect(e.detail.endDate.getFullYear()).to.equal(2027);
+
+        // View should remain in 2027
+        await nextFrame();
+        const finalYearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
+        expect(parseInt(finalYearSel.value)).to.equal(2027);
+    });
+
+    it("right panel month selector sets the right panel to the selected month", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-01-15T12:00:00.000Z"></y-datepicker>`);
+
+        // Left shows January (0), right shows February (1)
+        // Change right panel month selector to August (7)
+        const rightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        rightMonthSel.value = "7";
+        rightMonthSel.dispatchEvent(new Event("change"));
+        await nextFrame();
+
+        const leftMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        const newRightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        expect(parseInt(newRightMonthSel.value)).to.equal(7); // August on right
+        expect(parseInt(leftMonthSel.value)).to.equal(6);     // July on left
+    });
+
+    it("right panel month selector wraps year correctly when January is selected", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-06-15T12:00:00.000Z"></y-datepicker>`);
+
+        // Left shows June (5), right shows July (6)
+        // Change right panel month to January (0) — left should wrap to December of previous year
+        const rightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        rightMonthSel.value = "0";
+        rightMonthSel.dispatchEvent(new Event("change"));
+        await nextFrame();
+
+        const leftMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        const leftYearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
+        const newRightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        expect(parseInt(newRightMonthSel.value)).to.equal(0);  // January on right
+        expect(parseInt(leftMonthSel.value)).to.equal(11);     // December on left
+        expect(parseInt(leftYearSel.value)).to.equal(2025);    // Previous year on left
+    });
+
+    it("right panel year selector sets the correct year on the right panel", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-06-15T12:00:00.000Z"></y-datepicker>`);
+
+        // Left shows June 2026, right shows July 2026
+        // Change right panel year to 2028
+        const rightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        rightYearSel.value = "2028";
+        rightYearSel.dispatchEvent(new Event("change"));
+        await nextFrame();
+
+        const newRightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        expect(parseInt(newRightYearSel.value)).to.equal(2028);
+    });
+
+    it("right panel year selector handles the December/January year boundary correctly", async () => {
+        const el = await fixture(html`<y-datepicker mode="range" value="2026-12-15T12:00:00.000Z"></y-datepicker>`);
+
+        // Left shows December 2026, right shows January 2027
+        const rightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        expect(parseInt(rightYearSel.value)).to.equal(2027);
+
+        // Change right panel year to 2029 — left should become December 2028
+        rightYearSel.value = "2029";
+        rightYearSel.dispatchEvent(new Event("change"));
+        await nextFrame();
+
+        const newRightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        const leftYearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
+        const rightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        expect(parseInt(newRightYearSel.value)).to.equal(2029);  // 2029 on right
+        expect(parseInt(leftYearSel.value)).to.equal(2028);      // 2028 on left
+        expect(parseInt(rightMonthSel.value)).to.equal(0);       // January preserved on right
+    });
 });

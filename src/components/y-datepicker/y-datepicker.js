@@ -61,6 +61,7 @@ export class YumeDatepicker extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+        if (this._suppressParse) return;
         if (name === "value") {
             this._parseValue();
         }
@@ -250,14 +251,31 @@ export class YumeDatepicker extends HTMLElement {
 
         root.querySelectorAll(".month-sel").forEach((sel) => {
             sel.addEventListener("change", () => {
-                this._viewDate.setMonth(parseInt(sel.value));
+                const targetMonth = parseInt(sel.value);
+                if (sel.dataset.side === "right") {
+                    // Right panel shows _viewDate + 1 month, so back-calculate
+                    const d = new Date(this._viewDate);
+                    d.setMonth(targetMonth - 1); // JS handles month=-1 as Dec of prev year
+                    d.setDate(1);
+                    this._viewDate = d;
+                } else {
+                    this._viewDate.setMonth(targetMonth);
+                }
                 this.render();
             });
         });
 
         root.querySelectorAll(".year-sel").forEach((sel) => {
             sel.addEventListener("change", () => {
-                this._viewDate.setFullYear(parseInt(sel.value));
+                const targetYear = parseInt(sel.value);
+                if (sel.dataset.side === "right") {
+                    // Apply the year delta relative to what the right panel currently shows
+                    const rightVd = this._viewDateForSide("right");
+                    const yearDiff = targetYear - rightVd.getFullYear();
+                    this._viewDate.setFullYear(this._viewDate.getFullYear() + yearDiff);
+                } else {
+                    this._viewDate.setFullYear(targetYear);
+                }
                 this.render();
             });
         });
@@ -724,10 +742,12 @@ export class YumeDatepicker extends HTMLElement {
     }
 
     _emitChange() {
+        this._suppressParse = true;
         const value = this._buildValueString();
         if (value !== this.getAttribute("value")) {
             this.setAttribute("value", value);
         }
+        this._suppressParse = false;
         this.dispatchEvent(
             new CustomEvent("change", {
                 bubbles: true,
