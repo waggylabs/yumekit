@@ -394,6 +394,11 @@
     --component-radio-dot-size: var(--spacing-medium);
     --component-radio-size: var(--sizing-2x-small);
 
+    /* date / datepicker */
+    --component-date-z-index: 200;
+    --component-datepicker-border-radius: var(--radii-medium);
+    --component-datepicker-border-width: var(--border-x-thin);
+
     /* select */
     --component-select-z-index: 6000;
 
@@ -591,6 +596,10 @@
     --component-table-hover-background: var(--base-background-hover);
     --component-table-active-background: var(--base-background-active);
     --component-table-color-light: var(--base-content-lightest);
+    --component-datepicker-background: var(--base-background-component);
+    --component-datepicker-border-color: var(--base-border);
+    --component-datepicker-header-color: var(--base-content-light);
+    --component-datepicker-shadow: var(--base-shadow);
     --component-tabs-background: var(--base-background-component);
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-border);

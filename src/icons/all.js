@@ -41,6 +41,7 @@ import compBadge from "./comp-badge.svg";
 import compButton from "./comp-button.svg";
 import compCard from "./comp-card.svg";
 import compCheckbox from "./comp-checkbox.svg";
+import compDate from "./comp-date.svg";
 import compDialog from "./comp-dialog.svg";
 import compDrawer from "./comp-drawer.svg";
 import compIcon from "./comp-icon.svg";
@@ -160,6 +161,7 @@ registerIcons({
     "comp-button": compButton,
     "comp-card": compCard,
     "comp-checkbox": compCheckbox,
+    "comp-date": compDate,
     "comp-dialog": compDialog,
     "comp-drawer": compDrawer,
     "comp-icon": compIcon,

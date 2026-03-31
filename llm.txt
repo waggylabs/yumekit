@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 25 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 27 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -52,6 +52,8 @@ import "@waggylabs/yumekit";
 import "@waggylabs/yumekit/components/y-theme";
 import "@waggylabs/yumekit/components/y-button";
 import "@waggylabs/yumekit/components/y-input";
+import "@waggylabs/yumekit/components/y-date";
+import "@waggylabs/yumekit/components/y-datepicker";
 ```
 
 ### Icons
@@ -137,6 +139,82 @@ Events: `change`, `input`
 
 ```html
 <y-input type="email" name="email" label="Email" required></y-input>
+```
+
+---
+
+### y-date
+Date input field with popup calendar. Form-associated.
+
+Tag: `<y-date>`
+Attributes:
+- `mode` — `"single"` (default) | `"range"`
+- `name` — form field name
+- `value` — ISO date string, or `"ISO,ISO"` comma-pair for range mode
+- `min`, `max` — date constraints (ISO string)
+- `format` — display format string. Tokens: `YYYY` `MM` `DD` `HH` `hh` `mm` `ss` `A` `a` (default: `"MM/DD/YYYY"`)
+- `placeholder` — placeholder text when no date is selected
+- `color` — color scheme for the datepicker (default: `"primary"`)
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `label-position` — `"top"` (default) | `"bottom"`
+- `clearable` — boolean, shows a clear (×) button when a value is set
+- `disabled` — boolean
+- `invalid` — boolean, applies error state
+- `show-time` — boolean, show hour column in time picker
+- `show-minutes` — boolean, show minutes column (implies `show-time`)
+- `show-seconds` — boolean, show seconds column (implies `show-minutes`)
+- `show-years` — `"true"` (default) | `"false"`, toggles year select in calendar header
+- `show-months` — `"true"` (default) | `"false"`, toggles month select in calendar header
+- `show-days` — `"true"` (default) | `"false"`, toggles the day grid (use `"false"` for month or year picker)
+
+Events: `change` (detail: `{ value, startDate, endDate, formatted }`)
+Methods: `open()`, `close()`, `clear()`
+Slots: `label`, `left-icon`
+
+```html
+<y-date name="appt" format="MM/DD/YYYY" clearable>
+  <span slot="label">Appointment Date</span>
+</y-date>
+
+<!-- Date range -->
+<y-date name="trip" mode="range">
+  <span slot="label">Travel Dates</span>
+</y-date>
+
+<!-- Date + time -->
+<y-date name="meeting" show-time format="MM/DD/YYYY hh:mm A">
+  <span slot="label">Meeting Time</span>
+</y-date>
+```
+
+---
+
+### y-datepicker
+Standalone calendar/date picker widget. Used internally by `y-date`; also usable on its own.
+
+Tag: `<y-datepicker>`
+Attributes:
+- `mode` — `"single"` (default) | `"range"`, shows two months side-by-side in range mode
+- `value` — ISO date string, or `"ISO,ISO"` comma-pair for range mode
+- `min`, `max` — date constraints (ISO string)
+- `format` — display format string (default: `"MM/DD/YYYY"`)
+- `color` — color scheme for selected dates (default: `"primary"`)
+- `show-time` — boolean, show hour column
+- `show-minutes` — boolean, show minutes column
+- `show-seconds` — boolean, show seconds column
+- `show-years` — `"true"` (default) | `"false"`
+- `show-months` — `"true"` (default) | `"false"`
+- `show-days` — `"true"` (default) | `"false"`, set to `"false"` for a month picker; combine with `show-months="false"` for a year picker
+
+Events: `change` (detail: `{ value, startDate, endDate, formatted }`)
+Methods: `clear()`, `formatDate(date)`
+
+```html
+<y-datepicker></y-datepicker>
+<y-datepicker mode="range" show-time show-minutes></y-datepicker>
+
+<!-- Month picker -->
+<y-datepicker show-days="false"></y-datepicker>
 ```
 
 ---
@@ -613,6 +691,18 @@ Additional tokens:
 --base-shadow
 ```
 
+Component-specific tokens (subset — see `styles/variables.css` for the full list):
+```
+/* y-date / y-datepicker */
+--component-datepicker-background       /* panel surface color */
+--component-datepicker-border-color     /* panel and column-divider borders */
+--component-datepicker-border-radius    /* panel and popup corner radius */
+--component-datepicker-border-width     /* panel and column-divider border width */
+--component-datepicker-header-color     /* day-of-week and Hr/Min/Sec column header text */
+--component-datepicker-shadow           /* drop shadow on the y-date popup */
+--component-date-z-index                /* stacking order of the popup (default: 200) */
+```
+
 To create a custom theme, define these CSS variables in a stylesheet and point y-theme at it:
 ```html
 <y-theme theme="/custom-theme.css"></y-theme>
@@ -656,7 +746,7 @@ Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`
 - Science & work (`flask`, `briefcase`, `puzzle`, `ai`)
 - Social (`discord`, `figma`, `github`)
 - Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `shield`, `warning`, `circle-exclamation`, `circle-info`, `circle-question`)
-- Component icons (`comp-appbar`, `comp-avatar`, `comp-badge`, `comp-button`, `comp-card`, `comp-checkbox`, `comp-dialog`, `comp-drawer`, `comp-icon`, `comp-input`, `comp-menu`, `comp-panelbar`, `comp-progress`, `comp-radio`, `comp-rating`, `comp-select`, `comp-slider`, `comp-switch`, `comp-table`, `comp-tabs`, `comp-tag`, `comp-textarea`, `comp-theme`, `comp-toast`, `comp-tooltip`)
+- Component icons (`comp-appbar`, `comp-avatar`, `comp-badge`, `comp-button`, `comp-card`, `comp-checkbox`, `comp-date`, `comp-dialog`, `comp-drawer`, `comp-icon`, `comp-input`, `comp-menu`, `comp-panelbar`, `comp-progress`, `comp-radio`, `comp-rating`, `comp-select`, `comp-slider`, `comp-switch`, `comp-table`, `comp-tabs`, `comp-tag`, `comp-textarea`, `comp-theme`, `comp-toast`, `comp-tooltip`)
 - Other (`cloud`, `code`, `campfire`, `settings`)
 
 ---
