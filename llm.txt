@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 25 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.3.11
+0.4.1
 
 ## License
 MIT
@@ -21,7 +21,7 @@ npm install @waggylabs/yumekit
 - Tree-shakeable ESM modules
 - ARIA-compliant and keyboard-navigable
 - Design token system via CSS custom properties
-- Multiple built-in themes (blue-light, blue-dark, orange-light, orange-dark)
+- 22 built-in themes across 11 color families (blue, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive) × dark and light variants
 - React JSX type declarations included
 - Form-associated components with native HTML form API support
 - Security-focused SVG icon sanitization (allowlist-based)
@@ -33,7 +33,7 @@ npm install @waggylabs/yumekit
 - `@waggylabs/yumekit/components/y-{name}` — individual components
 - `@waggylabs/yumekit/icons/all.js` — all pre-built icons
 - `@waggylabs/yumekit/icons/registry` — icon registry API
-- `@waggylabs/yumekit/styles/{name}.css` — theme CSS files
+- `@waggylabs/yumekit/styles/{name}.css` — theme CSS files (e.g. `blue-dark.css`, `purple-light.css`, `olive-dark.css`)
 
 CDN (IIFE):
 ```html
@@ -82,7 +82,7 @@ All custom elements are prefixed with `y-`.
 Theme provider. Wraps your app and injects design tokens as CSS custom properties.
 
 Attributes:
-- `theme` — `"blue-light"` | `"orange-light"` | `"blue-dark"` | `"orange-dark"` — built-in palette name, or a URL/path to a custom CSS theme file
+- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"`
 - `cross-origin` — boolean, enables CORS for remote theme URLs
 - `no-default-font` — boolean, skips injecting the default Lexend font from Google Fonts
 
