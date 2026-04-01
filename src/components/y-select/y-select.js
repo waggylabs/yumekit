@@ -789,12 +789,13 @@ export class YumeSelect extends HTMLElement {
         const gap = 4;
         const maxH = 200;
         const spaceBelow = window.innerHeight - rect.bottom - gap;
+        const wrapper = this.selectContainer.parentElement;
 
         if (spaceBelow >= maxH || spaceBelow >= rect.top) {
-            this.dropdown.style.top = `${this.selectContainer.offsetHeight + gap}px`;
+            this.dropdown.style.top = `${this.selectContainer.offsetTop + this.selectContainer.offsetHeight + gap}px`;
             this.dropdown.style.bottom = "auto";
         } else {
-            this.dropdown.style.bottom = `${this.selectContainer.offsetHeight + gap}px`;
+            this.dropdown.style.bottom = `${wrapper.offsetHeight - this.selectContainer.offsetTop + gap}px`;
             this.dropdown.style.top = "auto";
         }
     }
