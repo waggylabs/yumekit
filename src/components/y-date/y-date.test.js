@@ -26,27 +26,27 @@ describe("<y-date>", () => {
 
     it("shows placeholder text when no value is set", async () => {
         const el = await fixture(html`<y-date></y-date>`);
-        const placeholder = el.shadowRoot.querySelector(".placeholder");
-        expect(placeholder).to.exist;
-        expect(placeholder.textContent).to.equal("Select date");
+        const display = el.shadowRoot.querySelector(".display");
+        expect(display).to.exist;
+        expect(display.placeholder).to.equal("Select date");
     });
 
     it("shows custom placeholder when placeholder attribute is set", async () => {
         const el = await fixture(html`<y-date placeholder="Pick a day"></y-date>`);
-        const placeholder = el.shadowRoot.querySelector(".placeholder");
-        expect(placeholder.textContent).to.equal("Pick a day");
+        const display = el.shadowRoot.querySelector(".display");
+        expect(display.placeholder).to.equal("Pick a day");
     });
 
     it("shows range placeholder in range mode", async () => {
         const el = await fixture(html`<y-date mode="range"></y-date>`);
-        const placeholder = el.shadowRoot.querySelector(".placeholder");
-        expect(placeholder.textContent).to.equal("Select date range");
+        const display = el.shadowRoot.querySelector(".display");
+        expect(display.placeholder).to.equal("Select date range");
     });
 
     it("displays formatted date when value is set", async () => {
         const el = await fixture(html`<y-date value="2026-06-15T12:00:00.000Z" format="MM/DD/YYYY"></y-date>`);
         const display = el.shadowRoot.querySelector(".display");
-        expect(display.textContent.trim()).to.equal("06/15/2026");
+        expect(display.value).to.equal("06/15/2026");
     });
 
     it("renders label slot at top by default", async () => {
@@ -191,7 +191,7 @@ describe("<y-date>", () => {
         el.setAttribute("value", "2026-06-15T12:00:00.000Z");
         await nextFrame();
         const display = el.shadowRoot.querySelector(".display");
-        expect(display.textContent.trim()).to.equal("06/15/2026");
+        expect(display.value).to.equal("06/15/2026");
     });
 
     it("bubbles change event from datepicker", async () => {

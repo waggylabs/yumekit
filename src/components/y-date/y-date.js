@@ -373,6 +373,17 @@ export class YumeDate extends HTMLElement {
             }
         });
 
+        // Trigger keyboard: Enter/Space toggles, Escape closes
+        // (skipped when the event originates from the input itself)
+        trigger.addEventListener("keydown", (e) => {
+            if (e.target === input) return;
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                this._setOpen(popup.hidden);
+            }
+            if (e.key === "Escape") this._setOpen(false);
+        });
+
         clearBtn?.addEventListener("click", (e) => {
             e.stopPropagation();
             this.clear();
