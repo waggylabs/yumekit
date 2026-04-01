@@ -62,10 +62,14 @@ export default {
             description: "Whether the select is in an invalid state.",
             table: { defaultValue: { summary: false } },
         },
+        label: {
+            control: "text",
+            description: "Label text shown above the select.",
+        },
     },
     args: {
         options: defaultOptions,
-        value: "",
+        value: "apple",
         placeholder: "Select an option",
         size: "medium",
         multiple: false,
@@ -73,6 +77,7 @@ export default {
         clearable: false,
         disabled: false,
         invalid: false,
+        label: "Label",
     },
     render: ({
         options,
@@ -84,6 +89,7 @@ export default {
         clearable,
         disabled,
         invalid,
+        label,
     }) => `
         <y-select
             options='${options}'
@@ -97,7 +103,7 @@ export default {
             ${invalid ? "invalid" : ""}
             style="width:300px"
         >
-            <span slot="label">Label</span>
+            ${label ? `<span slot="label">${label}</span>` : ""}
         </y-select>
     `,
 };

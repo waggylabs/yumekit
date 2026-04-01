@@ -31,16 +31,22 @@ export default {
             description: "Menu item size.",
             table: { defaultValue: { summary: "medium" } },
         },
+        visible: {
+            control: "boolean",
+            description: "Whether the menu is open. Set to true to preview direction and size changes in real time.",
+            table: { defaultValue: { summary: false } },
+        },
     },
     args: {
         items: defaultItems,
         direction: "down",
         size: "medium",
+        visible: false,
     },
-    render: ({ items, direction, size }) => `
+    render: ({ items, direction, size, visible }) => `
         <div style="padding:16px">
             <y-button id="menu-anchor" color="primary">Open Menu</y-button>
-            <y-menu anchor="menu-anchor" items='${items}' direction="${direction}" size="${size}"></y-menu>
+            <y-menu anchor="menu-anchor" items='${items}' direction="${direction}" size="${size}" ${visible ? "visible" : ""}></y-menu>
         </div>
     `,
 };

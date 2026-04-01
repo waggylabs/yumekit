@@ -106,7 +106,7 @@ export default {
         size: "medium",
         format: "",
         color: "primary",
-        value: "",
+        value: "2026-06-15T12:00:00.000Z",
         clearable: false,
         disabled: false,
         invalid: false,

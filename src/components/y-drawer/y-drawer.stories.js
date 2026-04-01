@@ -21,18 +21,25 @@ export default {
             description: "Whether the drawer can be resized by dragging.",
             table: { defaultValue: { summary: false } },
         },
+        visible: {
+            control: "boolean",
+            description: "Whether the drawer is open. Set to true to preview position and resizable changes in real time.",
+            table: { defaultValue: { summary: false } },
+        },
     },
     args: {
         position: "left",
         resizable: false,
+        visible: false,
     },
-    render: ({ position, resizable }) => `
+    render: ({ position, resizable, visible }) => `
         <div style="padding:16px">
             <y-button id="drawer-anchor" color="primary">Open Drawer</y-button>
             <y-drawer
                 anchor="drawer-anchor"
                 position="${position}"
                 ${resizable ? "resizable" : ""}
+                ${visible ? "visible" : ""}
             >
                 <div slot="header">Drawer Title</div>
                 <div slot="body">

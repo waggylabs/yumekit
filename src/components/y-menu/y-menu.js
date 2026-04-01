@@ -30,6 +30,7 @@ class YumeMenu extends HTMLElement {
         this.style.position = "fixed";
         this.style.zIndex = "1000";
         this.style.display = "none";
+        if (this.visible) this._updatePosition();
     }
 
     disconnectedCallback() {
