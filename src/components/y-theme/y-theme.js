@@ -127,7 +127,10 @@ export class YumeTheme extends HTMLElement {
 
         while ((match = regex.exec(cssText)) !== null) {
             const prop = `--${match[1]}`;
-            this.style.setProperty(prop, match[2].trim());
+            let value = match[2].trim();
+            // Strip url() values that could trigger unwanted network requests
+            value = value.replace(/url\s*\([^)]*\)/gi, "none");
+            this.style.setProperty(prop, value);
             this._themeProps.push(prop);
         }
     }
@@ -171,6 +174,15 @@ export class YumeTheme extends HTMLElement {
         document.head.appendChild(style);
     }
 
+    /**
+     * Strips @import rules from CSS to prevent bypassing cross-origin guards.
+     * @param {string} css - Raw CSS text.
+     * @returns {string} CSS with @import rules removed.
+     */
+    _stripImportRules(css) {
+        return css.replace(/@import\s+[^;]+;/gi, "");
+    }
+
     /** Resolves theme CSS from either a built-in theme name or a remote URL/path. */
     async _resolveThemeCSS() {
         if (THEMES[this.theme]) return THEMES[this.theme];
@@ -185,7 +197,19 @@ export class YumeTheme extends HTMLElement {
                 return "";
             }
             const response = await fetch(url.href);
-            return await response.text();
+            const contentType = response.headers.get("content-type") || "";
+            if (
+                contentType &&
+                !contentType.includes("text/css") &&
+                !contentType.includes("text/plain")
+            ) {
+                console.error(
+                    `Blocked theme load from ${url.href}: unexpected Content-Type "${contentType}".`,
+                );
+                return "";
+            }
+            const css = await response.text();
+            return this._stripImportRules(css);
         } catch (e) {
             console.error(`Failed to load theme from ${this.theme}:`, e);
             return "";
