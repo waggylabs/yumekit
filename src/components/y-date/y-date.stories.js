@@ -90,6 +90,16 @@ export default {
             description: "Hour display format.",
             table: { defaultValue: { summary: "12" } },
         },
+        minuteInterval: {
+            control: "number",
+            description: "Step interval for the minutes column.",
+            table: { defaultValue: { summary: "5" } },
+        },
+        secondInterval: {
+            control: "number",
+            description: "Step interval for the seconds column.",
+            table: { defaultValue: { summary: "5" } },
+        },
     },
     args: {
         mode: "single",
@@ -104,6 +114,8 @@ export default {
         showMinutes: false,
         showSeconds: false,
         hourFormat: "12",
+        minuteInterval: 5,
+        secondInterval: 5,
     },
     render: (args) => {
         const attrs = [
@@ -122,6 +134,8 @@ export default {
             args.showMinutes ? "show-minutes" : "",
             args.showSeconds ? "show-seconds" : "",
             args.hourFormat === "24" ? `hour-format="24"` : "",
+            args.minuteInterval !== 5 ? `minute-interval="${args.minuteInterval}"` : "",
+            args.secondInterval !== 5 ? `second-interval="${args.secondInterval}"` : "",
         ]
             .filter(Boolean)
             .join(" ");

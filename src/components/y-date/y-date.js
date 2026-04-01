@@ -23,6 +23,8 @@ export class YumeDate extends HTMLElement {
             "show-minutes",
             "show-seconds",
             "hour-format",
+            "minute-interval",
+            "second-interval",
             "show-years",
             "show-months",
             "show-days",
@@ -217,6 +219,22 @@ export class YumeDate extends HTMLElement {
         this.setAttribute("hour-format", v);
     }
 
+    /** @type {number} Interval between minute options (default 5) */
+    get minuteInterval() {
+        return parseInt(this.getAttribute("minute-interval") || "5", 10);
+    }
+    set minuteInterval(v) {
+        this.setAttribute("minute-interval", String(v));
+    }
+
+    /** @type {number} Interval between second options (default 5) */
+    get secondInterval() {
+        return parseInt(this.getAttribute("second-interval") || "5", 10);
+    }
+    set secondInterval(v) {
+        this.setAttribute("second-interval", String(v));
+    }
+
     /** @type {boolean} Show year select in datepicker header (default true). */
     get showYears() {
         return this.getAttribute("show-years") !== "false";
@@ -310,6 +328,8 @@ export class YumeDate extends HTMLElement {
             this.hasAttribute("show-minutes") ? "show-minutes" : "",
             this.hasAttribute("show-seconds") ? "show-seconds" : "",
             this.getAttribute("hour-format") === "24" ? `hour-format="24"` : "",
+            this.hasAttribute("minute-interval") ? `minute-interval="${this.minuteInterval}"` : "",
+            this.hasAttribute("second-interval") ? `second-interval="${this.secondInterval}"` : "",
             this.getAttribute("show-years") === "false"
                 ? `show-years="false"`
                 : "",

@@ -33,6 +33,8 @@ export class YumeDatepicker extends HTMLElement {
             "show-days",
             "format",
             "hour-format",
+            "minute-interval",
+            "second-interval",
             "color",
         ];
     }
@@ -165,6 +167,22 @@ export class YumeDatepicker extends HTMLElement {
     }
     set hourFormat(v) {
         this.setAttribute("hour-format", v);
+    }
+
+    /** @type {number} Interval between minute options (default 5) */
+    get minuteInterval() {
+        return parseInt(this.getAttribute("minute-interval") || "5", 10);
+    }
+    set minuteInterval(v) {
+        this.setAttribute("minute-interval", String(v));
+    }
+
+    /** @type {number} Interval between second options (default 5) */
+    get secondInterval() {
+        return parseInt(this.getAttribute("second-interval") || "5", 10);
+    }
+    set secondInterval(v) {
+        this.setAttribute("second-interval", String(v));
     }
 
     /** @type {string} Date format string (default "MM/DD/YYYY") */
@@ -700,14 +718,20 @@ export class YumeDatepicker extends HTMLElement {
             >${label}</y-button>`;
         }).join("");
 
+        const mInterval = this.minuteInterval;
+        const sInterval = this.secondInterval;
+
         const minutesBtns = this.showMinutes
             ? `
             <div class="time-col-wrap">
                 <span class="time-col-hdr">Min</span>
                 <div class="time-col" data-col="minutes">
-                    ${Array.from({ length: 12 }, (_, i) => i * 5)
+                    ${Array.from(
+                        { length: Math.floor(60 / mInterval) },
+                        (_, i) => i * mInterval,
+                    )
                         .map((m) => {
-                            const sel = Math.floor(time.m / 5) * 5 === m;
+                            const sel = Math.floor(time.m / mInterval) * mInterval === m;
                             return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
                             style-type="${sel ? "filled" : "flat"}"
@@ -728,9 +752,12 @@ export class YumeDatepicker extends HTMLElement {
             <div class="time-col-wrap">
                 <span class="time-col-hdr">Sec</span>
                 <div class="time-col" data-col="seconds">
-                    ${Array.from({ length: 12 }, (_, i) => i * 5)
+                    ${Array.from(
+                        { length: Math.floor(60 / sInterval) },
+                        (_, i) => i * sInterval,
+                    )
                         .map((s) => {
-                            const sel = Math.floor(time.s / 5) * 5 === s;
+                            const sel = Math.floor(time.s / sInterval) * sInterval === s;
                             return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
                             style-type="${sel ? "filled" : "flat"}"
@@ -924,11 +951,18 @@ export class YumeDatepicker extends HTMLElement {
             this._startDate = new Date(val);
         }
 
+        const snapMin = (v) => this.showMinutes
+            ? Math.floor(v / this.minuteInterval) * this.minuteInterval
+            : 0;
+        const snapSec = (v) => this.showSeconds
+            ? Math.floor(v / this.secondInterval) * this.secondInterval
+            : 0;
+
         if (this._startDate && !isNaN(this._startDate)) {
             this._startTime = {
                 h: this._startDate.getHours(),
-                m: this.showMinutes ? this._startDate.getMinutes() : 0,
-                s: this.showSeconds ? this._startDate.getSeconds() : 0,
+                m: snapMin(this._startDate.getMinutes()),
+                s: snapSec(this._startDate.getSeconds()),
             };
             const v = new Date(this._startDate);
             v.setDate(1);
@@ -938,8 +972,8 @@ export class YumeDatepicker extends HTMLElement {
         if (this._endDate && !isNaN(this._endDate)) {
             this._endTime = {
                 h: this._endDate.getHours(),
-                m: this.showMinutes ? this._endDate.getMinutes() : 0,
-                s: this.showSeconds ? this._endDate.getSeconds() : 0,
+                m: snapMin(this._endDate.getMinutes()),
+                s: snapSec(this._endDate.getSeconds()),
             };
         }
     }

@@ -20,14 +20,16 @@ const ALL_THEMES = [
 
 function themePreview(theme) {
     return `
-        <y-theme theme="${theme}" style="display:block;padding:20px;flex:1;min-width:260px">
-            <p style="margin:0 0 12px;font-size:0.8em;opacity:0.6">${theme}</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-                <y-button color="primary">Primary</y-button>
-                <y-button color="success">Success</y-button>
-                <y-button color="error">Error</y-button>
-            </div>
-            <y-input><span slot="label">Input</span></y-input>
+        <y-theme theme="${theme}" style="display:block;flex:1;min-width:260px">
+            <y-card>
+                <p style="margin:0 0 12px;font-size:0.8em;opacity:0.6">${theme}</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                    <y-button color="primary">Primary</y-button>
+                    <y-button color="success">Success</y-button>
+                    <y-button color="error">Error</y-button>
+                </div>
+                <y-input><span slot="label">Input</span></y-input>
+            </y-card>
         </y-theme>
     `;
 }
@@ -47,26 +49,28 @@ export default {
         theme: "blue-light",
     },
     render: ({ theme }) => `
-        <y-theme theme="${theme}" style="display:block;padding:24px">
-            <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <y-button color="primary">Primary</y-button>
-                    <y-button color="secondary">Secondary</y-button>
-                    <y-button color="success">Success</y-button>
-                    <y-button color="warning">Warning</y-button>
-                    <y-button color="error">Error</y-button>
-                </div>
-                <y-input>
-                    <span slot="label">Input field</span>
-                </y-input>
-                <y-card>
-                    <div slot="header"><strong>Card in theme</strong></div>
-                    <p>This content inherits the theme's CSS variables.</p>
-                    <div slot="footer">
-                        <y-badge color="primary">Active</y-badge>
+        <y-theme theme="${theme}" style="display:block">
+            <y-card style="max-width:400px">
+                <div style="display:flex;flex-direction:column;gap:16px">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <y-button color="primary">Primary</y-button>
+                        <y-button color="secondary">Secondary</y-button>
+                        <y-button color="success">Success</y-button>
+                        <y-button color="warning">Warning</y-button>
+                        <y-button color="error">Error</y-button>
                     </div>
-                </y-card>
-            </div>
+                    <y-input>
+                        <span slot="label">Input field</span>
+                    </y-input>
+                    <y-card>
+                        <div slot="header"><strong>Card in theme</strong></div>
+                        <p>This content inherits the theme's CSS variables.</p>
+                        <div slot="footer">
+                            <y-badge color="primary">Active</y-badge>
+                        </div>
+                    </y-card>
+                </div>
+            </y-card>
         </y-theme>
     `,
 };

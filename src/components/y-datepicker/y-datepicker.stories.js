@@ -84,6 +84,16 @@ export default {
             description: "Show the day grid.",
             table: { defaultValue: { summary: "true" } },
         },
+        minuteInterval: {
+            control: "number",
+            description: "Step interval for the minutes column.",
+            table: { defaultValue: { summary: "5" } },
+        },
+        secondInterval: {
+            control: "number",
+            description: "Step interval for the seconds column.",
+            table: { defaultValue: { summary: "5" } },
+        },
     },
     args: {
         mode: "single",
@@ -96,6 +106,8 @@ export default {
         showYears: true,
         showMonths: true,
         showDays: true,
+        minuteInterval: 5,
+        secondInterval: 5,
     },
     render: (args) => {
         const attrs = [
@@ -112,6 +124,8 @@ export default {
             args.showYears === false ? `show-years="false"` : "",
             args.showMonths === false ? `show-months="false"` : "",
             args.showDays === false ? `show-days="false"` : "",
+            args.minuteInterval !== 5 ? `minute-interval="${args.minuteInterval}"` : "",
+            args.secondInterval !== 5 ? `second-interval="${args.secondInterval}"` : "",
         ]
             .filter(Boolean)
             .join(" ");
