@@ -314,10 +314,18 @@ export class YumeDate extends HTMLElement {
                     role="combobox"
                     aria-expanded="false"
                     aria-haspopup="true"
-                    tabindex="${isDisabled ? -1 : 0}"
+                    tabindex="-1"
                 >
                     <slot name="left-icon"></slot>
-                    <span class="display">${displayText || `<span class="placeholder">${this.placeholder}</span>`}</span>
+                    <input
+                        class="display"
+                        type="text"
+                        value="${displayText}"
+                        placeholder="${this.placeholder}"
+                        autocomplete="off"
+                        spellcheck="false"
+                        ${isDisabled ? "disabled" : ""}
+                    >
                     ${
                         this.clearable && this.value
                             ? `<button class="clear-btn" aria-label="Clear date" tabindex="-1">
@@ -346,19 +354,23 @@ export class YumeDate extends HTMLElement {
         const popup = this.shadowRoot.querySelector(".popup");
         const picker = this.shadowRoot.querySelector("y-datepicker");
         const clearBtn = this.shadowRoot.querySelector(".clear-btn");
+        const input = this.shadowRoot.querySelector(".display");
 
+        // Flag set by picker change to prevent blur from overriding a picker selection
+        let suppressBlurApply = false;
+
+        // Clicking the icon / trigger area (not the input itself) toggles the popup
         trigger.addEventListener("click", (e) => {
             if (clearBtn && clearBtn.contains(e.target)) return;
-            e.stopPropagation();
-            this._setOpen(popup.hidden);
-        });
-
-        trigger.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                this._setOpen(popup.hidden);
+            if (input && (e.target === input || input.contains(e.target))) {
+                this._setOpen(true);
+                return;
             }
-            if (e.key === "Escape") this._setOpen(false);
+            this._setOpen(popup.hidden);
+            if (!popup.hidden) {
+                input?.focus();
+                input?.select();
+            }
         });
 
         clearBtn?.addEventListener("click", (e) => {
@@ -366,17 +378,67 @@ export class YumeDate extends HTMLElement {
             this.clear();
         });
 
+        // Input: opening the picker
+        input?.addEventListener("focus", () => {
+            this._setOpen(true);
+            input.select();
+        });
+
+        // Input: live-update picker as user types
+        input?.addEventListener("input", () => {
+            const parsed = this._parseTypedDate(input.value);
+            if (parsed) picker.value = parsed.toISOString();
+        });
+
+        // Input: keyboard handling
+        input?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                const parsed = this._parseTypedDate(input.value);
+                if (parsed) {
+                    this._applyParsedDate(parsed);
+                    this._setOpen(false);
+                }
+            } else if (e.key === "Escape") {
+                e.stopPropagation();
+                input.value = this._getFormattedDisplay();
+                this._setOpen(false);
+            }
+        });
+
+        // Input: apply valid typed date on blur, revert if invalid
+        // Uses setTimeout(0) so picker clicks can fire and set suppressBlurApply first
+        input?.addEventListener("blur", () => {
+            const capturedText = input.value.trim();
+            setTimeout(() => {
+                if (suppressBlurApply) {
+                    suppressBlurApply = false;
+                    input.value = this._getFormattedDisplay();
+                    return;
+                }
+                if (!capturedText) {
+                    if (this.value) this.clear();
+                    return;
+                }
+                const parsed = this._parseTypedDate(capturedText);
+                if (parsed) {
+                    this._applyParsedDate(parsed);
+                } else {
+                    input.value = this._getFormattedDisplay();
+                    this._syncPickerValue(); // reset picker to last committed date
+                }
+            }, 0);
+        });
+
+        // Picker date selection
         picker.addEventListener("change", (e) => {
+            suppressBlurApply = true;
             const { value, formatted } = e.detail;
             this.setAttribute("value", value);
             this._internals.setFormValue(value, this.name);
 
-            const display = this.shadowRoot.querySelector(".display");
-            if (display) {
-                display.innerHTML = formatted
-                    ? formatted
-                    : `<span class="placeholder">${this.placeholder}</span>`;
-            }
+            if (input) input.value = formatted || "";
 
             this._updateClearBtn();
 
@@ -433,7 +495,7 @@ export class YumeDate extends HTMLElement {
                 padding: ${padding};
                 min-height: ${minHeight};
                 box-sizing: border-box;
-                cursor: pointer;
+                cursor: text;
                 user-select: none;
                 transition: border-color 0.2s ease-in-out;
                 outline: none;
@@ -443,7 +505,7 @@ export class YumeDate extends HTMLElement {
                 border-color: var(--component-input-color);
             }
 
-            .trigger:focus {
+            .trigger:focus-within {
                 border-color: var(--component-input-accent);
             }
 
@@ -455,13 +517,20 @@ export class YumeDate extends HTMLElement {
             .display {
                 flex: 1;
                 min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
+                border: none;
+                background: transparent;
+                color: inherit;
+                font-family: inherit;
                 font-size: 1em;
+                padding: 0;
+                outline: none;
+                cursor: text;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
             }
 
-            .placeholder {
+            .display::placeholder {
                 color: var(--base-content-light);
             }
 
@@ -593,10 +662,7 @@ export class YumeDate extends HTMLElement {
     _updateDisplay() {
         const display = this.shadowRoot.querySelector(".display");
         if (!display) return;
-        const text = this._getFormattedDisplay();
-        display.innerHTML = text
-            ? text
-            : `<span class="placeholder">${this.placeholder}</span>`;
+        display.value = this._getFormattedDisplay();
         this._updateClearBtn();
     }
 
@@ -605,6 +671,101 @@ export class YumeDate extends HTMLElement {
         const label = this.shadowRoot.querySelector(".label-wrapper");
         trigger?.classList.toggle("is-invalid", this.invalid);
         label?.classList.toggle("is-invalid", this.invalid);
+    }
+
+    /**
+     * Parse a user-typed string into a Date using this component's format.
+     * Returns null if the text doesn't match the format or produces an invalid date.
+     * @param {string} text
+     * @returns {Date|null}
+     */
+    _parseTypedDate(text) {
+        if (!text) return null;
+        const fmt = this.format;
+
+        const tokens = [
+            { token: "YYYY", key: "year",   re: "(\\d{4})" },
+            { token: "MM",   key: "month",  re: "(\\d{1,2})" },
+            { token: "DD",   key: "day",    re: "(\\d{1,2})" },
+            { token: "HH",   key: "hour24", re: "(\\d{1,2})" },
+            { token: "hh",   key: "hour12", re: "(\\d{1,2})" },
+            { token: "mm",   key: "minute", re: "(\\d{1,2})" },
+            { token: "ss",   key: "second", re: "(\\d{1,2})" },
+            { token: "A",    key: "ampm",   re: "(AM|PM)" },
+            { token: "a",    key: "ampm",   re: "(am|pm)" },
+        ];
+
+        // Replace each token with a placeholder, then escape literal chars,
+        // then restore token capture groups
+        const order = [];
+        let reStr = fmt;
+        for (const t of tokens) {
+            if (reStr.includes(t.token)) {
+                reStr = reStr.replace(t.token, `\x00${order.length}\x00`);
+                order.push(t);
+            }
+        }
+        reStr = reStr.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+        order.forEach((t, i) => {
+            reStr = reStr.replace(`\x00${i}\x00`, t.re);
+        });
+
+        const match = new RegExp(`^${reStr}$`, "i").exec(text.trim());
+        if (!match) return null;
+
+        const parts = {};
+        order.forEach((t, i) => { parts[t.key] = match[i + 1]; });
+
+        const year   = parts.year   ? parseInt(parts.year)       : new Date().getFullYear();
+        const month  = parts.month  ? parseInt(parts.month) - 1  : 0;
+        const day    = parts.day    ? parseInt(parts.day)        : 1;
+
+        let hour = 0;
+        if (parts.hour24 !== undefined) {
+            hour = parseInt(parts.hour24);
+        } else if (parts.hour12 !== undefined) {
+            hour = parseInt(parts.hour12) % 12;
+            if ((parts.ampm || "").toUpperCase() === "PM") hour += 12;
+        }
+        const minute = parts.minute ? parseInt(parts.minute) : 0;
+        const second = parts.second ? parseInt(parts.second) : 0;
+
+        if (month < 0 || month > 11) return null;
+        if (day < 1 || day > 31) return null;
+        if (hour < 0 || hour > 23) return null;
+        if (minute < 0 || minute > 59) return null;
+        if (second < 0 || second > 59) return null;
+
+        const d = new Date(year, month, day, hour, minute, second);
+        // Catch overflow (e.g. Feb 30 → Mar 2)
+        if (d.getMonth() !== month || d.getDate() !== day) return null;
+        return d;
+    }
+
+    /**
+     * Apply a parsed Date as the component's value and emit a change event.
+     * @param {Date} date
+     */
+    _applyParsedDate(date) {
+        const iso = date.toISOString();
+        this.setAttribute("value", iso);
+        this._internals.setFormValue(iso, this.name);
+        this._syncPickerValue();
+        this._updateClearBtn();
+        const display = this.shadowRoot.querySelector(".display");
+        if (display) display.value = this._getFormattedDisplay();
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: iso,
+                    startDate: date,
+                    endDate: null,
+                    formatted: this._getFormattedDisplay(),
+                },
+            }),
+        );
     }
 }
 
