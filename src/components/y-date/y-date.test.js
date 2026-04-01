@@ -49,6 +49,28 @@ describe("<y-date>", () => {
         expect(display.value).to.equal("06/15/2026");
     });
 
+    it("default format includes time when show-time is set", async () => {
+        const el = await fixture(html`<y-date show-time></y-date>`);
+        expect(el.format).to.include("hh:mm");
+    });
+
+    it("default format includes seconds when show-seconds is set", async () => {
+        const el = await fixture(html`<y-date show-seconds></y-date>`);
+        expect(el.format).to.include("hh:mm:ss");
+    });
+
+    it("displays time in the input when show-time is set and value has time", async () => {
+        const el = await fixture(html`<y-date show-time value="2026-06-15T14:30:00.000Z"></y-date>`);
+        const display = el.shadowRoot.querySelector(".display");
+        // Exact hour depends on the local timezone; verify the date and AM/PM marker are present
+        expect(display.value).to.match(/06\/15\/2026\s+\d{1,2}:\d{2}\s+(AM|PM)/i);
+    });
+
+    it("explicit format attribute overrides the time-aware default", async () => {
+        const el = await fixture(html`<y-date show-time format="MM/DD/YYYY"></y-date>`);
+        expect(el.format).to.equal("MM/DD/YYYY");
+    });
+
     it("renders label slot at top by default", async () => {
         const el = await fixture(html`
             <y-date><span slot="label">Date</span></y-date>

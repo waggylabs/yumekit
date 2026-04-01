@@ -22,8 +22,8 @@ export default {
         },
         format: {
             control: "text",
-            description: "Display format. Tokens: YYYY MM DD HH hh mm ss A a",
-            table: { defaultValue: { summary: "MM/DD/YYYY" } },
+            description: "Display format. Tokens: YYYY MM DD HH hh mm ss A a. Leave blank to use the automatic default (includes time tokens when show-time / show-minutes / show-seconds are set).",
+            table: { defaultValue: { summary: "MM/DD/YYYY (time-aware when applicable)" } },
         },
         placeholder: {
             control: "text",
@@ -68,7 +68,7 @@ export default {
     args: {
         mode: "single",
         size: "medium",
-        format: "MM/DD/YYYY",
+        format: "",
         color: "primary",
         value: "",
         clearable: false,
@@ -81,7 +81,9 @@ export default {
         const attrs = [
             `mode="${args.mode}"`,
             `size="${args.size}"`,
-            `format="${args.format}"`,
+            // Only pass format when explicitly set — the component derives a
+            // time-aware default from show-time/show-minutes/show-seconds otherwise
+            args.format ? `format="${args.format}"` : "",
             `color="${args.color}"`,
             args.value ? `value="${args.value}"` : "",
             args.placeholder ? `placeholder="${args.placeholder}"` : "",
@@ -119,7 +121,7 @@ export const WithTime = {
     decorators: [
         (story) => `<div style="min-height: 520px; padding: 16px;">${story()}</div>`,
     ],
-    args: { showTime: true, format: "MM/DD/YYYY hh:mm A" },
+    args: { showTime: true, value: "2026-06-15T14:30:00.000Z" },
 };
 
 /** Clearable — shows an ✕ button once a date is selected. */

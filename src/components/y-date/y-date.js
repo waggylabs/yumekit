@@ -103,9 +103,16 @@ export class YumeDate extends HTMLElement {
             : this.removeAttribute("disabled");
     }
 
-    /** @type {string} Date display format string (default "MM/DD/YYYY"). */
+    /** @type {string} Date display format string. Defaults to "MM/DD/YYYY", or
+     *  a time-aware variant when show-time / show-minutes / show-seconds are set. */
     get format() {
-        return this.getAttribute("format") || "MM/DD/YYYY";
+        if (this.hasAttribute("format")) return this.getAttribute("format");
+        if (this.showTime || this.showMinutes || this.showSeconds) {
+            return this.showSeconds
+                ? "MM/DD/YYYY hh:mm:ss A"
+                : "MM/DD/YYYY hh:mm A";
+        }
+        return "MM/DD/YYYY";
     }
     set format(v) {
         this.setAttribute("format", v);
