@@ -25,13 +25,14 @@ export class YumeDatepicker extends HTMLElement {
             "value",
             "min",
             "max",
-            "show-time",
+            "show-hours",
             "show-minutes",
             "show-seconds",
             "show-years",
             "show-months",
             "show-days",
             "format",
+            "hour-format",
             "color",
         ];
     }
@@ -105,16 +106,16 @@ export class YumeDatepicker extends HTMLElement {
     }
 
     /** @type {boolean} Show hour time picker */
-    get showTime() {
-        return this.hasAttribute("show-time");
+    get showHours() {
+        return this.hasAttribute("show-hours");
     }
-    set showTime(v) {
+    set showHours(v) {
         v
-            ? this.setAttribute("show-time", "")
-            : this.removeAttribute("show-time");
+            ? this.setAttribute("show-hours", "")
+            : this.removeAttribute("show-hours");
     }
 
-    /** @type {boolean} Show minute column in time picker (implies show-time) */
+    /** @type {boolean} Show minute column in time picker (implies show-hours) */
     get showMinutes() {
         return this.hasAttribute("show-minutes");
     }
@@ -158,6 +159,14 @@ export class YumeDatepicker extends HTMLElement {
         this.setAttribute("show-days", v ? "true" : "false");
     }
 
+    /** @type {string} Hour display format: "12" (default) or "24" */
+    get hourFormat() {
+        return this.getAttribute("hour-format") || "12";
+    }
+    set hourFormat(v) {
+        this.setAttribute("hour-format", v);
+    }
+
     /** @type {string} Date format string (default "MM/DD/YYYY") */
     get format() {
         return this.getAttribute("format") || "MM/DD/YYYY";
@@ -197,21 +206,33 @@ export class YumeDatepicker extends HTMLElement {
         return this._formatDate(date);
     }
 
+    /**
+     * Navigate the calendar view to a given year/month without selecting a date.
+     * @param {number} year  – full year (e.g. 2026)
+     * @param {number} [month] – 0-based month (0 = Jan). If omitted the month stays unchanged.
+     */
+    navigateTo(year, month) {
+        this._viewDate.setFullYear(year);
+        if (month !== undefined) this._viewDate.setMonth(month);
+        this._viewDate.setDate(1);
+        this.render();
+    }
+
     render() {
-        const showTimeCols =
-            this.showTime || this.showMinutes || this.showSeconds;
+        const showHoursCols =
+            this.showHours || this.showMinutes || this.showSeconds;
         const isRange = this.mode === "range";
 
         this.shadowRoot.innerHTML = `
             <style>${this._buildStyles()}</style>
             <div class="datepicker${isRange ? " range" : ""}">
-                ${this._buildPanel("left", showTimeCols)}
-                ${isRange ? this._buildPanel("right", showTimeCols) : ""}
+                ${this._buildPanel("left", showHoursCols)}
+                ${isRange ? this._buildPanel("right", showHoursCols) : ""}
             </div>
         `;
 
         this._bindListeners();
-        if (showTimeCols) this._scrollToSelectedTime();
+        if (showHoursCols) this._scrollToSelectedTime();
     }
 
     // -------------------------------------------------------------------------
@@ -478,7 +499,7 @@ export class YumeDatepicker extends HTMLElement {
         `;
     }
 
-    _buildPanel(side, showTime) {
+    _buildPanel(side, showHours) {
         const vd = this._viewDateForSide(side);
         const isRange = this.mode === "range";
         return `
@@ -489,7 +510,7 @@ export class YumeDatepicker extends HTMLElement {
                     ${!this.showDays && this.showMonths ? this._buildMonthGrid(vd, side) : ""}
                     ${!this.showDays && !this.showMonths ? this._buildYearGrid(vd) : ""}
                 </div>
-                ${showTime ? this._buildTimeColumn(side) : ""}
+                ${showHours ? this._buildTimeColumn(side) : ""}
             </div>
         `;
     }
@@ -663,9 +684,11 @@ export class YumeDatepicker extends HTMLElement {
         const time = side === "right" ? this._endTime : this._startTime;
         const disabled = side === "right" && !this._endDate;
 
+        const use24 = this.hourFormat === "24";
         const hoursBtns = Array.from({ length: 24 }, (_, h) => {
-            const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-            const ampm = h < 12 ? "AM" : "PM";
+            const label = use24
+                ? `${String(h).padStart(2, "0")}:00`
+                : `${h === 0 ? 12 : h > 12 ? h - 12 : h}:00 ${h < 12 ? "AM" : "PM"}`;
             const sel = time.h === h;
             return `<y-button
                 class="time-btn${sel ? " selected" : ""}"
@@ -674,7 +697,7 @@ export class YumeDatepicker extends HTMLElement {
                 size="small"
                 data-hour="${h}"
                 data-side="${side}"
-            >${h12}:00 ${ampm}</y-button>`;
+            >${label}</y-button>`;
         }).join("");
 
         const minutesBtns = this.showMinutes
@@ -789,7 +812,7 @@ export class YumeDatepicker extends HTMLElement {
                     endDate: this._endDate ? new Date(this._endDate) : null,
                     formatted:
                         this.mode === "range"
-                            ? `${this._formatDate(this._startDate)}${this._endDate ? " – " + this._formatDate(this._endDate) : ""}`
+                            ? `${this._formatDate(this._startDate)}${this._endDate ? " - " + this._formatDate(this._endDate) : ""}`
                             : this._formatDate(this._startDate),
                 },
             }),
@@ -904,8 +927,8 @@ export class YumeDatepicker extends HTMLElement {
         if (this._startDate && !isNaN(this._startDate)) {
             this._startTime = {
                 h: this._startDate.getHours(),
-                m: this._startDate.getMinutes(),
-                s: this._startDate.getSeconds(),
+                m: this.showMinutes ? this._startDate.getMinutes() : 0,
+                s: this.showSeconds ? this._startDate.getSeconds() : 0,
             };
             const v = new Date(this._startDate);
             v.setDate(1);
@@ -915,8 +938,8 @@ export class YumeDatepicker extends HTMLElement {
         if (this._endDate && !isNaN(this._endDate)) {
             this._endTime = {
                 h: this._endDate.getHours(),
-                m: this._endDate.getMinutes(),
-                s: this._endDate.getSeconds(),
+                m: this.showMinutes ? this._endDate.getMinutes() : 0,
+                s: this.showSeconds ? this._endDate.getSeconds() : 0,
             };
         }
     }

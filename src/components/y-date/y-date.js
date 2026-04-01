@@ -19,9 +19,10 @@ export class YumeDate extends HTMLElement {
             "label-position",
             "color",
             "clearable",
-            "show-time",
+            "show-hours",
             "show-minutes",
             "show-seconds",
+            "hour-format",
             "show-years",
             "show-months",
             "show-days",
@@ -105,10 +106,10 @@ export class YumeDate extends HTMLElement {
     }
 
     /** @type {string} Date display format string. Defaults to "MM/DD/YYYY", or
-     *  a time-aware variant when show-time / show-minutes / show-seconds are set. */
+     *  a time-aware variant when show-hours / show-minutes / show-seconds are set. */
     get format() {
         if (this.hasAttribute("format")) return this.getAttribute("format");
-        if (this.showTime || this.showMinutes || this.showSeconds) {
+        if (this.showHours || this.showMinutes || this.showSeconds) {
             return this.showSeconds
                 ? "MM/DD/YYYY hh:mm:ss A"
                 : "MM/DD/YYYY hh:mm A";
@@ -179,13 +180,13 @@ export class YumeDate extends HTMLElement {
     }
 
     /** @type {boolean} Show hour time picker. */
-    get showTime() {
-        return this.hasAttribute("show-time");
+    get showHours() {
+        return this.hasAttribute("show-hours");
     }
-    set showTime(v) {
+    set showHours(v) {
         v
-            ? this.setAttribute("show-time", "")
-            : this.removeAttribute("show-time");
+            ? this.setAttribute("show-hours", "")
+            : this.removeAttribute("show-hours");
     }
 
     /** @type {boolean} Show minutes column in time picker. */
@@ -206,6 +207,14 @@ export class YumeDate extends HTMLElement {
         v
             ? this.setAttribute("show-seconds", "")
             : this.removeAttribute("show-seconds");
+    }
+
+    /** @type {string} Hour display format: "12" (default) or "24" */
+    get hourFormat() {
+        return this.getAttribute("hour-format") || "12";
+    }
+    set hourFormat(v) {
+        this.setAttribute("hour-format", v);
     }
 
     /** @type {boolean} Show year select in datepicker header (default true). */
@@ -297,9 +306,10 @@ export class YumeDate extends HTMLElement {
             this.value ? `value="${this.value}"` : "",
             this.min ? `min="${this.min}"` : "",
             this.max ? `max="${this.max}"` : "",
-            this.hasAttribute("show-time") ? "show-time" : "",
+            this.hasAttribute("show-hours") ? "show-hours" : "",
             this.hasAttribute("show-minutes") ? "show-minutes" : "",
             this.hasAttribute("show-seconds") ? "show-seconds" : "",
+            this.getAttribute("hour-format") === "24" ? `hour-format="24"` : "",
             this.getAttribute("show-years") === "false"
                 ? `show-years="false"`
                 : "",
@@ -405,10 +415,40 @@ export class YumeDate extends HTMLElement {
             input.select();
         });
 
-        // Input: live-update picker as user types
+        // Input: live-update picker as user types (type-ahead)
         input?.addEventListener("input", () => {
-            const parsed = this._parseTypedDate(input.value);
-            if (parsed) picker.value = parsed.toISOString();
+            const text = input.value;
+            if (this.mode === "range") {
+                this._handleRangeTypeahead(text, picker);
+                return;
+            }
+            // Full match → select the date in the picker
+            const parsed = this._parseTypedDate(text);
+            if (parsed) {
+                picker.value = parsed.toISOString();
+                return;
+            }
+            // Partial match → navigate the picker to the typed month/year
+            const partial = this._parsePartialInput(text);
+            if (!partial) return;
+            const now = new Date();
+            const year = partial.year ?? now.getFullYear();
+            const month =
+                partial.month !== undefined ? partial.month - 1 : undefined;
+            if (partial.day && month !== undefined) {
+                // Month + day available → construct a preview date and set as value
+                // (this highlights the day in the calendar without dispatching events)
+                const preview = new Date(year, month, partial.day);
+                if (
+                    preview.getMonth() === month &&
+                    preview.getDate() === partial.day
+                ) {
+                    picker.value = preview.toISOString();
+                    return;
+                }
+            }
+            // Navigate to the month/year without selecting a day
+            picker.navigateTo(year, month);
         });
 
         // Input: keyboard handling
@@ -416,9 +456,26 @@ export class YumeDate extends HTMLElement {
             if (e.key === "Enter") {
                 e.preventDefault();
                 e.stopPropagation();
+                if (this.mode === "range") {
+                    const result = this._parseRangeInput(input.value);
+                    if (result) {
+                        this._applyRangeValue(result.start, result.end);
+                        this._setOpen(false);
+                    }
+                    return;
+                }
                 const parsed = this._parseTypedDate(input.value);
                 if (parsed) {
                     this._applyParsedDate(parsed);
+                    this._setOpen(false);
+                    return;
+                }
+                // Accept partial type-ahead input by building a presumed date
+                const presumed = this._buildPresumedDate(
+                    this._parsePartialInput(input.value),
+                );
+                if (presumed) {
+                    this._applyParsedDate(presumed);
                     this._setOpen(false);
                 }
             } else if (e.key === "Escape") {
@@ -440,6 +497,16 @@ export class YumeDate extends HTMLElement {
                 }
                 if (!capturedText) {
                     if (this.value) this.clear();
+                    return;
+                }
+                if (this.mode === "range") {
+                    const result = this._parseRangeInput(capturedText);
+                    if (result) {
+                        this._applyRangeValue(result.start, result.end);
+                    } else {
+                        input.value = this._getFormattedDisplay();
+                        this._syncPickerValue();
+                    }
                     return;
                 }
                 const parsed = this._parseTypedDate(capturedText);
@@ -470,7 +537,7 @@ export class YumeDate extends HTMLElement {
                 const src = e.detail.source;
                 if (src) this._selectedParts.add(src);
                 const required = ["day"];
-                if (picker.showTime) required.push("hour");
+                if (picker.showHours) required.push("hour");
                 if (picker.showMinutes) required.push("minute");
                 if (picker.showSeconds) required.push("second");
                 if (required.every((p) => this._selectedParts.has(p))) {
@@ -644,7 +711,7 @@ export class YumeDate extends HTMLElement {
             const [s, e] = value.split(",");
             const start = s ? formatOne(s) : "";
             const end = e ? formatOne(e) : "";
-            return start && end ? `${start} – ${end}` : start;
+            return start && end ? `${start} - ${end}` : start;
         }
         return formatOne(value);
     }
@@ -782,6 +849,115 @@ export class YumeDate extends HTMLElement {
     }
 
     /**
+     * Parse partial user input and return an object with whatever date parts
+     * could be extracted based on the format string.  Returns null if nothing
+     * matches.
+     *
+     * For format "MM/DD/YYYY" and input "04"  → { month: 4 }
+     * For format "MM/DD/YYYY" and input "04/15" → { month: 4, day: 15 }
+     * For format "MM/DD/YYYY" and input "04/15/2026" → { month: 4, day: 15, year: 2026 }
+     *
+     * @param {string} text
+     * @returns {{ month?: number, day?: number, year?: number, hour?: number, minute?: number, second?: number } | null}
+     */
+    _parsePartialInput(text) {
+        if (!text) return null;
+        const fmt = this.format;
+
+        const tokenDefs = [
+            { token: "YYYY", key: "year", re: "(\\d{1,4})" },
+            { token: "MM", key: "month", re: "(\\d{1,2})" },
+            { token: "DD", key: "day", re: "(\\d{1,2})" },
+            { token: "HH", key: "hour", re: "(\\d{1,2})" },
+            { token: "hh", key: "hour", re: "(\\d{1,2})" },
+            { token: "mm", key: "minute", re: "(\\d{1,2})" },
+            { token: "ss", key: "second", re: "(\\d{1,2})" },
+            { token: "A", key: "ampm", re: "(AM|PM)" },
+            { token: "a", key: "ampm", re: "(am|pm)" },
+        ];
+
+        // Parse format into ordered groups: [{ key, re, sep }, ...]
+        // Each group is a token followed by the literal separator after it.
+        const groups = [];
+        let remaining = fmt;
+        while (remaining.length > 0) {
+            let matched = false;
+            for (const td of tokenDefs) {
+                if (remaining.startsWith(td.token)) {
+                    groups.push({ key: td.key, re: td.re, sep: "" });
+                    remaining = remaining.slice(td.token.length);
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                // Literal character — attach to previous group's separator
+                if (groups.length > 0) {
+                    groups[groups.length - 1].sep += remaining[0];
+                }
+                remaining = remaining.slice(1);
+            }
+        }
+
+        if (groups.length === 0) return null;
+
+        // Build a progressive regex where each subsequent group is optional.
+        // For "MM/DD/YYYY" this produces: ^(\d{1,2})(?:\/(\d{1,2})(?:\/(\d{1,4}))?)?$
+        let reStr = "";
+        for (let j = groups.length - 1; j >= 0; j--) {
+            const g = groups[j];
+            if (j === groups.length - 1) {
+                reStr = g.re;
+            } else {
+                const sepEsc = g.sep.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+                reStr = g.re + "(?:" + sepEsc + reStr + ")?";
+            }
+        }
+
+        const match = new RegExp("^" + reStr + "$", "i").exec(text.trim());
+        if (!match) return null;
+
+        const result = {};
+        groups.forEach((g, i) => {
+            const val = match[i + 1];
+            if (val === undefined) return;
+            if (g.key === "ampm") {
+                result.ampm = val.toUpperCase();
+            } else {
+                result[g.key] = parseInt(val, 10);
+            }
+        });
+
+        // Adjust 12-hour clock if ampm is present
+        if (result.hour !== undefined && result.ampm) {
+            result.hour = (result.hour % 12) + (result.ampm === "PM" ? 12 : 0);
+        }
+
+        // Basic range validation on whatever parts we have
+        if (
+            result.month !== undefined &&
+            (result.month < 1 || result.month > 12)
+        )
+            return null;
+        if (result.day !== undefined && (result.day < 1 || result.day > 31))
+            return null;
+        if (result.hour !== undefined && (result.hour < 0 || result.hour > 23))
+            return null;
+        if (
+            result.minute !== undefined &&
+            (result.minute < 0 || result.minute > 59)
+        )
+            return null;
+        if (
+            result.second !== undefined &&
+            (result.second < 0 || result.second > 59)
+        )
+            return null;
+
+        return Object.keys(result).length > 0 ? result : null;
+    }
+
+    /**
      * Apply a parsed Date as the component's value and emit a change event.
      * @param {Date} date
      */
@@ -805,6 +981,141 @@ export class YumeDate extends HTMLElement {
                 },
             }),
         );
+    }
+
+    /**
+     * Build a presumed Date from partial input parts, filling in defaults.
+     * Returns null if the result is invalid.
+     * @param {{ month?: number, day?: number, year?: number, hour?: number, minute?: number, second?: number } | null} partial
+     * @returns {Date | null}
+     */
+    _buildPresumedDate(partial) {
+        if (!partial) return null;
+        const now = new Date();
+        const year = partial.year ?? now.getFullYear();
+        const month =
+            partial.month !== undefined ? partial.month - 1 : now.getMonth();
+        const day = partial.day ?? 1;
+        const hour = partial.hour ?? 0;
+        const minute = partial.minute ?? 0;
+        const second = partial.second ?? 0;
+        const d = new Date(year, month, day, hour, minute, second);
+        if (isNaN(d) || d.getMonth() !== month || d.getDate() !== day)
+            return null;
+        return d;
+    }
+
+    /**
+     * Parse range input text in the form "start - end" or just "start".
+     * Each side can be a full or partial date string.
+     * Returns { start: Date, end: Date|null } or null if unparseable.
+     * @param {string} text
+     * @returns {{ start: Date, end: Date|null } | null}
+     */
+    _parseRangeInput(text) {
+        if (!text) return null;
+        // Split on " - " (the range separator)
+        const sepIdx = text.indexOf(" - ");
+        let startText, endText;
+        if (sepIdx >= 0) {
+            startText = text.slice(0, sepIdx).trim();
+            endText = text.slice(sepIdx + 3).trim();
+        } else {
+            startText = text.trim();
+            endText = "";
+        }
+
+        const parseOne = (t) => {
+            if (!t) return null;
+            const full = this._parseTypedDate(t);
+            if (full) return full;
+            return this._buildPresumedDate(this._parsePartialInput(t));
+        };
+
+        const start = parseOne(startText);
+        if (!start) return null;
+        const end = endText ? parseOne(endText) : null;
+        return { start, end };
+    }
+
+    /**
+     * Apply a range value (start and optional end) to the component.
+     * @param {Date} start
+     * @param {Date|null} end
+     */
+    _applyRangeValue(start, end) {
+        const isoStart = start.toISOString();
+        const isoEnd = end ? end.toISOString() : "";
+        const value = isoEnd ? `${isoStart},${isoEnd}` : isoStart;
+        this.setAttribute("value", value);
+        this._internals.setFormValue(value, this.name);
+        this._syncPickerValue();
+        this._updateClearBtn();
+        const display = this.shadowRoot.querySelector(".display");
+        if (display) display.value = this._getFormattedDisplay();
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value,
+                    startDate: start,
+                    endDate: end,
+                    formatted: this._getFormattedDisplay(),
+                },
+            }),
+        );
+    }
+
+    /**
+     * Handle type-ahead input for range mode.
+     * Parses partial range text and navigates/highlights in the picker.
+     * @param {string} text
+     * @param {HTMLElement} picker
+     */
+    _handleRangeTypeahead(text, picker) {
+        const result = this._parseRangeInput(text);
+        if (!result) return;
+
+        // If we have both start and end, set the full range on the picker
+        if (result.start && result.end) {
+            picker.value = `${result.start.toISOString()},${result.end.toISOString()}`;
+            return;
+        }
+
+        // Check if the user is typing the end date (text contains " - ")
+        if (text.indexOf(" - ") >= 0) {
+            const endText = text.slice(text.indexOf(" - ") + 3).trim();
+            if (endText) {
+                // Parse partial end date for navigation
+                const partial = this._parsePartialInput(endText);
+                if (partial) {
+                    const now = new Date();
+                    const year = partial.year ?? now.getFullYear();
+                    const month =
+                        partial.month !== undefined
+                            ? partial.month - 1
+                            : undefined;
+                    if (partial.day && month !== undefined) {
+                        const preview = new Date(year, month, partial.day);
+                        if (
+                            preview.getMonth() === month &&
+                            preview.getDate() === partial.day
+                        ) {
+                            picker.value = `${result.start.toISOString()},${preview.toISOString()}`;
+                            return;
+                        }
+                    }
+                    picker.navigateTo(year, month);
+                }
+            }
+            return;
+        }
+
+        // Only start date so far — navigate picker to it
+        if (result.start) {
+            picker.value = result.start.toISOString();
+        }
     }
 }
 

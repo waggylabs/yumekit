@@ -45,8 +45,8 @@ describe("<y-datepicker>", () => {
         expect(el.shadowRoot.querySelector(".year-grid")).to.exist;
     });
 
-    it("shows time column when show-time is set", async () => {
-        const el = await fixture(html`<y-datepicker show-time></y-datepicker>`);
+    it("shows time column when show-hours is set", async () => {
+        const el = await fixture(html`<y-datepicker show-hours></y-datepicker>`);
         expect(el.shadowRoot.querySelector(".time-column")).to.exist;
     });
 

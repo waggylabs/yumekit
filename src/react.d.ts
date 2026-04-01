@@ -79,7 +79,7 @@ declare module "react" {
                 invalid?: boolean | string;
                 clearable?: boolean | string;
                 "label-position"?: "top" | "bottom";
-                "show-time"?: boolean | string;
+                "show-hours"?: boolean | string;
                 "show-minutes"?: boolean | string;
                 "show-seconds"?: boolean | string;
                 "show-years"?: string;
@@ -93,7 +93,7 @@ declare module "react" {
                 format?: string;
                 mode?: "single" | "range";
                 color?: string;
-                "show-time"?: boolean | string;
+                "show-hours"?: boolean | string;
                 "show-minutes"?: boolean | string;
                 "show-seconds"?: boolean | string;
                 "show-years"?: string;

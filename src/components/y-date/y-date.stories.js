@@ -24,7 +24,7 @@ export default {
         format: {
             control: "text",
             description:
-                "Display format. Tokens: YYYY MM DD HH hh mm ss A a. Leave blank to use the automatic default (includes time tokens when show-time / show-minutes / show-seconds are set).",
+                "Display format. Tokens: YYYY MM DD HH hh mm ss A a. Leave blank to use the automatic default (includes time tokens when show-hours / show-minutes / show-seconds are set).",
             table: {
                 defaultValue: {
                     summary: "MM/DD/YYYY (time-aware when applicable)",
@@ -69,7 +69,7 @@ export default {
             description: "Mark the field as invalid.",
             table: { defaultValue: { summary: "false" } },
         },
-        showTime: {
+        showHours: {
             control: "boolean",
             description: "Show hour time picker.",
             table: { defaultValue: { summary: "false" } },
@@ -84,6 +84,12 @@ export default {
             description: "Show seconds column.",
             table: { defaultValue: { summary: "false" } },
         },
+        hourFormat: {
+            control: "select",
+            options: ["12", "24"],
+            description: "Hour display format.",
+            table: { defaultValue: { summary: "12" } },
+        },
     },
     args: {
         mode: "single",
@@ -94,16 +100,17 @@ export default {
         clearable: false,
         disabled: false,
         invalid: false,
-        showTime: false,
+        showHours: false,
         showMinutes: false,
         showSeconds: false,
+        hourFormat: "12",
     },
     render: (args) => {
         const attrs = [
             `mode="${args.mode}"`,
             `size="${args.size}"`,
             // Only pass format when explicitly set — the component derives a
-            // time-aware default from show-time/show-minutes/show-seconds otherwise
+            // time-aware default from show-hours/show-minutes/show-seconds otherwise
             args.format ? `format="${args.format}"` : "",
             `color="${args.color}"`,
             args.value ? `value="${args.value}"` : "",
@@ -111,9 +118,10 @@ export default {
             args.clearable ? "clearable" : "",
             args.disabled ? "disabled" : "",
             args.invalid ? "invalid" : "",
-            args.showTime ? "show-time" : "",
+            args.showHours ? "show-hours" : "",
             args.showMinutes ? "show-minutes" : "",
             args.showSeconds ? "show-seconds" : "",
+            args.hourFormat === "24" ? `hour-format="24"` : "",
         ]
             .filter(Boolean)
             .join(" ");
@@ -146,7 +154,7 @@ export const WithTime = {
         (story) =>
             `<div style="min-height: 520px; padding: 16px;">${story()}</div>`,
     ],
-    args: { showTime: true, value: "2026-06-15T14:30:00.000Z" },
+    args: { showHours: true, value: "2026-06-15T14:30:00.000Z" },
 };
 
 /** Clearable — shows an ✕ button once a date is selected. */

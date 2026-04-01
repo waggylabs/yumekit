@@ -160,8 +160,8 @@ Attributes:
 - `clearable` — boolean, shows a clear (×) button when a value is set
 - `disabled` — boolean
 - `invalid` — boolean, applies error state
-- `show-time` — boolean, show hour column in time picker
-- `show-minutes` — boolean, show minutes column (implies `show-time`)
+- `show-hours` — boolean, show hour column in time picker
+- `show-minutes` — boolean, show minutes column (implies `show-hours`)
 - `show-seconds` — boolean, show seconds column (implies `show-minutes`)
 - `show-years` — `"true"` (default) | `"false"`, toggles year select in calendar header
 - `show-months` — `"true"` (default) | `"false"`, toggles month select in calendar header
@@ -182,7 +182,7 @@ Slots: `label`, `left-icon`
 </y-date>
 
 <!-- Date + time -->
-<y-date name="meeting" show-time format="MM/DD/YYYY hh:mm A">
+<y-date name="meeting" show-hours format="MM/DD/YYYY hh:mm A">
   <span slot="label">Meeting Time</span>
 </y-date>
 ```
@@ -199,7 +199,7 @@ Attributes:
 - `min`, `max` — date constraints (ISO string)
 - `format` — display format string (default: `"MM/DD/YYYY"`)
 - `color` — color scheme for selected dates (default: `"primary"`)
-- `show-time` — boolean, show hour column
+- `show-hours` — boolean, show hour column
 - `show-minutes` — boolean, show minutes column
 - `show-seconds` — boolean, show seconds column
 - `show-years` — `"true"` (default) | `"false"`
@@ -211,7 +211,7 @@ Methods: `clear()`, `formatDate(date)`
 
 ```html
 <y-datepicker></y-datepicker>
-<y-datepicker mode="range" show-time show-minutes></y-datepicker>
+<y-datepicker mode="range" show-hours show-minutes></y-datepicker>
 
 <!-- Month picker -->
 <y-datepicker show-days="false"></y-datepicker>
