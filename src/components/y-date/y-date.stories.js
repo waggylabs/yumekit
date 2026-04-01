@@ -1,14 +1,9 @@
 import "./y-date.js";
 import "../../icons/all.js";
 
-// Force iframe rendering so the y-select dropdowns (position:fixed) inside
-// the datepicker anchor to the story viewport rather than the full docs page.
-const docsParams = { docs: { story: { inline: false, height: "500px" } } };
-
 export default {
     title: "Components/Date",
     tags: ["autodocs"],
-    parameters: docsParams,
     decorators: [
         (story) =>
             `<div style="min-height: 420px; padding: 16px;">${story()}</div>`,
@@ -84,6 +79,11 @@ export default {
             description: "Show minutes column.",
             table: { defaultValue: { summary: "false" } },
         },
+        showSeconds: {
+            control: "boolean",
+            description: "Show seconds column.",
+            table: { defaultValue: { summary: "false" } },
+        },
     },
     args: {
         mode: "single",
@@ -96,6 +96,7 @@ export default {
         invalid: false,
         showTime: false,
         showMinutes: false,
+        showSeconds: false,
     },
     render: (args) => {
         const attrs = [
@@ -112,6 +113,7 @@ export default {
             args.invalid ? "invalid" : "",
             args.showTime ? "show-time" : "",
             args.showMinutes ? "show-minutes" : "",
+            args.showSeconds ? "show-seconds" : "",
         ]
             .filter(Boolean)
             .join(" ");
@@ -177,6 +179,3 @@ export const Disabled = {
 export const Invalid = {
     args: { invalid: true },
 };
-
-/** Interactive playground. */
-export const Playground = {};

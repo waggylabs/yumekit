@@ -1,14 +1,13 @@
 import "./y-datepicker.js";
 import "../../icons/all.js";
 
-// Force iframe rendering so the y-select dropdowns (position:fixed) anchor to
-// the story viewport rather than the full docs page.
-const docsParams = { docs: { story: { inline: false, height: "500px" } } };
-
 export default {
     title: "Components/Datepicker",
     tags: ["autodocs"],
-    parameters: docsParams,
+    decorators: [
+        (story) =>
+            `<div style="min-height: 420px; padding: 16px;">${story()}</div>`,
+    ],
     argTypes: {
         mode: {
             control: "select",

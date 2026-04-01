@@ -38,6 +38,7 @@ export class YumeDate extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._onDocumentClick = this._onDocumentClick.bind(this);
         this._suppressBlurApply = false;
+        this._selectedParts = new Set();
     }
 
     connectedCallback() {
@@ -452,7 +453,9 @@ export class YumeDate extends HTMLElement {
         });
 
         // Picker date selection
+        // Guard: ignore composed change events from child y-selects (month/year dropdowns)
         picker.addEventListener("change", (e) => {
+            if (e.composedPath()[0] !== picker) return;
             this._suppressBlurApply = true;
             const { value, formatted } = e.detail;
             this.setAttribute("value", value);
@@ -462,7 +465,18 @@ export class YumeDate extends HTMLElement {
 
             this._updateClearBtn();
 
-            if (this.mode === "single" && value) this._setOpen(false);
+            // Auto-close once all available parts have been selected
+            if (this.mode === "single" && value) {
+                const src = e.detail.source;
+                if (src) this._selectedParts.add(src);
+                const required = ["day"];
+                if (picker.showTime) required.push("hour");
+                if (picker.showMinutes) required.push("minute");
+                if (picker.showSeconds) required.push("second");
+                if (required.every((p) => this._selectedParts.has(p))) {
+                    this._setOpen(false);
+                }
+            }
 
             this.dispatchEvent(
                 new CustomEvent("change", {
@@ -647,6 +661,7 @@ export class YumeDate extends HTMLElement {
         if (!popup || !trigger) return;
         popup.hidden = !open;
         trigger.setAttribute("aria-expanded", String(open));
+        if (open) this._selectedParts.clear();
     }
 
     _syncPickerValue() {
@@ -704,15 +719,15 @@ export class YumeDate extends HTMLElement {
         const fmt = this.format;
 
         const tokens = [
-            { token: "YYYY", key: "year",   re: "(\\d{4})" },
-            { token: "MM",   key: "month",  re: "(\\d{1,2})" },
-            { token: "DD",   key: "day",    re: "(\\d{1,2})" },
-            { token: "HH",   key: "hour24", re: "(\\d{1,2})" },
-            { token: "hh",   key: "hour12", re: "(\\d{1,2})" },
-            { token: "mm",   key: "minute", re: "(\\d{1,2})" },
-            { token: "ss",   key: "second", re: "(\\d{1,2})" },
-            { token: "A",    key: "ampm",   re: "(AM|PM)" },
-            { token: "a",    key: "ampm",   re: "(am|pm)" },
+            { token: "YYYY", key: "year", re: "(\\d{4})" },
+            { token: "MM", key: "month", re: "(\\d{1,2})" },
+            { token: "DD", key: "day", re: "(\\d{1,2})" },
+            { token: "HH", key: "hour24", re: "(\\d{1,2})" },
+            { token: "hh", key: "hour12", re: "(\\d{1,2})" },
+            { token: "mm", key: "minute", re: "(\\d{1,2})" },
+            { token: "ss", key: "second", re: "(\\d{1,2})" },
+            { token: "A", key: "ampm", re: "(AM|PM)" },
+            { token: "a", key: "ampm", re: "(am|pm)" },
         ];
 
         // Replace each token with a placeholder, then escape literal chars,
@@ -734,11 +749,15 @@ export class YumeDate extends HTMLElement {
         if (!match) return null;
 
         const parts = {};
-        order.forEach((t, i) => { parts[t.key] = match[i + 1]; });
+        order.forEach((t, i) => {
+            parts[t.key] = match[i + 1];
+        });
 
-        const year   = parts.year   ? parseInt(parts.year)       : new Date().getFullYear();
-        const month  = parts.month  ? parseInt(parts.month) - 1  : 0;
-        const day    = parts.day    ? parseInt(parts.day)        : 1;
+        const year = parts.year
+            ? parseInt(parts.year)
+            : new Date().getFullYear();
+        const month = parts.month ? parseInt(parts.month) - 1 : 0;
+        const day = parts.day ? parseInt(parts.day) : 1;
 
         let hour = 0;
         if (parts.hour24 !== undefined) {

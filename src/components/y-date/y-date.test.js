@@ -32,7 +32,9 @@ describe("<y-date>", () => {
     });
 
     it("shows custom placeholder when placeholder attribute is set", async () => {
-        const el = await fixture(html`<y-date placeholder="Pick a day"></y-date>`);
+        const el = await fixture(
+            html`<y-date placeholder="Pick a day"></y-date>`,
+        );
         const display = el.shadowRoot.querySelector(".display");
         expect(display.placeholder).to.equal("Pick a day");
     });
@@ -44,7 +46,12 @@ describe("<y-date>", () => {
     });
 
     it("displays formatted date when value is set", async () => {
-        const el = await fixture(html`<y-date value="2026-06-15T12:00:00.000Z" format="MM/DD/YYYY"></y-date>`);
+        const el = await fixture(
+            html`<y-date
+                value="2026-06-15T12:00:00.000Z"
+                format="MM/DD/YYYY"
+            ></y-date>`,
+        );
         const display = el.shadowRoot.querySelector(".display");
         expect(display.value).to.equal("06/15/2026");
     });
@@ -60,14 +67,20 @@ describe("<y-date>", () => {
     });
 
     it("displays time in the input when show-time is set and value has time", async () => {
-        const el = await fixture(html`<y-date show-time value="2026-06-15T14:30:00.000Z"></y-date>`);
+        const el = await fixture(
+            html`<y-date show-time value="2026-06-15T14:30:00.000Z"></y-date>`,
+        );
         const display = el.shadowRoot.querySelector(".display");
         // Exact hour depends on the local timezone; verify the date and AM/PM marker are present
-        expect(display.value).to.match(/06\/15\/2026\s+\d{1,2}:\d{2}\s+(AM|PM)/i);
+        expect(display.value).to.match(
+            /06\/15\/2026\s+\d{1,2}:\d{2}\s+(AM|PM)/i,
+        );
     });
 
     it("explicit format attribute overrides the time-aware default", async () => {
-        const el = await fixture(html`<y-date show-time format="MM/DD/YYYY"></y-date>`);
+        const el = await fixture(
+            html`<y-date show-time format="MM/DD/YYYY"></y-date>`,
+        );
         expect(el.format).to.equal("MM/DD/YYYY");
     });
 
@@ -82,11 +95,15 @@ describe("<y-date>", () => {
 
     it("renders label slot at bottom when label-position is bottom", async () => {
         const el = await fixture(html`
-            <y-date label-position="bottom"><span slot="label">Date</span></y-date>
+            <y-date label-position="bottom"
+                ><span slot="label">Date</span></y-date
+            >
         `);
         const wrapper = el.shadowRoot.querySelector(".wrapper");
         const children = [...wrapper.children];
-        expect(children[children.length - 1].classList.contains("label-wrapper")).to.be.true;
+        expect(
+            children[children.length - 1].classList.contains("label-wrapper"),
+        ).to.be.true;
     });
 
     it("applies default size attribute of medium", async () => {
@@ -140,29 +157,39 @@ describe("<y-date>", () => {
     it("sets aria-expanded on the trigger when opened", async () => {
         const el = await fixture(html`<y-date></y-date>`);
         el.open();
-        expect(el.shadowRoot.querySelector(".trigger").getAttribute("aria-expanded")).to.equal("true");
+        expect(
+            el.shadowRoot
+                .querySelector(".trigger")
+                .getAttribute("aria-expanded"),
+        ).to.equal("true");
     });
 
     it("Enter key opens the popup", async () => {
         const el = await fixture(html`<y-date></y-date>`);
         const trigger = el.shadowRoot.querySelector(".trigger");
-        trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        trigger.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+        );
         expect(el.shadowRoot.querySelector(".popup").hidden).to.be.false;
     });
 
     it("Space key opens the popup", async () => {
         const el = await fixture(html`<y-date></y-date>`);
         const trigger = el.shadowRoot.querySelector(".trigger");
-        trigger.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+        trigger.dispatchEvent(
+            new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+        );
         expect(el.shadowRoot.querySelector(".popup").hidden).to.be.false;
     });
 
     it("Escape key closes the popup", async () => {
         const el = await fixture(html`<y-date></y-date>`);
         el.open();
-        el.shadowRoot.querySelector(".trigger").dispatchEvent(
-            new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
-        );
+        el.shadowRoot
+            .querySelector(".trigger")
+            .dispatchEvent(
+                new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+            );
         expect(el.shadowRoot.querySelector(".popup").hidden).to.be.true;
     });
 
@@ -171,10 +198,17 @@ describe("<y-date>", () => {
         el.open();
 
         const picker = el.shadowRoot.querySelector("y-datepicker");
-        picker.dispatchEvent(new CustomEvent("change", {
-            bubbles: true, composed: true,
-            detail: { value: "2026-06-15T00:00:00.000Z", formatted: "06/15/2026" },
-        }));
+        picker.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: "2026-06-15T00:00:00.000Z",
+                    formatted: "06/15/2026",
+                    source: "day",
+                },
+            }),
+        );
 
         expect(el.shadowRoot.querySelector(".popup").hidden).to.be.true;
     });
@@ -185,10 +219,16 @@ describe("<y-date>", () => {
 
         const picker = el.shadowRoot.querySelector("y-datepicker");
         // Range with only start — no end yet
-        picker.dispatchEvent(new CustomEvent("change", {
-            bubbles: true, composed: true,
-            detail: { value: "2026-06-10T00:00:00.000Z", formatted: "06/10/2026" },
-        }));
+        picker.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: "2026-06-10T00:00:00.000Z",
+                    formatted: "06/10/2026",
+                },
+            }),
+        );
 
         expect(el.shadowRoot.querySelector(".popup").hidden).to.be.false;
     });
@@ -221,10 +261,16 @@ describe("<y-date>", () => {
         const picker = el.shadowRoot.querySelector("y-datepicker");
 
         setTimeout(() => {
-            picker.dispatchEvent(new CustomEvent("change", {
-                bubbles: true, composed: true,
-                detail: { value: "2026-06-15T00:00:00.000Z", formatted: "06/15/2026" },
-            }));
+            picker.dispatchEvent(
+                new CustomEvent("change", {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        value: "2026-06-15T00:00:00.000Z",
+                        formatted: "06/15/2026",
+                    },
+                }),
+            );
         });
 
         const e = await oneEvent(el, "change");
@@ -236,12 +282,16 @@ describe("<y-date>", () => {
     // -------------------------------------------------------------------------
 
     it("does not render clear button when clearable is false", async () => {
-        const el = await fixture(html`<y-date value="2026-06-15T00:00:00.000Z"></y-date>`);
+        const el = await fixture(
+            html`<y-date value="2026-06-15T00:00:00.000Z"></y-date>`,
+        );
         expect(el.shadowRoot.querySelector(".clear-btn")).to.be.null;
     });
 
     it("renders clear button when clearable is true and value is set", async () => {
-        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`);
+        const el = await fixture(
+            html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`,
+        );
         expect(el.shadowRoot.querySelector(".clear-btn")).to.exist;
     });
 
@@ -251,7 +301,9 @@ describe("<y-date>", () => {
     });
 
     it("clear() empties the value and emits change event", async () => {
-        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`);
+        const el = await fixture(
+            html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`,
+        );
 
         setTimeout(() => el.clear());
         const e = await oneEvent(el, "change");
@@ -261,14 +313,18 @@ describe("<y-date>", () => {
     });
 
     it("clicking the clear button clears the value", async () => {
-        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`);
+        const el = await fixture(
+            html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`,
+        );
         el.shadowRoot.querySelector(".clear-btn").click();
         await nextFrame();
         expect(el.value).to.equal("");
     });
 
     it("clear button is removed from the DOM after clicking it", async () => {
-        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`);
+        const el = await fixture(
+            html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`,
+        );
         el.shadowRoot.querySelector(".clear-btn").click();
         await nextFrame();
         expect(el.shadowRoot.querySelector(".clear-btn")).to.be.null;
@@ -279,17 +335,29 @@ describe("<y-date>", () => {
         expect(el.shadowRoot.querySelector(".clear-btn")).to.be.null;
 
         const picker = el.shadowRoot.querySelector("y-datepicker");
-        picker.dispatchEvent(new CustomEvent("change", {
-            bubbles: true, composed: true,
-            detail: { value: "2026-06-15T00:00:00.000Z", formatted: "06/15/2026" },
-        }));
+        picker.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: "2026-06-15T00:00:00.000Z",
+                    formatted: "06/15/2026",
+                },
+            }),
+        );
         await nextFrame();
 
         expect(el.shadowRoot.querySelector(".clear-btn")).to.exist;
     });
 
     it("clear button input is cleared after clicking the clear button", async () => {
-        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z" format="MM/DD/YYYY"></y-date>`);
+        const el = await fixture(
+            html`<y-date
+                clearable
+                value="2026-06-15T00:00:00.000Z"
+                format="MM/DD/YYYY"
+            ></y-date>`,
+        );
         el.shadowRoot.querySelector(".clear-btn").click();
         await nextFrame();
         expect(el.shadowRoot.querySelector(".display").value).to.equal("");
@@ -298,7 +366,13 @@ describe("<y-date>", () => {
     it("clear button does not restore value after blur re-evaluation", async () => {
         // Regression: input blur queues a setTimeout that could re-apply the
         // displayed date after clear() already set the value to "".
-        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z" format="MM/DD/YYYY"></y-date>`);
+        const el = await fixture(
+            html`<y-date
+                clearable
+                value="2026-06-15T00:00:00.000Z"
+                format="MM/DD/YYYY"
+            ></y-date>`,
+        );
         const input = el.shadowRoot.querySelector(".display");
         input.focus();
         // Simulate blur firing before the clear-button click completes
@@ -334,14 +408,22 @@ describe("<y-date>", () => {
 
     it("applies is-invalid class to trigger when invalid", async () => {
         const el = await fixture(html`<y-date invalid></y-date>`);
-        expect(el.shadowRoot.querySelector(".trigger").classList.contains("is-invalid")).to.be.true;
+        expect(
+            el.shadowRoot
+                .querySelector(".trigger")
+                .classList.contains("is-invalid"),
+        ).to.be.true;
     });
 
     it("removes is-invalid class when invalid attribute is removed", async () => {
         const el = await fixture(html`<y-date invalid></y-date>`);
         el.removeAttribute("invalid");
         await nextFrame();
-        expect(el.shadowRoot.querySelector(".trigger").classList.contains("is-invalid")).to.be.false;
+        expect(
+            el.shadowRoot
+                .querySelector(".trigger")
+                .classList.contains("is-invalid"),
+        ).to.be.false;
     });
 
     it("invalid setter sets and removes attribute", async () => {

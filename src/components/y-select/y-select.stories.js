@@ -9,18 +9,17 @@ const defaultOptions = JSON.stringify([
     { value: "elderberry", label: "Elderberry" },
 ]);
 
-// Force iframe rendering so the dropdown (position:fixed) anchors to the story
-// viewport rather than the full docs page.
-const docsParams = { docs: { story: { inline: false, height: "280px" } } };
-
 export default {
     title: "Components/Select",
     tags: ["autodocs"],
-    parameters: docsParams,
+    decorators: [
+        (story) =>
+            `<div style="min-height: 260px; padding: 16px;">${story()}</div>`,
+    ],
     argTypes: {
         options: {
             control: "text",
-            description: 'JSON array of `{ value, label, color? }` objects.',
+            description: "JSON array of `{ value, label, color? }` objects.",
         },
         value: {
             control: "text",
@@ -49,7 +48,8 @@ export default {
         },
         clearable: {
             control: "boolean",
-            description: "Whether a clear button is shown when a value is selected.",
+            description:
+                "Whether a clear button is shown when a value is selected.",
             table: { defaultValue: { summary: false } },
         },
         disabled: {
@@ -74,7 +74,17 @@ export default {
         disabled: false,
         invalid: false,
     },
-    render: ({ options, value, placeholder, size, multiple, searchable, clearable, disabled, invalid }) => `
+    render: ({
+        options,
+        value,
+        placeholder,
+        size,
+        multiple,
+        searchable,
+        clearable,
+        disabled,
+        invalid,
+    }) => `
         <y-select
             options='${options}'
             ${value ? `value="${value}"` : ""}

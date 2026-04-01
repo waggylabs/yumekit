@@ -395,8 +395,10 @@ export class YumeSelect extends HTMLElement {
             }
 
             .dropdown {
-                position: fixed;
+                position: absolute;
                 z-index: var(--component-select-z-index, 6000);
+                left: 0;
+                right: 0;
                 background: var(--component-select-background);
                 border: var(--component-inputs-border-width) solid var(--component-select-border-color);
                 border-radius: var(--component-inputs-border-radius-outer);
@@ -785,18 +787,14 @@ export class YumeSelect extends HTMLElement {
     _positionDropdown() {
         const rect = this.selectContainer.getBoundingClientRect();
         const gap = 4;
-
-        this.dropdown.style.left = `${rect.left}px`;
-        this.dropdown.style.width = `${rect.width}px`;
-
-        const spaceBelow = window.innerHeight - rect.bottom - gap;
         const maxH = 200;
+        const spaceBelow = window.innerHeight - rect.bottom - gap;
 
         if (spaceBelow >= maxH || spaceBelow >= rect.top) {
-            this.dropdown.style.top = `${rect.bottom + gap}px`;
+            this.dropdown.style.top = `${this.selectContainer.offsetHeight + gap}px`;
             this.dropdown.style.bottom = "auto";
         } else {
-            this.dropdown.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+            this.dropdown.style.bottom = `${this.selectContainer.offsetHeight + gap}px`;
             this.dropdown.style.top = "auto";
         }
     }

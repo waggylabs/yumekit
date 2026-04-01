@@ -272,7 +272,9 @@ export class YumeDatepicker extends HTMLElement {
                     // Apply the year delta relative to what the right panel currently shows
                     const rightVd = this._viewDateForSide("right");
                     const yearDiff = targetYear - rightVd.getFullYear();
-                    this._viewDate.setFullYear(this._viewDate.getFullYear() + yearDiff);
+                    this._viewDate.setFullYear(
+                        this._viewDate.getFullYear() + yearDiff,
+                    );
                 } else {
                     this._viewDate.setFullYear(targetYear);
                 }
@@ -313,7 +315,7 @@ export class YumeDatepicker extends HTMLElement {
                 if (side === "right") this._endTime.h = h;
                 else this._startTime.h = h;
                 this._applyTimesToDates();
-                this._emitChange();
+                this._emitChange("hour");
                 this.render();
             });
         });
@@ -325,7 +327,7 @@ export class YumeDatepicker extends HTMLElement {
                 if (side === "right") this._endTime.m = m;
                 else this._startTime.m = m;
                 this._applyTimesToDates();
-                this._emitChange();
+                this._emitChange("minute");
                 this.render();
             });
         });
@@ -337,7 +339,7 @@ export class YumeDatepicker extends HTMLElement {
                 if (side === "right") this._endTime.s = s;
                 else this._startTime.s = s;
                 this._applyTimesToDates();
-                this._emitChange();
+                this._emitChange("second");
                 this.render();
             });
         });
@@ -397,6 +399,26 @@ export class YumeDatepicker extends HTMLElement {
     _buildHeader(vd, side, isRange) {
         const year = vd.getFullYear();
         const month = vd.getMonth();
+
+        // Month and year picker modes: simple label, no selects or nav
+        if (!this.showDays) {
+            let label;
+            if (this.showMonths) {
+                label = String(year);
+            } else {
+                const minY = this._minDate()?.getFullYear() ?? year - 10;
+                const maxY = this._maxDate()?.getFullYear() ?? year + 10;
+                label = `${minY} – ${maxY}`;
+            }
+            return `
+                <div class="cal-header">
+                    <div class="header-selects">
+                        <span class="header-label">${label}</span>
+                    </div>
+                </div>
+            `;
+        }
+
         const showPrev = !isRange || side === "left";
         const showNext = !isRange || side === "right";
 
@@ -535,6 +557,11 @@ export class YumeDatepicker extends HTMLElement {
 
             .month-sel { min-width: 120px; }
             .year-sel  { min-width: 80px;  }
+
+            .header-label {
+                font-weight: 600;
+                white-space: nowrap;
+            }
 
             /* ---- Day grid ---- */
 
@@ -742,7 +769,7 @@ export class YumeDatepicker extends HTMLElement {
         `;
     }
 
-    _emitChange() {
+    _emitChange(source) {
         this._suppressParse = true;
         const value = this._buildValueString();
         if (value !== this.getAttribute("value")) {
@@ -755,6 +782,7 @@ export class YumeDatepicker extends HTMLElement {
                 composed: true,
                 detail: {
                     value,
+                    source,
                     startDate: this._startDate
                         ? new Date(this._startDate)
                         : null,
@@ -805,7 +833,7 @@ export class YumeDatepicker extends HTMLElement {
             this._startDate = date;
         }
         this._applyTimesToDates();
-        this._emitChange();
+        this._emitChange("day");
         this.render();
     }
 
