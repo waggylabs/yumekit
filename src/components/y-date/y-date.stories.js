@@ -29,6 +29,10 @@ export default {
             control: "text",
             description: "Placeholder text when no date is selected.",
         },
+        value: {
+            control: "text",
+            description: "ISO date string (or comma-separated pair for range mode).",
+        },
         color: {
             control: "select",
             options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
@@ -66,6 +70,7 @@ export default {
         size: "medium",
         format: "MM/DD/YYYY",
         color: "primary",
+        value: "",
         clearable: false,
         disabled: false,
         invalid: false,
@@ -78,6 +83,7 @@ export default {
             `size="${args.size}"`,
             `format="${args.format}"`,
             `color="${args.color}"`,
+            args.value ? `value="${args.value}"` : "",
             args.placeholder ? `placeholder="${args.placeholder}"` : "",
             args.clearable ? "clearable" : "",
             args.disabled ? "disabled" : "",

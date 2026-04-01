@@ -245,6 +245,49 @@ describe("<y-date>", () => {
         expect(el.value).to.equal("");
     });
 
+    it("clear button is removed from the DOM after clicking it", async () => {
+        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z"></y-date>`);
+        el.shadowRoot.querySelector(".clear-btn").click();
+        await nextFrame();
+        expect(el.shadowRoot.querySelector(".clear-btn")).to.be.null;
+    });
+
+    it("clear button appears after a date is selected when clearable", async () => {
+        const el = await fixture(html`<y-date clearable></y-date>`);
+        expect(el.shadowRoot.querySelector(".clear-btn")).to.be.null;
+
+        const picker = el.shadowRoot.querySelector("y-datepicker");
+        picker.dispatchEvent(new CustomEvent("change", {
+            bubbles: true, composed: true,
+            detail: { value: "2026-06-15T00:00:00.000Z", formatted: "06/15/2026" },
+        }));
+        await nextFrame();
+
+        expect(el.shadowRoot.querySelector(".clear-btn")).to.exist;
+    });
+
+    it("clear button input is cleared after clicking the clear button", async () => {
+        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z" format="MM/DD/YYYY"></y-date>`);
+        el.shadowRoot.querySelector(".clear-btn").click();
+        await nextFrame();
+        expect(el.shadowRoot.querySelector(".display").value).to.equal("");
+    });
+
+    it("clear button does not restore value after blur re-evaluation", async () => {
+        // Regression: input blur queues a setTimeout that could re-apply the
+        // displayed date after clear() already set the value to "".
+        const el = await fixture(html`<y-date clearable value="2026-06-15T00:00:00.000Z" format="MM/DD/YYYY"></y-date>`);
+        const input = el.shadowRoot.querySelector(".display");
+        input.focus();
+        // Simulate blur firing before the clear-button click completes
+        input.dispatchEvent(new Event("blur"));
+        el.shadowRoot.querySelector(".clear-btn").click();
+        // Wait long enough for the blur's setTimeout(0) to fire
+        await new Promise((r) => setTimeout(r, 10));
+        expect(el.value).to.equal("");
+        expect(input.value).to.equal("");
+    });
+
     // -------------------------------------------------------------------------
     // Disabled
     // -------------------------------------------------------------------------

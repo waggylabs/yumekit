@@ -31,7 +31,7 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.4.1] – 2026-03-31
+## [0.4.1] – 2026-04-01
 
 ### Added
 

@@ -37,6 +37,7 @@ export class YumeDate extends HTMLElement {
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
         this._onDocumentClick = this._onDocumentClick.bind(this);
+        this._suppressBlurApply = false;
     }
 
     connectedCallback() {
@@ -246,6 +247,7 @@ export class YumeDate extends HTMLElement {
 
     /** Clear the selected value. */
     clear() {
+        this._suppressBlurApply = true;
         this.value = "";
         this._internals.setFormValue("", this.name);
         this._updateDisplay();
@@ -356,8 +358,8 @@ export class YumeDate extends HTMLElement {
         const clearBtn = this.shadowRoot.querySelector(".clear-btn");
         const input = this.shadowRoot.querySelector(".display");
 
-        // Flag set by picker change to prevent blur from overriding a picker selection
-        let suppressBlurApply = false;
+        // this._suppressBlurApply is set by clear() and picker change
+        // to prevent the blur handler from re-applying a stale typed value
 
         // Clicking the icon / trigger area (not the input itself) toggles the popup
         trigger.addEventListener("click", (e) => {
@@ -419,12 +421,12 @@ export class YumeDate extends HTMLElement {
         });
 
         // Input: apply valid typed date on blur, revert if invalid
-        // Uses setTimeout(0) so picker clicks can fire and set suppressBlurApply first
+        // Uses setTimeout(0) so picker clicks can fire and set this._suppressBlurApply first
         input?.addEventListener("blur", () => {
             const capturedText = input.value.trim();
             setTimeout(() => {
-                if (suppressBlurApply) {
-                    suppressBlurApply = false;
+                if (this._suppressBlurApply) {
+                    this._suppressBlurApply = false;
                     input.value = this._getFormattedDisplay();
                     return;
                 }
@@ -444,7 +446,7 @@ export class YumeDate extends HTMLElement {
 
         // Picker date selection
         picker.addEventListener("change", (e) => {
-            suppressBlurApply = true;
+            this._suppressBlurApply = true;
             const { value, formatted } = e.detail;
             this.setAttribute("value", value);
             this._internals.setFormValue(value, this.name);
