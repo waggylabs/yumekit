@@ -1,5 +1,6 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
+import "../y-select/y-select.js";
 
 const MONTHS = [
     "January",
@@ -402,20 +403,16 @@ export class YumeDatepicker extends HTMLElement {
         const minYear = this._minDate()?.getFullYear() ?? year - 50;
         const maxYear = this._maxDate()?.getFullYear() ?? year + 50;
 
-        const monthOptions = MONTHS.map(
-            (m, i) =>
-                `<option value="${i}"${i === month ? " selected" : ""}>${m}</option>`,
-        ).join("");
+        const monthOptions = JSON.stringify(
+            MONTHS.map((m, i) => ({ value: String(i), label: m })),
+        );
 
-        const yearOptions = Array.from(
-            { length: maxYear - minYear + 1 },
-            (_, i) => minYear + i,
-        )
-            .map(
-                (y) =>
-                    `<option value="${y}"${y === year ? " selected" : ""}>${y}</option>`,
-            )
-            .join("");
+        const yearOptions = JSON.stringify(
+            Array.from({ length: maxYear - minYear + 1 }, (_, i) => ({
+                value: String(minYear + i),
+                label: String(minYear + i),
+            })),
+        );
 
         return `
             <div class="cal-header">
@@ -424,8 +421,8 @@ export class YumeDatepicker extends HTMLElement {
                     ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" data-side="${side}" style-type="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
                 </div>
                 <div class="header-selects">
-                    ${this.showMonths ? `<select class="month-sel" data-side="${side}">${monthOptions}</select>` : ""}
-                    ${this.showYears ? `<select class="year-sel" data-side="${side}">${yearOptions}</select>` : ""}
+                    ${this.showMonths ? `<y-select class="month-sel" data-side="${side}" size="small" value="${month}" options='${monthOptions}'></y-select>` : ""}
+                    ${this.showYears ? `<y-select class="year-sel" data-side="${side}" size="small" value="${year}" options='${yearOptions}'></y-select>` : ""}
                 </div>
                 <div class="nav-end">
                     ${showNext ? `<y-button class="nav-btn" data-action="next-month" data-side="${side}" style-type="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
@@ -536,21 +533,8 @@ export class YumeDatepicker extends HTMLElement {
                 align-items: center;
             }
 
-            .month-sel, .year-sel {
-                appearance: auto;
-                background: var(--component-datepicker-background);
-                border: var(--component-datepicker-border-width, 1px) solid var(--component-datepicker-border-color);
-                border-radius: 4px;
-                color: inherit;
-                font-family: inherit;
-                font-size: inherit;
-                padding: 2px 4px;
-                cursor: pointer;
-                height: var(--sizing-small, 32px);
-            }
-
-            .month-sel { min-width: 110px; }
-            .year-sel  { min-width: 72px;  }
+            .month-sel { min-width: 120px; }
+            .year-sel  { min-width: 80px;  }
 
             /* ---- Day grid ---- */
 

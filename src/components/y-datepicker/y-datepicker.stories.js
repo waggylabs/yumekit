@@ -1,9 +1,14 @@
 import "./y-datepicker.js";
 import "../../icons/all.js";
 
+// Force iframe rendering so the y-select dropdowns (position:fixed) anchor to
+// the story viewport rather than the full docs page.
+const docsParams = { docs: { story: { inline: false, height: "500px" } } };
+
 export default {
     title: "Components/Datepicker",
     tags: ["autodocs"],
+    parameters: docsParams,
     argTypes: {
         mode: {
             control: "select",
@@ -13,7 +18,8 @@ export default {
         },
         value: {
             control: "text",
-            description: "ISO date string, or comma-separated pair for range mode.",
+            description:
+                "ISO date string, or comma-separated pair for range mode.",
         },
         min: {
             control: "text",
@@ -25,12 +31,21 @@ export default {
         },
         format: {
             control: "text",
-            description: "Display format string. Tokens: YYYY MM DD HH hh mm ss A a",
+            description:
+                "Display format string. Tokens: YYYY MM DD HH hh mm ss A a",
             table: { defaultValue: { summary: "MM/DD/YYYY" } },
         },
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+                "help",
+            ],
             description: "Color theme for selected dates.",
             table: { defaultValue: { summary: "primary" } },
         },
@@ -90,7 +105,9 @@ export default {
             args.showYears === false ? `show-years="false"` : "",
             args.showMonths === false ? `show-months="false"` : "",
             args.showDays === false ? `show-days="false"` : "",
-        ].filter(Boolean).join(" ");
+        ]
+            .filter(Boolean)
+            .join(" ");
         return `<y-datepicker ${attrs}></y-datepicker>`;
     },
 };

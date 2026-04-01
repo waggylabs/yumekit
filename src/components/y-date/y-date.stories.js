@@ -1,11 +1,17 @@
 import "./y-date.js";
 import "../../icons/all.js";
 
+// Force iframe rendering so the y-select dropdowns (position:fixed) inside
+// the datepicker anchor to the story viewport rather than the full docs page.
+const docsParams = { docs: { story: { inline: false, height: "500px" } } };
+
 export default {
     title: "Components/Date",
     tags: ["autodocs"],
+    parameters: docsParams,
     decorators: [
-        (story) => `<div style="min-height: 420px; padding: 16px;">${story()}</div>`,
+        (story) =>
+            `<div style="min-height: 420px; padding: 16px;">${story()}</div>`,
     ],
     argTypes: {
         mode: {
@@ -22,8 +28,13 @@ export default {
         },
         format: {
             control: "text",
-            description: "Display format. Tokens: YYYY MM DD HH hh mm ss A a. Leave blank to use the automatic default (includes time tokens when show-time / show-minutes / show-seconds are set).",
-            table: { defaultValue: { summary: "MM/DD/YYYY (time-aware when applicable)" } },
+            description:
+                "Display format. Tokens: YYYY MM DD HH hh mm ss A a. Leave blank to use the automatic default (includes time tokens when show-time / show-minutes / show-seconds are set).",
+            table: {
+                defaultValue: {
+                    summary: "MM/DD/YYYY (time-aware when applicable)",
+                },
+            },
         },
         placeholder: {
             control: "text",
@@ -31,11 +42,20 @@ export default {
         },
         value: {
             control: "text",
-            description: "ISO date string (or comma-separated pair for range mode).",
+            description:
+                "ISO date string (or comma-separated pair for range mode).",
         },
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+                "help",
+            ],
             description: "Color theme for the datepicker.",
             table: { defaultValue: { summary: "primary" } },
         },
@@ -92,7 +112,9 @@ export default {
             args.invalid ? "invalid" : "",
             args.showTime ? "show-time" : "",
             args.showMinutes ? "show-minutes" : "",
-        ].filter(Boolean).join(" ");
+        ]
+            .filter(Boolean)
+            .join(" ");
         return `
             <div style="max-width: 340px;">
                 <y-date ${attrs}>
@@ -119,7 +141,8 @@ export const WithValue = {
 /** With time picker. */
 export const WithTime = {
     decorators: [
-        (story) => `<div style="min-height: 520px; padding: 16px;">${story()}</div>`,
+        (story) =>
+            `<div style="min-height: 520px; padding: 16px;">${story()}</div>`,
     ],
     args: { showTime: true, value: "2026-06-15T14:30:00.000Z" },
 };
