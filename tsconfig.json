@@ -9,7 +9,8 @@
         "declaration": true,
         "declarationDir": "dist",
         "emitDeclarationOnly": true,
-        "strict": false
+        "strict": false,
+        "skipLibCheck": true
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "dist", "tests", "src/react.d.ts"]

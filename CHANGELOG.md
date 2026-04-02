@@ -31,6 +31,29 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.4.1] – 2026-04-01
+
+### Added
+
+- New `y-date` component — a form-associated date (and optional time) input field. Displays a trigger button that opens a `y-datepicker` popup. Supports `name`, `value`, `label`, `label-position`, `placeholder`, `size`, `disabled`, `required`, `invalid`, `clearable`, `show-hours`, `min`, `max`, `format`, and `mode` attributes. Emits `change` and `input` events. Fully keyboard accessible with `aria-expanded` management.
+- New `y-datepicker` component — a standalone calendar and optional time picker widget. Supports single date and date range selection via the `mode` attribute. Configurable with `value`, `min`, `max`, `show-hours`, `show-seconds`, `format`, `first-day-of-week`, `year-range`, and `panel-count` attributes. Emits a `change` event with the selected date value or `[start, end]` range array. Public API: `clear()`, `formatDate(date)`.
+- 10 new bundled icons: `fan`, `thermometer-high`, `thermometer-low`, `ban`, `bluetooth`, `unlock`, `plug`, `gasoline`, `ev-charger`, `tools`.
+- `comp-date` icon added to the bundled icon registry.
+- Storybook integration — all 28 components now have Storybook stories. Includes a theme background selector that applies the correct design tokens for each active theme.
+- 18 new built-in themes (9 color families × dark + light): `green`, `red`, `teal`, `yellow`, `indigo`, `purple`, `pink`, `brown`, `olive`. All are usable by name in the `theme` attribute of `<y-theme>`.
+
+### Changed
+
+- All component source files moved into per-component subdirectories under `src/components/` (e.g. `src/components/y-button/y-button.js`). Tests co-located alongside their component files.
+- `--lime-*` color tokens in `variables.css` renamed to `--olive-*` to better reflect the adjusted core color (`#838807`).
+- Core token values adjusted for WCAG 3:1 accessibility compliance against both black and white backgrounds: `--green--`, `--teal--`, `--indigo--`, and `--olive--` (formerly `--lime--`). Corresponding dark and light scale variants regenerated using linear RGB interpolation.
+
+### Fixed
+
+- `y-table` sort indicator no longer resizes columns when applied
+- `y-icon` removed artifact from accessibility icon
+- Dark theme files corrected: `--help-background-component` now uses `var(--indigo-dark-0)` instead of `var(--indigo-light-0)`.
+
 ## [0.4.0] – 2026-03-29
 
 ### Added

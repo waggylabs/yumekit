@@ -65,6 +65,41 @@ declare module "react" {
                 indeterminate?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
             }>;
+            "y-date": El<{
+                name?: string;
+                value?: string;
+                min?: string;
+                max?: string;
+                format?: string;
+                placeholder?: string;
+                mode?: "single" | "range";
+                size?: "small" | "medium" | "large";
+                color?: string;
+                disabled?: boolean | string;
+                invalid?: boolean | string;
+                clearable?: boolean | string;
+                "label-position"?: "top" | "bottom";
+                "show-hours"?: boolean | string;
+                "show-minutes"?: boolean | string;
+                "show-seconds"?: boolean | string;
+                "show-years"?: string;
+                "show-months"?: string;
+                "show-days"?: string;
+            }>;
+            "y-datepicker": El<{
+                value?: string;
+                min?: string;
+                max?: string;
+                format?: string;
+                mode?: "single" | "range";
+                color?: string;
+                "show-hours"?: boolean | string;
+                "show-minutes"?: boolean | string;
+                "show-seconds"?: boolean | string;
+                "show-years"?: string;
+                "show-months"?: string;
+                "show-days"?: string;
+            }>;
             "y-dialog": El<{
                 visible?: boolean | string;
                 anchor?: string;

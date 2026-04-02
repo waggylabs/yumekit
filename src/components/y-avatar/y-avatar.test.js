@@ -1,0 +1,185 @@
+import { fixture, expect, html } from "@open-wc/testing";
+import "./y-avatar.js";
+
+describe("YumeAvatar", () => {
+    it("renders an img when src is provided", async () => {
+        const el = await fixture(
+            html`<y-avatar src="/img/user.png" alt="User"></y-avatar>`,
+        );
+
+        const img = el.shadowRoot.querySelector("img");
+        expect(img).to.exist;
+        expect(img.getAttribute("src")).to.equal("/img/user.png");
+        expect(img.getAttribute("alt")).to.equal("User");
+        expect(img.getAttribute("part")).to.equal("avatar");
+    });
+
+    it("renders initials from a two-word alt when no src is provided", async () => {
+        const el = await fixture(
+            html`<y-avatar alt="John Doe"></y-avatar>`,
+        );
+
+        const h5 = el.shadowRoot.querySelector("h5");
+        expect(h5).to.exist;
+        expect(h5.textContent).to.equal("JD");
+    });
+
+    it("renders first two characters of a single-word alt", async () => {
+        const el = await fixture(html`<y-avatar alt="Alex"></y-avatar>`);
+
+        const h5 = el.shadowRoot.querySelector("h5");
+        expect(h5.textContent).to.equal("Al");
+    });
+
+    it("falls back to 'AN' initials when no alt is provided", async () => {
+        const el = await fixture(html`<y-avatar></y-avatar>`);
+
+        const h5 = el.shadowRoot.querySelector("h5");
+        expect(h5.textContent).to.equal("AN");
+    });
+
+    it("renders a div.avatar with part=avatar when no src", async () => {
+        const el = await fixture(html`<y-avatar alt="Test User"></y-avatar>`);
+
+        const avatar = el.shadowRoot.querySelector(".avatar");
+        expect(avatar).to.exist;
+        expect(avatar.getAttribute("part")).to.equal("avatar");
+    });
+
+    it("re-renders as img when src attribute is added", async () => {
+        const el = await fixture(html`<y-avatar alt="Jane Doe"></y-avatar>`);
+
+        expect(el.shadowRoot.querySelector(".avatar")).to.exist;
+
+        el.setAttribute("src", "/img/jane.png");
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.shadowRoot.querySelector("img")).to.exist;
+        expect(el.shadowRoot.querySelector(".avatar")).to.not.exist;
+    });
+
+    it("re-renders as initials when src attribute is removed", async () => {
+        const el = await fixture(
+            html`<y-avatar src="/img/user.png" alt="Jane Doe"></y-avatar>`,
+        );
+
+        expect(el.shadowRoot.querySelector("img")).to.exist;
+
+        el.removeAttribute("src");
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.shadowRoot.querySelector(".avatar")).to.exist;
+        expect(el.shadowRoot.querySelector("img")).to.not.exist;
+    });
+
+    it("applies circle border-radius by default", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-border-radius-circle");
+    });
+
+    it("applies square border-radius when shape=square", async () => {
+        const el = await fixture(
+            html`<y-avatar alt="AB" shape="square"></y-avatar>`,
+        );
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-border-radius-square");
+    });
+
+    it("applies small size variable when size=small", async () => {
+        const el = await fixture(
+            html`<y-avatar alt="AB" size="small"></y-avatar>`,
+        );
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-size-small");
+    });
+
+    it("applies large size variable when size=large", async () => {
+        const el = await fixture(
+            html`<y-avatar alt="AB" size="large"></y-avatar>`,
+        );
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-size-large");
+    });
+
+    it("applies primary color variables by default", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--primary-content--");
+    });
+
+    it("applies correct color variables when color attribute changes", async () => {
+        const el = await fixture(
+            html`<y-avatar alt="AB" color="success"></y-avatar>`,
+        );
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--success-content--");
+    });
+
+    it("sets size attribute via the size setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.size = "large";
+        expect(el.getAttribute("size")).to.equal("large");
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-size-large");
+    });
+
+    it("sets shape attribute via the shape setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.shape = "square";
+        expect(el.getAttribute("shape")).to.equal("square");
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-border-radius-square");
+    });
+
+    it("sets color attribute via the color setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.color = "error";
+        expect(el.getAttribute("color")).to.equal("error");
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--error-content--");
+    });
+
+    it("sets alt attribute via the alt setter", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.alt = "Jane Doe";
+        expect(el.getAttribute("alt")).to.equal("Jane Doe");
+
+        const h5 = el.shadowRoot.querySelector("h5");
+        expect(h5.textContent).to.equal("JD");
+    });
+
+    it("sets src via the src setter and renders an img", async () => {
+        const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
+        el.src = "/img/test.png";
+        expect(el.getAttribute("src")).to.equal("/img/test.png");
+        expect(el.shadowRoot.querySelector("img")).to.exist;
+    });
+
+    it("removes src attribute when src setter is called with a falsy value", async () => {
+        const el = await fixture(
+            html`<y-avatar src="/img/test.png" alt="AB"></y-avatar>`,
+        );
+        el.src = null;
+        expect(el.hasAttribute("src")).to.be.false;
+        expect(el.shadowRoot.querySelector(".avatar")).to.exist;
+    });
+});

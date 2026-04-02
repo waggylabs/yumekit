@@ -15,7 +15,9 @@ import arrowDown from "./arrow-down.svg";
 import arrowLeft from "./arrow-left.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
+import ban from "./ban.svg";
 import bell from "./bell.svg";
+import bluetooth from "./bluetooth.svg";
 import briefcase from "./briefcase.svg";
 import bolt from "./bolt.svg";
 import bookmark from "./bookmark.svg";
@@ -41,6 +43,7 @@ import compBadge from "./comp-badge.svg";
 import compButton from "./comp-button.svg";
 import compCard from "./comp-card.svg";
 import compCheckbox from "./comp-checkbox.svg";
+import compDate from "./comp-date.svg";
 import compDialog from "./comp-dialog.svg";
 import compDrawer from "./comp-drawer.svg";
 import compIcon from "./comp-icon.svg";
@@ -67,6 +70,7 @@ import downFromBracket from "./down-from-bracket.svg";
 import downToBracket from "./down-to-bracket.svg";
 import ellipsisH from "./ellipsis-h.svg";
 import ellipsisV from "./ellipsis-v.svg";
+import evCharger from "./ev-charger.svg";
 import expandDown from "./expand-down.svg";
 import expandLeft from "./expand-left.svg";
 import expandRight from "./expand-right.svg";
@@ -74,9 +78,11 @@ import expandUp from "./expand-up.svg";
 import faceSmile from "./face-smile.svg";
 import faceNeutral from "./face-neutral.svg";
 import faceFrown from "./face-frown.svg";
+import fan from "./fan.svg";
 import figma from "./figma.svg";
 import filter from "./filter.svg";
 import flask from "./flask.svg";
+import gasoline from "./gasoline.svg";
 import folder from "./folder.svg";
 import github from "./github.svg";
 import heart from "./heart.svg";
@@ -100,6 +106,7 @@ import moon from "./moon.svg";
 import palette from "./palette.svg";
 import pencil from "./pencil.svg";
 import paperAirplane from "./paper-airplane.svg";
+import plug from "./plug.svg";
 import plus from "./plus.svg";
 import puzzle from "./puzzle.svg";
 import rightFromBracket from "./right-from-bracket.svg";
@@ -119,7 +126,11 @@ import sun from "./sun.svg";
 import swap from "./swap.svg";
 import tablet from "./tablet.svg";
 import tag from "./tag.svg";
+import thermometerHigh from "./thermometer-high.svg";
+import thermometerLow from "./thermometer-low.svg";
+import tools from "./tools.svg";
 import trash from "./trash.svg";
+import unlock from "./unlock.svg";
 import upFromBracket from "./up-from-bracket.svg";
 import upToBracket from "./up-to-bracket.svg";
 import user from "./user.svg";
@@ -134,7 +145,9 @@ registerIcons({
     "arrow-left": arrowLeft,
     "arrow-right": arrowRight,
     "arrow-up": arrowUp,
+    ban,
     bell,
+    bluetooth,
     bolt,
     briefcase,
     bookmark,
@@ -160,6 +173,7 @@ registerIcons({
     "comp-button": compButton,
     "comp-card": compCard,
     "comp-checkbox": compCheckbox,
+    "comp-date": compDate,
     "comp-dialog": compDialog,
     "comp-drawer": compDrawer,
     "comp-icon": compIcon,
@@ -186,6 +200,7 @@ registerIcons({
     "down-to-bracket": downToBracket,
     "ellipsis-h": ellipsisH,
     "ellipsis-v": ellipsisV,
+    "ev-charger": evCharger,
     "expand-down": expandDown,
     "expand-left": expandLeft,
     "expand-right": expandRight,
@@ -193,10 +208,12 @@ registerIcons({
     "face-frown": faceFrown,
     "face-neutral": faceNeutral,
     "face-smile": faceSmile,
+    fan,
     figma,
     filter,
     flask,
     folder,
+    gasoline,
 
     github,
     globe,
@@ -220,6 +237,7 @@ registerIcons({
     palette,
     "paper-airplane": paperAirplane,
     pencil,
+    plug,
     plus,
     puzzle,
     "right-from-bracket": rightFromBracket,
@@ -239,7 +257,11 @@ registerIcons({
     swap,
     tablet,
     tag,
+    "thermometer-high": thermometerHigh,
+    "thermometer-low": thermometerLow,
+    tools,
     trash,
+    unlock,
     "up-from-bracket": upFromBracket,
     "up-to-bracket": upToBracket,
     user,
