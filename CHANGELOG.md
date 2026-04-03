@@ -31,7 +31,13 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.4.1] – 2026-04-01
+## [0.4.2] - 2026-04-11
+
+### Changed
+
+- Added responsive display to `y-date` and `y-datepicker` as well as the ability to set a `native-mobile` property to `y-date` which will allow the input to use the native mobile date and time picker instead of the `y-datepicker`.
+
+## [0.4.1] - 2026-04-01
 
 ### Added
 
@@ -54,7 +60,7 @@ Delete any empty sections before publishing.
 - `y-icon` removed artifact from accessibility icon
 - Dark theme files corrected: `--help-background-component` now uses `var(--indigo-dark-0)` instead of `var(--indigo-light-0)`.
 
-## [0.4.0] – 2026-03-29
+## [0.4.0] - 2026-03-29
 
 ### Added
 
@@ -86,19 +92,19 @@ Delete any empty sections before publishing.
 - `gripDots(horizontal)` function removed from `src/icons/index.js`.
 - Stale `--base-background-border` and `--error-background-border` variable references cleaned up across all theme files (renamed to `--base-border` / `--error-border` in 0.3.9).
 
-## [0.3.10] – 2026-03-25
+## [0.3.10] - 2026-03-25
 
 ### Added
 
 - `y-card`: added `image` slot that displays over the `header` slot if included.
 
-## [0.3.9] – 2026-03-25
+## [0.3.9] - 2026-03-25
 
 ### Fixed
 
 - `y-card`, `y-switch`, `y-slider`, `y-progress`: restored missing borders after theme variable rename in 0.3.8 changed `--{scheme}-background-border` to `--{scheme}-border` without updating component references.
 
-## [0.3.8] – 2026-03-25
+## [0.3.8] - 2026-03-25
 
 ### Fixed
 
@@ -106,7 +112,7 @@ Delete any empty sections before publishing.
 
 - `y-tag`: reverted earlier change adding variables to tag backgrounds. Defaults to -background-app variables
 
-## [0.3.6] – 2026-03-23
+## [0.3.6] - 2026-03-23
 
 ### Added
 
@@ -128,25 +134,25 @@ Delete any empty sections before publishing.
 
 - Removed `features` icon (duplicate of `sun`)
 
-## [0.3.5] – 2026-03-20
+## [0.3.5] - 2026-03-20
 
 ### Fixed
 
 - Patch for 0.3.3 with bug fixes
 
-## [0.3.4] – 2026-03-20
+## [0.3.4] - 2026-03-20
 
 ### Fixed
 
 - Patch for 0.3.3 with bug fixes
 
-## [0.3.3] – 2026-03-20
+## [0.3.3] - 2026-03-20
 
 ### Fixed
 
 - Several bug fixes and test updates
 
-## [0.3.2] – 2026-03-18
+## [0.3.2] - 2026-03-18
 
 ### Added
 

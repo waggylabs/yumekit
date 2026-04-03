@@ -28,6 +28,8 @@ export class YumeDate extends HTMLElement {
             "show-years",
             "show-months",
             "show-days",
+            "mobile-breakpoint",
+            "native-mobile",
         ];
     }
 
@@ -42,22 +44,30 @@ export class YumeDate extends HTMLElement {
         this._onDocumentClick = this._onDocumentClick.bind(this);
         this._suppressBlurApply = false;
         this._selectedParts = new Set();
+        this._mql = null;
+        this._isMobile = false;
+        this._onMediaChange = this._onMediaChange.bind(this);
     }
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
+        this._setupMediaQuery();
         this.render();
         document.addEventListener("click", this._onDocumentClick);
     }
 
     disconnectedCallback() {
         document.removeEventListener("click", this._onDocumentClick);
+        this._teardownMediaQuery();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+        if (name === "mobile-breakpoint") {
+            this._setupMediaQuery();
+        }
         if (name === "value") {
             this._internals.setFormValue(newVal, this.getAttribute("name"));
             this._updateDisplay();
@@ -122,6 +132,14 @@ export class YumeDate extends HTMLElement {
         this.setAttribute("format", v);
     }
 
+    /** @type {string} Hour display format: "12" (default) or "24" */
+    get hourFormat() {
+        return this.getAttribute("hour-format") || "12";
+    }
+    set hourFormat(v) {
+        this.setAttribute("hour-format", v);
+    }
+
     /** @type {boolean} Whether the field is in an invalid state. */
     get invalid() {
         return this.hasAttribute("invalid");
@@ -154,6 +172,42 @@ export class YumeDate extends HTMLElement {
         this.setAttribute("min", v);
     }
 
+    /** @type {number} Interval between minute options (default 5) */
+    get minuteInterval() {
+        return parseInt(this.getAttribute("minute-interval") || "5", 10);
+    }
+    set minuteInterval(v) {
+        this.setAttribute("minute-interval", String(v));
+    }
+
+    /** @type {boolean} Whether the date input is currently rendering in mobile mode. */
+    get mobile() {
+        return this._isMobile;
+    }
+
+    /** @type {string} When true, renders native date inputs on mobile instead of the datepicker popup. */
+    get nativeMobile() {
+        return this.hasAttribute("native-mobile");
+    }
+    set nativeMobile(v) {
+        v
+            ? this.setAttribute("native-mobile", "")
+            : this.removeAttribute("native-mobile");
+    }
+
+    /**
+     * Override the mobile breakpoint (in pixels) for this instance.
+     * Falls back to --component-datepicker-mobile-breakpoint (default 768).
+     * @type {string}
+     */
+    get mobileBreakpoint() {
+        return this.getAttribute("mobile-breakpoint") || "";
+    }
+    set mobileBreakpoint(v) {
+        if (v) this.setAttribute("mobile-breakpoint", v);
+        else this.removeAttribute("mobile-breakpoint");
+    }
+
     /** @type {string} "single" | "range" (default "single"). */
     get mode() {
         return this.getAttribute("mode") || "single";
@@ -181,6 +235,22 @@ export class YumeDate extends HTMLElement {
         this.setAttribute("placeholder", v);
     }
 
+    /** @type {number} Interval between second options (default 5) */
+    get secondInterval() {
+        return parseInt(this.getAttribute("second-interval") || "5", 10);
+    }
+    set secondInterval(v) {
+        this.setAttribute("second-interval", String(v));
+    }
+
+    /** @type {boolean} Show day grid in datepicker (default true). */
+    get showDays() {
+        return this.getAttribute("show-days") !== "false";
+    }
+    set showDays(v) {
+        this.setAttribute("show-days", v ? "true" : "false");
+    }
+
     /** @type {boolean} Show hour time picker. */
     get showHours() {
         return this.hasAttribute("show-hours");
@@ -201,6 +271,14 @@ export class YumeDate extends HTMLElement {
             : this.removeAttribute("show-minutes");
     }
 
+    /** @type {boolean} Show month select in datepicker header (default true). */
+    get showMonths() {
+        return this.getAttribute("show-months") !== "false";
+    }
+    set showMonths(v) {
+        this.setAttribute("show-months", v ? "true" : "false");
+    }
+
     /** @type {boolean} Show seconds column in time picker. */
     get showSeconds() {
         return this.hasAttribute("show-seconds");
@@ -211,52 +289,12 @@ export class YumeDate extends HTMLElement {
             : this.removeAttribute("show-seconds");
     }
 
-    /** @type {string} Hour display format: "12" (default) or "24" */
-    get hourFormat() {
-        return this.getAttribute("hour-format") || "12";
-    }
-    set hourFormat(v) {
-        this.setAttribute("hour-format", v);
-    }
-
-    /** @type {number} Interval between minute options (default 5) */
-    get minuteInterval() {
-        return parseInt(this.getAttribute("minute-interval") || "5", 10);
-    }
-    set minuteInterval(v) {
-        this.setAttribute("minute-interval", String(v));
-    }
-
-    /** @type {number} Interval between second options (default 5) */
-    get secondInterval() {
-        return parseInt(this.getAttribute("second-interval") || "5", 10);
-    }
-    set secondInterval(v) {
-        this.setAttribute("second-interval", String(v));
-    }
-
     /** @type {boolean} Show year select in datepicker header (default true). */
     get showYears() {
         return this.getAttribute("show-years") !== "false";
     }
     set showYears(v) {
         this.setAttribute("show-years", v ? "true" : "false");
-    }
-
-    /** @type {boolean} Show month select in datepicker header (default true). */
-    get showMonths() {
-        return this.getAttribute("show-months") !== "false";
-    }
-    set showMonths(v) {
-        this.setAttribute("show-months", v ? "true" : "false");
-    }
-
-    /** @type {boolean} Show day grid in datepicker (default true). */
-    get showDays() {
-        return this.getAttribute("show-days") !== "false";
-    }
-    set showDays(v) {
-        this.setAttribute("show-days", v ? "true" : "false");
     }
 
     /** @type {string} Input size: "small" | "medium" | "large" (default "medium"). */
@@ -313,6 +351,10 @@ export class YumeDate extends HTMLElement {
     }
 
     render() {
+        if (this._isMobile && this.nativeMobile) {
+            this._renderMobile();
+            return;
+        }
         const isDisabled = this.disabled;
         const isLabelTop = this.labelPosition === "top";
         const labelSlot = `<div class="label-wrapper"><slot name="label"></slot></div>`;
@@ -328,8 +370,12 @@ export class YumeDate extends HTMLElement {
             this.hasAttribute("show-minutes") ? "show-minutes" : "",
             this.hasAttribute("show-seconds") ? "show-seconds" : "",
             this.getAttribute("hour-format") === "24" ? `hour-format="24"` : "",
-            this.hasAttribute("minute-interval") ? `minute-interval="${this.minuteInterval}"` : "",
-            this.hasAttribute("second-interval") ? `second-interval="${this.secondInterval}"` : "",
+            this.hasAttribute("minute-interval")
+                ? `minute-interval="${this.minuteInterval}"`
+                : "",
+            this.hasAttribute("second-interval")
+                ? `second-interval="${this.secondInterval}"`
+                : "",
             this.getAttribute("show-years") === "false"
                 ? `show-years="false"`
                 : "",
@@ -338,6 +384,9 @@ export class YumeDate extends HTMLElement {
                 : "",
             this.getAttribute("show-days") === "false"
                 ? `show-days="false"`
+                : "",
+            this.mobileBreakpoint
+                ? `mobile-breakpoint="${this.mobileBreakpoint}"`
                 : "",
         ]
             .filter(Boolean)
@@ -388,6 +437,57 @@ export class YumeDate extends HTMLElement {
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
+
+    _applyParsedDate(date) {
+        const iso = date.toISOString();
+        this.setAttribute("value", iso);
+        this._internals.setFormValue(iso, this.name);
+        this._syncPickerValue();
+        this._updateClearBtn();
+        const display = this.shadowRoot.querySelector(".display");
+        if (display) display.value = this._getFormattedDisplay();
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: iso,
+                    startDate: date,
+                    endDate: null,
+                    formatted: this._getFormattedDisplay(),
+                },
+            }),
+        );
+    }
+
+    /**
+     * Apply a range value (start and optional end) to the component.
+     * @param {Date} start
+     * @param {Date|null} end
+     */
+    _applyRangeValue(start, end) {
+        const isoStart = start.toISOString();
+        const isoEnd = end ? end.toISOString() : "";
+        const value = isoEnd ? `${isoStart},${isoEnd}` : isoStart;
+        this.setAttribute("value", value);
+        this._internals.setFormValue(value, this.name);
+        this._syncPickerValue();
+        this._updateClearBtn();
+        const display = this.shadowRoot.querySelector(".display");
+        if (display) display.value = this._getFormattedDisplay();
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value,
+                    startDate: start,
+                    endDate: end,
+                    formatted: this._getFormattedDisplay(),
+                },
+            }),
+        );
+    }
 
     _bindListeners() {
         const trigger = this.shadowRoot.querySelector(".trigger");
@@ -575,6 +675,83 @@ export class YumeDate extends HTMLElement {
         });
     }
 
+    _bindMobileListeners() {
+        const root = this.shadowRoot;
+        const clearBtn = root.querySelector(".clear-btn");
+
+        clearBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.clear();
+        });
+
+        root.querySelectorAll(".native-date").forEach((input) => {
+            input.addEventListener("change", () => {
+                const isRange = this.mode === "range";
+
+                if (isRange) {
+                    const startInput = root.querySelector(
+                        '[data-side="start"]',
+                    );
+                    const endInput = root.querySelector('[data-side="end"]');
+                    const s = startInput?.value
+                        ? new Date(startInput.value).toISOString()
+                        : "";
+                    const e = endInput?.value
+                        ? new Date(endInput.value).toISOString()
+                        : "";
+                    const value = [s, e].filter(Boolean).join(",");
+                    this.setAttribute("value", value);
+                    this._internals.setFormValue(value, this.name);
+                    this._updateClearBtn();
+                    this.dispatchEvent(
+                        new CustomEvent("change", {
+                            bubbles: true,
+                            composed: true,
+                            detail: {
+                                value,
+                                startDate: s ? new Date(s) : null,
+                                endDate: e ? new Date(e) : null,
+                                formatted: this._getFormattedDisplay(),
+                            },
+                        }),
+                    );
+                } else {
+                    const val = input.value;
+                    if (!val) {
+                        this.clear();
+                        return;
+                    }
+                    const d = new Date(val);
+                    if (!isNaN(d)) {
+                        this._applyParsedDate(d);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Build a presumed Date from partial input parts, filling in defaults.
+     * Returns null if the result is invalid.
+     * @param {{ month?: number, day?: number, year?: number, hour?: number, minute?: number, second?: number } | null} partial
+     * @returns {Date | null}
+     */
+    _buildPresumedDate(partial) {
+        if (!partial) return null;
+        const now = new Date();
+        const year = partial.year ?? now.getFullYear();
+        const month =
+            partial.month !== undefined ? partial.month - 1 : now.getMonth();
+        const day = partial.day ?? 1;
+        const hour = partial.hour ?? 0;
+        const minute = partial.minute ?? 0;
+        const second = partial.second ?? 0;
+        const d = new Date(year, month, day, hour, minute, second);
+        if (isNaN(d) || d.getMonth() !== month || d.getDate() !== day)
+            return null;
+        return d;
+    }
+
     _buildStyles(isDisabled) {
         const size = this.size;
         const heightMap = {
@@ -703,7 +880,41 @@ export class YumeDate extends HTMLElement {
                 border-radius: var(--component-datepicker-border-radius);
                 box-shadow: var(--component-datepicker-shadow);
             }
+
+            .native-date {
+                flex: 1;
+                min-width: 0;
+                border: none;
+                background: transparent;
+                color: inherit;
+                font-family: inherit;
+                font-size: 1em;
+                padding: 0;
+                outline: none;
+            }
+
+            .native-sep {
+                flex-shrink: 0;
+                padding: 0 var(--spacing-x-small, 6px);
+                color: var(--base-content-light);
+            }
         `;
+    }
+
+    _getBreakpointPx() {
+        const attr = this.mobileBreakpoint;
+        if (attr) {
+            const px = parseInt(attr, 10);
+            if (!isNaN(px) && px > 0) return px;
+        }
+        const cssVal = getComputedStyle(document.documentElement)
+            .getPropertyValue("--component-datepicker-mobile-breakpoint")
+            .trim();
+        if (cssVal) {
+            const px = parseInt(cssVal, 10);
+            if (!isNaN(px) && px > 0) return px;
+        }
+        return 768;
     }
 
     _getFormattedDisplay() {
@@ -736,136 +947,66 @@ export class YumeDate extends HTMLElement {
         return formatOne(value);
     }
 
+    /**
+     * Handle type-ahead input for range mode.
+     * Parses partial range text and navigates/highlights in the picker.
+     * @param {string} text
+     * @param {HTMLElement} picker
+     */
+    _handleRangeTypeahead(text, picker) {
+        const result = this._parseRangeInput(text);
+        if (!result) return;
+
+        // If we have both start and end, set the full range on the picker
+        if (result.start && result.end) {
+            picker.value = `${result.start.toISOString()},${result.end.toISOString()}`;
+            return;
+        }
+
+        // Check if the user is typing the end date (text contains " - ")
+        if (text.indexOf(" - ") >= 0) {
+            const endText = text.slice(text.indexOf(" - ") + 3).trim();
+            if (endText) {
+                // Parse partial end date for navigation
+                const partial = this._parsePartialInput(endText);
+                if (partial) {
+                    const now = new Date();
+                    const year = partial.year ?? now.getFullYear();
+                    const month =
+                        partial.month !== undefined
+                            ? partial.month - 1
+                            : undefined;
+                    if (partial.day && month !== undefined) {
+                        const preview = new Date(year, month, partial.day);
+                        if (
+                            preview.getMonth() === month &&
+                            preview.getDate() === partial.day
+                        ) {
+                            picker.value = `${result.start.toISOString()},${preview.toISOString()}`;
+                            return;
+                        }
+                    }
+                    picker.navigateTo(year, month);
+                }
+            }
+            return;
+        }
+
+        // Only start date so far — navigate picker to it
+        if (result.start) {
+            picker.value = result.start.toISOString();
+        }
+    }
+
     _onDocumentClick(e) {
         if (!this.contains(e.target) && !this.shadowRoot.contains(e.target)) {
             this._setOpen(false);
         }
     }
 
-    _setOpen(open) {
-        const popup = this.shadowRoot.querySelector(".popup");
-        const trigger = this.shadowRoot.querySelector(".trigger");
-        if (!popup || !trigger) return;
-        popup.hidden = !open;
-        trigger.setAttribute("aria-expanded", String(open));
-        if (open) this._selectedParts.clear();
-    }
-
-    _syncPickerValue() {
-        const picker = this.shadowRoot.querySelector("y-datepicker");
-        if (picker) picker.value = this.value;
-    }
-
-    _updateClearBtn() {
-        if (!this.clearable) return;
-
-        const trigger = this.shadowRoot.querySelector(".trigger");
-        if (!trigger) return;
-
-        const existing = trigger.querySelector(".clear-btn");
-        const calIcon = trigger.querySelector(".cal-icon");
-
-        if (this.value && !existing) {
-            const btn = document.createElement("button");
-            btn.className = "clear-btn";
-            btn.setAttribute("aria-label", "Clear date");
-            btn.setAttribute("tabindex", "-1");
-            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-            btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.clear();
-            });
-            trigger.insertBefore(btn, calIcon);
-        } else if (!this.value && existing) {
-            existing.remove();
-        }
-    }
-
-    _updateDisplay() {
-        const display = this.shadowRoot.querySelector(".display");
-        if (!display) return;
-        display.value = this._getFormattedDisplay();
-        this._updateClearBtn();
-    }
-
-    _updateValidationState() {
-        const trigger = this.shadowRoot.querySelector(".trigger");
-        const label = this.shadowRoot.querySelector(".label-wrapper");
-        trigger?.classList.toggle("is-invalid", this.invalid);
-        label?.classList.toggle("is-invalid", this.invalid);
-    }
-
-    /**
-     * Parse a user-typed string into a Date using this component's format.
-     * Returns null if the text doesn't match the format or produces an invalid date.
-     * @param {string} text
-     * @returns {Date|null}
-     */
-    _parseTypedDate(text) {
-        if (!text) return null;
-        const fmt = this.format;
-
-        const tokens = [
-            { token: "YYYY", key: "year", re: "(\\d{4})" },
-            { token: "MM", key: "month", re: "(\\d{1,2})" },
-            { token: "DD", key: "day", re: "(\\d{1,2})" },
-            { token: "HH", key: "hour24", re: "(\\d{1,2})" },
-            { token: "hh", key: "hour12", re: "(\\d{1,2})" },
-            { token: "mm", key: "minute", re: "(\\d{1,2})" },
-            { token: "ss", key: "second", re: "(\\d{1,2})" },
-            { token: "A", key: "ampm", re: "(AM|PM)" },
-            { token: "a", key: "ampm", re: "(am|pm)" },
-        ];
-
-        // Replace each token with a placeholder, then escape literal chars,
-        // then restore token capture groups
-        const order = [];
-        let reStr = fmt;
-        for (const t of tokens) {
-            if (reStr.includes(t.token)) {
-                reStr = reStr.replace(t.token, `\x00${order.length}\x00`);
-                order.push(t);
-            }
-        }
-        reStr = reStr.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
-        order.forEach((t, i) => {
-            reStr = reStr.replace(`\x00${i}\x00`, t.re);
-        });
-
-        const match = new RegExp(`^${reStr}$`, "i").exec(text.trim());
-        if (!match) return null;
-
-        const parts = {};
-        order.forEach((t, i) => {
-            parts[t.key] = match[i + 1];
-        });
-
-        const year = parts.year
-            ? parseInt(parts.year)
-            : new Date().getFullYear();
-        const month = parts.month ? parseInt(parts.month) - 1 : 0;
-        const day = parts.day ? parseInt(parts.day) : 1;
-
-        let hour = 0;
-        if (parts.hour24 !== undefined) {
-            hour = parseInt(parts.hour24);
-        } else if (parts.hour12 !== undefined) {
-            hour = parseInt(parts.hour12) % 12;
-            if ((parts.ampm || "").toUpperCase() === "PM") hour += 12;
-        }
-        const minute = parts.minute ? parseInt(parts.minute) : 0;
-        const second = parts.second ? parseInt(parts.second) : 0;
-
-        if (month < 0 || month > 11) return null;
-        if (day < 1 || day > 31) return null;
-        if (hour < 0 || hour > 23) return null;
-        if (minute < 0 || minute > 59) return null;
-        if (second < 0 || second > 59) return null;
-
-        const d = new Date(year, month, day, hour, minute, second);
-        // Catch overflow (e.g. Feb 30 → Mar 2)
-        if (d.getMonth() !== month || d.getDate() !== day) return null;
-        return d;
+    _onMediaChange(e) {
+        this._isMobile = e.matches;
+        this.render();
     }
 
     /**
@@ -978,54 +1119,6 @@ export class YumeDate extends HTMLElement {
     }
 
     /**
-     * Apply a parsed Date as the component's value and emit a change event.
-     * @param {Date} date
-     */
-    _applyParsedDate(date) {
-        const iso = date.toISOString();
-        this.setAttribute("value", iso);
-        this._internals.setFormValue(iso, this.name);
-        this._syncPickerValue();
-        this._updateClearBtn();
-        const display = this.shadowRoot.querySelector(".display");
-        if (display) display.value = this._getFormattedDisplay();
-        this.dispatchEvent(
-            new CustomEvent("change", {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    value: iso,
-                    startDate: date,
-                    endDate: null,
-                    formatted: this._getFormattedDisplay(),
-                },
-            }),
-        );
-    }
-
-    /**
-     * Build a presumed Date from partial input parts, filling in defaults.
-     * Returns null if the result is invalid.
-     * @param {{ month?: number, day?: number, year?: number, hour?: number, minute?: number, second?: number } | null} partial
-     * @returns {Date | null}
-     */
-    _buildPresumedDate(partial) {
-        if (!partial) return null;
-        const now = new Date();
-        const year = partial.year ?? now.getFullYear();
-        const month =
-            partial.month !== undefined ? partial.month - 1 : now.getMonth();
-        const day = partial.day ?? 1;
-        const hour = partial.hour ?? 0;
-        const minute = partial.minute ?? 0;
-        const second = partial.second ?? 0;
-        const d = new Date(year, month, day, hour, minute, second);
-        if (isNaN(d) || d.getMonth() !== month || d.getDate() !== day)
-            return null;
-        return d;
-    }
-
-    /**
      * Parse range input text in the form "start - end" or just "start".
      * Each side can be a full or partial date string.
      * Returns { start: Date, end: Date|null } or null if unparseable.
@@ -1059,83 +1152,213 @@ export class YumeDate extends HTMLElement {
     }
 
     /**
-     * Apply a range value (start and optional end) to the component.
-     * @param {Date} start
-     * @param {Date|null} end
+     * Parse a user-typed string into a Date using this component's format.
+     * Returns null if the text doesn't match the format or produces an invalid date.
+     * @param {string} text
+     * @returns {Date|null}
      */
-    _applyRangeValue(start, end) {
-        const isoStart = start.toISOString();
-        const isoEnd = end ? end.toISOString() : "";
-        const value = isoEnd ? `${isoStart},${isoEnd}` : isoStart;
-        this.setAttribute("value", value);
-        this._internals.setFormValue(value, this.name);
-        this._syncPickerValue();
-        this._updateClearBtn();
-        const display = this.shadowRoot.querySelector(".display");
-        if (display) display.value = this._getFormattedDisplay();
-        this.dispatchEvent(
-            new CustomEvent("change", {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    value,
-                    startDate: start,
-                    endDate: end,
-                    formatted: this._getFormattedDisplay(),
-                },
-            }),
-        );
+    _parseTypedDate(text) {
+        if (!text) return null;
+        const fmt = this.format;
+
+        const tokens = [
+            { token: "YYYY", key: "year", re: "(\\d{4})" },
+            { token: "MM", key: "month", re: "(\\d{1,2})" },
+            { token: "DD", key: "day", re: "(\\d{1,2})" },
+            { token: "HH", key: "hour24", re: "(\\d{1,2})" },
+            { token: "hh", key: "hour12", re: "(\\d{1,2})" },
+            { token: "mm", key: "minute", re: "(\\d{1,2})" },
+            { token: "ss", key: "second", re: "(\\d{1,2})" },
+            { token: "A", key: "ampm", re: "(AM|PM)" },
+            { token: "a", key: "ampm", re: "(am|pm)" },
+        ];
+
+        // Replace each token with a placeholder, then escape literal chars,
+        // then restore token capture groups
+        const order = [];
+        let reStr = fmt;
+        for (const t of tokens) {
+            if (reStr.includes(t.token)) {
+                reStr = reStr.replace(t.token, `\x00${order.length}\x00`);
+                order.push(t);
+            }
+        }
+        reStr = reStr.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
+        order.forEach((t, i) => {
+            reStr = reStr.replace(`\x00${i}\x00`, t.re);
+        });
+
+        const match = new RegExp(`^${reStr}$`, "i").exec(text.trim());
+        if (!match) return null;
+
+        const parts = {};
+        order.forEach((t, i) => {
+            parts[t.key] = match[i + 1];
+        });
+
+        const year = parts.year
+            ? parseInt(parts.year)
+            : new Date().getFullYear();
+        const month = parts.month ? parseInt(parts.month) - 1 : 0;
+        const day = parts.day ? parseInt(parts.day) : 1;
+
+        let hour = 0;
+        if (parts.hour24 !== undefined) {
+            hour = parseInt(parts.hour24);
+        } else if (parts.hour12 !== undefined) {
+            hour = parseInt(parts.hour12) % 12;
+            if ((parts.ampm || "").toUpperCase() === "PM") hour += 12;
+        }
+        const minute = parts.minute ? parseInt(parts.minute) : 0;
+        const second = parts.second ? parseInt(parts.second) : 0;
+
+        if (month < 0 || month > 11) return null;
+        if (day < 1 || day > 31) return null;
+        if (hour < 0 || hour > 23) return null;
+        if (minute < 0 || minute > 59) return null;
+        if (second < 0 || second > 59) return null;
+
+        const d = new Date(year, month, day, hour, minute, second);
+        // Catch overflow (e.g. Feb 30 → Mar 2)
+        if (d.getMonth() !== month || d.getDate() !== day) return null;
+        return d;
     }
 
-    /**
-     * Handle type-ahead input for range mode.
-     * Parses partial range text and navigates/highlights in the picker.
-     * @param {string} text
-     * @param {HTMLElement} picker
-     */
-    _handleRangeTypeahead(text, picker) {
-        const result = this._parseRangeInput(text);
-        if (!result) return;
+    _renderMobile() {
+        const isDisabled = this.disabled;
+        const isLabelTop = this.labelPosition === "top";
+        const labelSlot = `<div class="label-wrapper"><slot name="label"></slot></div>`;
+        const hasTime = this.showHours || this.showMinutes || this.showSeconds;
+        const inputType = hasTime ? "datetime-local" : "date";
+        const isRange = this.mode === "range";
 
-        // If we have both start and end, set the full range on the picker
-        if (result.start && result.end) {
-            picker.value = `${result.start.toISOString()},${result.end.toISOString()}`;
-            return;
+        const toNativeVal = (iso) => {
+            if (!iso) return "";
+            const d = new Date(iso);
+            if (isNaN(d)) return "";
+            const pad = (n) => String(n).padStart(2, "0");
+            const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            if (!hasTime) return datePart;
+            return `${datePart}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        };
+
+        let startVal = "";
+        let endVal = "";
+        if (isRange && this.value) {
+            const [s, e] = this.value.split(",");
+            startVal = toNativeVal(s);
+            endVal = toNativeVal(e);
+        } else {
+            startVal = toNativeVal(this.value);
         }
 
-        // Check if the user is typing the end date (text contains " - ")
-        if (text.indexOf(" - ") >= 0) {
-            const endText = text.slice(text.indexOf(" - ") + 3).trim();
-            if (endText) {
-                // Parse partial end date for navigation
-                const partial = this._parsePartialInput(endText);
-                if (partial) {
-                    const now = new Date();
-                    const year = partial.year ?? now.getFullYear();
-                    const month =
-                        partial.month !== undefined
-                            ? partial.month - 1
-                            : undefined;
-                    if (partial.day && month !== undefined) {
-                        const preview = new Date(year, month, partial.day);
-                        if (
-                            preview.getMonth() === month &&
-                            preview.getDate() === partial.day
-                        ) {
-                            picker.value = `${result.start.toISOString()},${preview.toISOString()}`;
-                            return;
-                        }
+        const minAttr = this.min ? ` min="${toNativeVal(this.min)}"` : "";
+        const maxAttr = this.max ? ` max="${toNativeVal(this.max)}"` : "";
+
+        this.shadowRoot.innerHTML = `
+            <style>${this._buildStyles(isDisabled)}</style>
+            <div class="wrapper">
+                ${isLabelTop ? labelSlot : ""}
+                <div class="trigger${this.invalid ? " is-invalid" : ""}">
+                    <slot name="left-icon"></slot>
+                    ${
+                        isRange
+                            ? `
+                        <input class="native-date" type="${inputType}" data-side="start"
+                            value="${startVal}"${minAttr}${maxAttr}
+                            ${isDisabled ? "disabled" : ""}>
+                        <span class="native-sep">–</span>
+                        <input class="native-date" type="${inputType}" data-side="end"
+                            value="${endVal}"${minAttr}${maxAttr}
+                            ${isDisabled ? "disabled" : ""}>
+                    `
+                            : `
+                        <input class="native-date" type="${inputType}" data-side="start"
+                            value="${startVal}"${minAttr}${maxAttr}
+                            ${isDisabled ? "disabled" : ""}>
+                    `
                     }
-                    picker.navigateTo(year, month);
-                }
-            }
-            return;
-        }
+                    ${
+                        this.clearable && this.value
+                            ? `<button class="clear-btn" aria-label="Clear date" tabindex="-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>`
+                            : ""
+                    }
+                </div>
+                ${!isLabelTop ? labelSlot : ""}
+            </div>
+        `;
 
-        // Only start date so far — navigate picker to it
-        if (result.start) {
-            picker.value = result.start.toISOString();
+        if (!isDisabled) this._bindMobileListeners();
+    }
+
+    _setOpen(open) {
+        const popup = this.shadowRoot.querySelector(".popup");
+        const trigger = this.shadowRoot.querySelector(".trigger");
+        if (!popup || !trigger) return;
+        popup.hidden = !open;
+        trigger.setAttribute("aria-expanded", String(open));
+        if (open) this._selectedParts.clear();
+    }
+
+    _setupMediaQuery() {
+        this._teardownMediaQuery();
+        const bp = this._getBreakpointPx();
+        this._mql = window.matchMedia(`(max-width: ${bp}px)`);
+        this._isMobile = this._mql.matches;
+        this._mql.addEventListener("change", this._onMediaChange);
+    }
+
+    _syncPickerValue() {
+        const picker = this.shadowRoot.querySelector("y-datepicker");
+        if (picker) picker.value = this.value;
+    }
+
+    _teardownMediaQuery() {
+        if (this._mql) {
+            this._mql.removeEventListener("change", this._onMediaChange);
+            this._mql = null;
         }
+    }
+
+    _updateClearBtn() {
+        if (!this.clearable) return;
+
+        const trigger = this.shadowRoot.querySelector(".trigger");
+        if (!trigger) return;
+
+        const existing = trigger.querySelector(".clear-btn");
+        const calIcon = trigger.querySelector(".cal-icon");
+
+        if (this.value && !existing) {
+            const btn = document.createElement("button");
+            btn.className = "clear-btn";
+            btn.setAttribute("aria-label", "Clear date");
+            btn.setAttribute("tabindex", "-1");
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.clear();
+            });
+            trigger.insertBefore(btn, calIcon);
+        } else if (!this.value && existing) {
+            existing.remove();
+        }
+    }
+
+    _updateDisplay() {
+        const display = this.shadowRoot.querySelector(".display");
+        if (!display) return;
+        display.value = this._getFormattedDisplay();
+        this._updateClearBtn();
+    }
+
+    _updateValidationState() {
+        const trigger = this.shadowRoot.querySelector(".trigger");
+        const label = this.shadowRoot.querySelector(".label-wrapper");
+        trigger?.classList.toggle("is-invalid", this.invalid);
+        label?.classList.toggle("is-invalid", this.invalid);
     }
 }
 

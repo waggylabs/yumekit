@@ -36,6 +36,7 @@ export class YumeDatepicker extends HTMLElement {
             "minute-interval",
             "second-interval",
             "color",
+            "mobile-breakpoint",
         ];
     }
 
@@ -55,16 +56,27 @@ export class YumeDatepicker extends HTMLElement {
         this._awaitingEnd = false;
         this._startTime = { h: 0, m: 0, s: 0 };
         this._endTime = { h: 0, m: 0, s: 0 };
+        this._mql = null;
+        this._isMobile = false;
+        this._onMediaChange = this._onMediaChange.bind(this);
     }
 
     connectedCallback() {
+        this._setupMediaQuery();
         this._parseValue();
         this.render();
+    }
+
+    disconnectedCallback() {
+        this._teardownMediaQuery();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
         if (this._suppressParse) return;
+        if (name === "mobile-breakpoint") {
+            this._setupMediaQuery();
+        }
         if (name === "value") {
             this._parseValue();
         }
@@ -75,20 +87,36 @@ export class YumeDatepicker extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** @type {string} "single" | "range" (default "single") */
-    get mode() {
-        return this.getAttribute("mode") || "single";
+    /** @type {string} Color theme (default "primary") */
+    get color() {
+        return this.getAttribute("color") || "primary";
     }
-    set mode(v) {
-        this.setAttribute("mode", v);
+    set color(v) {
+        this.setAttribute("color", v);
     }
 
-    /** @type {string} ISO date string, or "ISO,ISO" for range */
-    get value() {
-        return this.getAttribute("value") || "";
+    /** @type {string} Date format string (default "MM/DD/YYYY") */
+    get format() {
+        return this.getAttribute("format") || "MM/DD/YYYY";
     }
-    set value(v) {
-        this.setAttribute("value", v);
+    set format(v) {
+        this.setAttribute("format", v);
+    }
+
+    /** @type {string} Hour display format: "12" (default) or "24" */
+    get hourFormat() {
+        return this.getAttribute("hour-format") || "12";
+    }
+    set hourFormat(v) {
+        this.setAttribute("hour-format", v);
+    }
+
+    /** @type {string} Maximum selectable date (ISO string) */
+    get max() {
+        return this.getAttribute("max") || "";
+    }
+    set max(v) {
+        this.setAttribute("max", v);
     }
 
     /** @type {string} Minimum selectable date (ISO string) */
@@ -99,12 +127,54 @@ export class YumeDatepicker extends HTMLElement {
         this.setAttribute("min", v);
     }
 
-    /** @type {string} Maximum selectable date (ISO string) */
-    get max() {
-        return this.getAttribute("max") || "";
+    /** @type {number} Interval between minute options (default 5) */
+    get minuteInterval() {
+        return parseInt(this.getAttribute("minute-interval") || "5", 10);
     }
-    set max(v) {
-        this.setAttribute("max", v);
+    set minuteInterval(v) {
+        this.setAttribute("minute-interval", String(v));
+    }
+
+    /** @type {boolean} Whether the datepicker is currently rendering in mobile mode. */
+    get mobile() {
+        return this._isMobile;
+    }
+
+    /**
+     * Override the mobile breakpoint (in pixels) for this instance.
+     * Falls back to --component-datepicker-mobile-breakpoint (default 768).
+     * @type {string}
+     */
+    get mobileBreakpoint() {
+        return this.getAttribute("mobile-breakpoint") || "";
+    }
+    set mobileBreakpoint(v) {
+        if (v) this.setAttribute("mobile-breakpoint", v);
+        else this.removeAttribute("mobile-breakpoint");
+    }
+
+    /** @type {string} "single" | "range" (default "single") */
+    get mode() {
+        return this.getAttribute("mode") || "single";
+    }
+    set mode(v) {
+        this.setAttribute("mode", v);
+    }
+
+    /** @type {number} Interval between second options (default 5) */
+    get secondInterval() {
+        return parseInt(this.getAttribute("second-interval") || "5", 10);
+    }
+    set secondInterval(v) {
+        this.setAttribute("second-interval", String(v));
+    }
+
+    /** @type {boolean} Show day grid (default true) */
+    get showDays() {
+        return this.getAttribute("show-days") !== "false";
+    }
+    set showDays(v) {
+        this.setAttribute("show-days", v ? "true" : "false");
     }
 
     /** @type {boolean} Show hour time picker */
@@ -127,6 +197,14 @@ export class YumeDatepicker extends HTMLElement {
             : this.removeAttribute("show-minutes");
     }
 
+    /** @type {boolean} Show month select in header (default true) */
+    get showMonths() {
+        return this.getAttribute("show-months") !== "false";
+    }
+    set showMonths(v) {
+        this.setAttribute("show-months", v ? "true" : "false");
+    }
+
     /** @type {boolean} Show second column in time picker (implies show-minutes) */
     get showSeconds() {
         return this.hasAttribute("show-seconds");
@@ -145,60 +223,12 @@ export class YumeDatepicker extends HTMLElement {
         this.setAttribute("show-years", v ? "true" : "false");
     }
 
-    /** @type {boolean} Show month select in header (default true) */
-    get showMonths() {
-        return this.getAttribute("show-months") !== "false";
+    /** @type {string} ISO date string, or "ISO,ISO" for range */
+    get value() {
+        return this.getAttribute("value") || "";
     }
-    set showMonths(v) {
-        this.setAttribute("show-months", v ? "true" : "false");
-    }
-
-    /** @type {boolean} Show day grid (default true) */
-    get showDays() {
-        return this.getAttribute("show-days") !== "false";
-    }
-    set showDays(v) {
-        this.setAttribute("show-days", v ? "true" : "false");
-    }
-
-    /** @type {string} Hour display format: "12" (default) or "24" */
-    get hourFormat() {
-        return this.getAttribute("hour-format") || "12";
-    }
-    set hourFormat(v) {
-        this.setAttribute("hour-format", v);
-    }
-
-    /** @type {number} Interval between minute options (default 5) */
-    get minuteInterval() {
-        return parseInt(this.getAttribute("minute-interval") || "5", 10);
-    }
-    set minuteInterval(v) {
-        this.setAttribute("minute-interval", String(v));
-    }
-
-    /** @type {number} Interval between second options (default 5) */
-    get secondInterval() {
-        return parseInt(this.getAttribute("second-interval") || "5", 10);
-    }
-    set secondInterval(v) {
-        this.setAttribute("second-interval", String(v));
-    }
-
-    /** @type {string} Date format string (default "MM/DD/YYYY") */
-    get format() {
-        return this.getAttribute("format") || "MM/DD/YYYY";
-    }
-    set format(v) {
-        this.setAttribute("format", v);
-    }
-
-    /** @type {string} Color theme (default "primary") */
-    get color() {
-        return this.getAttribute("color") || "primary";
-    }
-    set color(v) {
-        this.setAttribute("color", v);
+    set value(v) {
+        this.setAttribute("value", v);
     }
 
     // -------------------------------------------------------------------------
@@ -243,7 +273,7 @@ export class YumeDatepicker extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
             <style>${this._buildStyles()}</style>
-            <div class="datepicker${isRange ? " range" : ""}">
+            <div class="datepicker${isRange ? " range" : ""}${this._isMobile && isRange ? " mobile" : ""}">
                 ${this._buildPanel("left", showHoursCols)}
                 ${isRange ? this._buildPanel("right", showHoursCols) : ""}
             </div>
@@ -384,7 +414,7 @@ export class YumeDatepicker extends HTMLElement {
         });
     }
 
-    _buildDayGrid(vd) {
+_buildDayGrid(vd) {
         const year = vd.getFullYear();
         const month = vd.getMonth();
         const firstDow = new Date(year, month, 1).getDay();
@@ -552,6 +582,15 @@ export class YumeDatepicker extends HTMLElement {
 
             .datepicker.range {
                 display: inline-flex;
+            }
+
+            .datepicker.range.mobile {
+                flex-direction: column;
+            }
+
+            .datepicker.range.mobile .panel + .panel {
+                border-left: none;
+                border-top: var(--component-datepicker-border-width) solid var(--component-datepicker-border-color);
             }
 
             .panel {
@@ -731,7 +770,9 @@ export class YumeDatepicker extends HTMLElement {
                         (_, i) => i * mInterval,
                     )
                         .map((m) => {
-                            const sel = Math.floor(time.m / mInterval) * mInterval === m;
+                            const sel =
+                                Math.floor(time.m / mInterval) * mInterval ===
+                                m;
                             return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
                             style-type="${sel ? "filled" : "flat"}"
@@ -757,7 +798,9 @@ export class YumeDatepicker extends HTMLElement {
                         (_, i) => i * sInterval,
                     )
                         .map((s) => {
-                            const sel = Math.floor(time.s / sInterval) * sInterval === s;
+                            const sel =
+                                Math.floor(time.s / sInterval) * sInterval ===
+                                s;
                             return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
                             style-type="${sel ? "filled" : "flat"}"
@@ -863,6 +906,22 @@ export class YumeDatepicker extends HTMLElement {
             .replace("a", h24 >= 12 ? "pm" : "am");
     }
 
+    _getBreakpointPx() {
+        const attr = this.mobileBreakpoint;
+        if (attr) {
+            const px = parseInt(attr, 10);
+            if (!isNaN(px) && px > 0) return px;
+        }
+        const cssVal = getComputedStyle(document.documentElement)
+            .getPropertyValue("--component-datepicker-mobile-breakpoint")
+            .trim();
+        if (cssVal) {
+            const px = parseInt(cssVal, 10);
+            if (!isNaN(px) && px > 0) return px;
+        }
+        return 768;
+    }
+
     _handleDayClick(date) {
         if (this.mode === "range") {
             if (!this._awaitingEnd) {
@@ -935,6 +994,11 @@ export class YumeDatepicker extends HTMLElement {
         this.render();
     }
 
+    _onMediaChange(e) {
+        this._isMobile = e.matches;
+        this.render();
+    }
+
     _parseValue() {
         const val = this.value;
         if (!val) {
@@ -951,12 +1015,14 @@ export class YumeDatepicker extends HTMLElement {
             this._startDate = new Date(val);
         }
 
-        const snapMin = (v) => this.showMinutes
-            ? Math.floor(v / this.minuteInterval) * this.minuteInterval
-            : 0;
-        const snapSec = (v) => this.showSeconds
-            ? Math.floor(v / this.secondInterval) * this.secondInterval
-            : 0;
+        const snapMin = (v) =>
+            this.showMinutes
+                ? Math.floor(v / this.minuteInterval) * this.minuteInterval
+                : 0;
+        const snapSec = (v) =>
+            this.showSeconds
+                ? Math.floor(v / this.secondInterval) * this.secondInterval
+                : 0;
 
         if (this._startDate && !isNaN(this._startDate)) {
             this._startTime = {
@@ -978,7 +1044,7 @@ export class YumeDatepicker extends HTMLElement {
         }
     }
 
-    _sameDay(a, b) {
+_sameDay(a, b) {
         if (!a || !b) return false;
         return (
             a.getFullYear() === b.getFullYear() &&
@@ -994,6 +1060,21 @@ export class YumeDatepicker extends HTMLElement {
                 if (sel) sel.scrollIntoView({ block: "center" });
             });
         });
+    }
+
+    _setupMediaQuery() {
+        this._teardownMediaQuery();
+        const bp = this._getBreakpointPx();
+        this._mql = window.matchMedia(`(max-width: ${bp}px)`);
+        this._isMobile = this._mql.matches;
+        this._mql.addEventListener("change", this._onMediaChange);
+    }
+
+    _teardownMediaQuery() {
+        if (this._mql) {
+            this._mql.removeEventListener("change", this._onMediaChange);
+            this._mql = null;
+        }
     }
 
     _viewDateForSide(side) {

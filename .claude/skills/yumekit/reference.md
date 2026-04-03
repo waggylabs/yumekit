@@ -605,6 +605,99 @@ Slot: default (panel body)
 
 ---
 
+## y-date
+
+Form-associated date input with popup calendar. Handles single dates and ranges.
+
+| Attribute          | Values / Notes                                                                 |
+|-------------------|---------------------------------------------------------------------------------|
+| `mode`            | `single` (default) \| `range`                                                   |
+| `name`            | form field name                                                                  |
+| `value`           | ISO string, or `"ISO,ISO"` comma-pair for range                                 |
+| `min`, `max`      | ISO date constraints                                                             |
+| `format`          | display format (default: `MM/DD/YYYY`). Tokens: `YYYY MM DD HH hh mm ss A a`   |
+| `placeholder`     | placeholder text                                                                 |
+| `color`           | datepicker color theme (default: `primary`)                                     |
+| `size`            | `small` \| `medium` (default) \| `large`                                        |
+| `label-position`  | `top` (default) \| `bottom`                                                     |
+| `clearable`       | boolean — shows × button when value is set                                      |
+| `disabled`        | boolean                                                                          |
+| `invalid`         | boolean — error state                                                            |
+| `show-hours`      | boolean — show hour column in time picker                                        |
+| `show-minutes`    | boolean — show minutes column                                                    |
+| `show-seconds`    | boolean — show seconds column                                                    |
+| `hour-format`     | `12` (default) \| `24`                                                          |
+| `minute-interval` | step between minute options (default: `5`)                                      |
+| `second-interval` | step between second options (default: `5`)                                      |
+| `show-years`      | `"true"` (default) \| `"false"` — year select in header                        |
+| `show-months`     | `"true"` (default) \| `"false"` — month select in header                       |
+| `show-days`       | `"true"` (default) \| `"false"` — day grid; `"false"` = month/year picker      |
+| `mobile-breakpoint` | px width below which mobile mode activates (default: `768`)                  |
+| `native-mobile`   | boolean — use native date inputs on mobile instead of the popup (opt-in)        |
+
+Events: `change` — `event.detail: { value, startDate, endDate, formatted }`
+Methods: `open()`, `close()`, `clear()`
+Slots: `label`, `left-icon`
+
+```html
+<y-date name="appt" format="MM/DD/YYYY" clearable>
+  <span slot="label">Appointment</span>
+</y-date>
+
+<y-date name="trip" mode="range">
+  <span slot="label">Travel Dates</span>
+</y-date>
+
+<y-date name="meeting" show-hours show-minutes format="MM/DD/YYYY hh:mm A">
+  <span slot="label">Meeting Time</span>
+</y-date>
+
+<!-- Native inputs on mobile (opt-in) -->
+<y-date name="dob" native-mobile clearable>
+  <span slot="label">Date of Birth</span>
+</y-date>
+```
+
+---
+
+## y-datepicker
+
+Standalone calendar widget. Used internally by `y-date`; also usable directly.
+
+| Attribute          | Values / Notes                                                                  |
+|-------------------|---------------------------------------------------------------------------------|
+| `mode`            | `single` (default) \| `range` — range shows two panels; stacks on mobile        |
+| `value`           | ISO string, or `"ISO,ISO"` comma-pair for range                                 |
+| `min`, `max`      | ISO date constraints                                                             |
+| `format`          | display format (default: `MM/DD/YYYY`)                                          |
+| `color`           | color scheme (default: `primary`)                                               |
+| `show-hours`      | boolean — show hour column                                                       |
+| `show-minutes`    | boolean — show minutes column                                                    |
+| `show-seconds`    | boolean — show seconds column                                                    |
+| `hour-format`     | `12` (default) \| `24`                                                          |
+| `minute-interval` | step between minute options (default: `5`)                                      |
+| `second-interval` | step between second options (default: `5`)                                      |
+| `show-years`      | `"true"` (default) \| `"false"`                                                 |
+| `show-months`     | `"true"` (default) \| `"false"`                                                 |
+| `show-days`       | `"true"` (default) \| `"false"` — `"false"` = month picker; also set `show-months="false"` for year picker |
+| `mobile-breakpoint` | px width below which range panels stack vertically (default: `768`)          |
+
+Events: `change` — `event.detail: { value, startDate, endDate, formatted }`
+Methods: `clear()`, `formatDate(date)`
+
+```html
+<y-datepicker></y-datepicker>
+<y-datepicker mode="range" show-hours show-minutes></y-datepicker>
+
+<!-- Month picker -->
+<y-datepicker show-days="false"></y-datepicker>
+
+<!-- Year picker -->
+<y-datepicker show-days="false" show-months="false"></y-datepicker>
+```
+
+---
+
 ## Icon Registry API
 
 ```javascript
