@@ -55,21 +55,39 @@ Injects design tokens as CSS custom properties. Wraps entire app.
 
 ## y-button
 
-| Attribute    | Values                                                  |
-|-------------|----------------------------------------------------------|
-| `color`     | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help` |
-| `size`      | `small` \| `medium` \| `large`                          |
-| `style-type`| `filled` (default) \| `outlined` \| `flat`              |
-| `left-icon` | icon name                                               |
-| `right-icon`| icon name                                               |
-| `disabled`  | boolean                                                  |
-| `type`      | `button` (default) \| `submit` \| `reset`               |
+When `href` is set, the internal element renders as `<a>` instead of `<button>` — all styles, sizes, and color variants apply identically.
 
-Slot: default (button label)
+| Attribute    | Values / Notes                                                                              |
+|-------------|----------------------------------------------------------------------------------------------|
+| `color`     | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`          |
+| `size`      | `small` \| `medium` \| `large`                                                              |
+| `style-type`| `outlined` (default) \| `filled` \| `flat`                                                 |
+| `disabled`  | boolean                                                                                      |
+| `type`      | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                     |
+| `href`      | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled`      |
+| `target`    | e.g. `"_blank"` — only applies when `href` is set                                          |
+| `rel`       | e.g. `"noopener noreferrer"` — only applies when `href` is set                             |
+
+Slots: default (label), `left-icon`, `right-icon`
 
 ```html
-<y-button color="primary" size="large" left-icon="check">Save</y-button>
-<y-button style-type="outlined" color="error" right-icon="trash">Delete</y-button>
+<!-- Standard button -->
+<y-button color="primary" size="large">
+  <y-icon slot="left-icon" name="check" size="small"></y-icon>
+  Save
+</y-button>
+
+<!-- Link button — renders <a href="/docs"> internally -->
+<y-button href="/docs" color="primary" style-type="outlined">Documentation</y-button>
+
+<!-- External link -->
+<y-button href="https://example.com" target="_blank" rel="noopener noreferrer" style-type="flat">
+  External
+  <y-icon slot="right-icon" name="arrow-right" size="small"></y-icon>
+</y-button>
+
+<!-- Disabled link — href removed, aria-disabled set, pointer-events blocked -->
+<y-button href="/restricted" disabled>Unavailable</y-button>
 ```
 
 ---
