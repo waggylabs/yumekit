@@ -338,6 +338,14 @@ export class YumePanel extends HTMLElement {
 
     _navigateToHref() {
         const href = this.getAttribute("href");
+        const event = new CustomEvent("navigate", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail: { href },
+        });
+        const cancelled = !this.dispatchEvent(event);
+        if (cancelled) return;
         if (this.getAttribute("history") !== "false") {
             history.pushState({}, "", href);
             window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));

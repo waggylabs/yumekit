@@ -18,6 +18,12 @@ const navItems = JSON.stringify([
     },
 ]);
 
+const navItemsWithHrefs = JSON.stringify([
+    { text: "Dashboard", icon: "home", href: "/dashboard", selected: true },
+    { text: "Projects", icon: "folder", href: "/projects" },
+    { text: "Reports", icon: "chart", href: "/reports" },
+]);
+
 export default {
     title: "Components/AppBar",
     tags: ["autodocs"],
@@ -100,6 +106,38 @@ export const Sizes = {
             </y-appbar>
         </div>
     `,
+};
+
+export const NavigateEvent = {
+    name: "Navigate Event (SPA)",
+    render: () => {
+        const container = document.createElement("div");
+        container.style.cssText = "height:400px;display:flex;gap:16px;align-items:flex-start";
+
+        const log = document.createElement("div");
+        log.id = "nav-log";
+        log.style.cssText = "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px;min-width:220px;flex-shrink:0";
+        log.textContent = "Click a nav item…";
+
+        container.innerHTML = `
+            <y-appbar
+                id="spa-appbar"
+                orientation="vertical"
+                items='${navItemsWithHrefs}'
+            >
+                <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+                <span slot="title">MyApp</span>
+            </y-appbar>
+        `;
+        container.appendChild(log);
+
+        container.querySelector("#spa-appbar").addEventListener("navigate", (e) => {
+            e.preventDefault();
+            log.innerHTML = `<b>navigate</b> intercepted<br>href: ${e.detail.href}<br><br><em>Navigation was cancelled via e.preventDefault()</em>`;
+        });
+
+        return container;
+    },
 };
 
 export const WithFooter = {

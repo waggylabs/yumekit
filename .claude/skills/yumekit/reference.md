@@ -398,25 +398,46 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 
 ## y-appbar
 
-| Attribute     | Values / Notes                             |
-|--------------|---------------------------------------------|
-| `orientation`| `horizontal` (default) \| `vertical`        |
-| `sticky`     | boolean                                      |
-| `color`      | color scheme name                            |
+| Attribute          | Values / Notes                                                                                   |
+|-------------------|---------------------------------------------------------------------------------------------------|
+| `orientation`     | `vertical` (default) \| `horizontal`                                                              |
+| `collapsed`       | boolean — collapses vertical sidebar to icon-only mode                                            |
+| `items`           | JSON: `[{"text":"Home","icon":"home","href":"/","children":[...]}]`                               |
+| `size`            | `small` \| `medium` (default) \| `large`                                                          |
+| `menu-direction`  | `right` \| `down` \| `""` (auto: vertical→right, horizontal→down)                                |
+| `sticky`          | `start` \| `end` — sticks to top/left (start) or bottom/right (end)                              |
+| `mobile-breakpoint`| px width below which horizontal bar collapses to a hamburger menu (default: `768`)              |
+| `history`         | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`    |
 
-Slots: `brand`, `nav`, `actions`, default
+Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+
+Slots: `logo`, `title`, `header`, `footer`
 
 ```html
-<y-appbar sticky color="primary">
-  <span slot="brand">MyApp</span>
-  <nav slot="nav">
-    <y-button style-type="flat">Home</y-button>
-    <y-button style-type="flat">About</y-button>
-  </nav>
-  <div slot="actions">
-    <y-avatar alt="JD" size="small" slot="actions"></y-avatar>
-  </div>
+<!-- Basic vertical sidebar -->
+<y-appbar
+  orientation="vertical"
+  sticky="start"
+  items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+>
+  <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+  <span slot="title">MyApp</span>
 </y-appbar>
+
+<!-- React Router integration — intercept navigate event -->
+<y-appbar id="appbar" items='[...]'></y-appbar>
+<script type="module">
+  document.getElementById("appbar").addEventListener("navigate", (e) => {
+    e.preventDefault();
+    // hand off to your SPA router, e.g. React Router's navigate()
+    myRouter.navigate(e.detail.href);
+  });
+</script>
+
+<!-- Full-page navigation (opt out of pushState) -->
+<y-appbar history="false" items='[{"text":"Home","href":"/"}]'></y-appbar>
 ```
 
 ---
@@ -481,15 +502,18 @@ Slots: `header`, `footer`, default (body)
 
 Positioned relative to an `anchor` element. Does NOT use slots for items.
 
-| Attribute   | Values / Notes                                                              |
-|------------|-----------------------------------------------------------------------------|
-| `items`    | JSON: `[{"text":"Edit","url":"...","selected":true,"children":[...]}]`     |
-| `anchor`   | CSS selector or element ID of the trigger element                           |
-| `visible`  | boolean                                                                      |
-| `direction`| `down` (default) \| `up` \| `left` \| `right`                             |
-| `size`     | `small` \| `medium` \| `large`                                             |
+| Attribute   | Values / Notes                                                                                 |
+|------------|-----------------------------------------------------------------------------------------------|
+| `items`    | JSON: `[{"text":"Edit","url":"...","selected":true,"children":[...]}]`                        |
+| `anchor`   | CSS selector or element ID of the trigger element                                              |
+| `visible`  | boolean                                                                                        |
+| `direction`| `down` (default) \| `up` \| `left` \| `right`                                               |
+| `size`     | `small` \| `medium` \| `large`                                                               |
+| `history`  | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
 Item object fields: `text`, `url`, `selected`, `children`, `icon-template`, `template`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `url` is clicked.
 
 Use `<template slot="name">` inside `<y-menu>` for custom icon/content templates.
 
@@ -562,26 +586,52 @@ Slots: one slot per tab, named by `id` from options
 Accordion group. `y-panelbar` wraps one or more `y-panel` elements.
 
 **y-panelbar attributes:**
-- `multi` — boolean, allows multiple panels open at once
+- `exclusive` — boolean, expanding one panel collapses all siblings
 
 **y-panel attributes:**
-- `label` — header text (required)
-- `open` — boolean
 
-Slot: default (panel body)
+| Attribute  | Values / Notes                                                                                   |
+|-----------|---------------------------------------------------------------------------------------------------|
+| `selected` | boolean — active/highlighted state                                                               |
+| `expanded` | boolean — children slot is visible                                                               |
+| `href`     | URL string — clicking the panel header navigates to this URL                                     |
+| `history`  | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`   |
+
+Events: `expand`, `collapse`, `toggle`, `select`, `navigate` (when `href` is set — cancelable, `event.detail.href`)
+
+Slots: `icon`, `label` (or default for label text), `children`
+
+Methods: `expand()`, `collapse()`, `toggle()`
 
 ```html
-<y-panelbar>
-  <y-panel label="Getting Started" open>
-    <p>Installation and first steps.</p>
-  </y-panel>
-  <y-panel label="Configuration">
-    <p>Advanced configuration options.</p>
-  </y-panel>
-  <y-panel label="API Reference">
-    <p>Full API docs.</p>
+<!-- Standard accordion -->
+<y-panelbar exclusive style="width:280px">
+  <y-panel expanded>
+    <span slot="label">Getting Started</span>
+    <div slot="children">
+      <y-panel href="/docs/install">
+        <span slot="label">Installation</span>
+      </y-panel>
+      <y-panel href="/docs/quickstart">
+        <span slot="label">Quick Start</span>
+      </y-panel>
+    </div>
   </y-panel>
 </y-panelbar>
+
+<!-- React Router integration — intercept navigate event -->
+<y-panelbar id="nav">...</y-panelbar>
+<script type="module">
+  document.getElementById("nav").addEventListener("navigate", (e) => {
+    e.preventDefault();
+    myRouter.navigate(e.detail.href);
+  });
+</script>
+
+<!-- Full-page navigation (opt out of pushState) -->
+<y-panel href="/page" history="false">
+  <span slot="label">Page</span>
+</y-panel>
 ```
 
 ---
