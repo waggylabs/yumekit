@@ -36,16 +36,9 @@ Delete any empty sections before publishing.
 ### Added
 
 - New `y-button-group` component — wraps `y-button` (and other elements such as `y-input` or `y-select`) into a visually connected toolbar. Automatically removes inner border-radius on middle children and collapses shared borders to avoid double-border artifacts. Supports `orientation` attribute (`"horizontal"` (default) | `"vertical"`). Works with any slotted child that respects the `--component-button-border-radius-outer` CSS custom property.
-
-## [Unreleased]
-
-### Added
-
 - `href`, `target`, and `rel` attributes on `y-button`. When `href` is set the internal element switches from `<button>` to `<a>`, preserving all visual styles and size/color/style-type variants. Disabled state is handled via `aria-disabled` and `pointer-events: none` since `<a>` has no native disabled.
 - `navigate` custom event on `y-appbar`, `y-panel`, and `y-menu`. Fires before any navigation when an item with an `href` / `url` is clicked. The event is cancelable (`e.preventDefault()`) and carries `event.detail.href` — React Router and other SPA routers can intercept it without any framework-specific glue.
 - `history` attribute on `y-appbar` and `y-menu` (already present on `y-panel`). When omitted (default), navigation uses `history.pushState` + a synthetic `popstate` event so all `popstate`-based routers (React Router `BrowserRouter`, Vue Router, etc.) respond automatically. Set `history="false"` to opt back in to full-page `window.location.href` navigation.
-
-## [0.4.2] - 2026-04-11
 
 ### Changed
 
