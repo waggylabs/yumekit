@@ -15,6 +15,7 @@ export * from "./components/y-appbar/y-appbar.js";
 export * from "./components/y-avatar/y-avatar.js";
 export * from "./components/y-badge/y-badge.js";
 export * from "./components/y-button/y-button.js";
+export * from "./components/y-button-group/y-button-group.js";
 export * from "./components/y-card/y-card.js";
 export * from "./components/y-checkbox/y-checkbox.js";
 export * from "./components/y-date/y-date.js";

@@ -1,5 +1,6 @@
 import "../y-datepicker/y-datepicker.js";
 import "../y-icon/y-icon.js";
+import { manageLabelVisibility } from "../../modules/helpers.js";
 
 export class YumeDate extends HTMLElement {
     static formAssociated = true;
@@ -431,6 +432,7 @@ export class YumeDate extends HTMLElement {
             </div>
         `;
 
+        manageLabelVisibility(this.shadowRoot.querySelector(".label-wrapper"));
         if (!isDisabled) this._bindListeners();
     }
 
@@ -781,6 +783,10 @@ export class YumeDate extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 gap: var(--spacing-2x-small, 4px);
+            }
+
+            .label-wrapper {
+                display: none;
             }
 
             .trigger {

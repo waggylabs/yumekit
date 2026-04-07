@@ -1,5 +1,8 @@
 import { chevronDown } from "../../icons/index.js";
-import { contrastTextColor } from "../../modules/helpers.js";
+import {
+    contrastTextColor,
+    manageLabelVisibility,
+} from "../../modules/helpers.js";
 
 const SEMANTIC_COLOR_VARS = {
     primary: ["var(--primary-content--)", "var(--primary-content-inverse)"],
@@ -277,6 +280,7 @@ export class YumeSelect extends HTMLElement {
         this._applyStyles();
         this.shadowRoot.innerHTML = this._generateTemplate();
         this._queryRefs();
+        manageLabelVisibility(this.labelWrapper);
         this._attachEventListeners();
         this._updateValidationState();
         this._updateDisplay();
@@ -335,7 +339,8 @@ export class YumeSelect extends HTMLElement {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
-                display: block;
+                display: flex;
+                flex-direction: column;
                 font-family: var(--font-family-body);
                 color: var(--component-select-color);
                 opacity: ${isDisabled ? "0.75" : "1"};
@@ -343,13 +348,19 @@ export class YumeSelect extends HTMLElement {
             }
 
             .select-wrapper {
+                flex: 1;
                 display: flex;
                 flex-direction: column;
-                gap: var(--spacing-2x-small, 4px);
                 position: relative;
             }
 
+            .label-wrapper {
+                display: none;
+                margin-bottom: var(--spacing-2x-small, 4px);
+            }
+
             .select-container {
+                flex: 1;
                 display: flex;
                 align-items: center;
                 gap: var(--spacing-x-small);
@@ -474,10 +485,6 @@ export class YumeSelect extends HTMLElement {
 
             .clear-button:hover {
                 opacity: 1;
-            }
-
-            .label-wrapper {
-                display: block;
             }
 
             .chevron-icon {

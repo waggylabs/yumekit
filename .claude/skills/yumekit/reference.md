@@ -92,6 +92,41 @@ Slots: default (label), `left-icon`, `right-icon`
 
 ---
 
+## y-button-group
+
+Groups buttons or other elements into a visually connected toolbar. Automatically removes border-radius on inner children and collapses shared borders.
+
+| Attribute     | Values                                    |
+|--------------|-------------------------------------------|
+| `orientation` | `horizontal` (default) \| `vertical`     |
+
+Slot: default (accepts any child elements — typically `y-button`, `y-input`, or `y-select`)
+
+```html
+<!-- Basic horizontal group -->
+<y-button-group>
+  <y-button color="primary">Left</y-button>
+  <y-button color="primary">Center</y-button>
+  <y-button color="primary">Right</y-button>
+</y-button-group>
+
+<!-- Vertical group -->
+<y-button-group orientation="vertical">
+  <y-button color="base">Top</y-button>
+  <y-button color="base">Bottom</y-button>
+</y-button-group>
+
+<!-- Mixed: input + button (search bar) -->
+<y-button-group>
+  <y-input placeholder="Search…"></y-input>
+  <y-button style-type="filled" color="primary">
+    <y-icon slot="left-icon" name="search" size="small"></y-icon>
+  </y-button>
+</y-button-group>
+```
+
+---
+
 ## y-input
 
 Form-associated. Always set `name` inside a `<form>`.

@@ -17,7 +17,7 @@
 
 ## Overview
 
-YumeKit is a collection of 26 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
+YumeKit is a collection of 27 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
@@ -73,36 +73,65 @@ Then use the `<y-theme>` component to apply a theme:
 
 ## Components
 
-| Component  | Element          | Description                                |
-| ---------- | ---------------- | ------------------------------------------ |
-| App Bar    | `<y-appbar>`     | Top or side navigation bar                 |
-| Avatar     | `<y-avatar>`     | User avatar with shape and color variants  |
-| Badge      | `<y-badge>`      | Status badge or label                      |
-| Button     | `<y-button>`     | Button with icon, size, and style variants |
-| Card       | `<y-card>`       | Content card container                     |
-| Checkbox   | `<y-checkbox>`   | Form checkbox input                        |
-| Date       | `<y-date>`       | Date input                                 |
-| DatePicker | `<y-datepicker>` | A date and time picker                     |
-| Dialog     | `<y-dialog>`     | Modal dialog                               |
-| Drawer     | `<y-drawer>`     | Side drawer / sidebar                      |
-| Icon       | `<y-icon>`       | SVG icon display                           |
-| Input      | `<y-input>`      | Text input field                           |
-| Menu       | `<y-menu>`       | Dropdown navigation menu                   |
-| Panel      | `<y-panel>`      | Accordion panel                            |
-| Panel Bar  | `<y-panelbar>`   | Accordion panel group                      |
-| Progress   | `<y-progress>`   | Progress bar                               |
-| Radio      | `<y-radio>`      | Radio button input                         |
-| Rating     | `<y-rating>`     | Star / icon rating input                   |
-| Select     | `<y-select>`     | Select / dropdown input                    |
-| Slider     | `<y-slider>`     | Range slider input                         |
-| Switch     | `<y-switch>`     | Toggle switch                              |
-| Table      | `<y-table>`      | Sortable data table                        |
-| Textarea   | `<y-textarea>`   | Multi-line text input                      |
-| Tabs       | `<y-tabs>`       | Tabbed interface                           |
-| Tag        | `<y-tag>`        | Tag / chip label                           |
-| Theme      | `<y-theme>`      | Theme provider                             |
-| Toast      | `<y-toast>`      | Notification toast                         |
-| Tooltip    | `<y-tooltip>`    | Tooltip / popover                          |
+| Component    | Element            | Description                                         |
+| ------------ | ------------------ | --------------------------------------------------- |
+| App Bar      | `<y-appbar>`       | Top or side navigation bar                          |
+| Avatar       | `<y-avatar>`       | User avatar with shape and color variants           |
+| Badge        | `<y-badge>`        | Status badge or label                               |
+| Button       | `<y-button>`       | Button with icon, size, and style variants          |
+| Card         | `<y-card>`         | Content card container                              |
+| Checkbox     | `<y-checkbox>`     | Form checkbox input                                 |
+| Date         | `<y-date>`         | Date input                                          |
+| DatePicker   | `<y-datepicker>`   | A date and time picker                              |
+| Dialog       | `<y-dialog>`       | Modal dialog                                        |
+| Drawer       | `<y-drawer>`       | Side drawer / sidebar                               |
+| Icon         | `<y-icon>`         | SVG icon display                                    |
+| Input        | `<y-input>`        | Text input field                                    |
+| Menu         | `<y-menu>`         | Dropdown navigation menu                            |
+| Panel        | `<y-panel>`        | Accordion panel                                     |
+| Panel Bar    | `<y-panelbar>`     | Accordion panel group                               |
+| Progress     | `<y-progress>`     | Progress bar                                        |
+| Radio        | `<y-radio>`        | Radio button input                                  |
+| Rating       | `<y-rating>`       | Star / icon rating input                            |
+| Select       | `<y-select>`       | Select / dropdown input                             |
+| Slider       | `<y-slider>`       | Range slider input                                  |
+| Switch       | `<y-switch>`       | Toggle switch                                       |
+| Table        | `<y-table>`        | Sortable data table                                 |
+| Textarea     | `<y-textarea>`     | Multi-line text input                               |
+| Tabs         | `<y-tabs>`         | Tabbed interface                                    |
+| Tag          | `<y-tag>`          | Tag / chip label                                    |
+| Theme        | `<y-theme>`        | Theme provider                                      |
+| Toast        | `<y-toast>`        | Notification toast                                  |
+| Tooltip      | `<y-tooltip>`      | Tooltip / popover                                   |
+| Component    | Element            | Description                                         |
+| ---------    | --------------     | ------------------------------------------          |
+| App Bar      | `<y-appbar>`       | Top or side navigation bar                          |
+| Avatar       | `<y-avatar>`       | User avatar with shape and color variants           |
+| Badge        | `<y-badge>`        | Status badge or label                               |
+| Button       | `<y-button>`       | Button with icon, size, and style variants          |
+| Button Group | `<y-button-group>` | Groups buttons (or inputs) into a connected toolbar |
+| Card         | `<y-card>`         | Content card container                              |
+| Checkbox     | `<y-checkbox>`     | Form checkbox input                                 |
+| Dialog       | `<y-dialog>`       | Modal dialog                                        |
+| Drawer       | `<y-drawer>`       | Side drawer / sidebar                               |
+| Icon         | `<y-icon>`         | SVG icon display                                    |
+| Input        | `<y-input>`        | Text input field                                    |
+| Menu         | `<y-menu>`         | Dropdown navigation menu                            |
+| Panel        | `<y-panel>`        | Accordion panel                                     |
+| Panel Bar    | `<y-panelbar>`     | Accordion panel group                               |
+| Progress     | `<y-progress>`     | Progress bar                                        |
+| Radio        | `<y-radio>`        | Radio button input                                  |
+| Rating       | `<y-rating>`       | Star / icon rating input                            |
+| Select       | `<y-select>`       | Select / dropdown input                             |
+| Slider       | `<y-slider>`       | Range slider input                                  |
+| Switch       | `<y-switch>`       | Toggle switch                                       |
+| Table        | `<y-table>`        | Sortable data table                                 |
+| Textarea     | `<y-textarea>`     | Multi-line text input                               |
+| Tabs         | `<y-tabs>`         | Tabbed interface                                    |
+| Tag          | `<y-tag>`          | Tag / chip label                                    |
+| Theme        | `<y-theme>`        | Theme provider                                      |
+| Toast        | `<y-toast>`        | Notification toast                                  |
+| Tooltip      | `<y-tooltip>`      | Tooltip / popover                                   |
 
 ---
 

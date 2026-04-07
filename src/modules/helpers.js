@@ -99,6 +99,35 @@ export function getColorVarPair(color, fallbackColor = "base") {
     return map[fallbackColor] || map.base;
 }
 
+// =============================================================================
+// DOM utilities
+// =============================================================================
+
+/**
+ * Watch a label slot inside a wrapper element and toggle the wrapper's
+ * visibility based on whether the slot has meaningful content.
+ * CSS should default the wrapper to `display: none`.
+ * @param {HTMLElement} labelWrapper — the wrapper element containing the slot
+ */
+export function manageLabelVisibility(labelWrapper) {
+    if (!labelWrapper) return;
+    const slot = labelWrapper.querySelector("slot[name='label']");
+    if (!slot) return;
+
+    slot.addEventListener("slotchange", () => {
+        const hasContent = slot
+            .assignedNodes({ flatten: true })
+            .some(
+                (n) =>
+                    !(
+                        n.nodeType === Node.TEXT_NODE &&
+                        n.textContent.trim() === ""
+                    ),
+            );
+        labelWrapper.style.display = hasContent ? "flex" : "";
+    });
+}
+
 /**
  * Resolve a CSS custom-property value to a concrete color string.
  * Reads from the given element's computed style.

@@ -1,8 +1,20 @@
+import { manageLabelVisibility } from "../../modules/helpers.js";
+
 class YumeSwitch extends HTMLElement {
     static formAssociated = true;
 
     static get observedAttributes() {
-        return ["checked", "disabled", "animate", "toggle-label", "label-position", "size", "value", "on-color", "off-color"];
+        return [
+            "checked",
+            "disabled",
+            "animate",
+            "toggle-label",
+            "label-position",
+            "size",
+            "value",
+            "on-color",
+            "off-color",
+        ];
     }
 
     // -------------------------------------------------------------------------
@@ -17,7 +29,8 @@ class YumeSwitch extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("label-position")) this.setAttribute("label-position", "top");
+        if (!this.hasAttribute("label-position"))
+            this.setAttribute("label-position", "top");
         if (!this.hasAttribute("animate")) this.setAttribute("animate", "true");
 
         this.render();
@@ -34,11 +47,17 @@ class YumeSwitch extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the switch transition animation is enabled. */
-    get animate() { return this.getAttribute("animate") !== "false"; }
-    set animate(val) { this.setAttribute("animate", val ? "true" : "false"); }
+    get animate() {
+        return this.getAttribute("animate") !== "false";
+    }
+    set animate(val) {
+        this.setAttribute("animate", val ? "true" : "false");
+    }
 
     /** @type {boolean} Whether the switch is on. */
-    get checked() { return this.hasAttribute("checked"); }
+    get checked() {
+        return this.hasAttribute("checked");
+    }
     set checked(val) {
         if (val) this.setAttribute("checked", "");
         else this.removeAttribute("checked");
@@ -46,34 +65,53 @@ class YumeSwitch extends HTMLElement {
     }
 
     /** @type {string} Color theme for the active (on) toggle. */
-    get onColor() { return this.getAttribute("on-color") || "primary"; }
-    set onColor(val) { this.setAttribute("on-color", val); }
+    get onColor() {
+        return this.getAttribute("on-color") || "primary";
+    }
+    set onColor(val) {
+        this.setAttribute("on-color", val);
+    }
 
     /** @type {string} Color theme for the inactive (off) toggle. Defaults to base. */
-    get offColor() { return this.getAttribute("off-color") || ""; }
+    get offColor() {
+        return this.getAttribute("off-color") || "";
+    }
     set offColor(val) {
         if (val) this.setAttribute("off-color", val);
         else this.removeAttribute("off-color");
     }
 
     /** @type {boolean} Whether the switch is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** @type {string} Label position: "top" | "bottom" | "left" | "right" (default "top"). */
-    get labelPosition() { return this.getAttribute("label-position") || "top"; }
-    set labelPosition(val) { this.setAttribute("label-position", val); }
+    get labelPosition() {
+        return this.getAttribute("label-position") || "top";
+    }
+    set labelPosition(val) {
+        this.setAttribute("label-position", val);
+    }
 
     /** @type {string} Switch size: "small" | "medium" | "large" (default "medium"). */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** @type {boolean} Whether to show on/off labels inside the toggle. */
     get toggleLabel() {
-        return this.hasAttribute("toggle-label") && this.getAttribute("toggle-label") !== "false";
+        return (
+            this.hasAttribute("toggle-label") &&
+            this.getAttribute("toggle-label") !== "false"
+        );
     }
     set toggleLabel(val) {
         if (val) this.setAttribute("toggle-label", "true");
@@ -81,7 +119,9 @@ class YumeSwitch extends HTMLElement {
     }
 
     /** @type {string} The form value submitted when checked. Defaults to "on". */
-    get value() { return this.getAttribute("value") || "on"; }
+    get value() {
+        return this.getAttribute("value") || "on";
+    }
     set value(val) {
         this.setAttribute("value", val);
         this._update();
@@ -108,36 +148,21 @@ class YumeSwitch extends HTMLElement {
             ${this._labelTag("bottom")}
         `;
         this._update();
-        this._autoHideLabel();
+        manageLabelVisibility(this.shadowRoot.querySelector(".label-wrapper"));
     }
 
     /** Toggles the checked state and dispatches a "change" event. */
     toggle() {
         if (this.disabled) return;
         this.checked = !this.checked;
-        this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new Event("change", { bubbles: true, composed: true }),
+        );
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
-
-    _autoHideLabel() {
-        const slot = this.shadowRoot.querySelector('slot[name="label"]');
-        if (!slot) return;
-        const wrapper = slot.closest(".label-wrapper");
-        if (!wrapper) return;
-
-        const update = () => {
-            const hasContent = slot
-                .assignedNodes({ flatten: true })
-                .some((n) => !(n.nodeType === Node.TEXT_NODE && n.textContent.trim() === ""));
-            wrapper.style.display = hasContent ? "" : "none";
-        };
-
-        slot.addEventListener("slotchange", update);
-        update();
-    }
 
     _bindSwitchListeners() {
         const sw = this.shadowRoot.querySelector(".switch");
@@ -166,6 +191,10 @@ class YumeSwitch extends HTMLElement {
                 --toggle-width: auto;
                 --toggle-padding: 0 var(--spacing-small);
                 --toggle-radius: var(--component-switch-border-radius);
+            }
+
+            .label-wrapper {
+                display: none;
             }
 
             .label {
@@ -259,8 +288,12 @@ class YumeSwitch extends HTMLElement {
 
     _labelTag(pos) {
         const shouldRender =
-            (pos === "top"    && (this.labelPosition === "top"    || this.labelPosition === "left")) ||
-            (pos === "bottom" && (this.labelPosition === "bottom" || this.labelPosition === "right"));
+            (pos === "top" &&
+                (this.labelPosition === "top" ||
+                    this.labelPosition === "left")) ||
+            (pos === "bottom" &&
+                (this.labelPosition === "bottom" ||
+                    this.labelPosition === "right"));
         return shouldRender
             ? `<label class="label-wrapper"><slot name="label"></slot></label>`
             : "";
@@ -278,11 +311,15 @@ class YumeSwitch extends HTMLElement {
 
             const offWrapper = document.createElement("span");
             offWrapper.className = "off";
-            offWrapper.appendChild(offSlot?.cloneNode(true) || document.createTextNode("Off"));
+            offWrapper.appendChild(
+                offSlot?.cloneNode(true) || document.createTextNode("Off"),
+            );
 
             const onWrapper = document.createElement("span");
             onWrapper.className = "on";
-            onWrapper.appendChild(onSlot?.cloneNode(true) || document.createTextNode("On"));
+            onWrapper.appendChild(
+                onSlot?.cloneNode(true) || document.createTextNode("On"),
+            );
 
             toggle.appendChild(offWrapper);
             toggle.appendChild(onWrapper);
@@ -323,12 +360,15 @@ class YumeSwitch extends HTMLElement {
 
     _updateDirection() {
         const directionMap = {
-            top:    "column",
+            top: "column",
             bottom: "column-reverse",
-            left:   "row-reverse",
-            right:  "row",
+            left: "row-reverse",
+            right: "row",
         };
-        this.style.setProperty("--switch-dir", directionMap[this.labelPosition] || "column");
+        this.style.setProperty(
+            "--switch-dir",
+            directionMap[this.labelPosition] || "column",
+        );
     }
 
     _updateFormValue() {
@@ -336,7 +376,10 @@ class YumeSwitch extends HTMLElement {
     }
 
     _updateLabelDisplay() {
-        this.style.setProperty("--show-labels", this.toggleLabel ? "flex" : "none");
+        this.style.setProperty(
+            "--show-labels",
+            this.toggleLabel ? "flex" : "none",
+        );
     }
 
     _updateSizeStyles() {
@@ -349,34 +392,60 @@ class YumeSwitch extends HTMLElement {
         };
         this.style.setProperty("--switch-height", heightMap[this.size]);
         this.style.setProperty("--switch-width-fixed", widthMap[this.size]);
-        this.style.setProperty("--toggle-size", "calc(var(--switch-height) - (var(--switch-padding) * 2) - (var(--component-switch-border-width, 0px) * 2))");
+        this.style.setProperty(
+            "--toggle-size",
+            "calc(var(--switch-height) - (var(--switch-padding) * 2) - (var(--component-switch-border-width, 0px) * 2))",
+        );
         this.style.setProperty("--switch-font-size", fontMap[this.size]);
     }
 
     _updateToggleLabelDisplay() {
         const show = this.toggleLabel;
-        this.style.setProperty("--show-toggle-label", show ? "inline-flex" : "none");
-        this.style.setProperty("--switch-width", show ? "max-content" : "var(--switch-width-fixed)");
-        this.style.setProperty("--toggle-width", show ? "auto" : "var(--toggle-size)");
-        this.style.setProperty("--toggle-padding", show ? "0 var(--spacing-small)" : "0");
-        this.style.setProperty("--toggle-radius", show ? "var(--component-switch-border-radius)" : "9999px");
+        this.style.setProperty(
+            "--show-toggle-label",
+            show ? "inline-flex" : "none",
+        );
+        this.style.setProperty(
+            "--switch-width",
+            show ? "max-content" : "var(--switch-width-fixed)",
+        );
+        this.style.setProperty(
+            "--toggle-width",
+            show ? "auto" : "var(--toggle-size)",
+        );
+        this.style.setProperty(
+            "--toggle-padding",
+            show ? "0 var(--spacing-small)" : "0",
+        );
+        this.style.setProperty(
+            "--toggle-radius",
+            show ? "var(--component-switch-border-radius)" : "9999px",
+        );
     }
 
     _updateTogglePosition() {
-        this.style.setProperty("--toggle-x",
+        this.style.setProperty(
+            "--toggle-x",
             this.checked
                 ? this.toggleLabel
                     ? "100%"
                     : "calc(var(--switch-width) - var(--toggle-size) - (var(--switch-padding) * 2) - (var(--component-switch-border-width, 0px) * 2))"
                 : "0",
         );
-        this.style.setProperty("--toggle-bg",
+        this.style.setProperty(
+            "--toggle-bg",
             this.checked
                 ? this._resolveColor(this.onColor, "var(--primary-content--)")
-                : this._resolveColor(this.offColor, "var(--base-content-light)"),
+                : this._resolveColor(
+                      this.offColor,
+                      "var(--base-content-light)",
+                  ),
         );
-        this.style.setProperty("--toggle-transition",
-            this.animate ? "transform 0.25s ease, background 0.25s ease" : "none",
+        this.style.setProperty(
+            "--toggle-transition",
+            this.animate
+                ? "transform 0.25s ease, background 0.25s ease"
+                : "none",
         );
     }
 }

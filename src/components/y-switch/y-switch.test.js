@@ -56,7 +56,7 @@ describe("<y-switch>", () => {
         const el = await fixture(html`<y-switch></y-switch>`);
         const labelSlot = el.shadowRoot.querySelector("slot[name='label']");
         const wrapper = labelSlot?.closest(".label-wrapper");
-        expect(wrapper?.style.display).to.equal("none");
+        expect(getComputedStyle(wrapper).display).to.equal("none");
     });
 
     it("shows label wrapper when label content is slotted", async () => {
