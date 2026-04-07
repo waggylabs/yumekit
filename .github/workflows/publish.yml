@@ -1,8 +1,14 @@
-name: Publish & Deploy
+name: Publish
 
 on:
+    push:
+        branches: [dev]
     release:
         types: [published]
+
+permissions:
+    id-token: write
+    contents: read
 
 jobs:
     test:
@@ -12,7 +18,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 24
 
             - run: npm ci
 
@@ -21,36 +27,23 @@ jobs:
 
             - run: npm test
 
-    build-and-publish:
+    publish-beta:
+        if: github.event_name == 'push'
         needs: test
-        runs-on: ubuntu-latest
-        outputs:
-            version: ${{ steps.pkg.outputs.version }}
         permissions:
-            contents: read
             id-token: write
-        steps:
-            - uses: actions/checkout@v4
+            contents: read
+        uses: ./.github/workflows/npm-publish.yml
+        with:
+            tag: beta
+            pre-version-suffix: beta.${{ github.run_number }}
+        secrets: inherit
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  registry-url: https://registry.npmjs.org/
-
-            - name: Read package version
-              id: pkg
-              run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
-
-            - run: npm ci
-            - run: npm run build
-
-            - name: Publish to NPM
-              run: npm publish --provenance --access public
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-            - name: Upload dist artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: dist
-                  path: dist/
+    publish-release:
+        if: github.event_name == 'release'
+        needs: test
+        permissions:
+            id-token: write
+            contents: read
+        uses: ./.github/workflows/npm-publish.yml
+        secrets: inherit

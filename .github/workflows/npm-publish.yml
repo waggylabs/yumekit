@@ -1,0 +1,53 @@
+name: Publish to NPM
+
+on:
+    workflow_call:
+        inputs:
+            tag:
+                description: "npm dist-tag (e.g. latest, beta)"
+                required: false
+                type: string
+                default: latest
+            pre-version-suffix:
+                description: "If set, stamps a pre-release version suffix (e.g. beta.123)"
+                required: false
+                type: string
+                default: ""
+
+jobs:
+    build-and-publish:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        outputs:
+            version: ${{ steps.pkg.outputs.version }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+
+            - run: npm ci
+
+            - name: Stamp pre-release version
+              if: inputs.pre-version-suffix != ''
+              run: |
+                  VERSION=$(jq -r .version package.json)
+                  npm version "${VERSION}-${{ inputs.pre-version-suffix }}" --no-git-tag-version
+
+            - name: Read package version
+              id: pkg
+              run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+            - run: npm run build
+
+            - name: Publish to NPM
+              run: npm publish --provenance --access public --tag ${{ inputs.tag }}
+
+            - name: Upload dist artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist/
