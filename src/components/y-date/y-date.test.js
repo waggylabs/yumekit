@@ -585,4 +585,64 @@ describe("<y-date>", () => {
         el.mobileBreakpoint = "";
         expect(el.hasAttribute("mobile-breakpoint")).to.be.false;
     });
+
+    // -------------------------------------------------------------------------
+    // Popup positioning
+    // -------------------------------------------------------------------------
+
+    it("positions popup below the trigger by default", async () => {
+        const el = await fixture(html`<y-date></y-date>`);
+        el.open();
+        const popup = el.shadowRoot.querySelector(".popup");
+        expect(popup.style.top).to.not.equal("auto");
+        expect(popup.style.bottom).to.equal("auto");
+    });
+
+    it("flips popup above the trigger when not enough space below", async () => {
+        const el = await fixture(html`<y-date></y-date>`);
+        const trigger = el.shadowRoot.querySelector(".trigger");
+
+        // Simulate trigger positioned near the bottom of the viewport
+        const origGetBoundingClientRect = trigger.getBoundingClientRect.bind(trigger);
+        trigger.getBoundingClientRect = () => ({
+            ...origGetBoundingClientRect(),
+            top: window.innerHeight - 10,
+            bottom: window.innerHeight - 5,
+        });
+
+        el.open();
+        const popup = el.shadowRoot.querySelector(".popup");
+        expect(popup.style.top).to.equal("auto");
+        expect(popup.style.bottom).to.not.equal("auto");
+
+        trigger.getBoundingClientRect = origGetBoundingClientRect;
+    });
+
+    it("aligns popup to the left edge by default", async () => {
+        const el = await fixture(html`<y-date></y-date>`);
+        el.open();
+        const popup = el.shadowRoot.querySelector(".popup");
+        expect(["0", "0px"]).to.include(popup.style.left);
+        expect(popup.style.right).to.equal("auto");
+    });
+
+    it("flips popup to right-aligned when not enough space to the right", async () => {
+        const el = await fixture(html`<y-date></y-date>`);
+        const trigger = el.shadowRoot.querySelector(".trigger");
+
+        // Simulate trigger positioned near the right edge of the viewport
+        const origGetBoundingClientRect = trigger.getBoundingClientRect.bind(trigger);
+        trigger.getBoundingClientRect = () => ({
+            ...origGetBoundingClientRect(),
+            left: window.innerWidth - 5,
+            right: window.innerWidth,
+        });
+
+        el.open();
+        const popup = el.shadowRoot.querySelector(".popup");
+        expect(popup.style.left).to.equal("auto");
+        expect(["0", "0px"]).to.include(popup.style.right);
+
+        trigger.getBoundingClientRect = origGetBoundingClientRect;
+    });
 });

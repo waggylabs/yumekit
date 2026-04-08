@@ -1015,6 +1015,36 @@ export class YumeDate extends HTMLElement {
         this.render();
     }
 
+    _positionPopup(popup, trigger) {
+        const triggerRect = trigger.getBoundingClientRect();
+        const popupWidth = popup.offsetWidth;
+        const popupHeight = popup.offsetHeight;
+        const gap = 4;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        // Vertical: prefer below; flip above when not enough space below and more space above
+        const spaceBelow = vh - triggerRect.bottom - gap;
+        const spaceAbove = triggerRect.top - gap;
+        if (spaceBelow >= popupHeight || spaceBelow >= spaceAbove) {
+            popup.style.top = `calc(100% + ${gap}px)`;
+            popup.style.bottom = "auto";
+        } else {
+            popup.style.top = "auto";
+            popup.style.bottom = `calc(100% + ${gap}px)`;
+        }
+
+        // Horizontal: prefer left-aligned; flip to right-aligned when popup overflows viewport
+        const spaceRight = vw - triggerRect.left;
+        if (spaceRight >= popupWidth) {
+            popup.style.left = "0";
+            popup.style.right = "auto";
+        } else {
+            popup.style.left = "auto";
+            popup.style.right = "0";
+        }
+    }
+
     /**
      * Parse partial user input and return an object with whatever date parts
      * could be extracted based on the format string.  Returns null if nothing
@@ -1305,7 +1335,10 @@ export class YumeDate extends HTMLElement {
         if (!popup || !trigger) return;
         popup.hidden = !open;
         trigger.setAttribute("aria-expanded", String(open));
-        if (open) this._selectedParts.clear();
+        if (open) {
+            this._selectedParts.clear();
+            this._positionPopup(popup, trigger);
+        }
     }
 
     _setupMediaQuery() {
