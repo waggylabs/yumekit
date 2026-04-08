@@ -2,7 +2,7 @@ import { chevronRight } from "../../icons/index.js";
 
 class YumeMenu extends HTMLElement {
     static get observedAttributes() {
-        return ["items", "anchor", "visible", "direction", "size"];
+        return ["items", "anchor", "visible", "direction", "size", "history"];
     }
 
     // -------------------------------------------------------------------------
@@ -78,6 +78,16 @@ class YumeMenu extends HTMLElement {
     }
     set items(val) {
         this.setAttribute("items", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
+    }
+
+    /**
+     * Navigation mode: omit for pushState (SPA-friendly), set to "false" for full-page navigation.
+     * Regardless of this setting, a cancelable "navigate" event is always dispatched first.
+     */
+    get history() { return this.getAttribute("history"); }
+    set history(val) {
+        if (val != null) this.setAttribute("history", val);
+        else this.removeAttribute("history");
     }
 
     /** Size: "small" | "medium" | "large" (default "medium"). */
@@ -232,7 +242,20 @@ class YumeMenu extends HTMLElement {
 
             if (item.url) {
                 li.addEventListener("click", () => {
-                    window.location.href = item.url;
+                    const event = new CustomEvent("navigate", {
+                        bubbles: true,
+                        composed: true,
+                        cancelable: true,
+                        detail: { href: item.url },
+                    });
+                    const cancelled = !this.dispatchEvent(event);
+                    if (cancelled) return;
+                    if (this.getAttribute("history") !== "false") {
+                        history.pushState({}, "", item.url);
+                        window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+                    } else {
+                        window.location.href = item.url;
+                    }
                 });
             }
 

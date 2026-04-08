@@ -43,6 +43,7 @@ export class YumeAppbar extends HTMLElement {
             "menu-direction",
             "sticky",
             "mobile-breakpoint",
+            "history",
         ];
     }
 
@@ -128,6 +129,16 @@ export class YumeAppbar extends HTMLElement {
     /** Size variant: "small" | "medium" | "large" (default "medium"). */
     get size() { return this.getAttribute("size") || "medium"; }
     set size(val) { this.setAttribute("size", val); }
+
+    /**
+     * Navigation mode: omit for pushState (SPA-friendly), set to "false" for full-page navigation.
+     * Regardless of this setting, a cancelable "navigate" event is always dispatched first.
+     */
+    get history() { return this.getAttribute("history"); }
+    set history(val) {
+        if (val != null) this.setAttribute("history", val);
+        else this.removeAttribute("history");
+    }
 
     /** Sticky position: "start" | "end" | false. */
     get sticky() {
@@ -246,7 +257,20 @@ export class YumeAppbar extends HTMLElement {
 
         if (item.href && !hasChildren) {
             btn.addEventListener("click", () => {
-                window.location.href = item.href;
+                const event = new CustomEvent("navigate", {
+                    bubbles: true,
+                    composed: true,
+                    cancelable: true,
+                    detail: { href: item.href },
+                });
+                const cancelled = !this.dispatchEvent(event);
+                if (cancelled) return;
+                if (this.getAttribute("history") !== "false") {
+                    history.pushState({}, "", item.href);
+                    window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+                } else {
+                    window.location.href = item.href;
+                }
             });
         }
 

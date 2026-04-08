@@ -53,6 +53,9 @@ declare module "react" {
                 "aria-pressed"?: string;
                 "aria-hidden"?: string;
             }>;
+            "y-button-group": El<{
+                orientation?: "horizontal" | "vertical";
+            }>;
             "y-card": El<{
                 color?: string;
                 raised?: boolean | string;

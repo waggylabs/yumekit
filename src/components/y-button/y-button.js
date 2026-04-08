@@ -7,6 +7,7 @@ export class YumeButton extends HTMLElement {
             "disabled", "name", "value", "autofocus", "form", "formaction",
             "formenctype", "formmethod", "formnovalidate", "formtarget",
             "aria-label", "aria-pressed", "aria-hidden",
+            "href", "target", "rel",
         ];
     }
 
@@ -47,6 +48,27 @@ export class YumeButton extends HTMLElement {
     // -------------------------------------------------------------------------
     // Getters / Setters
     // -------------------------------------------------------------------------
+
+    /** URL to navigate to. When set, the internal element renders as an <a> instead of <button>. */
+    get href() { return this.getAttribute("href"); }
+    set href(val) {
+        if (val != null) this.setAttribute("href", val);
+        else this.removeAttribute("href");
+    }
+
+    /** Anchor target (e.g. "_blank"). Only applies when href is set. */
+    get target() { return this.getAttribute("target"); }
+    set target(val) {
+        if (val != null) this.setAttribute("target", val);
+        else this.removeAttribute("target");
+    }
+
+    /** Anchor rel attribute (e.g. "noopener noreferrer"). Only applies when href is set. */
+    get rel() { return this.getAttribute("rel"); }
+    set rel(val) {
+        if (val != null) this.setAttribute("rel", val);
+        else this.removeAttribute("rel");
+    }
 
     /** Color theme for the button (default "base"). */
     get color() { return this.getAttribute("color") || "base"; }
@@ -286,9 +308,15 @@ export class YumeButton extends HTMLElement {
                 line-height: 1;
             }
 
-            .button:disabled {
+            .button {
+                text-decoration: none;
+            }
+
+            .button:disabled,
+            .button[aria-disabled="true"] {
                 opacity: 0.5;
                 cursor: not-allowed;
+                pointer-events: none;
             }
 
             .button:hover:not(:disabled),
@@ -418,23 +446,49 @@ export class YumeButton extends HTMLElement {
     }
 
     _render() {
+        const needsAnchor = this.hasAttribute("href");
+        const isAnchor = this.button?.tagName === "A";
+
+        if (this.button && needsAnchor !== isAnchor) {
+            this.button.remove();
+            this.button = null;
+        }
+
         if (!this.button) {
-            this.button = document.createElement("button");
+            this.button = needsAnchor
+                ? document.createElement("a")
+                : document.createElement("button");
             this.button.classList.add("button");
-            this.button.setAttribute("role", "button");
-            this.button.setAttribute("tabindex", "0");
             this.button.setAttribute("part", "button");
+            if (!needsAnchor) {
+                this.button.setAttribute("role", "button");
+                this.button.setAttribute("tabindex", "0");
+            }
             this.shadowRoot.appendChild(this.button);
         }
 
         this._updateButtonAttributes();
 
-        if (this.hasAttribute("disabled")) {
-            this.button.setAttribute("disabled", "");
-            this.button.setAttribute("aria-disabled", "true");
+        const disabled = this.hasAttribute("disabled");
+        if (needsAnchor) {
+            // <a> has no native disabled — manage via aria and href removal
+            if (disabled) {
+                this.button.removeAttribute("href");
+                this.button.setAttribute("aria-disabled", "true");
+                this.button.setAttribute("tabindex", "-1");
+            } else {
+                this.button.setAttribute("href", this.getAttribute("href"));
+                this.button.setAttribute("aria-disabled", "false");
+                this.button.removeAttribute("tabindex");
+            }
         } else {
-            this.button.removeAttribute("disabled");
-            this.button.setAttribute("aria-disabled", "false");
+            if (disabled) {
+                this.button.setAttribute("disabled", "");
+                this.button.setAttribute("aria-disabled", "true");
+            } else {
+                this.button.removeAttribute("disabled");
+                this.button.setAttribute("aria-disabled", "false");
+            }
         }
 
         this.button.innerHTML = `
@@ -449,9 +503,17 @@ export class YumeButton extends HTMLElement {
     }
 
     _updateButtonAttributes() {
-        const attributes = YumeButton.observedAttributes;
+        const isAnchor = this.button?.tagName === "A";
+        // These are only meaningful on <button>
+        const buttonOnlyAttrs = new Set(["type", "disabled", "name", "value", "autofocus", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget"]);
+        // These are only meaningful on <a>; href is managed separately in _render
+        const anchorOnlyAttrs = new Set(["href", "target", "rel"]);
 
-        attributes.forEach((attr) => {
+        YumeButton.observedAttributes.forEach((attr) => {
+            if (isAnchor && buttonOnlyAttrs.has(attr)) return;
+            if (isAnchor && attr === "href") return; // handled in _render (disabled-aware)
+            if (!isAnchor && anchorOnlyAttrs.has(attr)) return;
+
             if (this.hasAttribute(attr)) {
                 this.button.setAttribute(attr, this.getAttribute(attr));
             } else {

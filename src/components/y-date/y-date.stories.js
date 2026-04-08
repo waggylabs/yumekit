@@ -59,6 +59,12 @@ export default {
             description: "Show a clear button when a value is set.",
             table: { defaultValue: { summary: "false" } },
         },
+        nativeMobile: {
+            control: "boolean",
+            description:
+                "When true, renders native date inputs on mobile instead of the datepicker popup.",
+            table: { defaultValue: { summary: "false" } },
+        },
         disabled: {
             control: "boolean",
             description: "Disable the field.",
@@ -108,6 +114,7 @@ export default {
         color: "primary",
         value: "2026-06-15T12:00:00.000Z",
         clearable: false,
+        nativeMobile: false,
         disabled: false,
         invalid: false,
         showHours: false,
@@ -128,6 +135,7 @@ export default {
             args.value ? `value="${args.value}"` : "",
             args.placeholder ? `placeholder="${args.placeholder}"` : "",
             args.clearable ? "clearable" : "",
+            args.nativeMobile ? "native-mobile" : "",
             args.disabled ? "disabled" : "",
             args.invalid ? "invalid" : "",
             args.showHours ? "show-hours" : "",
@@ -200,4 +208,14 @@ export const Disabled = {
 /** Invalid state. */
 export const Invalid = {
     args: { invalid: true },
+};
+
+/** Native mobile input — renders native date inputs below the mobile breakpoint instead of the datepicker popup. Resize the viewport below 768px to see the effect. */
+export const NativeMobile = {
+    args: { nativeMobile: true, clearable: true, value: "2026-06-15T12:00:00.000Z" },
+};
+
+/** Native mobile range — renders two native date inputs in range mode on mobile. */
+export const NativeMobileRange = {
+    args: { mode: "range", nativeMobile: true },
 };

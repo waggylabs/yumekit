@@ -13,7 +13,9 @@ describe("<y-datepicker>", () => {
     });
 
     it("renders two panels in range mode", async () => {
-        const el = await fixture(html`<y-datepicker mode="range"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker mode="range"></y-datepicker>`,
+        );
         const panels = el.shadowRoot.querySelectorAll(".panel");
         expect(panels.length).to.equal(2);
     });
@@ -31,34 +33,49 @@ describe("<y-datepicker>", () => {
     });
 
     it("hides day grid when show-days is false", async () => {
-        const el = await fixture(html`<y-datepicker show-days="false"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker show-days="false"></y-datepicker>`,
+        );
         expect(el.shadowRoot.querySelector(".day-grid")).to.be.null;
     });
 
     it("renders month grid when show-days is false and show-months is true", async () => {
-        const el = await fixture(html`<y-datepicker show-days="false"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker show-days="false"></y-datepicker>`,
+        );
         expect(el.shadowRoot.querySelector(".month-grid")).to.exist;
     });
 
     it("renders year grid when both show-days and show-months are false", async () => {
-        const el = await fixture(html`<y-datepicker show-days="false" show-months="false"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                show-days="false"
+                show-months="false"
+            ></y-datepicker>`,
+        );
         expect(el.shadowRoot.querySelector(".year-grid")).to.exist;
     });
 
     it("shows time column when show-hours is set", async () => {
-        const el = await fixture(html`<y-datepicker show-hours></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker show-hours></y-datepicker>`,
+        );
         expect(el.shadowRoot.querySelector(".time-column")).to.exist;
     });
 
     it("shows minutes column when show-minutes is set", async () => {
-        const el = await fixture(html`<y-datepicker show-minutes></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker show-minutes></y-datepicker>`,
+        );
         const cols = el.shadowRoot.querySelectorAll(".time-col");
         const minutesCol = [...cols].find((c) => c.dataset.col === "minutes");
         expect(minutesCol).to.exist;
     });
 
     it("shows seconds column when show-seconds is set", async () => {
-        const el = await fixture(html`<y-datepicker show-seconds></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker show-seconds></y-datepicker>`,
+        );
         const cols = el.shadowRoot.querySelectorAll(".time-col");
         const secondsCol = [...cols].find((c) => c.dataset.col === "seconds");
         expect(secondsCol).to.exist;
@@ -74,17 +91,28 @@ describe("<y-datepicker>", () => {
     // -------------------------------------------------------------------------
 
     it("parses a single ISO value and marks the correct day as selected", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
-        const selected = el.shadowRoot.querySelector(".day-btn[aria-pressed='true']");
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const selected = el.shadowRoot.querySelector(
+            ".day-btn[aria-pressed='true']",
+        );
         expect(selected).to.exist;
     });
 
     it("parses a range value and marks both edges as selected", async () => {
         const el = await fixture(html`
-            <y-datepicker mode="range" value="2026-06-10T00:00:00.000Z,2026-06-20T00:00:00.000Z">
+            <y-datepicker
+                mode="range"
+                value="2026-06-10T00:00:00.000Z,2026-06-20T00:00:00.000Z"
+            >
             </y-datepicker>
         `);
-        const selected = el.shadowRoot.querySelectorAll(".day-btn[aria-pressed='true']");
+        const selected = el.shadowRoot.querySelectorAll(
+            ".day-btn[aria-pressed='true']",
+        );
         expect(selected.length).to.equal(2);
     });
 
@@ -107,21 +135,31 @@ describe("<y-datepicker>", () => {
         // Set min to the last day of the current month of the fixture's view
         // Use a fixed value so the view is predictable
         const el = await fixture(html`
-            <y-datepicker value="2026-06-15T00:00:00.000Z" min="2026-06-10T00:00:00.000Z">
+            <y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+                min="2026-06-10T00:00:00.000Z"
+            >
             </y-datepicker>
         `);
         const dayBtns = [...el.shadowRoot.querySelectorAll(".day-btn")];
-        const day5 = dayBtns.find((b) => new Date(b.dataset.date).getDate() === 5);
+        const day5 = dayBtns.find(
+            (b) => new Date(b.dataset.date).getDate() === 5,
+        );
         expect(day5.hasAttribute("disabled")).to.be.true;
     });
 
     it("disables days after max date", async () => {
         const el = await fixture(html`
-            <y-datepicker value="2026-06-15T00:00:00.000Z" max="2026-06-20T00:00:00.000Z">
+            <y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+                max="2026-06-20T00:00:00.000Z"
+            >
             </y-datepicker>
         `);
         const dayBtns = [...el.shadowRoot.querySelectorAll(".day-btn")];
-        const day25 = dayBtns.find((b) => new Date(b.dataset.date).getDate() === 25);
+        const day25 = dayBtns.find(
+            (b) => new Date(b.dataset.date).getDate() === 25,
+        );
         expect(day25.hasAttribute("disabled")).to.be.true;
     });
 
@@ -141,7 +179,11 @@ describe("<y-datepicker>", () => {
     });
 
     it("emits change event with correct ISO value for single mode", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
         const btn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
 
         setTimeout(() => btn.click());
@@ -152,8 +194,15 @@ describe("<y-datepicker>", () => {
     });
 
     it("selects start then end date in range mode", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-06-15T00:00:00.000Z,2026-06-20T00:00:00.000Z"></y-datepicker>`);
-        const btns = [...el.shadowRoot.querySelectorAll(".day-btn:not([disabled])")];
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-06-15T00:00:00.000Z,2026-06-20T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const btns = [
+            ...el.shadowRoot.querySelectorAll(".day-btn:not([disabled])"),
+        ];
 
         // First click sets start
         setTimeout(() => btns[0].click());
@@ -169,8 +218,15 @@ describe("<y-datepicker>", () => {
     });
 
     it("swaps start and end when end is clicked before start", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-06-15T00:00:00.000Z,2026-06-20T00:00:00.000Z"></y-datepicker>`);
-        const btns = [...el.shadowRoot.querySelectorAll(".day-btn:not([disabled])")];
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-06-15T00:00:00.000Z,2026-06-20T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const btns = [
+            ...el.shadowRoot.querySelectorAll(".day-btn:not([disabled])"),
+        ];
 
         // Click a later date first
         setTimeout(() => btns[9].click());
@@ -187,8 +243,14 @@ describe("<y-datepicker>", () => {
     // -------------------------------------------------------------------------
 
     it("navigates to the previous month when prev-month button is clicked", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
-        const prevMonth = el.shadowRoot.querySelector("[data-action='prev-month']");
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const prevMonth = el.shadowRoot.querySelector(
+            "[data-action='prev-month']",
+        );
         prevMonth.click();
         await nextFrame();
 
@@ -197,8 +259,14 @@ describe("<y-datepicker>", () => {
     });
 
     it("navigates to the next month when next-month button is clicked", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
-        const nextMonth = el.shadowRoot.querySelector("[data-action='next-month']");
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const nextMonth = el.shadowRoot.querySelector(
+            "[data-action='next-month']",
+        );
         nextMonth.click();
         await nextFrame();
 
@@ -207,8 +275,14 @@ describe("<y-datepicker>", () => {
     });
 
     it("navigates to the previous year when prev-year button is clicked", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
-        const prevYear = el.shadowRoot.querySelector("[data-action='prev-year']");
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const prevYear = el.shadowRoot.querySelector(
+            "[data-action='prev-year']",
+        );
         prevYear.click();
         await nextFrame();
 
@@ -217,8 +291,14 @@ describe("<y-datepicker>", () => {
     });
 
     it("navigates to the next year when next-year button is clicked", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
-        const nextYear = el.shadowRoot.querySelector("[data-action='next-year']");
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
+        const nextYear = el.shadowRoot.querySelector(
+            "[data-action='next-year']",
+        );
         nextYear.click();
         await nextFrame();
 
@@ -231,16 +311,23 @@ describe("<y-datepicker>", () => {
     // -------------------------------------------------------------------------
 
     it("clear() removes the value and re-renders", async () => {
-        const el = await fixture(html`<y-datepicker value="2026-06-15T00:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                value="2026-06-15T00:00:00.000Z"
+            ></y-datepicker>`,
+        );
         el.clear();
         await nextFrame();
 
         expect(el.value).to.equal("");
-        expect(el.shadowRoot.querySelector(".day-btn[aria-pressed='true']")).to.be.null;
+        expect(el.shadowRoot.querySelector(".day-btn[aria-pressed='true']")).to
+            .be.null;
     });
 
     it("formatDate() returns a formatted string using the format attribute", async () => {
-        const el = await fixture(html`<y-datepicker format="DD/MM/YYYY"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker format="DD/MM/YYYY"></y-datepicker>`,
+        );
         const result = el.formatDate(new Date(2026, 5, 15)); // June 15, 2026
         expect(result).to.equal("15/06/2026");
     });
@@ -275,7 +362,9 @@ describe("<y-datepicker>", () => {
     });
 
     it("showYears is false when set to false", async () => {
-        const el = await fixture(html`<y-datepicker show-years="false"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker show-years="false"></y-datepicker>`,
+        );
         expect(el.showYears).to.be.false;
         expect(el.shadowRoot.querySelector(".year-sel")).to.be.null;
     });
@@ -303,10 +392,17 @@ describe("<y-datepicker>", () => {
     // -------------------------------------------------------------------------
 
     it("view does not snap back to start month after picking start and navigating forward", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-01-15T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-01-15T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Pick start date — triggers _emitChange which sets value attr
-        const startBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        const startBtn = el.shadowRoot.querySelector(
+            ".day-btn:not([disabled])",
+        );
         setTimeout(() => startBtn.click());
         await oneEvent(el, "change");
 
@@ -317,15 +413,24 @@ describe("<y-datepicker>", () => {
         }
 
         // View should be at July (6), not snapped back to January (0)
-        const monthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        const monthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='left']",
+        );
         expect(parseInt(monthSel.value)).to.equal(6);
     });
 
     it("view does not snap back after picking end date across many months", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-01-15T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-01-15T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Pick start in January
-        const startBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        const startBtn = el.shadowRoot.querySelector(
+            ".day-btn:not([disabled])",
+        );
         setTimeout(() => startBtn.click());
         await oneEvent(el, "change");
 
@@ -343,19 +448,28 @@ describe("<y-datepicker>", () => {
         expect(e.detail.startDate).to.be.instanceOf(Date);
         expect(e.detail.endDate).to.be.instanceOf(Date);
         expect(e.detail.startDate.getMonth()).to.equal(0); // January
-        expect(e.detail.endDate.getMonth()).to.equal(6);   // July
+        expect(e.detail.endDate.getMonth()).to.equal(6); // July
 
         // View should remain at July, not snap back to January
         await nextFrame();
-        const monthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
+        const monthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='left']",
+        );
         expect(parseInt(monthSel.value)).to.equal(6);
     });
 
     it("year-spanning range: view stays at navigated year after picking end date", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-11-01T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-11-01T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Pick start in November 2026
-        const startBtn = el.shadowRoot.querySelector(".day-btn:not([disabled])");
+        const startBtn = el.shadowRoot.querySelector(
+            ".day-btn:not([disabled])",
+        );
         setTimeout(() => startBtn.click());
         await oneEvent(el, "change");
 
@@ -366,9 +480,13 @@ describe("<y-datepicker>", () => {
         }
 
         // Should be viewing February 2027
-        const monthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
-        const yearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
-        expect(parseInt(monthSel.value)).to.equal(1);    // February
+        const monthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='left']",
+        );
+        const yearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='left']",
+        );
+        expect(parseInt(monthSel.value)).to.equal(1); // February
         expect(parseInt(yearSel.value)).to.equal(2027);
 
         // Pick end in February 2027
@@ -381,63 +499,105 @@ describe("<y-datepicker>", () => {
 
         // View should remain in 2027
         await nextFrame();
-        const finalYearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
+        const finalYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='left']",
+        );
         expect(parseInt(finalYearSel.value)).to.equal(2027);
     });
 
     it("right panel month selector sets the right panel to the selected month", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-01-15T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-01-15T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Left shows January (0), right shows February (1)
         // Change right panel month selector to August (7)
-        const rightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        const rightMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='right']",
+        );
         rightMonthSel.value = "7";
         rightMonthSel.dispatchEvent(new Event("change"));
         await nextFrame();
 
-        const leftMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
-        const newRightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        const leftMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='left']",
+        );
+        const newRightMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='right']",
+        );
         expect(parseInt(newRightMonthSel.value)).to.equal(7); // August on right
-        expect(parseInt(leftMonthSel.value)).to.equal(6);     // July on left
+        expect(parseInt(leftMonthSel.value)).to.equal(6); // July on left
     });
 
     it("right panel month selector wraps year correctly when January is selected", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-06-15T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-06-15T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Left shows June (5), right shows July (6)
         // Change right panel month to January (0) — left should wrap to December of previous year
-        const rightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
+        const rightMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='right']",
+        );
         rightMonthSel.value = "0";
         rightMonthSel.dispatchEvent(new Event("change"));
         await nextFrame();
 
-        const leftMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='left']");
-        const leftYearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
-        const newRightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
-        expect(parseInt(newRightMonthSel.value)).to.equal(0);  // January on right
-        expect(parseInt(leftMonthSel.value)).to.equal(11);     // December on left
-        expect(parseInt(leftYearSel.value)).to.equal(2025);    // Previous year on left
+        const leftMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='left']",
+        );
+        const leftYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='left']",
+        );
+        const newRightMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='right']",
+        );
+        expect(parseInt(newRightMonthSel.value)).to.equal(0); // January on right
+        expect(parseInt(leftMonthSel.value)).to.equal(11); // December on left
+        expect(parseInt(leftYearSel.value)).to.equal(2025); // Previous year on left
     });
 
     it("right panel year selector sets the correct year on the right panel", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-06-15T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-06-15T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Left shows June 2026, right shows July 2026
         // Change right panel year to 2028
-        const rightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        const rightYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='right']",
+        );
         rightYearSel.value = "2028";
         rightYearSel.dispatchEvent(new Event("change"));
         await nextFrame();
 
-        const newRightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        const newRightYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='right']",
+        );
         expect(parseInt(newRightYearSel.value)).to.equal(2028);
     });
 
     it("right panel year selector handles the December/January year boundary correctly", async () => {
-        const el = await fixture(html`<y-datepicker mode="range" value="2026-12-15T12:00:00.000Z"></y-datepicker>`);
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                value="2026-12-15T12:00:00.000Z"
+            ></y-datepicker>`,
+        );
 
         // Left shows December 2026, right shows January 2027
-        const rightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
+        const rightYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='right']",
+        );
         expect(parseInt(rightYearSel.value)).to.equal(2027);
 
         // Change right panel year to 2029 — left should become December 2028
@@ -445,11 +605,67 @@ describe("<y-datepicker>", () => {
         rightYearSel.dispatchEvent(new Event("change"));
         await nextFrame();
 
-        const newRightYearSel = el.shadowRoot.querySelector(".year-sel[data-side='right']");
-        const leftYearSel = el.shadowRoot.querySelector(".year-sel[data-side='left']");
-        const rightMonthSel = el.shadowRoot.querySelector(".month-sel[data-side='right']");
-        expect(parseInt(newRightYearSel.value)).to.equal(2029);  // 2029 on right
-        expect(parseInt(leftYearSel.value)).to.equal(2028);      // 2028 on left
-        expect(parseInt(rightMonthSel.value)).to.equal(0);       // January preserved on right
+        const newRightYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='right']",
+        );
+        const leftYearSel = el.shadowRoot.querySelector(
+            ".year-sel[data-side='left']",
+        );
+        const rightMonthSel = el.shadowRoot.querySelector(
+            ".month-sel[data-side='right']",
+        );
+        expect(parseInt(newRightYearSel.value)).to.equal(2029); // 2029 on right
+        expect(parseInt(leftYearSel.value)).to.equal(2028); // 2028 on left
+        expect(parseInt(rightMonthSel.value)).to.equal(0); // January preserved on right
+    });
+
+    // -------------------------------------------------------------------------
+    // Mobile breakpoint / range wrap
+    // -------------------------------------------------------------------------
+
+    it("mobile getter is true when breakpoint exceeds viewport", async () => {
+        const el = await fixture(
+            html`<y-datepicker mobile-breakpoint="99999"></y-datepicker>`,
+        );
+        expect(el.mobile).to.be.true;
+    });
+
+    it("always renders the calendar regardless of mobile breakpoint", async () => {
+        const el = await fixture(
+            html`<y-datepicker mobile-breakpoint="99999"></y-datepicker>`,
+        );
+        expect(el.shadowRoot.querySelector(".datepicker")).to.exist;
+        expect(el.shadowRoot.querySelector(".native-input")).to.be.null;
+    });
+
+    it("range mode adds mobile class when breakpoint exceeds viewport", async () => {
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                mobile-breakpoint="99999"
+            ></y-datepicker>`,
+        );
+        const datepicker = el.shadowRoot.querySelector(".datepicker");
+        expect(datepicker.classList.contains("mobile")).to.be.true;
+    });
+
+    it("range mode does not add mobile class on desktop breakpoint", async () => {
+        const el = await fixture(
+            html`<y-datepicker
+                mode="range"
+                mobile-breakpoint="1"
+            ></y-datepicker>`,
+        );
+        const datepicker = el.shadowRoot.querySelector(".datepicker");
+        expect(datepicker.classList.contains("mobile")).to.be.false;
+    });
+
+    it("mobileBreakpoint getter/setter works", async () => {
+        const el = await fixture(html`<y-datepicker></y-datepicker>`);
+        expect(el.mobileBreakpoint).to.equal("");
+        el.mobileBreakpoint = "600";
+        expect(el.getAttribute("mobile-breakpoint")).to.equal("600");
+        el.mobileBreakpoint = "";
+        expect(el.hasAttribute("mobile-breakpoint")).to.be.false;
     });
 });

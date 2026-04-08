@@ -163,9 +163,14 @@ Attributes:
 - `show-hours` — boolean, show hour column in time picker
 - `show-minutes` — boolean, show minutes column (implies `show-hours`)
 - `show-seconds` — boolean, show seconds column (implies `show-minutes`)
+- `hour-format` — `"12"` (default) | `"24"`, 12- or 24-hour clock in time picker
+- `minute-interval` — step between minute options (default: `5`)
+- `second-interval` — step between second options (default: `5`)
 - `show-years` — `"true"` (default) | `"false"`, toggles year select in calendar header
 - `show-months` — `"true"` (default) | `"false"`, toggles month select in calendar header
 - `show-days` — `"true"` (default) | `"false"`, toggles the day grid (use `"false"` for month or year picker)
+- `mobile-breakpoint` — viewport width in px below which mobile mode activates (default: `768` or `--component-datepicker-mobile-breakpoint`)
+- `native-mobile` — boolean, when set renders native `<input type="date">` elements on mobile instead of the popup datepicker
 
 Events: `change` (detail: `{ value, startDate, endDate, formatted }`)
 Methods: `open()`, `close()`, `clear()`
@@ -185,6 +190,11 @@ Slots: `label`, `left-icon`
 <y-date name="meeting" show-hours format="MM/DD/YYYY hh:mm A">
   <span slot="label">Meeting Time</span>
 </y-date>
+
+<!-- Use native inputs on mobile (opt-in) -->
+<y-date name="dob" native-mobile clearable>
+  <span slot="label">Date of Birth</span>
+</y-date>
 ```
 
 ---
@@ -194,7 +204,7 @@ Standalone calendar/date picker widget. Used internally by `y-date`; also usable
 
 Tag: `<y-datepicker>`
 Attributes:
-- `mode` — `"single"` (default) | `"range"`, shows two months side-by-side in range mode
+- `mode` — `"single"` (default) | `"range"`, shows two months side-by-side in range mode; panels stack vertically on mobile
 - `value` — ISO date string, or `"ISO,ISO"` comma-pair for range mode
 - `min`, `max` — date constraints (ISO string)
 - `format` — display format string (default: `"MM/DD/YYYY"`)
@@ -202,9 +212,13 @@ Attributes:
 - `show-hours` — boolean, show hour column
 - `show-minutes` — boolean, show minutes column
 - `show-seconds` — boolean, show seconds column
+- `hour-format` — `"12"` (default) | `"24"`, 12- or 24-hour clock
+- `minute-interval` — step between minute options (default: `5`)
+- `second-interval` — step between second options (default: `5`)
 - `show-years` — `"true"` (default) | `"false"`
 - `show-months` — `"true"` (default) | `"false"`
 - `show-days` — `"true"` (default) | `"false"`, set to `"false"` for a month picker; combine with `show-months="false"` for a year picker
+- `mobile-breakpoint` — viewport width in px below which range panels stack vertically (default: `768` or `--component-datepicker-mobile-breakpoint`)
 
 Events: `change` (detail: `{ value, startDate, endDate, formatted }`)
 Methods: `clear()`, `formatDate(date)`
@@ -700,6 +714,7 @@ Component-specific tokens (subset — see `styles/variables.css` for the full li
 --component-datepicker-border-width     /* panel and column-divider border width */
 --component-datepicker-header-color     /* day-of-week and Hr/Min/Sec column header text */
 --component-datepicker-shadow           /* drop shadow on the y-date popup */
+--component-datepicker-mobile-breakpoint /* viewport width in px below which mobile behavior activates (default: 768) */
 --component-date-z-index                /* stacking order of the popup (default: 200) */
 ```
 

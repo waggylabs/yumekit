@@ -1,3 +1,5 @@
+import { manageLabelVisibility } from "../../modules/helpers.js";
+
 export class YumeTextarea extends HTMLElement {
     static formAssociated = true;
 
@@ -26,7 +28,8 @@ export class YumeTextarea extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("label-position")) this.setAttribute("label-position", "top");
+        if (!this.hasAttribute("label-position"))
+            this.setAttribute("label-position", "top");
         this._internals.setFormValue(this.value);
     }
 
@@ -36,7 +39,10 @@ export class YumeTextarea extends HTMLElement {
         if (name === "value") {
             if (this.textarea) this.textarea.value = newValue;
             if (this._internals) {
-                this._internals.setFormValue(newValue, this.getAttribute("name"));
+                this._internals.setFormValue(
+                    newValue,
+                    this.getAttribute("name"),
+                );
             }
             return;
         }
@@ -59,37 +65,59 @@ export class YumeTextarea extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the textarea is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** @type {boolean} Whether the textarea is in an invalid state. */
-    get invalid() { return this.hasAttribute("invalid"); }
+    get invalid() {
+        return this.hasAttribute("invalid");
+    }
     set invalid(val) {
         if (val) this.setAttribute("invalid", "");
         else this.removeAttribute("invalid");
     }
 
     /** @type {string} Label position: "top" | "bottom" (default "top"). */
-    get labelPosition() { return this.getAttribute("label-position") || "top"; }
-    set labelPosition(val) { this.setAttribute("label-position", val); }
+    get labelPosition() {
+        return this.getAttribute("label-position") || "top";
+    }
+    set labelPosition(val) {
+        this.setAttribute("label-position", val);
+    }
 
     /** @type {string} The form field name. */
-    get name() { return this.getAttribute("name") || ""; }
-    set name(val) { this.setAttribute("name", val); }
+    get name() {
+        return this.getAttribute("name") || "";
+    }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
 
     /** @type {number} Number of visible text rows (default 3). */
-    get rows() { return parseInt(this.getAttribute("rows") || "3", 10); }
-    set rows(val) { this.setAttribute("rows", String(val)); }
+    get rows() {
+        return parseInt(this.getAttribute("rows") || "3", 10);
+    }
+    set rows(val) {
+        this.setAttribute("rows", String(val));
+    }
 
     /** @type {string} Textarea size: "small" | "medium" | "large" (default "medium"). */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** @type {string} The current textarea value. */
-    get value() { return this.textarea?.value || ""; }
+    get value() {
+        return this.textarea?.value || "";
+    }
     set value(val) {
         if (this.textarea) this.textarea.value = val;
         this.setAttribute("value", val);
@@ -114,12 +142,19 @@ export class YumeTextarea extends HTMLElement {
 
         const paddingVar = this._getPaddingVar(size);
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(isDisabled, paddingVar)];
-        this.shadowRoot.innerHTML = this._buildHTML(rows, isLabelTop, isDisabled);
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(isDisabled, paddingVar),
+        ];
+        this.shadowRoot.innerHTML = this._buildHTML(
+            rows,
+            isLabelTop,
+            isDisabled,
+        );
 
         this.textarea = this.shadowRoot.querySelector("textarea");
         this.inputContainer = this.shadowRoot.querySelector(".input-container");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+        manageLabelVisibility(this.labelWrapper);
 
         // <textarea> value must be set via property, not HTML attribute
         this.textarea.value = value;
@@ -137,18 +172,24 @@ export class YumeTextarea extends HTMLElement {
     _bindTextareaListeners() {
         this.textarea.addEventListener("input", (e) => {
             this.setAttribute("value", e.target.value);
-            this._internals.setFormValue(e.target.value, this.getAttribute("name"));
-            this.dispatchEvent(new CustomEvent("input", {
-                detail: { value: e.target.value },
-                bubbles: true,
-                composed: true,
-            }));
+            this._internals.setFormValue(
+                e.target.value,
+                this.getAttribute("name"),
+            );
+            this.dispatchEvent(
+                new CustomEvent("input", {
+                    detail: { value: e.target.value },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
             this._updateValidationState();
         });
     }
 
     _buildHTML(rows, isLabelTop, isDisabled) {
-        const labelSlot = '<div class="label-wrapper"><slot name="label"></slot></div>';
+        const labelSlot =
+            '<div class="label-wrapper"><slot name="label"></slot></div>';
         return `
             <div class="input-wrapper">
                 ${isLabelTop ? labelSlot : ""}
@@ -176,6 +217,10 @@ export class YumeTextarea extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 gap: var(--spacing-2x-small, 4px);
+            }
+
+            .label-wrapper {
+                display: none;
             }
 
             .input-container {
@@ -255,7 +300,9 @@ export class YumeTextarea extends HTMLElement {
     }
 
     _updateValidationState() {
-        const isInvalid = this.hasAttribute("invalid") || (this.textarea && !this.checkValidity());
+        const isInvalid =
+            this.hasAttribute("invalid") ||
+            (this.textarea && !this.checkValidity());
         this.inputContainer?.classList.toggle("is-invalid", isInvalid);
         this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }

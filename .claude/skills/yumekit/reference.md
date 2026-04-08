@@ -55,21 +55,74 @@ Injects design tokens as CSS custom properties. Wraps entire app.
 
 ## y-button
 
-| Attribute    | Values                                                  |
-|-------------|----------------------------------------------------------|
-| `color`     | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help` |
-| `size`      | `small` \| `medium` \| `large`                          |
-| `style-type`| `filled` (default) \| `outlined` \| `flat`              |
-| `left-icon` | icon name                                               |
-| `right-icon`| icon name                                               |
-| `disabled`  | boolean                                                  |
-| `type`      | `button` (default) \| `submit` \| `reset`               |
+When `href` is set, the internal element renders as `<a>` instead of `<button>` — all styles, sizes, and color variants apply identically.
 
-Slot: default (button label)
+| Attribute    | Values / Notes                                                                              |
+|-------------|----------------------------------------------------------------------------------------------|
+| `color`     | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`          |
+| `size`      | `small` \| `medium` \| `large`                                                              |
+| `style-type`| `outlined` (default) \| `filled` \| `flat`                                                 |
+| `disabled`  | boolean                                                                                      |
+| `type`      | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                     |
+| `href`      | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled`      |
+| `target`    | e.g. `"_blank"` — only applies when `href` is set                                          |
+| `rel`       | e.g. `"noopener noreferrer"` — only applies when `href` is set                             |
+
+Slots: default (label), `left-icon`, `right-icon`
 
 ```html
-<y-button color="primary" size="large" left-icon="check">Save</y-button>
-<y-button style-type="outlined" color="error" right-icon="trash">Delete</y-button>
+<!-- Standard button -->
+<y-button color="primary" size="large">
+  <y-icon slot="left-icon" name="check" size="small"></y-icon>
+  Save
+</y-button>
+
+<!-- Link button — renders <a href="/docs"> internally -->
+<y-button href="/docs" color="primary" style-type="outlined">Documentation</y-button>
+
+<!-- External link -->
+<y-button href="https://example.com" target="_blank" rel="noopener noreferrer" style-type="flat">
+  External
+  <y-icon slot="right-icon" name="arrow-right" size="small"></y-icon>
+</y-button>
+
+<!-- Disabled link — href removed, aria-disabled set, pointer-events blocked -->
+<y-button href="/restricted" disabled>Unavailable</y-button>
+```
+
+---
+
+## y-button-group
+
+Groups buttons or other elements into a visually connected toolbar. Automatically removes border-radius on inner children and collapses shared borders.
+
+| Attribute     | Values                                    |
+|--------------|-------------------------------------------|
+| `orientation` | `horizontal` (default) \| `vertical`     |
+
+Slot: default (accepts any child elements — typically `y-button`, `y-input`, or `y-select`)
+
+```html
+<!-- Basic horizontal group -->
+<y-button-group>
+  <y-button color="primary">Left</y-button>
+  <y-button color="primary">Center</y-button>
+  <y-button color="primary">Right</y-button>
+</y-button-group>
+
+<!-- Vertical group -->
+<y-button-group orientation="vertical">
+  <y-button color="base">Top</y-button>
+  <y-button color="base">Bottom</y-button>
+</y-button-group>
+
+<!-- Mixed: input + button (search bar) -->
+<y-button-group>
+  <y-input placeholder="Search…"></y-input>
+  <y-button style-type="filled" color="primary">
+    <y-icon slot="left-icon" name="search" size="small"></y-icon>
+  </y-button>
+</y-button-group>
 ```
 
 ---
@@ -398,25 +451,46 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 
 ## y-appbar
 
-| Attribute     | Values / Notes                             |
-|--------------|---------------------------------------------|
-| `orientation`| `horizontal` (default) \| `vertical`        |
-| `sticky`     | boolean                                      |
-| `color`      | color scheme name                            |
+| Attribute          | Values / Notes                                                                                   |
+|-------------------|---------------------------------------------------------------------------------------------------|
+| `orientation`     | `vertical` (default) \| `horizontal`                                                              |
+| `collapsed`       | boolean — collapses vertical sidebar to icon-only mode                                            |
+| `items`           | JSON: `[{"text":"Home","icon":"home","href":"/","children":[...]}]`                               |
+| `size`            | `small` \| `medium` (default) \| `large`                                                          |
+| `menu-direction`  | `right` \| `down` \| `""` (auto: vertical→right, horizontal→down)                                |
+| `sticky`          | `start` \| `end` — sticks to top/left (start) or bottom/right (end)                              |
+| `mobile-breakpoint`| px width below which horizontal bar collapses to a hamburger menu (default: `768`)              |
+| `history`         | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`    |
 
-Slots: `brand`, `nav`, `actions`, default
+Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+
+Slots: `logo`, `title`, `header`, `footer`
 
 ```html
-<y-appbar sticky color="primary">
-  <span slot="brand">MyApp</span>
-  <nav slot="nav">
-    <y-button style-type="flat">Home</y-button>
-    <y-button style-type="flat">About</y-button>
-  </nav>
-  <div slot="actions">
-    <y-avatar alt="JD" size="small" slot="actions"></y-avatar>
-  </div>
+<!-- Basic vertical sidebar -->
+<y-appbar
+  orientation="vertical"
+  sticky="start"
+  items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+>
+  <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+  <span slot="title">MyApp</span>
 </y-appbar>
+
+<!-- React Router integration — intercept navigate event -->
+<y-appbar id="appbar" items='[...]'></y-appbar>
+<script type="module">
+  document.getElementById("appbar").addEventListener("navigate", (e) => {
+    e.preventDefault();
+    // hand off to your SPA router, e.g. React Router's navigate()
+    myRouter.navigate(e.detail.href);
+  });
+</script>
+
+<!-- Full-page navigation (opt out of pushState) -->
+<y-appbar history="false" items='[{"text":"Home","href":"/"}]'></y-appbar>
 ```
 
 ---
@@ -481,15 +555,18 @@ Slots: `header`, `footer`, default (body)
 
 Positioned relative to an `anchor` element. Does NOT use slots for items.
 
-| Attribute   | Values / Notes                                                              |
-|------------|-----------------------------------------------------------------------------|
-| `items`    | JSON: `[{"text":"Edit","url":"...","selected":true,"children":[...]}]`     |
-| `anchor`   | CSS selector or element ID of the trigger element                           |
-| `visible`  | boolean                                                                      |
-| `direction`| `down` (default) \| `up` \| `left` \| `right`                             |
-| `size`     | `small` \| `medium` \| `large`                                             |
+| Attribute   | Values / Notes                                                                                 |
+|------------|-----------------------------------------------------------------------------------------------|
+| `items`    | JSON: `[{"text":"Edit","url":"...","selected":true,"children":[...]}]`                        |
+| `anchor`   | CSS selector or element ID of the trigger element                                              |
+| `visible`  | boolean                                                                                        |
+| `direction`| `down` (default) \| `up` \| `left` \| `right`                                               |
+| `size`     | `small` \| `medium` \| `large`                                                               |
+| `history`  | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
 Item object fields: `text`, `url`, `selected`, `children`, `icon-template`, `template`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `url` is clicked.
 
 Use `<template slot="name">` inside `<y-menu>` for custom icon/content templates.
 
@@ -562,26 +639,52 @@ Slots: one slot per tab, named by `id` from options
 Accordion group. `y-panelbar` wraps one or more `y-panel` elements.
 
 **y-panelbar attributes:**
-- `multi` — boolean, allows multiple panels open at once
+- `exclusive` — boolean, expanding one panel collapses all siblings
 
 **y-panel attributes:**
-- `label` — header text (required)
-- `open` — boolean
 
-Slot: default (panel body)
+| Attribute  | Values / Notes                                                                                   |
+|-----------|---------------------------------------------------------------------------------------------------|
+| `selected` | boolean — active/highlighted state                                                               |
+| `expanded` | boolean — children slot is visible                                                               |
+| `href`     | URL string — clicking the panel header navigates to this URL                                     |
+| `history`  | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`   |
+
+Events: `expand`, `collapse`, `toggle`, `select`, `navigate` (when `href` is set — cancelable, `event.detail.href`)
+
+Slots: `icon`, `label` (or default for label text), `children`
+
+Methods: `expand()`, `collapse()`, `toggle()`
 
 ```html
-<y-panelbar>
-  <y-panel label="Getting Started" open>
-    <p>Installation and first steps.</p>
-  </y-panel>
-  <y-panel label="Configuration">
-    <p>Advanced configuration options.</p>
-  </y-panel>
-  <y-panel label="API Reference">
-    <p>Full API docs.</p>
+<!-- Standard accordion -->
+<y-panelbar exclusive style="width:280px">
+  <y-panel expanded>
+    <span slot="label">Getting Started</span>
+    <div slot="children">
+      <y-panel href="/docs/install">
+        <span slot="label">Installation</span>
+      </y-panel>
+      <y-panel href="/docs/quickstart">
+        <span slot="label">Quick Start</span>
+      </y-panel>
+    </div>
   </y-panel>
 </y-panelbar>
+
+<!-- React Router integration — intercept navigate event -->
+<y-panelbar id="nav">...</y-panelbar>
+<script type="module">
+  document.getElementById("nav").addEventListener("navigate", (e) => {
+    e.preventDefault();
+    myRouter.navigate(e.detail.href);
+  });
+</script>
+
+<!-- Full-page navigation (opt out of pushState) -->
+<y-panel href="/page" history="false">
+  <span slot="label">Page</span>
+</y-panel>
 ```
 
 ---
@@ -601,6 +704,99 @@ Slot: default (panel body)
   rows='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
   striped
 ></y-table>
+```
+
+---
+
+## y-date
+
+Form-associated date input with popup calendar. Handles single dates and ranges.
+
+| Attribute          | Values / Notes                                                                 |
+|-------------------|---------------------------------------------------------------------------------|
+| `mode`            | `single` (default) \| `range`                                                   |
+| `name`            | form field name                                                                  |
+| `value`           | ISO string, or `"ISO,ISO"` comma-pair for range                                 |
+| `min`, `max`      | ISO date constraints                                                             |
+| `format`          | display format (default: `MM/DD/YYYY`). Tokens: `YYYY MM DD HH hh mm ss A a`   |
+| `placeholder`     | placeholder text                                                                 |
+| `color`           | datepicker color theme (default: `primary`)                                     |
+| `size`            | `small` \| `medium` (default) \| `large`                                        |
+| `label-position`  | `top` (default) \| `bottom`                                                     |
+| `clearable`       | boolean — shows × button when value is set                                      |
+| `disabled`        | boolean                                                                          |
+| `invalid`         | boolean — error state                                                            |
+| `show-hours`      | boolean — show hour column in time picker                                        |
+| `show-minutes`    | boolean — show minutes column                                                    |
+| `show-seconds`    | boolean — show seconds column                                                    |
+| `hour-format`     | `12` (default) \| `24`                                                          |
+| `minute-interval` | step between minute options (default: `5`)                                      |
+| `second-interval` | step between second options (default: `5`)                                      |
+| `show-years`      | `"true"` (default) \| `"false"` — year select in header                        |
+| `show-months`     | `"true"` (default) \| `"false"` — month select in header                       |
+| `show-days`       | `"true"` (default) \| `"false"` — day grid; `"false"` = month/year picker      |
+| `mobile-breakpoint` | px width below which mobile mode activates (default: `768`)                  |
+| `native-mobile`   | boolean — use native date inputs on mobile instead of the popup (opt-in)        |
+
+Events: `change` — `event.detail: { value, startDate, endDate, formatted }`
+Methods: `open()`, `close()`, `clear()`
+Slots: `label`, `left-icon`
+
+```html
+<y-date name="appt" format="MM/DD/YYYY" clearable>
+  <span slot="label">Appointment</span>
+</y-date>
+
+<y-date name="trip" mode="range">
+  <span slot="label">Travel Dates</span>
+</y-date>
+
+<y-date name="meeting" show-hours show-minutes format="MM/DD/YYYY hh:mm A">
+  <span slot="label">Meeting Time</span>
+</y-date>
+
+<!-- Native inputs on mobile (opt-in) -->
+<y-date name="dob" native-mobile clearable>
+  <span slot="label">Date of Birth</span>
+</y-date>
+```
+
+---
+
+## y-datepicker
+
+Standalone calendar widget. Used internally by `y-date`; also usable directly.
+
+| Attribute          | Values / Notes                                                                  |
+|-------------------|---------------------------------------------------------------------------------|
+| `mode`            | `single` (default) \| `range` — range shows two panels; stacks on mobile        |
+| `value`           | ISO string, or `"ISO,ISO"` comma-pair for range                                 |
+| `min`, `max`      | ISO date constraints                                                             |
+| `format`          | display format (default: `MM/DD/YYYY`)                                          |
+| `color`           | color scheme (default: `primary`)                                               |
+| `show-hours`      | boolean — show hour column                                                       |
+| `show-minutes`    | boolean — show minutes column                                                    |
+| `show-seconds`    | boolean — show seconds column                                                    |
+| `hour-format`     | `12` (default) \| `24`                                                          |
+| `minute-interval` | step between minute options (default: `5`)                                      |
+| `second-interval` | step between second options (default: `5`)                                      |
+| `show-years`      | `"true"` (default) \| `"false"`                                                 |
+| `show-months`     | `"true"` (default) \| `"false"`                                                 |
+| `show-days`       | `"true"` (default) \| `"false"` — `"false"` = month picker; also set `show-months="false"` for year picker |
+| `mobile-breakpoint` | px width below which range panels stack vertically (default: `768`)          |
+
+Events: `change` — `event.detail: { value, startDate, endDate, formatted }`
+Methods: `clear()`, `formatDate(date)`
+
+```html
+<y-datepicker></y-datepicker>
+<y-datepicker mode="range" show-hours show-minutes></y-datepicker>
+
+<!-- Month picker -->
+<y-datepicker show-days="false"></y-datepicker>
+
+<!-- Year picker -->
+<y-datepicker show-days="false" show-months="false"></y-datepicker>
 ```
 
 ---

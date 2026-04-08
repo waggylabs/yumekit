@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -56,7 +56,7 @@
         "@chromatic-com/storybook": "^5.1.1",
         "@eslint/js": "^10.0.1",
         "@open-wc/testing": "^3.0.0-next.5",
-        "@rollup/plugin-terser": "^0.4.4",
+        "@rollup/plugin-terser": "^1.0.0",
         "@storybook/addon-a11y": "^10.3.3",
         "@storybook/addon-docs": "^10.3.3",
         "@storybook/addon-vitest": "^10.3.3",

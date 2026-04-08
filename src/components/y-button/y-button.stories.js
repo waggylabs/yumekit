@@ -116,3 +116,19 @@ export const WithIcons = {
 export const Disabled = {
     args: { disabled: true },
 };
+
+export const AsLink = {
+    name: "As Link (href)",
+    render: () => `
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <y-button href="/docs" color="primary" style-type="outlined">Internal Link</y-button>
+            <y-button href="/docs" color="primary" style-type="filled">Filled Link</y-button>
+            <y-button href="/docs" color="primary" style-type="flat">Flat Link</y-button>
+            <y-button href="https://example.com" target="_blank" rel="noopener noreferrer" color="base" style-type="outlined">
+                External
+                <y-icon slot="right-icon" name="arrow-right" size="small"></y-icon>
+            </y-button>
+            <y-button href="/restricted" color="primary" disabled>Disabled Link</y-button>
+        </div>
+    `,
+};

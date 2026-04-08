@@ -1,3 +1,5 @@
+import { manageLabelVisibility } from "../../modules/helpers.js";
+
 export class YumeInput extends HTMLElement {
     static formAssociated = true;
 
@@ -26,7 +28,8 @@ export class YumeInput extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("label-position")) this.setAttribute("label-position", "top");
+        if (!this.hasAttribute("label-position"))
+            this.setAttribute("label-position", "top");
         this._internals.setFormValue(this.value);
     }
 
@@ -36,7 +39,10 @@ export class YumeInput extends HTMLElement {
         if (name === "value") {
             if (this.input) this.input.value = newValue;
             if (this._internals) {
-                this._internals.setFormValue(newValue, this.getAttribute("name"));
+                this._internals.setFormValue(
+                    newValue,
+                    this.getAttribute("name"),
+                );
             }
             return;
         }
@@ -59,37 +65,59 @@ export class YumeInput extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the input is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** @type {boolean} Whether the input is in an invalid state. */
-    get invalid() { return this.hasAttribute("invalid"); }
+    get invalid() {
+        return this.hasAttribute("invalid");
+    }
     set invalid(val) {
         if (val) this.setAttribute("invalid", "");
         else this.removeAttribute("invalid");
     }
 
     /** @type {string} Label position: "top" | "bottom" (default "top"). */
-    get labelPosition() { return this.getAttribute("label-position") || "top"; }
-    set labelPosition(val) { this.setAttribute("label-position", val); }
+    get labelPosition() {
+        return this.getAttribute("label-position") || "top";
+    }
+    set labelPosition(val) {
+        this.setAttribute("label-position", val);
+    }
 
     /** @type {string} The form field name. */
-    get name() { return this.getAttribute("name") || ""; }
-    set name(val) { this.setAttribute("name", val); }
+    get name() {
+        return this.getAttribute("name") || "";
+    }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
 
     /** @type {string} Input size: "small" | "medium" | "large" (default "medium"). */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** @type {string} Input type (default "text"). */
-    get type() { return this.getAttribute("type") || "text"; }
-    set type(val) { this.setAttribute("type", val); }
+    get type() {
+        return this.getAttribute("type") || "text";
+    }
+    set type(val) {
+        this.setAttribute("type", val);
+    }
 
     /** @type {string} The current input value. */
-    get value() { return this.input?.value || ""; }
+    get value() {
+        return this.input?.value || "";
+    }
     set value(val) {
         if (this.input) this.input.value = val;
         this.setAttribute("value", val);
@@ -119,12 +147,21 @@ export class YumeInput extends HTMLElement {
         const paddingVar = this._getPaddingVar(size);
         const minHeightVar = this._getMinHeightVar(size);
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(isDisabled, paddingVar, minHeightVar)];
-        this.shadowRoot.innerHTML = this._buildHTML(type, value, isLabelTop, isDisabled);
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(isDisabled, paddingVar, minHeightVar),
+        ];
+        this.shadowRoot.innerHTML = this._buildHTML(
+            type,
+            value,
+            isLabelTop,
+            isDisabled,
+        );
 
         this.input = this.shadowRoot.querySelector("input");
         this.inputContainer = this.shadowRoot.querySelector(".input-container");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+
+        manageLabelVisibility(this.labelWrapper);
 
         if (!isDisabled) {
             this._bindInputListeners();
@@ -139,17 +176,20 @@ export class YumeInput extends HTMLElement {
     _bindInputListeners() {
         this.input.addEventListener("input", (e) => {
             this.setAttribute("value", e.target.value);
-            this.dispatchEvent(new CustomEvent("input", {
-                detail: { value: e.target.value },
-                bubbles: true,
-                composed: true,
-            }));
+            this.dispatchEvent(
+                new CustomEvent("input", {
+                    detail: { value: e.target.value },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
             this._updateValidationState();
         });
     }
 
     _buildHTML(type, value, isLabelTop, isDisabled) {
-        const labelSlot = '<div class="label-wrapper"><slot name="label"></slot></div>';
+        const labelSlot =
+            '<div class="label-wrapper"><slot name="label"></slot></div>';
         return `
             <div class="input-wrapper">
                 ${isLabelTop ? labelSlot : ""}
@@ -178,10 +218,16 @@ export class YumeInput extends HTMLElement {
                 position: relative;
                 display: flex;
                 flex-direction: column;
-                gap: var(--spacing-2x-small, 4px);
+                height: 100%;
+            }
+
+            .label-wrapper {
+                display: none;
+                margin-bottom: var(--spacing-2x-small, 4px);
             }
 
             .input-container {
+                flex: 1;
                 display: flex;
                 align-items: center;
                 gap: var(--spacing-x-small);

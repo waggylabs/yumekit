@@ -460,6 +460,133 @@ describe("<y-date>", () => {
     });
 
     // -------------------------------------------------------------------------
+    // Mobile / native date input
+    // -------------------------------------------------------------------------
+
+    it("renders the popup on mobile when native-mobile is not set", async () => {
+        const el = await fixture(
+            html`<y-date mobile-breakpoint="99999"></y-date>`,
+        );
+        expect(el.mobile).to.be.true;
+        expect(el.shadowRoot.querySelector(".popup")).to.exist;
+        expect(el.shadowRoot.querySelector(".native-date")).to.be.null;
+    });
+
+    it("renders a native date input on mobile when native-mobile is set", async () => {
+        const el = await fixture(
+            html`<y-date mobile-breakpoint="99999" native-mobile></y-date>`,
+        );
+        expect(el.mobile).to.be.true;
+        const nativeInput = el.shadowRoot.querySelector(".native-date");
+        expect(nativeInput).to.exist;
+        expect(nativeInput.type).to.equal("date");
+        expect(el.shadowRoot.querySelector(".popup")).to.be.null;
+        expect(el.shadowRoot.querySelector(".display")).to.be.null;
+    });
+
+    it("renders the standard popup on desktop breakpoint", async () => {
+        const el = await fixture(html`<y-date mobile-breakpoint="1"></y-date>`);
+        expect(el.mobile).to.be.false;
+        expect(el.shadowRoot.querySelector(".popup")).to.exist;
+        expect(el.shadowRoot.querySelector(".native-date")).to.be.null;
+    });
+
+    it("uses datetime-local input type when show-hours is set on mobile with native-mobile", async () => {
+        const el = await fixture(
+            html`<y-date
+                mobile-breakpoint="99999"
+                native-mobile
+                show-hours
+            ></y-date>`,
+        );
+        const nativeInput = el.shadowRoot.querySelector(".native-date");
+        expect(nativeInput).to.exist;
+        expect(nativeInput.type).to.equal("datetime-local");
+    });
+
+    it("renders two native inputs in range mode on mobile with native-mobile", async () => {
+        const el = await fixture(
+            html`<y-date
+                mobile-breakpoint="99999"
+                native-mobile
+                mode="range"
+            ></y-date>`,
+        );
+        const inputs = el.shadowRoot.querySelectorAll(".native-date");
+        expect(inputs.length).to.equal(2);
+        expect(el.shadowRoot.querySelector(".native-sep")).to.exist;
+    });
+
+    it("sets native input value from component value on mobile with native-mobile", async () => {
+        const d = new Date(2026, 5, 15);
+        const el = await fixture(html`
+            <y-date
+                mobile-breakpoint="99999"
+                native-mobile
+                value="${d.toISOString()}"
+            ></y-date>
+        `);
+        const input = el.shadowRoot.querySelector(".native-date");
+        expect(input.value).to.equal("2026-06-15");
+    });
+
+    it("emits change event from native input selection on mobile with native-mobile", async () => {
+        const el = await fixture(
+            html`<y-date mobile-breakpoint="99999" native-mobile></y-date>`,
+        );
+        const input = el.shadowRoot.querySelector(".native-date");
+        input.value = "2026-08-20";
+        setTimeout(() => input.dispatchEvent(new Event("change")));
+        const e = await oneEvent(el, "change");
+        expect(e.detail.value).to.be.a("string").and.not.empty;
+    });
+
+    it("shows clear button on mobile with native-mobile when clearable and value is set", async () => {
+        const el = await fixture(html`
+            <y-date
+                mobile-breakpoint="99999"
+                native-mobile
+                clearable
+                value="2026-06-15T00:00:00.000Z"
+            ></y-date>
+        `);
+        expect(el.shadowRoot.querySelector(".clear-btn")).to.exist;
+    });
+
+    it("clears value when clear button is clicked on mobile with native-mobile", async () => {
+        const el = await fixture(html`
+            <y-date
+                mobile-breakpoint="99999"
+                native-mobile
+                clearable
+                value="2026-06-15T00:00:00.000Z"
+            ></y-date>
+        `);
+        const clearBtn = el.shadowRoot.querySelector(".clear-btn");
+        setTimeout(() => clearBtn.click());
+        const e = await oneEvent(el, "change");
+        expect(e.detail.value).to.equal("");
+    });
+
+    it("nativeMobile getter/setter works", async () => {
+        const el = await fixture(html`<y-date></y-date>`);
+        expect(el.nativeMobile).to.be.false;
+        el.nativeMobile = true;
+        expect(el.hasAttribute("native-mobile")).to.be.true;
+        el.nativeMobile = false;
+        expect(el.hasAttribute("native-mobile")).to.be.false;
+    });
+
+    it("mobileBreakpoint getter/setter works", async () => {
+        const el = await fixture(html`<y-date></y-date>`);
+        expect(el.mobileBreakpoint).to.equal("");
+        el.mobileBreakpoint = "600";
+        expect(el.getAttribute("mobile-breakpoint")).to.equal("600");
+        el.mobileBreakpoint = "";
+        expect(el.hasAttribute("mobile-breakpoint")).to.be.false;
+    });
+
+    // -------------------------------------------------------------------------
     // Popup positioning
     // -------------------------------------------------------------------------
 
