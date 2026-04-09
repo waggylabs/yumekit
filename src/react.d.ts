@@ -215,6 +215,16 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 orientation?: "horizontal" | "vertical";
             }>;
+            "y-stack": El<{
+                direction?: "row" | "column";
+                mode?: "flex" | "grid" | "masonry";
+                columns?: string | number;
+                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                wrap?: boolean | string;
+                align?: "start" | "center" | "end" | "stretch" | "baseline";
+                justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
+                responsive?: boolean | string;
+            }>;
             "y-switch": El<{
                 name?: string;
                 value?: string;

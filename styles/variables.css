@@ -406,6 +406,12 @@
     --component-sidebar-border-radius: var(--radii-small);
     --component-sidebar-border-width: var(--border-x-thin);
 
+    /* stack */
+    --component-stack-gap: initial;
+    --component-stack-columns: initial;
+    --component-stack-mobile-breakpoint: 576px;
+    --component-stack-tablet-breakpoint: 768px;
+
     /* slider */
     --component-slider-border-radius-inner: var(--radii-small);
     --component-slider-border-radius-outer: calc(var(--radii-small) + 4px);
