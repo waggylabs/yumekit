@@ -128,7 +128,7 @@ export class YumeStack extends HTMLElement {
         this._container = this.shadowRoot.querySelector(".container");
         this._slot = this.shadowRoot.querySelector("slot");
         this._slot.addEventListener("slotchange", () => {
-            if (this.mode === "masonry") this._layoutMasonry();
+            if (this.mode === "masonry") this._syncMasonryObserver();
         });
     }
 
@@ -289,6 +289,7 @@ export class YumeStack extends HTMLElement {
 
     _initMasonry() {
         this._teardownMasonry();
+        this._observedItems = new Set();
         this._resizeObserver = new ResizeObserver(() => {
             if (this._masonryRAF) cancelAnimationFrame(this._masonryRAF);
             this._masonryRAF = requestAnimationFrame(() =>
@@ -296,9 +297,7 @@ export class YumeStack extends HTMLElement {
             );
         });
         this._resizeObserver.observe(this._container);
-        const items = this._getSlottedElements();
-        items.forEach((item) => this._resizeObserver.observe(item));
-        this._layoutMasonry();
+        this._syncMasonryObserver();
     }
 
     _initResponsive() {
@@ -360,10 +359,36 @@ export class YumeStack extends HTMLElement {
         return px;
     }
 
+    _syncMasonryObserver() {
+        if (!this._resizeObserver) {
+            this._initMasonry();
+            return;
+        }
+
+        const current = new Set(this._getSlottedElements());
+
+        for (const item of this._observedItems) {
+            if (!current.has(item)) {
+                this._resizeObserver.unobserve(item);
+                this._observedItems.delete(item);
+            }
+        }
+
+        for (const item of current) {
+            if (!this._observedItems.has(item)) {
+                this._resizeObserver.observe(item);
+                this._observedItems.add(item);
+            }
+        }
+
+        this._layoutMasonry();
+    }
+
     _teardownMasonry() {
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
             this._resizeObserver = null;
+            this._observedItems = null;
         }
         if (this._masonryRAF) {
             cancelAnimationFrame(this._masonryRAF);
