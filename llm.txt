@@ -490,15 +490,55 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 ---
 
 ### y-appbar
-Top/side navigation bar.
+Navigation bar / sidebar. Supports vertical sidebar, horizontal top-bar, and responsive mobile hamburger modes.
 
 Tag: `<y-appbar>`
 Attributes:
-- `orientation` — `"horizontal"` (default) | `"vertical"`
-- `sticky` — boolean
-- `color` — color scheme name
+- `orientation` — `"vertical"` (default) | `"horizontal"`
+- `items` — JSON string: `[{"text":"Home","icon":"home","href":"/","selected":true,"children":[...]}, ...]`. Item fields: `text`, `icon` (registered icon name or inline `<svg>` string), `href`, `selected` (boolean), `slot` (custom slot name), `children` (nested sub-items rendered via y-menu)
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `collapsed` — boolean, collapses vertical sidebar to icon-only mode
+- `menu-direction` — `"right"` | `"down"` | `""` (auto: vertical→right, horizontal→down)
+- `sticky` — `"start"` | `"end"`. Vertical: start=left, end=right. Horizontal: start=top, end=bottom
+- `mobile-breakpoint` — px width below which horizontal bar collapses to a hamburger menu (default: `768` or `--component-appbar-mobile-breakpoint`)
+- `history` — omit (default) for `pushState` SPA navigation; set to `"false"` for full-page `window.location.href` navigation
 
-Slots: `brand`, `nav`, `actions`, default
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked. Call `e.preventDefault()` to handle routing yourself (e.g. React Router).
+
+Methods: `toggle()` — toggles collapsed state
+
+Slots: `logo` (icon/image in header), `title` (text beside logo), `header` (extra header content), `footer` (footer area; in mobile mode appears on the right end)
+
+```html
+<!-- Vertical sidebar -->
+<y-appbar
+  orientation="vertical"
+  sticky="start"
+  items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+>
+  <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+  <span slot="title">MyApp</span>
+</y-appbar>
+
+<!-- Horizontal top bar -->
+<y-appbar
+  orientation="horizontal"
+  sticky="start"
+  items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"}]'
+>
+  <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+  <span slot="title">MyApp</span>
+</y-appbar>
+
+<!-- SPA router integration -->
+<y-appbar id="nav" items='[...]'></y-appbar>
+<script>
+  document.getElementById("nav").addEventListener("navigate", (e) => {
+    e.preventDefault();
+    myRouter.navigate(e.detail.href);
+  });
+</script>
+```
 
 ---
 
