@@ -407,8 +407,6 @@
     --component-sidebar-border-width: var(--border-x-thin);
 
     /* stack */
-    --component-stack-gap: initial;
-    --component-stack-columns: initial;
     --component-stack-mobile-breakpoint: 576px;
     --component-stack-tablet-breakpoint: 768px;
 
