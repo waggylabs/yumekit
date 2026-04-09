@@ -4,7 +4,7 @@ description: Generate and scaffold UI using YumeKit (@waggylabs/yumekit) web com
 argument-hint: "component or task description"
 ---
 
-You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 29 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
+You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 30 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
 
 The user's request is: $ARGUMENTS
 
@@ -16,13 +16,13 @@ Use [examples/](examples/) for complete working examples to adapt.
 
 1. **Always wrap output in `<y-theme>`** with `theme="blue-light"` unless the user specifies otherwise. Built-in themes: `blue-light`, `blue-dark`, `orange-light`, `orange-dark`. For custom CSS, pass a URL path: `theme="/my-theme.css"`.
 2. **Import only what you use.** Prefer individual imports over the full bundle:
-   ```javascript
-   import "@waggylabs/yumekit/components/y-button";
-   ```
+    ```javascript
+    import "@waggylabs/yumekit/components/y-button";
+    ```
 3. **JSON attributes** — `y-select options`, `y-tabs options`, and `y-table columns`/`rows` take JSON strings:
-   ```html
-   <y-select options='[{"value":"a","label":"Option A"}]'></y-select>
-   ```
+    ```html
+    <y-select options='[{"value":"a","label":"Option A"}]'></y-select>
+    ```
 4. **Boolean attributes** are presence-based: use `disabled`, not `disabled="true"`.
 5. **Slots** — content goes into named slots with `slot="name"`. Check reference.md for each component's available slots.
 6. **Form components** (`y-input`, `y-select`, `y-checkbox`, `y-radio`, `y-switch`, `y-slider`) are form-associated — always give them a `name` attribute when inside a `<form>`.

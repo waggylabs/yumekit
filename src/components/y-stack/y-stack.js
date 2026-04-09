@@ -263,8 +263,15 @@ export class YumeStack extends HTMLElement {
         return val ? parseInt(val, 10) : fallback;
     }
 
+    _getResolvedColumns() {
+        return this._getBreakpointValue(
+            "--component-stack-columns",
+            this.columns,
+        );
+    }
+
     _getResponsiveColumns() {
-        const cols = this.columns;
+        const cols = this._getResolvedColumns();
         const mobileBreakpoint = this._getBreakpointValue(
             "--component-stack-mobile-breakpoint",
             576,
@@ -311,7 +318,7 @@ export class YumeStack extends HTMLElement {
 
         const cols = this.responsive
             ? this._getResponsiveColumns()
-            : this.columns;
+            : this._getResolvedColumns();
         const gapPx = this._resolveGapPx();
         const containerWidth = this._container.offsetWidth;
         const colWidth = (containerWidth - gapPx * (cols - 1)) / cols;
