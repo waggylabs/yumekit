@@ -283,6 +283,56 @@ Events: `change`, `input`
 
 ---
 
+## y-stack
+
+Layout container for rows, columns, grids, or masonry. Purely structural — no visual styling.
+
+| Attribute     | Values / Notes                                                                              |
+|--------------|---------------------------------------------------------------------------------------------|
+| `mode`       | `flex` (default) \| `grid` \| `masonry`                                                     |
+| `direction`  | `row` (default) \| `column` — flex mode only                                                |
+| `columns`    | number of columns for grid/masonry (default: `3`)                                           |
+| `gap`        | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens |
+| `wrap`       | boolean — allow flex items to wrap (flex mode only)                                         |
+| `align`      | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — cross-axis alignment   |
+| `justify`    | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — flex only    |
+| `responsive` | boolean — auto-collapse columns at narrow viewports                                         |
+
+Slot: default (child elements to lay out)
+
+CSS Custom Properties: `--component-stack-gap`, `--component-stack-columns`, `--component-stack-mobile-breakpoint` (default `576px`), `--component-stack-tablet-breakpoint` (default `768px`)
+
+CSS Parts: `container`
+
+```html
+<!-- Row of buttons -->
+<y-stack direction="row" gap="small">
+  <y-button>Save</y-button>
+  <y-button>Cancel</y-button>
+</y-stack>
+
+<!-- Card grid -->
+<y-stack mode="grid" columns="3" gap="large" responsive>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+</y-stack>
+
+<!-- Vertical form -->
+<y-stack direction="column" gap="medium">
+  <y-input label="Name"></y-input>
+  <y-input label="Email"></y-input>
+</y-stack>
+
+<!-- Masonry layout -->
+<y-stack mode="masonry" columns="3" gap="large" responsive>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+</y-stack>
+```
+
+---
+
 ## y-icon
 
 SVG icon renderer. Only use icon names from the registry.

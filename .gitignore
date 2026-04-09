@@ -3,3 +3,5 @@ coverage
 dist
 index.html
 styles.css
+.vscode
+.DS_Store

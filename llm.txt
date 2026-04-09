@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 27 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 30 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -344,6 +344,59 @@ Attributes:
 - `orientation` — `"horizontal"` (default) | `"vertical"`
 
 Events: `change`, `input`
+
+---
+
+### y-stack
+Layout container for arranging child elements in rows, columns, grids, or masonry patterns. Purely structural — no visual styling.
+
+Tag: `<y-stack>`
+Attributes:
+- `mode` — `"flex"` (default) | `"grid"` | `"masonry"`
+- `direction` — `"row"` (default) | `"column"` (flex mode only)
+- `columns` — number of columns for grid/masonry (default: `3`)
+- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
+- `wrap` — boolean, allow flex items to wrap (flex mode only)
+- `align` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"baseline"` — cross-axis alignment
+- `justify` — `"start"` (default) | `"center"` | `"end"` | `"between"` | `"around"` | `"evenly"` — main-axis distribution (flex mode only)
+- `responsive` — boolean, auto-collapse columns at narrow viewports
+
+CSS Custom Properties:
+- `--component-stack-gap` — override gap spacing directly
+- `--component-stack-columns` — override column count
+- `--component-stack-mobile-breakpoint` — single-column breakpoint (default: `576px`)
+- `--component-stack-tablet-breakpoint` — reduced-column breakpoint (default: `768px`)
+
+CSS Parts: `container`
+
+Events: none
+
+```html
+<!-- Row of buttons -->
+<y-stack direction="row" gap="small">
+  <y-button>Save</y-button>
+  <y-button>Cancel</y-button>
+</y-stack>
+
+<!-- Card grid -->
+<y-stack mode="grid" columns="3" gap="large" responsive>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+</y-stack>
+
+<!-- Vertical form -->
+<y-stack direction="column" gap="medium">
+  <y-input label="Name"></y-input>
+  <y-input label="Email"></y-input>
+</y-stack>
+
+<!-- Masonry layout -->
+<y-stack mode="masonry" columns="3" gap="large" responsive>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+</y-stack>
+```
 
 ---
 

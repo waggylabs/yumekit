@@ -31,6 +31,12 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [Unreleased]
+
+### Added
+
+- New `y-stack` component — a layout container for arranging child elements in rows, columns, grids, or masonry patterns. Supports `mode` (`"flex"` | `"grid"` | `"masonry"`), `direction`, `columns`, `gap` (maps to `--spacing-*` tokens), `wrap`, `align`, `justify`, and `responsive` attributes. Masonry mode uses JS absolute positioning with `ResizeObserver`. Responsive mode auto-collapses columns at configurable breakpoints. CSS custom properties: `--component-stack-gap`, `--component-stack-columns`, `--component-stack-mobile-breakpoint`, `--component-stack-tablet-breakpoint`.
+
 ## [0.4.2] - 2026-04-07
 
 ### Added
