@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 31 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 32 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -302,6 +302,35 @@ Attributes:
 - `label-position` — `"right"` (default) | `"left"`
 
 Events: `change`
+
+---
+
+### y-colorpicker
+Standalone color picker with 2D gradient canvas, hue slider, optional alpha slider, format selector, and channel inputs.
+
+Tag: `<y-colorpicker>`
+Attributes:
+- `value` — current color value, accepts any supported format (hex, rgb, hsl, hsv)
+- `format` — `"hex"` (default) | `"rgb"` | `"hsl"` | `"hsv"` — active display format
+- `formats` — JSON array of formats available in the select (default: `["hex","rgb","hsl","hsv"]`)
+- `show-alpha` — boolean, shows alpha slider and alpha inputs
+- `size` — `"small"` | `"medium"` | `"large"`
+
+Slots: `swatch` (custom current-color preview)
+
+Events: `change` (detail: `{ value, hex, rgb, hsl, hsv, alpha }`), `format-change` (detail: `{ format }`)
+
+Methods: `setColor(value)` — parse and apply any supported color string
+
+CSS Custom Properties: `--component-colorpicker-width` (default `260px`), `--component-colorpicker-canvas-height`, `--component-colorpicker-slider-height`, `--component-colorpicker-slider-thumb-size`, `--component-colorpicker-canvas-handle-size`, `--component-colorpicker-gap`, `--component-colorpicker-border-radius`, `--component-colorpicker-checkerboard-size`
+
+CSS Parts: `colorpicker`, `canvas`, `canvas-handle`, `hue-slider`, `hue-thumb`, `alpha-slider`, `alpha-thumb`, `inputs-row`, `format-select`, `swatch-preview`
+
+```html
+<y-colorpicker value="#0576ff"></y-colorpicker>
+<y-colorpicker value="rgb(255, 87, 51)" format="rgb" show-alpha></y-colorpicker>
+<y-colorpicker value="hsl(210, 100%, 50%)" format="hsl" formats='["hex","hsl"]'></y-colorpicker>
+```
 
 ---
 
@@ -913,12 +942,21 @@ import "@waggylabs/yumekit";
 
 These are not exported in the public API but are used internally:
 
+- `clamp(v, min, max)` — clamp a number between min and max
+- `hsvToRgb(h, s, v)` — HSV (h 0-360, s 0-100, v 0-100) to RGB `[0-255, 0-255, 0-255]`
+- `rgbToHsv(r, g, b)` — RGB (0-255 each) to HSV `[h, s, v]`
+- `hsvToHsl(h, s, v)` — HSV to HSL `[h, s, l]`
+- `hslToHsv(h, s, l)` — HSL to HSV `[h, s, v]`
+- `rgbToHex(r, g, b)` — RGB to hex string `"#rrggbb"`
+- `rgbaToHex(r, g, b, a)` — RGBA to hex8 string `"#rrggbbaa"`
+- `parseHexColor(hex)` — parses `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA` to `{r, g, b, a}`
+- `parseColorString(str)` — parses any supported color string (hex, rgb, rgba, hsl, hsla, hsv, hsva) to `{r, g, b, a}`
+- `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}` (legacy, no alpha)
+- `luminance({r,g,b})` — WCAG relative luminance
+- `contrastTextColor(bgColor)` — returns `"#000"` or `"#fff"` for best contrast
 - `getColorVarPair(color, fallbackColor)` — resolves a color name to `[bg, fg]` CSS value pair. Predefined names return token `var()` pairs; hex/rgb/hsl values return the raw color with a WCAG-contrasted foreground via `contrastTextColor()`
 - `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
 - `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
-- `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}`
-- `luminance({r,g,b})` — WCAG relative luminance
-- `contrastTextColor(bgColor)` — returns `"#000"` or `"#fff"` for best contrast
 
 ---
 
