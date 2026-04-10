@@ -184,11 +184,11 @@ describe("YumeBanner", () => {
         expect(btn.getAttribute("color")).to.equal("error");
     });
 
-    it("close button contains a y-icon with name x", async () => {
+    it("close button contains a y-icon with name close", async () => {
         const el = await fixture(html`<y-banner dismissable>Msg</y-banner>`);
         const icon = el.shadowRoot.querySelector(".close-btn y-icon");
         expect(icon).to.exist;
-        expect(icon.getAttribute("name")).to.equal("x");
+        expect(icon.getAttribute("name")).to.equal("close");
     });
 
     it("dispatches a cancelable dismiss event when close button is clicked", async () => {
