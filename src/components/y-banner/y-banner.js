@@ -1,3 +1,6 @@
+import "../y-button/y-button.js";
+import "../y-icon/y-icon.js";
+
 export class YumeBanner extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -332,6 +335,9 @@ export class YumeBanner extends HTMLElement {
 
             .icon-wrapper y-icon {
                 color: inherit;
+                --component-icon-size-small: ${cfg.iconSize};
+                --component-icon-size-medium: ${cfg.iconSize};
+                --component-icon-size-large: ${cfg.iconSize};
             }
 
             .content {

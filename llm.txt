@@ -445,7 +445,7 @@ Attributes:
 - `icon` — registered icon name, renders a leading `<y-icon>`. Overridden by the `icon` slot when both are present
 - `position` — `"push"` (default, in document flow) | `"overlap"` (absolutely positioned over content)
 - `sticky` — boolean, when set with `position="overlap"`, fixes the banner to the viewport top on scroll
-- `dismissable` — boolean, renders a close button (`<y-icon name="x">`)
+- `dismissable` — boolean, renders a close button (`<y-icon name="close">`)
 - `dismissed` — boolean, reflects hidden state. Can be set programmatically
 - `size` — `"small"` | `"medium"` (default) | `"large"` — controls padding, icon size, and font size
 
