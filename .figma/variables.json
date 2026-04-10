@@ -2103,6 +2103,90 @@
               "$value": "{sizing.x-small}"
             }
           },
+          "colorpicker": {
+            "width": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "LINE_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 260
+            },
+            "canvas-height": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "LINE_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 160
+            },
+            "slider-height": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "LINE_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 12
+            },
+            "slider-thumb-size": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "LINE_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 16
+            },
+            "canvas-handle-size": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "LINE_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 16
+            },
+            "gap": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "GAP",
+                "LETTER_SPACING",
+                "PARAGRAPH_SPACING",
+                "PARAGRAPH_INDENT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.medium}"
+            },
+            "border-radius": {
+              "$scopes": [
+                "CORNER_RADIUS"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{radii.x-small}"
+            },
+            "checkerboard-size": {
+              "$scopes": [
+                "WIDTH_HEIGHT",
+                "LINE_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 8
+            }
+          },
           "date": {
             "z-index": {
               "$scopes": [

@@ -394,6 +394,20 @@
     --component-radio-dot-size: var(--spacing-medium);
     --component-radio-size: var(--sizing-2x-small);
 
+    /* colorpicker */
+    --component-colorpicker-width-small: 200px;
+    --component-colorpicker-width: 260px;
+    --component-colorpicker-width-large: 320px;
+    --component-colorpicker-canvas-height-small: 120px;
+    --component-colorpicker-canvas-height: 160px;
+    --component-colorpicker-canvas-height-large: 200px;
+    --component-colorpicker-slider-height: 12px;
+    --component-colorpicker-slider-thumb-size: 16px;
+    --component-colorpicker-canvas-handle-size: 16px;
+    --component-colorpicker-gap: var(--spacing-medium);
+    --component-colorpicker-border-radius: var(--radii-x-small);
+    --component-colorpicker-checkerboard-size: 8px;
+
     /* date / datepicker */
     --component-date-z-index: 200;
     --component-datepicker-border-radius: var(--radii-medium);
