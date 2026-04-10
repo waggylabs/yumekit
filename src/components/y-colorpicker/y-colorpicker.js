@@ -30,6 +30,10 @@ export class YumeColorpicker extends HTMLElement {
         this._a = 1;
         this._dragging = null; // "canvas" | "hue" | "alpha"
         this._rendered = false;
+        this._updatingValue = false; // guard against attribute ↔ model loops
+        // Stable bound handlers for global pointer events
+        this._onPointerMove = (e) => this._onGlobalMove(e);
+        this._onPointerUp = () => this._onGlobalUp();
     }
 
     connectedCallback() {
@@ -47,6 +51,7 @@ export class YumeColorpicker extends HTMLElement {
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
         if (name === "value" && this._rendered) {
+            if (this._updatingValue) return;
             this._parseAndApply(newVal);
             this._updateAll();
         } else if (this._rendered) {
@@ -105,6 +110,7 @@ export class YumeColorpicker extends HTMLElement {
     setColor(value) {
         this._parseAndApply(value);
         this._updateAll();
+        this._syncValueAttr();
     }
 
     render() {
@@ -299,7 +305,7 @@ export class YumeColorpicker extends HTMLElement {
         const gradient = slider.querySelector(".alpha-gradient");
         if (gradient) {
             const [r, g, b] = hsvToRgb(this._h, this._s, this._v);
-            gradient.style.background = `linear-gradient(to right, transparent, rgb(${r},${g},${b}))`;
+            gradient.style.background = `linear-gradient(to right, rgba(${r},${g},${b},0), rgb(${r},${g},${b}))`;
         }
     }
 
@@ -403,10 +409,6 @@ export class YumeColorpicker extends HTMLElement {
             this._alphaSlider.addEventListener("pointerdown", (e) => this._onAlphaDown(e));
         }
 
-        // Global move/up handlers
-        this._onPointerMove = (e) => this._onGlobalMove(e);
-        this._onPointerUp = () => this._onGlobalUp();
-
         // Keyboard on canvas
         this._canvas.addEventListener("keydown", (e) => this._onCanvasKey(e));
 
@@ -470,7 +472,7 @@ export class YumeColorpicker extends HTMLElement {
     _updateHueFromPointer(e) {
         const rect = this._hueSlider.getBoundingClientRect();
         const x = clamp(e.clientX - rect.left, 0, rect.width);
-        this._h = Math.round((x / rect.width) * 360);
+        this._h = Math.round((x / rect.width) * 360) % 360;
         this._updateAll();
         this._emitChange();
     }
@@ -603,7 +605,14 @@ export class YumeColorpicker extends HTMLElement {
         this._emitChange();
     }
 
+    _syncValueAttr() {
+        this._updatingValue = true;
+        this.setAttribute("value", this._formatColor(this.format));
+        this._updatingValue = false;
+    }
+
     _emitChange() {
+        this._syncValueAttr();
         const reps = this._getColorRepresentations();
         this.dispatchEvent(new CustomEvent("change", {
             bubbles: true,
@@ -658,6 +667,7 @@ export class YumeColorpicker extends HTMLElement {
                 border-radius: var(--component-colorpicker-border-radius, var(--radii-x-small, 2px));
                 overflow: hidden;
                 cursor: crosshair;
+                touch-action: none;
             }
 
             .canvas {
@@ -692,6 +702,7 @@ export class YumeColorpicker extends HTMLElement {
                 border-radius: var(--component-colorpicker-border-radius, var(--radii-x-small, 2px));
                 cursor: pointer;
                 outline: none;
+                touch-action: none;
             }
 
             .hue-slider:focus-visible,
