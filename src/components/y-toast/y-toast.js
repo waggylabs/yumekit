@@ -1,3 +1,4 @@
+import "../y-icon/y-icon.js";
 import { getColorVarPair } from "../../modules/helpers.js";
 
 export class YumeToast extends HTMLElement {
