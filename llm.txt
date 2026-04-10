@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 30 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 31 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -432,6 +432,42 @@ Slots: default (badge label), `anchor` (element to badge-over)
 <y-badge color="error" position="top-right">3
   <y-button slot="anchor">Inbox</y-button>
 </y-badge>
+```
+
+---
+
+### y-banner
+Full-width informational banner in a semantic color with matching text.
+
+Tag: `<y-banner>`
+Attributes:
+- `color` — `"base"` (default) | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`. Uses the bold content color as the background and the inverse color as text (e.g. `--success-content--` as background, `--success-content-inverse` as text) so banners stand out
+- `icon` — registered icon name, renders a leading `<y-icon>`. Overridden by the `icon` slot when both are present
+- `position` — `"push"` (default, in document flow) | `"overlap"` (absolutely positioned over content)
+- `sticky` — boolean, when set with `position="overlap"`, fixes the banner to the viewport top on scroll
+- `dismissable` — boolean, renders a close button (`<y-icon name="x">`)
+- `dismissed` — boolean, reflects hidden state. Can be set programmatically
+- `size` — `"small"` | `"medium"` (default) | `"large"` — controls padding, icon size, and font size
+
+Slots: default (message content), `icon` (custom leading icon, overrides `icon` attribute), `action` (CTA element rendered before the close button)
+
+Events: `dismiss` — cancelable, fires when close button is clicked or `dismiss()` is called
+
+Methods: `dismiss()` (hides and fires event), `show()` (restores from dismissed state)
+
+CSS Custom Properties: `--component-banner-padding-small/medium/large`, `--component-banner-gap`, `--component-banner-icon-size-small/medium/large`, `--component-banner-z-index` (default `200`), `--component-banner-border-radius` (default `0`)
+
+CSS Parts: `banner`, `icon`, `content`, `action`, `close-btn`
+
+```html
+<y-banner color="success" icon="check" dismissable>Changes saved successfully!</y-banner>
+
+<y-banner color="warning" icon="warning">
+  Your trial expires in 3 days.
+  <y-button slot="action" size="small" color="warning" style-type="outlined">Upgrade</y-button>
+</y-banner>
+
+<y-banner color="error" position="overlap" sticky dismissable>Server maintenance in progress.</y-banner>
 ```
 
 ---

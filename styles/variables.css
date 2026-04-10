@@ -536,6 +536,15 @@
     --help-content-inverse: var(--neutral-white);
     --help-content-hover: var(--indigo-dark-7);
     --help-content-active: var(--indigo-dark-6);
+    --component-banner-padding-small: var(--spacing-x-small) var(--spacing-medium);
+    --component-banner-padding-medium: var(--spacing-medium) var(--spacing-x-large);
+    --component-banner-padding-large: var(--spacing-large) var(--spacing-2x-large);
+    --component-banner-gap: var(--spacing-medium);
+    --component-banner-icon-size-small: var(--component-icon-size-small);
+    --component-banner-icon-size-medium: var(--component-icon-size-medium);
+    --component-banner-icon-size-large: var(--component-icon-size-large);
+    --component-banner-z-index: 200;
+    --component-banner-border-radius: 0;
     --component-appbar-background: var(--base-background-component);
     --component-appbar-color: var(--base-content--);
     --component-appbar-border-color: var(--base-border);
