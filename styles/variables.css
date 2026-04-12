@@ -336,6 +336,29 @@
     --component-checkbox-icon-size: var(--sizing-2x-small);
     --component-checkbox-size: var(--sizing-x-small);
 
+    /* color */
+    --component-color-swatch-size-small: var(--sizing-small);
+    --component-color-swatch-size-medium: var(--sizing-medium);
+    --component-color-swatch-size-large: var(--sizing-large);
+    --component-color-swatch-border-radius: var(--radii-small);
+    --component-color-trigger-gap: var(--spacing-x-small);
+    --component-color-popup-offset: 4px;
+    --component-color-z-index: 200;
+
+    /* colorpicker */
+    --component-colorpicker-width-small: 200px;
+    --component-colorpicker-width: 260px;
+    --component-colorpicker-width-large: 320px;
+    --component-colorpicker-canvas-height-small: 120px;
+    --component-colorpicker-canvas-height: 160px;
+    --component-colorpicker-canvas-height-large: 200px;
+    --component-colorpicker-slider-height: 12px;
+    --component-colorpicker-slider-thumb-size: 16px;
+    --component-colorpicker-canvas-handle-size: 16px;
+    --component-colorpicker-gap: var(--spacing-medium);
+    --component-colorpicker-border-radius: var(--radii-x-small);
+    --component-colorpicker-checkerboard-size: 8px;
+
     /* dialog */
     --component-dialog-border-radius-inner: var(--radii-x-small);
     --component-dialog-border-radius-outer: var(--radii-small);

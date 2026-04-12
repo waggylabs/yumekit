@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 27 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 29 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -52,6 +52,8 @@ import "@waggylabs/yumekit";
 import "@waggylabs/yumekit/components/y-theme";
 import "@waggylabs/yumekit/components/y-button";
 import "@waggylabs/yumekit/components/y-input";
+import "@waggylabs/yumekit/components/y-color";
+import "@waggylabs/yumekit/components/y-colorpicker";
 import "@waggylabs/yumekit/components/y-date";
 import "@waggylabs/yumekit/components/y-datepicker";
 ```
@@ -302,6 +304,59 @@ Attributes:
 - `label-position` — `"right"` (default) | `"left"`
 
 Events: `change`
+
+---
+
+### y-color
+Form-associated color input with trigger/popup pattern (like `y-date`). Shows a color swatch and value string; opens a `y-colorpicker` popup on click.
+
+Tag: `<y-color>`
+Attributes:
+- `value` — color string in the active format
+- `format` — `"hex"` (default) | `"rgb"` | `"hsl"` | `"hsv"`
+- `formats` — JSON array of available formats (default: all four)
+- `show-alpha` — enable alpha channel
+- `placeholder` — trigger placeholder (default: `"Select color"`)
+- `name` — form field name
+- `disabled`, `invalid`, `clearable`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `label-position` — `"top"` (default) | `"bottom"`
+
+Slots: `label`
+Events: `change` (detail: `{ value, hex, rgb, hsl, hsv, alpha }`)
+Methods: `open()`, `close()`, `clear()`
+CSS Parts: `color`, `wrapper`, `label-wrapper`, `trigger`, `swatch`, `display`, `clear-btn`, `popup`
+
+```html
+<y-color name="brand" value="#e74c3c" clearable>
+  <span slot="label">Brand color</span>
+</y-color>
+<y-color name="bg" format="rgb" show-alpha>
+  <span slot="label">Background</span>
+</y-color>
+```
+
+---
+
+### y-colorpicker
+Standalone color picker widget with 2D saturation/brightness canvas, hue slider, optional alpha slider, format selector, and channel inputs. Internal model is HSV.
+
+Tag: `<y-colorpicker>`
+Attributes:
+- `value` — initial color (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsv()`, `hsva()`)
+- `format` — `"hex"` (default) | `"rgb"` | `"hsl"` | `"hsv"`
+- `formats` — JSON array of available formats
+- `show-alpha` — enable alpha slider and channel
+- `size` — `"small"` | `"medium"` | `"large"` (scales canvas and inputs)
+
+Events: `change` (detail: `{ value, hex, rgb, hsl, hsv, alpha }`), `format-change` (detail: `{ format }`)
+Methods: `setColor(value)`
+CSS Parts: `colorpicker`, `canvas`, `canvas-handle`, `hue-slider`, `hue-thumb`, `alpha-slider`, `alpha-thumb`, `inputs-row`, `format-select`, `swatch-preview`
+
+```html
+<y-colorpicker value="#3498db"></y-colorpicker>
+<y-colorpicker value="#9b59b6" show-alpha format="rgb"></y-colorpicker>
+```
 
 ---
 
@@ -707,6 +762,23 @@ Additional tokens:
 
 Component-specific tokens (subset — see `styles/variables.css` for the full list):
 ```
+/* y-color */
+--component-color-swatch-size-small/medium/large  /* swatch width/height per size */
+--component-color-swatch-border-radius             /* swatch corner radius */
+--component-color-trigger-gap                      /* gap between swatch, display, clear btn */
+--component-color-popup-offset                     /* gap between trigger and popup */
+--component-color-z-index                          /* popup stacking order (default: 200) */
+
+/* y-colorpicker */
+--component-colorpicker-width-small/medium/large   /* overall component width per size */
+--component-colorpicker-canvas-height-small/medium/large  /* canvas height per size */
+--component-colorpicker-slider-height              /* hue/alpha slider track height */
+--component-colorpicker-slider-thumb-size           /* slider thumb diameter */
+--component-colorpicker-canvas-handle-size          /* canvas cursor diameter */
+--component-colorpicker-gap                         /* gap between canvas, sliders, inputs */
+--component-colorpicker-border-radius               /* corner radius for canvas and sliders */
+--component-colorpicker-checkerboard-size           /* alpha slider checkerboard cell size */
+
 /* y-date / y-datepicker */
 --component-datepicker-background       /* panel surface color */
 --component-datepicker-border-color     /* panel and column-divider borders */
@@ -787,9 +859,19 @@ These are not exported in the public API but are used internally:
 - `getColorVarPair(color, fallbackColor)` — resolves a color name to `[bg, fg]` CSS value pair. Predefined names return token `var()` pairs; hex/rgb/hsl values return the raw color with a WCAG-contrasted foreground via `contrastTextColor()`
 - `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
 - `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
+- `manageLabelVisibility(labelWrapper)` — toggles label wrapper visibility on slotchange
 - `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}`
 - `luminance({r,g,b})` — WCAG relative luminance
 - `contrastTextColor(bgColor)` — returns `"#000"` or `"#fff"` for best contrast
+- `clamp(v, min, max)` — clamp a number to a range
+- `hsvToRgb(h, s, v)` — HSV → RGB (0-255)
+- `rgbToHsv(r, g, b)` — RGB → HSV
+- `hsvToHsl(h, s, v)` — HSV → HSL
+- `hslToHsv(h, s, l)` — HSL → HSV
+- `rgbToHex(r, g, b)` — RGB → hex string
+- `rgbaToHex(r, g, b, a)` — RGBA → hex8 string
+- `parseHexColor(hex)` — hex → `{r, g, b, a}`
+- `parseColorString(str)` — any supported CSS color string → `{r, g, b, a}`
 
 ---
 
