@@ -417,6 +417,20 @@
     --component-radio-dot-size: var(--spacing-medium);
     --component-radio-size: var(--sizing-2x-small);
 
+    /* colorpicker */
+    --component-colorpicker-width-small: 200px;
+    --component-colorpicker-width: 260px;
+    --component-colorpicker-width-large: 320px;
+    --component-colorpicker-canvas-height-small: 120px;
+    --component-colorpicker-canvas-height: 160px;
+    --component-colorpicker-canvas-height-large: 200px;
+    --component-colorpicker-slider-height: 12px;
+    --component-colorpicker-slider-thumb-size: 16px;
+    --component-colorpicker-canvas-handle-size: 16px;
+    --component-colorpicker-gap: var(--spacing-medium);
+    --component-colorpicker-border-radius: var(--radii-x-small);
+    --component-colorpicker-checkerboard-size: 8px;
+
     /* date / datepicker */
     --component-date-z-index: 200;
     --component-datepicker-border-radius: var(--radii-medium);
@@ -428,6 +442,10 @@
     /* sidebar */
     --component-sidebar-border-radius: var(--radii-small);
     --component-sidebar-border-width: var(--border-x-thin);
+
+    /* stack */
+    --component-stack-mobile-breakpoint: 576px;
+    --component-stack-tablet-breakpoint: 768px;
 
     /* slider */
     --component-slider-border-radius-inner: var(--radii-small);
@@ -555,6 +573,15 @@
     --help-content-inverse: var(--neutral-white);
     --help-content-hover: var(--indigo-dark-7);
     --help-content-active: var(--indigo-dark-6);
+    --component-banner-padding-small: var(--spacing-x-small) var(--spacing-medium);
+    --component-banner-padding-medium: var(--spacing-medium) var(--spacing-x-large);
+    --component-banner-padding-large: var(--spacing-large) var(--spacing-2x-large);
+    --component-banner-gap: var(--spacing-medium);
+    --component-banner-icon-size-small: var(--component-icon-size-small);
+    --component-banner-icon-size-medium: var(--component-icon-size-medium);
+    --component-banner-icon-size-large: var(--component-icon-size-large);
+    --component-banner-z-index: 200;
+    --component-banner-border-radius: 0;
     --component-appbar-background: var(--base-background-component);
     --component-appbar-color: var(--base-content--);
     --component-appbar-border-color: var(--base-border);

@@ -147,7 +147,7 @@ export const InputAndButton = {
             </y-button-group>
             <y-button-group>
                 <y-button style-type="outlined" color="base">
-                    <y-icon slot="left-icon" name="copy" size="small"></y-icon>
+                    <y-icon slot="left-icon" name="stack" size="small"></y-icon>
                 </y-button>
                 <y-input placeholder="Paste or type a URL" style="width:240px"></y-input>
                 <y-button style-type="filled" color="primary">Go</y-button>

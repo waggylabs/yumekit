@@ -31,6 +31,16 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [Unreleased]
+
+### Added
+
+- New `y-colorpicker` component — a standalone color picker widget with a 2D saturation/brightness canvas, hue slider, optional alpha slider, format selector, and channel inputs. Supports `value` (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsv()`, `hsva()`), `format` (`"hex"` | `"rgb"` | `"hsl"` | `"hsv"`), `formats` (JSON array of available formats), `show-alpha` (alpha channel), and `size` attributes. Public method: `setColor(value)`. Events: `change` (with `value`, `hex`, `rgb`, `hsl`, `hsv`, `alpha` in detail), `format-change`.
+
+- New `y-banner` component — a full-width informational banner that renders in a semantic color with matching text. Supports `color` (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`), `icon` attribute (or `icon` slot), `position` (`"push"` | `"overlap"`), `sticky` (fixed to viewport when overlapping), `dismissable` close button, `size` (`"small"` | `"medium"` | `"large"`), and an `action` slot for CTA elements. Public methods: `dismiss()`, `show()`. Fires a cancelable `dismiss` event.
+
+- New `y-stack` component — a layout container for arranging child elements in rows, columns, grids, or masonry patterns. Supports `mode` (`"flex"` | `"grid"` | `"masonry"`), `direction`, `columns`, `gap` (maps to `--spacing-*` tokens), `wrap`, `align`, `justify`, and `responsive` attributes. Masonry mode uses JS absolute positioning with `ResizeObserver`. Responsive mode auto-collapses columns at configurable breakpoints.
+
 ## [0.4.2] - 2026-04-07
 
 ### Added

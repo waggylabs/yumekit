@@ -4,45 +4,61 @@ Common multi-component patterns. Adapt these for specific use cases.
 
 ---
 
-## Full Page Shell
+## Full Page Shell — Horizontal Top Bar
 
 ```html
 <script type="module">
   import "@waggylabs/yumekit/components/y-theme";
   import "@waggylabs/yumekit/components/y-appbar";
-  import "@waggylabs/yumekit/components/y-drawer";
-  import "@waggylabs/yumekit/components/y-button";
   import "@waggylabs/yumekit/components/y-icon";
   import "@waggylabs/yumekit/icons/all.js";
 </script>
 
 <y-theme theme="blue-light">
-  <y-appbar sticky color="primary">
-    <span slot="brand">MyApp</span>
-    <nav slot="nav">
-      <y-button style-type="flat">Dashboard</y-button>
-      <y-button style-type="flat">Reports</y-button>
-    </nav>
-    <div slot="actions">
-      <y-button id="menu-toggle" style-type="flat"><y-icon name="menu"></y-icon></y-button>
-    </div>
+  <y-appbar
+    orientation="horizontal"
+    sticky="start"
+    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+  >
+    <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+    <span slot="title">MyApp</span>
+    <y-avatar slot="footer" alt="JD" size="small" color="primary"></y-avatar>
   </y-appbar>
-
-  <y-drawer id="sidebar" position="left" modal>
-    <y-button style-type="flat" left-icon="home">Home</y-button>
-    <y-button style-type="flat" left-icon="settings">Settings</y-button>
-  </y-drawer>
 
   <main style="padding: 1rem;">
     <!-- page content -->
   </main>
 </y-theme>
+```
 
+---
+
+## Full Page Shell — Vertical Sidebar
+
+```html
 <script type="module">
-  document.getElementById("menu-toggle").addEventListener("click", () => {
-    document.getElementById("sidebar").show();
-  });
+  import "@waggylabs/yumekit/components/y-theme";
+  import "@waggylabs/yumekit/components/y-appbar";
+  import "@waggylabs/yumekit/components/y-icon";
+  import "@waggylabs/yumekit/icons/all.js";
 </script>
+
+<y-theme theme="blue-light">
+  <div style="display: flex; height: 100vh;">
+    <y-appbar
+      orientation="vertical"
+      sticky="start"
+      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    >
+      <y-icon slot="logo" name="bolt" size="medium"></y-icon>
+      <span slot="title">MyApp</span>
+    </y-appbar>
+
+    <main style="flex: 1; padding: 1rem; overflow-y: auto;">
+      <!-- page content -->
+    </main>
+  </div>
+</y-theme>
 ```
 
 ---

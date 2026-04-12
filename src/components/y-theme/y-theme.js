@@ -145,6 +145,7 @@ export class YumeTheme extends HTMLElement {
                 font-family: var(--font-family-body, sans-serif);
                 color: var(--base-content--, inherit);
                 font-weight: var(--font-weight-body, 400);
+                background: var(--base-background-app, transparent);
             }`;
         this.shadowRoot.appendChild(baseStyle);
 
