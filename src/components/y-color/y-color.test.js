@@ -47,13 +47,13 @@ describe("<y-color>", () => {
     it("fills the swatch with the current color", async () => {
         const el = await fixture(html`<y-color value="#00ff00"></y-color>`);
         const swatch = el.shadowRoot.querySelector(".swatch");
-        expect(swatch.style.getPropertyValue("--_swatch-color")).to.equal("#00ff00");
+        expect(swatch.style.backgroundColor).to.equal("rgb(0, 255, 0)");
     });
 
     it("swatch has no color when value is empty", async () => {
         const el = await fixture(html`<y-color></y-color>`);
         const swatch = el.shadowRoot.querySelector(".swatch");
-        expect(swatch.style.getPropertyValue("--_swatch-color")).to.equal("");
+        expect(swatch.style.backgroundColor).to.equal("");
     });
 
     // -------------------------------------------------------------------------
@@ -364,7 +364,9 @@ describe("<y-color>", () => {
     // -------------------------------------------------------------------------
 
     it("exposes expected CSS parts", async () => {
-        const el = await fixture(html`<y-color value="#ff0000" clearable></y-color>`);
+        const el = await fixture(
+            html`<y-color value="#ff0000" clearable></y-color>`,
+        );
         const parts = [
             "color",
             "wrapper",
@@ -424,7 +426,45 @@ describe("<y-color>", () => {
         el.setAttribute("value", "#0000ff");
         await nextFrame();
         const swatch = el.shadowRoot.querySelector(".swatch");
-        expect(swatch.style.getPropertyValue("--_swatch-color")).to.equal("#0000ff");
+        expect(swatch.style.backgroundColor).to.equal("rgb(0, 0, 255)");
+    });
+
+    it("swatch updates after multiple consecutive picker changes", async () => {
+        const el = await fixture(html`<y-color value="#ff0000"></y-color>`);
+        el.open();
+        await nextFrame();
+        const picker = el.shadowRoot.querySelector("y-colorpicker");
+        const swatch = el.shadowRoot.querySelector(".swatch");
+
+        expect(swatch.style.backgroundColor).to.equal("rgb(255, 0, 0)");
+
+        const colors = [
+            { hex: "#00ff00", rgb: "rgb(0, 255, 0)" },
+            { hex: "#0000ff", rgb: "rgb(0, 0, 255)" },
+            { hex: "#ffff00", rgb: "rgb(255, 255, 0)" },
+            { hex: "#ff00ff", rgb: "rgb(255, 0, 255)" },
+        ];
+        for (const { hex, rgb } of colors) {
+            picker.dispatchEvent(
+                new CustomEvent("change", {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        value: hex,
+                        hex,
+                        rgb: "",
+                        hsl: "",
+                        hsv: "",
+                        alpha: 1,
+                    },
+                }),
+            );
+            await nextFrame();
+            expect(swatch.style.backgroundColor).to.equal(rgb);
+            expect(
+                el.shadowRoot.querySelector(".display").textContent,
+            ).to.equal(hex);
+        }
     });
 
     // -------------------------------------------------------------------------

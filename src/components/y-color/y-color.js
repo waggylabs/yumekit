@@ -1,7 +1,10 @@
 import "../y-colorpicker/y-colorpicker.js";
 import "../y-icon/y-icon.js";
 import "../y-input/y-input.js";
-import { manageLabelVisibility } from "../../modules/helpers.js";
+import {
+    manageLabelVisibility,
+    parseColorString,
+} from "../../modules/helpers.js";
 
 export class YumeColor extends HTMLElement {
     static formAssociated = true;
@@ -31,6 +34,9 @@ export class YumeColor extends HTMLElement {
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
         this._onDocumentClick = this._onDocumentClick.bind(this);
+        this._onPointerDown = () => {
+            this._clickInsidePopup = true;
+        };
         this._clickInsidePopup = false;
     }
 
@@ -40,13 +46,12 @@ export class YumeColor extends HTMLElement {
             this.setAttribute("label-position", "top");
         this.render();
         // Mark clicks inside this element before DOM mutations can invalidate composedPath
-        this.addEventListener("pointerdown", () => {
-            this._clickInsidePopup = true;
-        });
+        this.addEventListener("pointerdown", this._onPointerDown);
         document.addEventListener("click", this._onDocumentClick);
     }
 
     disconnectedCallback() {
+        this.removeEventListener("pointerdown", this._onPointerDown);
         document.removeEventListener("click", this._onDocumentClick);
     }
 
@@ -55,7 +60,7 @@ export class YumeColor extends HTMLElement {
         if (name === "value") {
             this._internals.setFormValue(newVal || "", this.name);
             this._updateDisplay();
-            this._syncPickerValue();
+            if (!this._fromPicker) this._syncPickerValue();
             return;
         }
         if (name === "name") {
@@ -208,16 +213,6 @@ export class YumeColor extends HTMLElement {
         const size = this.size;
         const labelSlot = `<div class="label-wrapper" part="label-wrapper"><slot name="label"></slot></div>`;
 
-        const pickerAttrs = [
-            this.value ? `value="${this.value}"` : "",
-            `format="${this.format}"`,
-            `formats='${JSON.stringify(this.formats)}'`,
-            this.showAlpha ? "show-alpha" : "",
-            `size="${size}"`,
-        ]
-            .filter(Boolean)
-            .join(" ");
-
         this.shadowRoot.innerHTML = `
             <style>${this._buildStyles(isDisabled)}</style>
             <div class="color" part="color">
@@ -234,9 +229,8 @@ export class YumeColor extends HTMLElement {
                     >
                         <div class="swatch${this.showAlpha ? " has-alpha" : ""}" part="swatch"
                             aria-hidden="true"
-                            ${this.value ? `style="--_swatch-color: ${this.value}"` : ""}
                         ></div>
-                        <span class="display" part="display">${this.value || this.placeholder}</span>
+                        <span class="display" part="display"></span>
                         ${
                             this.clearable && this.value
                                 ? `<button class="clear-btn" part="clear-btn" aria-label="Clear color" tabindex="-1" type="button">
@@ -246,12 +240,25 @@ export class YumeColor extends HTMLElement {
                         }
                     </div>
                     <div class="popup" part="popup" role="dialog" aria-label="Color picker" hidden>
-                        <y-colorpicker ${pickerAttrs}></y-colorpicker>
+                        <y-colorpicker></y-colorpicker>
                     </div>
                     ${!isLabelTop ? labelSlot : ""}
                 </div>
             </div>
         `;
+
+        // Configure the colorpicker via DOM API
+        const picker = this.shadowRoot.querySelector("y-colorpicker");
+
+        if (this.value) picker.setAttribute("value", this.value);
+        picker.setAttribute("format", this.format);
+        picker.setAttribute("formats", JSON.stringify(this.formats));
+
+        if (this.showAlpha) picker.setAttribute("show-alpha", "");
+        picker.setAttribute("size", size);
+
+        // Apply dynamic display values (swatch color, text, clear button)
+        this._updateDisplay();
 
         manageLabelVisibility(this.shadowRoot.querySelector(".label-wrapper"));
         if (!isDisabled) this._bindListeners();
@@ -295,9 +302,9 @@ export class YumeColor extends HTMLElement {
         picker.addEventListener("change", (e) => {
             if (e.composedPath()[0] !== picker) return;
             const detail = e.detail;
+            this._fromPicker = true;
             this.setAttribute("value", detail.value);
-            this._internals.setFormValue(detail.value, this.name);
-            this._updateDisplay();
+            this._fromPicker = false;
             this.dispatchEvent(
                 new CustomEvent("change", {
                     bubbles: true,
@@ -401,12 +408,12 @@ export class YumeColor extends HTMLElement {
                 height: calc(${swatchSize} - ${padding} - ${padding});
                 border-radius: var(--component-color-swatch-border-radius, var(--radii-small));
                 border: 1px solid var(--base-border, #ccc);
-                background-color: var(--_swatch-color, transparent);
+                background-color: transparent;
             }
 
             .swatch.has-alpha {
                 background-image:
-                    linear-gradient(var(--_swatch-color, transparent), var(--_swatch-color, transparent)),
+                    linear-gradient(transparent, transparent),
                     linear-gradient(45deg,
                         var(--base-content-lightest, #ccc) 25%, transparent 25%,
                         transparent 75%, var(--base-content-lightest, #ccc) 75%),
@@ -572,10 +579,23 @@ export class YumeColor extends HTMLElement {
             display.classList.toggle("is-placeholder", !this.value);
         }
         if (swatch) {
-            if (this.value) {
-                swatch.style.setProperty("--_swatch-color", this.value);
-            } else {
-                swatch.style.removeProperty("--_swatch-color");
+            const parsed = this.value ? parseColorString(this.value) : null;
+            if (parsed) {
+                const rgba = `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${parsed.a})`;
+
+                if (swatch.classList.contains("has-alpha")) {
+                    swatch.style.backgroundImage =
+                        `linear-gradient(${rgba}, ${rgba}), ` +
+                        "linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%), " +
+                        "linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%)";
+                    swatch.style.backgroundColor = "transparent";
+                } else {
+                    swatch.style.backgroundColor = rgba;
+                    swatch.style.backgroundImage = "";
+                }
+            } else if (!this.value) {
+                swatch.style.backgroundColor = "";
+                swatch.style.backgroundImage = "";
             }
         }
         this._updateClearBtn();
