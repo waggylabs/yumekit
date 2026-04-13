@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 32 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 29 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -52,6 +52,8 @@ import "@waggylabs/yumekit";
 import "@waggylabs/yumekit/components/y-theme";
 import "@waggylabs/yumekit/components/y-button";
 import "@waggylabs/yumekit/components/y-input";
+import "@waggylabs/yumekit/components/y-color";
+import "@waggylabs/yumekit/components/y-colorpicker";
 import "@waggylabs/yumekit/components/y-date";
 import "@waggylabs/yumekit/components/y-datepicker";
 ```
@@ -305,31 +307,55 @@ Events: `change`
 
 ---
 
+### y-color
+Form-associated color input with trigger/popup pattern (like `y-date`). Shows a color swatch and value string; opens a `y-colorpicker` popup on click.
+
+Tag: `<y-color>`
+Attributes:
+- `value` — color string in the active format
+- `format` — `"hex"` (default) | `"rgb"` | `"hsl"` | `"hsv"`
+- `formats` — JSON array of available formats (default: all four)
+- `show-alpha` — enable alpha channel
+- `placeholder` — trigger placeholder (default: `"Select color"`)
+- `name` — form field name
+- `disabled`, `invalid`, `clearable`
+- `size` — `"small"` | `"medium"` | `"large"`
+- `label-position` — `"top"` (default) | `"bottom"`
+
+Slots: `label`
+Events: `change` (detail: `{ value, hex, rgb, hsl, hsv, alpha }`)
+Methods: `open()`, `close()`, `clear()`
+CSS Parts: `color`, `wrapper`, `label-wrapper`, `trigger`, `swatch`, `display`, `clear-btn`, `popup`
+
+```html
+<y-color name="brand" value="#e74c3c" clearable>
+  <span slot="label">Brand color</span>
+</y-color>
+<y-color name="bg" format="rgb" show-alpha>
+  <span slot="label">Background</span>
+</y-color>
+```
+
+---
+
 ### y-colorpicker
-Standalone color picker with 2D gradient canvas, hue slider, optional alpha slider, format selector, and channel inputs.
+Standalone color picker widget with 2D saturation/brightness canvas, hue slider, optional alpha slider, format selector, and channel inputs. Internal model is HSV.
 
 Tag: `<y-colorpicker>`
 Attributes:
-- `value` — current color value, accepts any supported format (hex, rgb, hsl, hsv)
-- `format` — `"hex"` (default) | `"rgb"` | `"hsl"` | `"hsv"` — active display format
-- `formats` — JSON array of formats available in the select (default: `["hex","rgb","hsl","hsv"]`)
-- `show-alpha` — boolean, shows alpha slider and alpha inputs
-- `size` — `"small"` | `"medium"` | `"large"`
-
-Slots: `swatch` (custom current-color preview)
+- `value` — initial color (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsv()`, `hsva()`)
+- `format` — `"hex"` (default) | `"rgb"` | `"hsl"` | `"hsv"`
+- `formats` — JSON array of available formats
+- `show-alpha` — enable alpha slider and channel
+- `size` — `"small"` | `"medium"` | `"large"` (scales canvas and inputs)
 
 Events: `change` (detail: `{ value, hex, rgb, hsl, hsv, alpha }`), `format-change` (detail: `{ format }`)
-
-Methods: `setColor(value)` — parse and apply any supported color string
-
-CSS Custom Properties: `--component-colorpicker-width` (default `260px`), `--component-colorpicker-canvas-height`, `--component-colorpicker-slider-height`, `--component-colorpicker-slider-thumb-size`, `--component-colorpicker-canvas-handle-size`, `--component-colorpicker-gap`, `--component-colorpicker-border-radius`, `--component-colorpicker-checkerboard-size`
-
+Methods: `setColor(value)`
 CSS Parts: `colorpicker`, `canvas`, `canvas-handle`, `hue-slider`, `hue-thumb`, `alpha-slider`, `alpha-thumb`, `inputs-row`, `format-select`, `swatch-preview`
 
 ```html
-<y-colorpicker value="#0576ff"></y-colorpicker>
-<y-colorpicker value="rgb(255, 87, 51)" format="rgb" show-alpha></y-colorpicker>
-<y-colorpicker value="hsl(210, 100%, 50%)" format="hsl" formats='["hex","hsl"]'></y-colorpicker>
+<y-colorpicker value="#3498db"></y-colorpicker>
+<y-colorpicker value="#9b59b6" show-alpha format="rgb"></y-colorpicker>
 ```
 
 ---
@@ -376,59 +402,6 @@ Events: `change`, `input`
 
 ---
 
-### y-stack
-Layout container for arranging child elements in rows, columns, grids, or masonry patterns. Purely structural — no visual styling.
-
-Tag: `<y-stack>`
-Attributes:
-- `mode` — `"flex"` (default) | `"grid"` | `"masonry"`
-- `direction` — `"row"` (default) | `"column"` (flex mode only)
-- `columns` — number of columns for grid/masonry (default: `3`)
-- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
-- `wrap` — boolean, allow flex items to wrap (flex mode only)
-- `align` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"baseline"` — cross-axis alignment
-- `justify` — `"start"` (default) | `"center"` | `"end"` | `"between"` | `"around"` | `"evenly"` — main-axis distribution (flex mode only)
-- `responsive` — boolean, auto-collapse columns at narrow viewports
-
-CSS Custom Properties:
-- `--component-stack-gap` — override gap spacing directly
-- `--component-stack-columns` — override column count
-- `--component-stack-mobile-breakpoint` — single-column breakpoint (default: `576px`)
-- `--component-stack-tablet-breakpoint` — reduced-column breakpoint (default: `768px`)
-
-CSS Parts: `container`
-
-Events: none
-
-```html
-<!-- Row of buttons -->
-<y-stack direction="row" gap="small">
-  <y-button>Save</y-button>
-  <y-button>Cancel</y-button>
-</y-stack>
-
-<!-- Card grid -->
-<y-stack mode="grid" columns="3" gap="large" responsive>
-  <y-card>...</y-card>
-  <y-card>...</y-card>
-  <y-card>...</y-card>
-</y-stack>
-
-<!-- Vertical form -->
-<y-stack direction="column" gap="medium">
-  <y-input label="Name"></y-input>
-  <y-input label="Email"></y-input>
-</y-stack>
-
-<!-- Masonry layout -->
-<y-stack mode="masonry" columns="3" gap="large" responsive>
-  <y-card>...</y-card>
-  <y-card>...</y-card>
-</y-stack>
-```
-
----
-
 ### y-icon
 Renders a registered SVG icon. Sanitizes SVG using an allowlist.
 
@@ -461,42 +434,6 @@ Slots: default (badge label), `anchor` (element to badge-over)
 <y-badge color="error" position="top-right">3
   <y-button slot="anchor">Inbox</y-button>
 </y-badge>
-```
-
----
-
-### y-banner
-Full-width informational banner in a semantic color with matching text.
-
-Tag: `<y-banner>`
-Attributes:
-- `color` — `"base"` (default) | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`. Uses the bold content color as the background and the inverse color as text (e.g. `--success-content--` as background, `--success-content-inverse` as text) so banners stand out
-- `icon` — registered icon name, renders a leading `<y-icon>`. Overridden by the `icon` slot when both are present
-- `position` — `"push"` (default, in document flow) | `"overlap"` (absolutely positioned over content)
-- `sticky` — boolean, when set with `position="overlap"`, fixes the banner to the viewport top on scroll
-- `dismissable` — boolean, renders a close button (`<y-icon name="close">`)
-- `dismissed` — boolean, reflects hidden state. Can be set programmatically
-- `size` — `"small"` | `"medium"` (default) | `"large"` — controls padding, icon size, and font size
-
-Slots: default (message content), `icon` (custom leading icon, overrides `icon` attribute), `action` (CTA element rendered before the close button)
-
-Events: `dismiss` — cancelable, fires when close button is clicked or `dismiss()` is called
-
-Methods: `dismiss()` (hides and fires event), `show()` (restores from dismissed state)
-
-CSS Custom Properties: `--component-banner-padding-small/medium/large`, `--component-banner-gap`, `--component-banner-icon-size-small/medium/large`, `--component-banner-z-index` (default `200`), `--component-banner-border-radius` (default `0`)
-
-CSS Parts: `banner`, `icon`, `content`, `action`, `close-btn`
-
-```html
-<y-banner color="success" icon="check" dismissable>Changes saved successfully!</y-banner>
-
-<y-banner color="warning" icon="warning">
-  Your trial expires in 3 days.
-  <y-button slot="action" size="small" color="warning" style-type="outlined">Upgrade</y-button>
-</y-banner>
-
-<y-banner color="error" position="overlap" sticky dismissable>Server maintenance in progress.</y-banner>
 ```
 
 ---
@@ -608,55 +545,15 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 ---
 
 ### y-appbar
-Navigation bar / sidebar. Supports vertical sidebar, horizontal top-bar, and responsive mobile hamburger modes.
+Top/side navigation bar.
 
 Tag: `<y-appbar>`
 Attributes:
-- `orientation` — `"vertical"` (default) | `"horizontal"`
-- `items` — JSON string: `[{"text":"Home","icon":"home","href":"/","selected":true,"children":[...]}, ...]`. Item fields: `text`, `icon` (registered icon name or inline `<svg>` string), `href`, `selected` (boolean), `slot` (custom slot name), `children` (nested sub-items rendered via y-menu)
-- `size` — `"small"` | `"medium"` (default) | `"large"`
-- `collapsed` — boolean, collapses vertical sidebar to icon-only mode
-- `menu-direction` — `"right"` | `"down"` | `""` (auto: vertical→right, horizontal→down)
-- `sticky` — `"start"` | `"end"`. Vertical: start=left, end=right. Horizontal: start=top, end=bottom
-- `mobile-breakpoint` — px width below which horizontal bar collapses to a hamburger menu (default: `768` or `--component-appbar-mobile-breakpoint`)
-- `history` — omit (default) for `pushState` SPA navigation; set to `"false"` for full-page `window.location.href` navigation
+- `orientation` — `"horizontal"` (default) | `"vertical"`
+- `sticky` — boolean
+- `color` — color scheme name
 
-Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked. Call `e.preventDefault()` to handle routing yourself (e.g. React Router).
-
-Methods: `toggle()` — toggles collapsed state
-
-Slots: `logo` (icon/image in header), `title` (text beside logo), `header` (extra header content), `footer` (footer area; in mobile mode appears on the right end)
-
-```html
-<!-- Vertical sidebar -->
-<y-appbar
-  orientation="vertical"
-  sticky="start"
-  items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
->
-  <y-icon slot="logo" name="bolt" size="medium"></y-icon>
-  <span slot="title">MyApp</span>
-</y-appbar>
-
-<!-- Horizontal top bar -->
-<y-appbar
-  orientation="horizontal"
-  sticky="start"
-  items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"}]'
->
-  <y-icon slot="logo" name="bolt" size="medium"></y-icon>
-  <span slot="title">MyApp</span>
-</y-appbar>
-
-<!-- SPA router integration -->
-<y-appbar id="nav" items='[...]'></y-appbar>
-<script>
-  document.getElementById("nav").addEventListener("navigate", (e) => {
-    e.preventDefault();
-    myRouter.navigate(e.detail.href);
-  });
-</script>
-```
+Slots: `brand`, `nav`, `actions`, default
 
 ---
 
@@ -865,6 +762,23 @@ Additional tokens:
 
 Component-specific tokens (subset — see `styles/variables.css` for the full list):
 ```
+/* y-color */
+--component-color-swatch-size-small/medium/large  /* swatch width/height per size */
+--component-color-swatch-border-radius             /* swatch corner radius */
+--component-color-trigger-gap                      /* gap between swatch, display, clear btn */
+--component-color-popup-offset                     /* gap between trigger and popup */
+--component-color-z-index                          /* popup stacking order (default: 200) */
+
+/* y-colorpicker */
+--component-colorpicker-width-small/medium/large   /* overall component width per size */
+--component-colorpicker-canvas-height-small/medium/large  /* canvas height per size */
+--component-colorpicker-slider-height              /* hue/alpha slider track height */
+--component-colorpicker-slider-thumb-size           /* slider thumb diameter */
+--component-colorpicker-canvas-handle-size          /* canvas cursor diameter */
+--component-colorpicker-gap                         /* gap between canvas, sliders, inputs */
+--component-colorpicker-border-radius               /* corner radius for canvas and sliders */
+--component-colorpicker-checkerboard-size           /* alpha slider checkerboard cell size */
+
 /* y-date / y-datepicker */
 --component-datepicker-background       /* panel surface color */
 --component-datepicker-border-color     /* panel and column-divider borders */
@@ -942,21 +856,22 @@ import "@waggylabs/yumekit";
 
 These are not exported in the public API but are used internally:
 
-- `clamp(v, min, max)` — clamp a number between min and max
-- `hsvToRgb(h, s, v)` — HSV (h 0-360, s 0-100, v 0-100) to RGB `[0-255, 0-255, 0-255]`
-- `rgbToHsv(r, g, b)` — RGB (0-255 each) to HSV `[h, s, v]`
-- `hsvToHsl(h, s, v)` — HSV to HSL `[h, s, l]`
-- `hslToHsv(h, s, l)` — HSL to HSV `[h, s, v]`
-- `rgbToHex(r, g, b)` — RGB to hex string `"#rrggbb"`
-- `rgbaToHex(r, g, b, a)` — RGBA to hex8 string `"#rrggbbaa"`
-- `parseHexColor(hex)` — parses `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA` to `{r, g, b, a}`
-- `parseColorString(str)` — parses any supported color string (hex, rgb, rgba, hsl, hsla, hsv, hsva) to `{r, g, b, a}`
-- `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}` (legacy, no alpha)
-- `luminance({r,g,b})` — WCAG relative luminance
-- `contrastTextColor(bgColor)` — returns `"#000"` or `"#fff"` for best contrast
 - `getColorVarPair(color, fallbackColor)` — resolves a color name to `[bg, fg]` CSS value pair. Predefined names return token `var()` pairs; hex/rgb/hsl values return the raw color with a WCAG-contrasted foreground via `contrastTextColor()`
 - `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
 - `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
+- `manageLabelVisibility(labelWrapper)` — toggles label wrapper visibility on slotchange
+- `parseColor(colorStr)` — parses hex/rgb to `{r, g, b}`
+- `luminance({r,g,b})` — WCAG relative luminance
+- `contrastTextColor(bgColor)` — returns `"#000"` or `"#fff"` for best contrast
+- `clamp(v, min, max)` — clamp a number to a range
+- `hsvToRgb(h, s, v)` — HSV → RGB (0-255)
+- `rgbToHsv(r, g, b)` — RGB → HSV
+- `hsvToHsl(h, s, v)` — HSV → HSL
+- `hslToHsv(h, s, l)` — HSL → HSV
+- `rgbToHex(r, g, b)` — RGB → hex string
+- `rgbaToHex(r, g, b, a)` — RGBA → hex8 string
+- `parseHexColor(hex)` — hex → `{r, g, b, a}`
+- `parseColorString(str)` — any supported CSS color string → `{r, g, b, a}`
 
 ---
 

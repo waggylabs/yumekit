@@ -31,6 +31,7 @@ export class YumeColorpicker extends HTMLElement {
         this._dragging = null; // "canvas" | "hue" | "alpha"
         this._rendered = false;
         this._updatingValue = false; // guard against attribute ↔ model loops
+        this._drawnHue = -1; // last hue the canvas was drawn for
         // Stable bound handlers for global pointer events
         this._onPointerMove = (e) => this._onGlobalMove(e);
         this._onPointerUp = () => this._onGlobalUp();
@@ -79,7 +80,9 @@ export class YumeColorpicker extends HTMLElement {
 
     get formats() {
         try {
-            return JSON.parse(this.getAttribute("formats") || '["hex","rgb","hsl","hsv"]');
+            return JSON.parse(
+                this.getAttribute("formats") || '["hex","rgb","hsl","hsv"]',
+            );
         } catch {
             return ["hex", "rgb", "hsl", "hsv"];
         }
@@ -130,18 +133,22 @@ export class YumeColorpicker extends HTMLElement {
                 </div>
                 <div class="hue-slider" part="hue-slider" tabindex="0"
                     role="slider" aria-label="Hue"
-                    aria-valuemin="0" aria-valuemax="360" aria-valuenow="${this._h}"
+                    aria-valuemin="0" aria-valuemax="359" aria-valuenow="${this._h}"
                 >
                     <div class="hue-thumb" part="hue-thumb"></div>
                 </div>
-                ${showAlpha ? `
+                ${
+                    showAlpha
+                        ? `
                 <div class="alpha-slider" part="alpha-slider" tabindex="0"
                     role="slider" aria-label="Alpha"
                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(this._a * 100)}"
                 >
                     <div class="alpha-gradient"></div>
                     <div class="alpha-thumb" part="alpha-thumb"></div>
-                </div>` : ""}
+                </div>`
+                        : ""
+                }
                 <div class="inputs-row" part="inputs-row">
                     <div class="swatch-container">
                         <slot name="swatch">
@@ -150,7 +157,7 @@ export class YumeColorpicker extends HTMLElement {
                     </div>
                     <y-select class="format-select" part="format-select"
                         size="${size}"
-                        options='${JSON.stringify(formats.map(f => ({ value: f, label: f.toUpperCase() })))}'
+                        options='${JSON.stringify(formats.map((f) => ({ value: f, label: f.toUpperCase() })))}'
                         value="${this.format}"
                     ></y-select>
                     <div class="channel-inputs"></div>
@@ -219,10 +226,19 @@ export class YumeColorpicker extends HTMLElement {
         const a = Math.round(this._a * 100) / 100;
         const [hh, ss, ll] = hsvToHsl(this._h, this._s, this._v);
         return {
-            hex: this.showAlpha && a < 1 ? rgbaToHex(r, g, b, a) : rgbToHex(r, g, b),
-            rgb: this.showAlpha ? `rgba(${r}, ${g}, ${b}, ${a})` : `rgb(${r}, ${g}, ${b})`,
-            hsl: this.showAlpha ? `hsla(${hh}, ${ss}%, ${ll}%, ${a})` : `hsl(${hh}, ${ss}%, ${ll}%)`,
-            hsv: this.showAlpha ? `hsva(${this._h}, ${this._s}%, ${this._v}%, ${a})` : `hsv(${this._h}, ${this._s}%, ${this._v}%)`,
+            hex:
+                this.showAlpha && a < 1
+                    ? rgbaToHex(r, g, b, a)
+                    : rgbToHex(r, g, b),
+            rgb: this.showAlpha
+                ? `rgba(${r}, ${g}, ${b}, ${a})`
+                : `rgb(${r}, ${g}, ${b})`,
+            hsl: this.showAlpha
+                ? `hsla(${hh}, ${ss}%, ${ll}%, ${a})`
+                : `hsl(${hh}, ${ss}%, ${ll}%)`,
+            hsv: this.showAlpha
+                ? `hsva(${this._h}, ${this._s}%, ${this._v}%, ${a})`
+                : `hsv(${this._h}, ${this._s}%, ${this._v}%)`,
         };
     }
 
@@ -258,20 +274,211 @@ export class YumeColorpicker extends HTMLElement {
         blackGrad.addColorStop(1, "rgba(0,0,0,1)");
         ctx.fillStyle = blackGrad;
         ctx.fillRect(0, 0, w, h);
+        this._drawnHue = this._h;
     }
 
     // -------------------------------------------------------------------------
     // Private — UI updates
     // -------------------------------------------------------------------------
 
+    _getChannelFields() {
+        const showAlpha = this.showAlpha;
+        const [r, g, b] = hsvToRgb(this._h, this._s, this._v);
+        const [hh, ss, ll] = hsvToHsl(this._h, this._s, this._v);
+        const a = Math.round(this._a * 100) / 100;
+
+        let fields = [];
+        switch (this.format) {
+            case "hex":
+                fields = [
+                    {
+                        label: "Hex",
+                        name: "hex",
+                        value:
+                            showAlpha && a < 1
+                                ? rgbaToHex(r, g, b, a)
+                                : rgbToHex(r, g, b),
+                        full: true,
+                    },
+                ];
+                break;
+            case "rgb":
+                fields = [
+                    {
+                        label: "R",
+                        name: "r",
+                        value: String(r),
+                        min: 0,
+                        max: 255,
+                    },
+                    {
+                        label: "G",
+                        name: "g",
+                        value: String(g),
+                        min: 0,
+                        max: 255,
+                    },
+                    {
+                        label: "B",
+                        name: "b",
+                        value: String(b),
+                        min: 0,
+                        max: 255,
+                    },
+                ];
+                if (showAlpha)
+                    fields.push({
+                        label: "A",
+                        name: "a",
+                        value: String(a),
+                        min: 0,
+                        max: 1,
+                        step: 0.01,
+                    });
+                break;
+            case "hsl":
+                fields = [
+                    {
+                        label: "H",
+                        name: "h",
+                        value: String(hh),
+                        min: 0,
+                        max: 360,
+                    },
+                    {
+                        label: "S",
+                        name: "s",
+                        value: String(ss),
+                        min: 0,
+                        max: 100,
+                    },
+                    {
+                        label: "L",
+                        name: "l",
+                        value: String(ll),
+                        min: 0,
+                        max: 100,
+                    },
+                ];
+                if (showAlpha)
+                    fields.push({
+                        label: "A",
+                        name: "a",
+                        value: String(a),
+                        min: 0,
+                        max: 1,
+                        step: 0.01,
+                    });
+                break;
+            case "hsv":
+                fields = [
+                    {
+                        label: "H",
+                        name: "h",
+                        value: String(this._h),
+                        min: 0,
+                        max: 360,
+                    },
+                    {
+                        label: "S",
+                        name: "s",
+                        value: String(this._s),
+                        min: 0,
+                        max: 100,
+                    },
+                    {
+                        label: "V",
+                        name: "v",
+                        value: String(this._v),
+                        min: 0,
+                        max: 100,
+                    },
+                ];
+                if (showAlpha)
+                    fields.push({
+                        label: "A",
+                        name: "a",
+                        value: String(a),
+                        min: 0,
+                        max: 1,
+                        step: 0.01,
+                    });
+                break;
+        }
+        return fields;
+    }
+
+    _rebuildInputs() {
+        if (!this._channelInputs) return;
+        const size = this.size;
+        const fields = this._getChannelFields();
+
+        this._channelInputs.innerHTML = "";
+        fields.forEach((f) => {
+            const input = document.createElement("y-input");
+            input.setAttribute("size", size);
+            input.setAttribute("aria-label", f.label);
+            input.setAttribute("placeholder", f.label);
+            input.setAttribute("value", f.value);
+            if (f.min != null) {
+                input.setAttribute("type", "number");
+                input.setAttribute("min", String(f.min));
+            }
+            if (f.max != null) input.setAttribute("max", String(f.max));
+            if (f.step != null) input.setAttribute("step", String(f.step));
+            input.dataset.channel = f.name;
+            if (f.full) input.classList.add("full-width");
+            this._channelInputs.appendChild(input);
+
+            input.addEventListener("input", (e) => {
+                this._handleChannelInput(
+                    f.name,
+                    e.detail?.value ?? e.target.value,
+                    f,
+                );
+            });
+        });
+    }
+
     _updateAll() {
         this._updateCanvasHandle();
         this._updateHueThumb();
         this._updateAlphaThumb();
         this._updateSwatch();
-        this._updateInputs();
-        this._drawCanvas();
+        this._updateInputValues();
+        if (this._drawnHue !== this._h) this._drawCanvas();
         this._updateAriaValues();
+    }
+
+    _updateAlphaThumb() {
+        const thumb = this._alphaThumb;
+        const slider = this._alphaSlider;
+        if (!thumb || !slider) return;
+        thumb.style.left = `${this._a * 100}%`;
+        const gradient = slider.querySelector(".alpha-gradient");
+        if (gradient) {
+            const [r, g, b] = hsvToRgb(this._h, this._s, this._v);
+            gradient.style.background = `linear-gradient(to right, rgba(${r},${g},${b},0), rgb(${r},${g},${b}))`;
+        }
+    }
+
+    _updateAriaValues() {
+        const canvas = this._canvas;
+        if (canvas) {
+            canvas.setAttribute(
+                "aria-valuetext",
+                `Hue ${this._h}, Saturation ${this._s}%, Brightness ${this._v}%`,
+            );
+        }
+        if (this._hueSlider) {
+            this._hueSlider.setAttribute("aria-valuenow", String(this._h));
+        }
+        if (this._alphaSlider) {
+            this._alphaSlider.setAttribute(
+                "aria-valuenow",
+                String(Math.round(this._a * 100)),
+            );
+        }
     }
 
     _updateCanvasHandle() {
@@ -297,16 +504,17 @@ export class YumeColorpicker extends HTMLElement {
         thumb.style.backgroundColor = `rgb(${r},${g},${b})`;
     }
 
-    _updateAlphaThumb() {
-        const thumb = this._alphaThumb;
-        const slider = this._alphaSlider;
-        if (!thumb || !slider) return;
-        thumb.style.left = `${this._a * 100}%`;
-        const gradient = slider.querySelector(".alpha-gradient");
-        if (gradient) {
-            const [r, g, b] = hsvToRgb(this._h, this._s, this._v);
-            gradient.style.background = `linear-gradient(to right, rgba(${r},${g},${b},0), rgb(${r},${g},${b}))`;
+    _updateInputValues() {
+        if (!this._channelInputs) return;
+        const fields = this._getChannelFields();
+        const inputs = this._channelInputs.querySelectorAll("y-input");
+        if (inputs.length !== fields.length) {
+            this._rebuildInputs();
+            return;
         }
+        fields.forEach((f, i) => {
+            inputs[i].setAttribute("value", f.value);
+        });
     }
 
     _updateSwatch() {
@@ -317,96 +525,26 @@ export class YumeColorpicker extends HTMLElement {
             : `rgb(${r},${g},${b})`;
     }
 
-    _updateAriaValues() {
-        const canvas = this._canvas;
-        if (canvas) {
-            canvas.setAttribute("aria-valuetext",
-                `Hue ${this._h}, Saturation ${this._s}%, Brightness ${this._v}%`);
-        }
-        if (this._hueSlider) {
-            this._hueSlider.setAttribute("aria-valuenow", String(this._h));
-        }
-        if (this._alphaSlider) {
-            this._alphaSlider.setAttribute("aria-valuenow", String(Math.round(this._a * 100)));
-        }
-    }
-
-    _updateInputs() {
-        if (!this._channelInputs) return;
-        const fmt = this.format;
-        const size = this.size;
-        const showAlpha = this.showAlpha;
-        const [r, g, b] = hsvToRgb(this._h, this._s, this._v);
-        const [hh, ss, ll] = hsvToHsl(this._h, this._s, this._v);
-        const a = Math.round(this._a * 100) / 100;
-
-        let fields = [];
-        switch (fmt) {
-            case "hex":
-                fields = [{
-                    label: "Hex", name: "hex",
-                    value: showAlpha && a < 1 ? rgbaToHex(r, g, b, a) : rgbToHex(r, g, b),
-                    full: true,
-                }];
-                break;
-            case "rgb":
-                fields = [
-                    { label: "R", name: "r", value: String(r), min: 0, max: 255 },
-                    { label: "G", name: "g", value: String(g), min: 0, max: 255 },
-                    { label: "B", name: "b", value: String(b), min: 0, max: 255 },
-                ];
-                if (showAlpha) fields.push({ label: "A", name: "a", value: String(a), min: 0, max: 1, step: 0.01 });
-                break;
-            case "hsl":
-                fields = [
-                    { label: "H", name: "h", value: String(hh), min: 0, max: 360 },
-                    { label: "S", name: "s", value: String(ss), min: 0, max: 100 },
-                    { label: "L", name: "l", value: String(ll), min: 0, max: 100 },
-                ];
-                if (showAlpha) fields.push({ label: "A", name: "a", value: String(a), min: 0, max: 1, step: 0.01 });
-                break;
-            case "hsv":
-                fields = [
-                    { label: "H", name: "h", value: String(this._h), min: 0, max: 360 },
-                    { label: "S", name: "s", value: String(this._s), min: 0, max: 100 },
-                    { label: "V", name: "v", value: String(this._v), min: 0, max: 100 },
-                ];
-                if (showAlpha) fields.push({ label: "A", name: "a", value: String(a), min: 0, max: 1, step: 0.01 });
-                break;
-        }
-
-        // Rebuild channel inputs
-        this._channelInputs.innerHTML = "";
-        fields.forEach((f) => {
-            const input = document.createElement("y-input");
-            input.setAttribute("size", size);
-            input.setAttribute("aria-label", f.label);
-            input.setAttribute("placeholder", f.label);
-            input.setAttribute("value", f.value);
-            input.dataset.channel = f.name;
-            if (f.full) input.classList.add("full-width");
-            this._channelInputs.appendChild(input);
-
-            input.addEventListener("input", (e) => {
-                this._handleChannelInput(f.name, e.detail?.value ?? e.target.value, f);
-            });
-        });
-    }
-
     // -------------------------------------------------------------------------
     // Private — event handling
     // -------------------------------------------------------------------------
 
     _bindEvents() {
         // Canvas pointer
-        this._canvas.addEventListener("pointerdown", (e) => this._onCanvasDown(e));
+        this._canvas.addEventListener("pointerdown", (e) =>
+            this._onCanvasDown(e),
+        );
 
         // Hue slider pointer
-        this._hueSlider.addEventListener("pointerdown", (e) => this._onHueDown(e));
+        this._hueSlider.addEventListener("pointerdown", (e) =>
+            this._onHueDown(e),
+        );
 
         // Alpha slider pointer
         if (this._alphaSlider) {
-            this._alphaSlider.addEventListener("pointerdown", (e) => this._onAlphaDown(e));
+            this._alphaSlider.addEventListener("pointerdown", (e) =>
+                this._onAlphaDown(e),
+            );
         }
 
         // Keyboard on canvas
@@ -417,7 +555,9 @@ export class YumeColorpicker extends HTMLElement {
 
         // Keyboard on alpha
         if (this._alphaSlider) {
-            this._alphaSlider.addEventListener("keydown", (e) => this._onAlphaKey(e));
+            this._alphaSlider.addEventListener("keydown", (e) =>
+                this._onAlphaKey(e),
+            );
         }
 
         // Format select
@@ -425,10 +565,14 @@ export class YumeColorpicker extends HTMLElement {
             const val = e.detail?.value ?? e.target.value;
             if (val && val !== this.format) {
                 this.setAttribute("format", val);
-                this._updateInputs();
-                this.dispatchEvent(new CustomEvent("format-change", {
-                    bubbles: true, composed: true, detail: { format: val },
-                }));
+                this._rebuildInputs();
+                this.dispatchEvent(
+                    new CustomEvent("format-change", {
+                        bubbles: true,
+                        composed: true,
+                        detail: { format: val },
+                    }),
+                );
             }
         });
     }
@@ -510,11 +654,20 @@ export class YumeColorpicker extends HTMLElement {
         const step = e.shiftKey ? 10 : 1;
         let handled = true;
         switch (e.key) {
-            case "ArrowRight": this._s = clamp(this._s + step, 0, 100); break;
-            case "ArrowLeft":  this._s = clamp(this._s - step, 0, 100); break;
-            case "ArrowUp":    this._v = clamp(this._v + step, 0, 100); break;
-            case "ArrowDown":  this._v = clamp(this._v - step, 0, 100); break;
-            default: handled = false;
+            case "ArrowRight":
+                this._s = clamp(this._s + step, 0, 100);
+                break;
+            case "ArrowLeft":
+                this._s = clamp(this._s - step, 0, 100);
+                break;
+            case "ArrowUp":
+                this._v = clamp(this._v + step, 0, 100);
+                break;
+            case "ArrowDown":
+                this._v = clamp(this._v - step, 0, 100);
+                break;
+            default:
+                handled = false;
         }
         if (handled) {
             e.preventDefault();
@@ -528,9 +681,14 @@ export class YumeColorpicker extends HTMLElement {
         const step = e.shiftKey ? 10 : 1;
         let handled = true;
         switch (e.key) {
-            case "ArrowRight": this._h = (this._h + step) % 360; break;
-            case "ArrowLeft":  this._h = (this._h - step + 360) % 360; break;
-            default: handled = false;
+            case "ArrowRight":
+                this._h = (this._h + step) % 360;
+                break;
+            case "ArrowLeft":
+                this._h = (this._h - step + 360) % 360;
+                break;
+            default:
+                handled = false;
         }
         if (handled) {
             e.preventDefault();
@@ -544,9 +702,14 @@ export class YumeColorpicker extends HTMLElement {
         const step = e.shiftKey ? 0.1 : 0.01;
         let handled = true;
         switch (e.key) {
-            case "ArrowRight": this._a = clamp(this._a + step, 0, 1); break;
-            case "ArrowLeft":  this._a = clamp(this._a - step, 0, 1); break;
-            default: handled = false;
+            case "ArrowRight":
+                this._a = clamp(this._a + step, 0, 1);
+                break;
+            case "ArrowLeft":
+                this._a = clamp(this._a - step, 0, 1);
+                break;
+            default:
+                handled = false;
         }
         if (handled) {
             e.preventDefault();
@@ -564,7 +727,9 @@ export class YumeColorpicker extends HTMLElement {
             const parsed = parseColorString(rawValue);
             if (!parsed) return;
             const [h, s, v] = rgbToHsv(parsed.r, parsed.g, parsed.b);
-            this._h = h; this._s = s; this._v = v;
+            this._h = h;
+            this._s = s;
+            this._v = v;
             this._a = parsed.a;
         } else if (channel === "a") {
             const v = parseFloat(rawValue);
@@ -581,14 +746,18 @@ export class YumeColorpicker extends HTMLElement {
                 const ng = channel === "g" ? clamped : g;
                 const nb = channel === "b" ? clamped : b;
                 const [h, s, v] = rgbToHsv(nr, ng, nb);
-                this._h = h; this._s = s; this._v = v;
+                this._h = h;
+                this._s = s;
+                this._v = v;
             } else if (fmt === "hsl") {
                 const [hh, ss, ll] = hsvToHsl(this._h, this._s, this._v);
                 const nh = channel === "h" ? clamped : hh;
                 const ns = channel === "s" ? clamped : ss;
                 const nl = channel === "l" ? clamped : ll;
                 const [h, s, v] = hslToHsv(nh, ns, nl);
-                this._h = h; this._s = s; this._v = v;
+                this._h = h;
+                this._s = s;
+                this._v = v;
             } else if (fmt === "hsv") {
                 if (channel === "h") this._h = clamped;
                 else if (channel === "s") this._s = clamped;
@@ -596,7 +765,7 @@ export class YumeColorpicker extends HTMLElement {
             }
         }
 
-        this._drawCanvas();
+        if (this._drawnHue !== this._h) this._drawCanvas();
         this._updateCanvasHandle();
         this._updateHueThumb();
         this._updateAlphaThumb();
@@ -614,15 +783,17 @@ export class YumeColorpicker extends HTMLElement {
     _emitChange() {
         this._syncValueAttr();
         const reps = this._getColorRepresentations();
-        this.dispatchEvent(new CustomEvent("change", {
-            bubbles: true,
-            composed: true,
-            detail: {
-                value: this._formatColor(this.format),
-                ...reps,
-                alpha: Math.round(this._a * 100) / 100,
-            },
-        }));
+        this.dispatchEvent(
+            new CustomEvent("change", {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: this._formatColor(this.format),
+                    ...reps,
+                    alpha: Math.round(this._a * 100) / 100,
+                },
+            }),
+        );
     }
 
     // -------------------------------------------------------------------------
