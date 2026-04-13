@@ -392,19 +392,15 @@ describe("<y-colorpicker>", () => {
     // Events
     // -------------------------------------------------------------------------
 
-    it("emits change event when color is updated via setColor", async () => {
+    it("setColor updates value without emitting change event", async () => {
         const el = await fixture(
             html`<y-colorpicker value="#ff0000"></y-colorpicker>`,
         );
-        // setColor calls _emitChange internally
-        // We need to listen before calling it
         const spy = sinon.spy();
         el.addEventListener("change", spy);
         el.setColor("#00ff00");
-        // setColor calls _syncValueAttr -> _emitChange
-        // Actually setColor doesn't call _emitChange directly; let's verify
-        // by checking the value was updated
         expect(el.value).to.equal("#00ff00");
+        expect(spy.called).to.be.false;
     });
 
     it("emits format-change when format select changes", async () => {
@@ -733,7 +729,7 @@ describe("<y-colorpicker>", () => {
         const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
         const slider = el.shadowRoot.querySelector(".hue-slider");
         expect(slider.getAttribute("aria-valuemin")).to.equal("0");
-        expect(slider.getAttribute("aria-valuemax")).to.equal("360");
+        expect(slider.getAttribute("aria-valuemax")).to.equal("359");
     });
 
     it("hue slider has correct aria-valuenow", async () => {

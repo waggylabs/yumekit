@@ -12,6 +12,9 @@ export class YumeInput extends HTMLElement {
             "disabled",
             "invalid",
             "name",
+            "min",
+            "max",
+            "step",
         ];
     }
 
@@ -54,6 +57,17 @@ export class YumeInput extends HTMLElement {
 
         if (name === "invalid") {
             this._updateValidationState();
+            return;
+        }
+
+        if (name === "min" || name === "max" || name === "step") {
+            if (this.input) {
+                if (newValue != null) {
+                    this.input.setAttribute(name, newValue);
+                } else {
+                    this.input.removeAttribute(name);
+                }
+            }
             return;
         }
 
@@ -190,12 +204,22 @@ export class YumeInput extends HTMLElement {
     _buildHTML(type, value, isLabelTop, isDisabled) {
         const labelSlot =
             '<div class="label-wrapper"><slot name="label"></slot></div>';
+        const min = this.getAttribute("min");
+        const max = this.getAttribute("max");
+        const step = this.getAttribute("step");
+        const numAttrs = [
+            min != null ? `min="${min}"` : "",
+            max != null ? `max="${max}"` : "",
+            step != null ? `step="${step}"` : "",
+        ]
+            .filter(Boolean)
+            .join(" ");
         return `
             <div class="input-wrapper">
                 ${isLabelTop ? labelSlot : ""}
                 <div class="input-container">
                     <slot name="left-icon"></slot>
-                    <input part="input" type="${type}" value="${value}" ${isDisabled ? "disabled" : ""} />
+                    <input part="input" type="${type}" value="${value}" ${numAttrs} ${isDisabled ? "disabled" : ""} />
                     <slot name="right-icon"></slot>
                 </div>
                 ${!isLabelTop ? labelSlot : ""}

@@ -420,6 +420,12 @@ export class YumeColorpicker extends HTMLElement {
             input.setAttribute("aria-label", f.label);
             input.setAttribute("placeholder", f.label);
             input.setAttribute("value", f.value);
+            if (f.min != null) {
+                input.setAttribute("type", "number");
+                input.setAttribute("min", String(f.min));
+            }
+            if (f.max != null) input.setAttribute("max", String(f.max));
+            if (f.step != null) input.setAttribute("step", String(f.step));
             input.dataset.channel = f.name;
             if (f.full) input.classList.add("full-width");
             this._channelInputs.appendChild(input);
