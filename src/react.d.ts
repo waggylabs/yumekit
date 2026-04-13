@@ -126,6 +126,15 @@ declare module "react" {
                 position?: "left" | "right" | "top" | "bottom";
                 resizable?: boolean | string;
             }>;
+            "y-gallery": El<{
+                layout?: "grid" | "row" | "column" | "masonry";
+                columns?: string | number;
+                gap?: "small" | "medium" | "large" | string;
+                "aspect-ratio"?: string;
+                expandable?: boolean | string;
+                loop?: boolean | string;
+                size?: "small" | "medium" | "large";
+            }>;
             "y-icon": El<{
                 name?: string;
                 size?: "x-small" | "small" | "medium" | "large" | "x-large";

@@ -375,6 +375,19 @@
     --component-drawer-padding: var(--spacing-medium);
     --component-drawer-z-index: 5000;
 
+    /* gallery */
+    --component-gallery-gap-small: var(--spacing-x-small);
+    --component-gallery-gap-medium: var(--spacing-medium);
+    --component-gallery-gap-large: var(--spacing-large);
+    --component-gallery-columns: 3;
+    --component-gallery-aspect-ratio: 1/1;
+    --component-gallery-thumbnail-radius: var(--radii-small);
+    --component-gallery-thumbnail-overlay-color: var(--neutral-black-translucent);
+    --component-gallery-expand-background: rgba(0, 0, 0, 0.9);
+    --component-gallery-expand-z-index: 1000;
+    --component-gallery-arrow-color: var(--base-content-inverse);
+    --component-gallery-arrow-background: var(--neutral-white-translucent);
+
     /* icon */
     --component-icon-size-x-large: 28px;
     --component-icon-size-large: 22px;

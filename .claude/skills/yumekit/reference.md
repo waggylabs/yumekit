@@ -574,6 +574,43 @@ Slot: default (drawer content)
 
 ---
 
+## y-gallery
+
+Media gallery with lightbox. Accepts `<img>` or `<figure>` children.
+
+| Attribute      | Values / Notes                                                                                |
+|---------------|-----------------------------------------------------------------------------------------------|
+| `layout`      | `grid` (default) \| `row` \| `column` \| `masonry`                                           |
+| `columns`     | number (default `3`) — grid/masonry only                                                      |
+| `gap`         | `small` \| `medium` (default) \| `large` or any CSS length                                   |
+| `aspect-ratio`| thumbnail aspect ratio, e.g. `1/1` (default), `4/3`, `16/9` — grid/row only                  |
+| `expandable`  | boolean (default `true`) — clicking opens lightbox                                            |
+| `loop`        | boolean — navigation wraps around                                                             |
+| `size`        | `small` \| `medium` (default) \| `large`                                                     |
+
+Children: `<img>` elements or `<figure>` + `<figcaption>` pairs. Images support `data-src` for full-size source.
+
+Events: `expand` (cancelable, `{ index, src, element }`), `close` (`{ index }`), `navigate` (`{ index, previousIndex, direction }`)
+Methods: `.open(index)`, `.close()`, `.next()`, `.previous()`
+
+Slots: default, `expand-prev-icon`, `expand-next-icon`, `expand-close-icon`
+
+CSS Custom Properties: `--component-gallery-gap-small/medium/large`, `--component-gallery-columns`, `--component-gallery-aspect-ratio`, `--component-gallery-thumbnail-radius`, `--component-gallery-thumbnail-overlay-color`, `--component-gallery-expand-background`, `--component-gallery-expand-z-index`, `--component-gallery-arrow-color`, `--component-gallery-arrow-background`
+
+CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expand-caption`, `expand-prev`, `expand-next`, `expand-close`, `expand-counter`
+
+```html
+<y-gallery layout="masonry" columns="3" loop>
+  <img src="thumb1.jpg" data-src="full1.jpg" alt="Mountain vista">
+  <figure>
+    <img src="thumb2.jpg" data-src="full2.jpg" alt="Sunset">
+    <figcaption>Golden hour at the coast</figcaption>
+  </figure>
+</y-gallery>
+```
+
+---
+
 ## y-dialog
 
 | Attribute    | Values / Notes                                     |
