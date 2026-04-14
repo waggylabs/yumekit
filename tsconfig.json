@@ -13,5 +13,12 @@
         "skipLibCheck": true
     },
     "include": ["src/**/*"],
-    "exclude": ["node_modules", "dist", "tests", "src/react.d.ts"]
+    "exclude": [
+        "node_modules",
+        "dist",
+        "tests",
+        "src/react.d.ts",
+        "src/**/*.test.js",
+        "src/**/*.stories.js"
+    ]
 }

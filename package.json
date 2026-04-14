@@ -36,7 +36,7 @@
         "access": "public"
     },
     "scripts": {
-        "build": "rollup -c && tsc",
+        "build": "rollup -c && tsc && node scripts/copy-component-types.js",
         "prepublishOnly": "npm run build",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage",
         "storybook": "storybook dev -p 6006",
