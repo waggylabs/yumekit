@@ -856,8 +856,11 @@ Component-specific tokens (subset — see `styles/variables.css` for the full li
 --component-stepper-connector-color-complete            /* connector for completed segments */
 --component-stepper-color-pending                       /* pending step circle color */
 --component-stepper-color-active                        /* active step circle color */
+--component-stepper-color-active-text                   /* active step text color */
 --component-stepper-color-complete                      /* completed step circle color */
+--component-stepper-color-complete-text                 /* completed step text color */
 --component-stepper-color-error                         /* error step circle color */
+--component-stepper-color-error-text                    /* error step text color */
 --component-stepper-label-color                         /* step label text color */
 
 /* y-date / y-datepicker */
