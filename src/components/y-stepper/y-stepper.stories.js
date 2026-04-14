@@ -47,7 +47,7 @@ const ITEMS_WITH_STATUS = JSON.stringify([
 ]);
 
 const panelStyle =
-    "padding: 24px; border: 1px solid var(--base-border--, #e0e0e0); border-radius: 8px; margin-top: 8px;";
+    "background: var(--base-background-component, #f7f7fa);padding: 24px; border: 1px solid var(--base-border, #e0e0e0); border-radius: 8px; margin-top: 8px;";
 
 export default {
     title: "Components/Stepper",

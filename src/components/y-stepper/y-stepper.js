@@ -209,18 +209,19 @@ export class YumeStepper extends HTMLElement {
     // -------------------------------------------------------------------------
 
     _buildConnectorStyles() {
+        const sizeVar = `var(--component-stepper-indicator-size-${this.size}, ${this._getDefaultIndicatorSize()})`;
         return `
             .connector {
                 flex: 1;
-                min-width: 24px;
-                min-height: 24px;
+                min-width: calc(${sizeVar} + 8px);
+                min-height: calc(${sizeVar} + 8px);
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
             .connector-line {
-                background: var(--component-stepper-connector-color, var(--base-border--, #ddd));
+                background: var(--component-stepper-connector-color, var(--base-border, #ddd));
                 transition: background 0.2s ease;
             }
 
@@ -490,7 +491,7 @@ export class YumeStepper extends HTMLElement {
                 font-weight: var(--font-weight-heading, 500);
                 flex-shrink: 0;
                 transition: background 0.2s ease, color 0.2s ease;
-                background: var(--component-stepper-color-pending, var(--base-border--, #ccc));
+                background: var(--component-stepper-color-pending, var(--base-border, #ccc));
                 color: var(--component-stepper-label-color, var(--base-content--, #333));
             }
 
