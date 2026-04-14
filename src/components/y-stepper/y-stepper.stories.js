@@ -5,7 +5,7 @@ import "../../icons/all.js";
 
 const navButtons = (id, { first = false, last = false } = {}) => `
     <div style="display:flex;gap:8px;margin-top:16px">
-        ${first ? "" : `<y-button variant="outline" onclick="document.getElementById('${id}').previous()">Previous</y-button>`}
+        ${first ? "" : `<y-button onclick="document.getElementById('${id}').previous()">Previous</y-button>`}
         ${
             last
                 ? `<y-button color="success" onclick="document.getElementById('${id}').next()">Finish</y-button>`
@@ -304,7 +304,7 @@ export const Interactive = {
                     <h3 style="margin:0 0 8px">Step 3</h3>
                     <p style="margin:0 0 16px">Final step content.</p>
                     ${navButtons("interactive-stepper", { last: true })}
-                    <y-button variant="outline" onclick="document.getElementById('interactive-stepper').reset()" style="margin-top:8px">Reset</y-button>
+                    <y-button onclick="document.getElementById('interactive-stepper').reset()" style="margin-top:8px">Reset</y-button>
                 </div>
             </y-stepper>
         `;

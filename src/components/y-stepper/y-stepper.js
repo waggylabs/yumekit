@@ -324,11 +324,13 @@ export class YumeStepper extends HTMLElement {
         };
 
         if (isActive) attrs["aria-current"] = "step";
-        if (!isClickable) {
-            attrs["aria-disabled"] = "true";
+        if (isActive) {
+            attrs.tabindex = "0";
+        } else if (isClickable) {
             attrs.tabindex = "-1";
         } else {
-            attrs.tabindex = "0";
+            attrs["aria-disabled"] = "true";
+            attrs.tabindex = "-1";
         }
 
         const icon = this._buildIndicatorIcon(item, index, state);
@@ -630,11 +632,8 @@ export class YumeStepper extends HTMLElement {
     }
 
     _getStepState(index) {
-        const item = this.items[index];
-
-        if (item?.status) return item.status;
-        if (this._stepStates[index]) return this._stepStates[index];
-        if (index === this.current) return "active";
+        if (this._stepStates[index] && this._stepStates[index] !== "pending")
+            return this._stepStates[index];
 
         return "pending";
     }
@@ -665,11 +664,19 @@ export class YumeStepper extends HTMLElement {
         if (e.key === nextKey) {
             e.preventDefault();
             const next = indicators[currentIdx + 1];
-            if (next) next.focus();
+            if (next) {
+                e.currentTarget.setAttribute("tabindex", "-1");
+                next.setAttribute("tabindex", "0");
+                next.focus();
+            }
         } else if (e.key === prevKey) {
             e.preventDefault();
             const prev = indicators[currentIdx - 1];
-            if (prev) prev.focus();
+            if (prev) {
+                e.currentTarget.setAttribute("tabindex", "-1");
+                prev.setAttribute("tabindex", "0");
+                prev.focus();
+            }
         } else if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             if (
@@ -685,7 +692,9 @@ export class YumeStepper extends HTMLElement {
         const items = this.items;
         const existing = this._stepStates;
 
-        this._stepStates = items.map((_, i) => existing[i] || "pending");
+        this._stepStates = items.map(
+            (item, i) => existing[i] || item.status || "pending",
+        );
     }
 }
 
