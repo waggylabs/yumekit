@@ -290,11 +290,20 @@ export class YumeStepper extends HTMLElement {
 
         if (index < items.length - 1) {
             children.push(
-                _el("div", { class: "connector", part: "connector" }, [
-                    _el("div", {
-                        class: `connector-line ${state === "complete" ? "complete" : ""}`,
-                    }),
-                ]),
+                _el(
+                    "div",
+                    {
+                        class: "connector",
+                        part: "connector",
+                        role: "presentation",
+                        "aria-hidden": "true",
+                    },
+                    [
+                        _el("div", {
+                            class: `connector-line ${state === "complete" ? "complete" : ""}`,
+                        }),
+                    ],
+                ),
             );
         }
 
