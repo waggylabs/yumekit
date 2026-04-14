@@ -53,6 +53,41 @@ Injects design tokens as CSS custom properties. Wraps entire app.
 
 ---
 
+## y-breadcrumbs
+
+Navigation breadcrumb trail with collapse/expand support and SPA-friendly navigation.
+
+| Attribute    | Values / Notes                                                                              |
+|-------------|----------------------------------------------------------------------------------------------|
+| `items`     | JSON array of `{ text, href?, icon? }` objects                                              |
+| `size`      | `small` \| `medium` (default) \| `large`                                                    |
+| `separator` | Separator character (default: chevron-right icon). Can also use `separator` slot for custom icon separators |
+| `max-items` | Number — collapses middle items when count exceeds this value                                |
+| `history`   | Set to `"false"` for full-page navigation instead of `pushState`                            |
+
+**Events:** `navigate` (cancelable, `detail: { href }`), `expand`
+
+**Slots:** `separator` (custom separator element), `{index}-icon` (per-item icon override)
+
+**CSS Parts:** `breadcrumbs`, `list`, `item`, `item--current`, `link`, `separator`, `expand-btn`
+
+**CSS Custom Properties:**
+- `--component-breadcrumbs-font-size-{size}` — font size per size variant
+- `--component-breadcrumbs-gap-{size}` — gap between items per size variant
+- `--component-breadcrumbs-color` — link color
+- `--component-breadcrumbs-color-hover` — link hover color
+- `--component-breadcrumbs-color-current` — current (last) item color
+- `--component-breadcrumbs-separator-color` — separator color
+
+```html
+<y-breadcrumbs
+    items='[{"text":"Home","href":"/"},{"text":"Products","href":"/products"},{"text":"Widget"}]'
+    max-items="3"
+></y-breadcrumbs>
+```
+
+---
+
 ## y-button
 
 When `href` is set, the internal element renders as `<a>` instead of `<button>` — all styles, sizes, and color variants apply identically.

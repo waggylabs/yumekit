@@ -25,6 +25,13 @@ declare module "react" {
                 shape?: string;
                 color?: string;
             }>;
+            "y-breadcrumbs": El<{
+                items?: string;
+                size?: "small" | "medium" | "large";
+                separator?: string;
+                "max-items"?: string | number;
+                history?: string;
+            }>;
             "y-badge": El<{
                 value?: string;
                 position?: "top" | "bottom";
