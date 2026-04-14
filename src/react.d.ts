@@ -234,6 +234,15 @@ declare module "react" {
                 justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
                 responsive?: boolean | string;
             }>;
+            "y-stepper": El<{
+                items?: unknown[] | string;
+                current?: number | string;
+                orientation?: "horizontal" | "vertical";
+                position?: "start" | "end";
+                size?: "small" | "medium" | "large";
+                linear?: boolean | string;
+                editable?: boolean | string;
+            }>;
             "y-switch": El<{
                 name?: string;
                 value?: string;

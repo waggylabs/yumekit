@@ -721,6 +721,51 @@ Slots: one slot per tab, named by `id` from options
 
 ---
 
+## y-stepper
+
+Multi-step wizard that guides users through a sequential flow. Step content is provided via named slots.
+
+| Attribute     | Values / Notes                                                      |
+|--------------|---------------------------------------------------------------------|
+| `items`      | JSON array of `{ label, slot, description?, icon?, status? }` objects |
+| `current`    | number — zero-based active step index (default: `0`)                |
+| `orientation`| `horizontal` (default) \| `vertical`                               |
+| `position`   | `start` (default) \| `end` — indicators before or after the content |
+| `size`       | `small` \| `medium` (default) \| `large`                           |
+| `linear`     | boolean — restricts free navigation; must use `next()` / `complete()` |
+| `editable`   | boolean — allows clicking completed steps to return to them         |
+
+Items shape: `{ label: string, slot: string, description?: string, icon?: string, status?: "complete" | "error" | "pending" }`
+
+Slots: `{step.slot}` (content panel per step), `{step.slot}-icon` (custom icon for indicator)
+
+Events: `change` (cancelable, `{ index, previousIndex, step }`), `complete` (`{ step, index }`), `finish`
+
+Methods: `next()`, `previous()`, `goTo(index)`, `complete(index?)`, `reset()`
+
+CSS Custom Properties: `--component-stepper-indicator-size-{small,medium,large}`, `--component-stepper-connector-color`, `--component-stepper-connector-color-complete`, `--component-stepper-color-{pending,active,complete,error}`, `--component-stepper-label-color`, `--component-stepper-gap-{small,medium,large}`
+
+CSS Parts: `indicators`, `indicator`, `indicator--active`, `indicator--complete`, `indicator--error`, `indicator-icon`, `indicator-label`, `indicator-description`, `connector`, `panels`, `panel`
+
+```html
+<y-stepper items='[
+  {"label":"Account","slot":"account","description":"Create your account"},
+  {"label":"Details","slot":"details","icon":"user"},
+  {"label":"Review","slot":"review"}
+]'>
+  <div slot="account">Account form here...</div>
+  <div slot="details">Details form here...</div>
+  <div slot="review">Review content here...</div>
+</y-stepper>
+
+<!-- Vertical with linear progression -->
+<y-stepper items='[...]' orientation="vertical" linear>
+  ...
+</y-stepper>
+```
+
+---
+
 ## y-panelbar + y-panel
 
 Accordion group. `y-panelbar` wraps one or more `y-panel` elements.

@@ -2565,6 +2565,62 @@
               "$value": "{radii.x-small}"
             }
           },
+          "stepper": {
+            "indicator-size-small": {
+              "$scopes": [
+                "WIDTH_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 28
+            },
+            "indicator-size-medium": {
+              "$scopes": [
+                "WIDTH_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 36
+            },
+            "indicator-size-large": {
+              "$scopes": [
+                "WIDTH_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 44
+            },
+            "gap-small": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.x-small}"
+            },
+            "gap-medium": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.small}"
+            },
+            "gap-large": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.medium}"
+            }
+          },
           "switch": {
             "border-radius": {
               "$scopes": [
