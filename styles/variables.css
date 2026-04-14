@@ -460,6 +460,14 @@
     --component-stack-mobile-breakpoint: 576px;
     --component-stack-tablet-breakpoint: 768px;
 
+    /* stepper */
+    --component-stepper-indicator-size-small: 28px;
+    --component-stepper-indicator-size-medium: 36px;
+    --component-stepper-indicator-size-large: 44px;
+    --component-stepper-gap-small: var(--spacing-x-small);
+    --component-stepper-gap-medium: var(--spacing-small);
+    --component-stepper-gap-large: var(--spacing-medium);
+
     /* slider */
     --component-slider-border-radius-inner: var(--radii-small);
     --component-slider-border-radius-outer: calc(var(--radii-small) + 4px);
@@ -663,6 +671,16 @@
     --component-datepicker-border-color: var(--base-border);
     --component-datepicker-header-color: var(--base-content-light);
     --component-datepicker-shadow: var(--base-shadow);
+    --component-stepper-connector-color: var(--base-border);
+    --component-stepper-connector-color-complete: var(--primary-content--);
+    --component-stepper-color-pending: var(--base-border);
+    --component-stepper-color-active: var(--primary-content--);
+    --component-stepper-color-active-text: var(--primary-content-inverse);
+    --component-stepper-color-complete: var(--success-content--);
+    --component-stepper-color-complete-text: var(--success-content-inverse);
+    --component-stepper-color-error: var(--error-content--);
+    --component-stepper-color-error-text: var(--error-content-inverse);
+    --component-stepper-label-color: var(--base-content--);
     --component-tabs-background: var(--base-background-component);
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-border);

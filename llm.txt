@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 32 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 33 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -689,6 +689,41 @@ document.querySelector("y-toast").show("Saved successfully!", { color: "success"
 
 ---
 
+### y-stepper
+Multi-step wizard for sequential flows.
+
+Tag: `<y-stepper>`
+Attributes:
+- `items` — JSON array of step objects: `[{"label": "Step", "slot": "step-name", "description": "Optional subtitle", "icon": "icon-name", "status": "complete|error|pending"}]`. `label` and `slot` are required.
+- `current` — zero-based active step index (default: `0`)
+- `orientation` — `"horizontal"` (default) | `"vertical"`
+- `position` — `"start"` (default) | `"end"` — whether indicators appear before or after the content panels
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `linear` — boolean, restricts navigation to `next()` / `complete()` only
+- `editable` — boolean, allows clicking completed steps to go back
+
+Events: `change` (cancelable, `{ index, previousIndex, step }`), `complete` (`{ step, index }`), `finish`
+
+Methods: `next()`, `previous()`, `goTo(index)`, `complete(index?)`, `reset()`
+
+Slots: `{step.slot}` (content panel per step), `{step.slot}-icon` (custom indicator icon)
+
+CSS Parts: `indicators`, `indicator`, `indicator--active`, `indicator--complete`, `indicator--error`, `indicator-icon`, `indicator-label`, `indicator-description`, `connector`, `panels`, `panel`
+
+```html
+<y-stepper items='[
+  {"label":"Account","slot":"account","description":"Create your account"},
+  {"label":"Details","slot":"details","icon":"user"},
+  {"label":"Review","slot":"review"}
+]'>
+  <div slot="account">Account form...</div>
+  <div slot="details">Details form...</div>
+  <div slot="review">Review content...</div>
+</y-stepper>
+```
+
+---
+
 ### y-tabs
 Tabbed interface.
 
@@ -813,6 +848,20 @@ Component-specific tokens (subset — see `styles/variables.css` for the full li
 --component-colorpicker-gap                         /* gap between canvas, sliders, inputs */
 --component-colorpicker-border-radius               /* corner radius for canvas and sliders */
 --component-colorpicker-checkerboard-size           /* alpha slider checkerboard cell size */
+
+/* y-stepper */
+--component-stepper-indicator-size-small/medium/large  /* diameter of step circle */
+--component-stepper-gap-small/medium/large             /* spacing between indicators */
+--component-stepper-connector-color                     /* line connecting indicators */
+--component-stepper-connector-color-complete            /* connector for completed segments */
+--component-stepper-color-pending                       /* pending step circle color */
+--component-stepper-color-active                        /* active step circle color */
+--component-stepper-color-active-text                   /* active step text color */
+--component-stepper-color-complete                      /* completed step circle color */
+--component-stepper-color-complete-text                 /* completed step text color */
+--component-stepper-color-error                         /* error step circle color */
+--component-stepper-color-error-text                    /* error step text color */
+--component-stepper-label-color                         /* step label text color */
 
 /* y-date / y-datepicker */
 --component-datepicker-background       /* panel surface color */
