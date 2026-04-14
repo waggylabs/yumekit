@@ -6,6 +6,7 @@ import {
     getColorVarPair,
     resolveCSSColor,
     hideEmptySlotContainers,
+    createElement,
 } from "./helpers.js";
 
 describe("helpers", () => {
@@ -196,6 +197,50 @@ describe("helpers", () => {
             expect(
                 el.shadowRoot.querySelector(".body-wrap").style.display,
             ).to.equal("none");
+        });
+    });
+
+    // ── createElement ────────────────────────────────────────
+    describe("createElement", () => {
+        it("creates an element with the given tag", () => {
+            const el = createElement("div");
+            expect(el.tagName).to.equal("DIV");
+        });
+
+        it("sets attributes from the attrs object", () => {
+            const el = createElement("button", { class: "btn", "aria-label": "Go" });
+            expect(el.getAttribute("class")).to.equal("btn");
+            expect(el.getAttribute("aria-label")).to.equal("Go");
+        });
+
+        it("skips null, undefined, and false attribute values", () => {
+            const el = createElement("div", { id: null, hidden: false, title: undefined });
+            expect(el.hasAttribute("id")).to.be.false;
+            expect(el.hasAttribute("hidden")).to.be.false;
+            expect(el.hasAttribute("title")).to.be.false;
+        });
+
+        it("sets valueless attribute for true", () => {
+            const el = createElement("input", { disabled: true });
+            expect(el.hasAttribute("disabled")).to.be.true;
+            expect(el.getAttribute("disabled")).to.equal("");
+        });
+
+        it("appends text children", () => {
+            const el = createElement("span", {}, ["hello"]);
+            expect(el.textContent).to.equal("hello");
+        });
+
+        it("appends DOM node children", () => {
+            const child = document.createElement("em");
+            const el = createElement("div", {}, [child]);
+            expect(el.firstChild).to.equal(child);
+        });
+
+        it("skips falsy children", () => {
+            const el = createElement("div", {}, [null, "text", undefined]);
+            expect(el.childNodes.length).to.equal(1);
+            expect(el.textContent).to.equal("text");
         });
     });
 });

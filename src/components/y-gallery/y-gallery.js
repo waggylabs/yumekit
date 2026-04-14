@@ -1,25 +1,5 @@
 import "../y-icon/y-icon.js";
-
-function _el(tag, attrs, children) {
-    const node = document.createElement(tag);
-
-    if (attrs) {
-        for (const [k, v] of Object.entries(attrs)) {
-            if (v != null && v !== false)
-                node.setAttribute(k, v === true ? "" : v);
-        }
-    }
-
-    if (children) {
-        for (const child of children) {
-            if (typeof child === "string")
-                node.appendChild(document.createTextNode(child));
-            else if (child) node.appendChild(child);
-        }
-    }
-
-    return node;
-}
+import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeGallery extends HTMLElement {
     static get observedAttributes() {
@@ -58,8 +38,15 @@ export class YumeGallery extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+
+        const wasExpanded = this._expandedIndex >= 0;
+
         this.render();
         this._bindSlotListener();
+
+        if (wasExpanded) {
+            this._showExpandedView();
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -197,9 +184,8 @@ export class YumeGallery extends HTMLElement {
         });
         if (!this.dispatchEvent(event)) return;
 
-        this._previouslyFocused = this.shadowRoot.querySelector(
-            `.item[data-index="${index}"]`,
-        );
+        const item_el = this.shadowRoot.querySelector(`.item[data-index="${index}"]`);
+        this._previouslyFocused = item_el?.querySelector(".item-btn") || item_el;
         this._expandedIndex = index;
         this._showExpandedView();
         document.addEventListener("keydown", this._onKeyDown);
@@ -322,7 +308,7 @@ export class YumeGallery extends HTMLElement {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: var(--base-content-inverse, #fff);
+                color: var(--component-gallery-expand-color, #fff);
             }
 
             .expand-content {
@@ -343,7 +329,6 @@ export class YumeGallery extends HTMLElement {
                 margin-top: var(--spacing-medium, 8px);
                 font-size: 0.95em;
                 text-align: center;
-                color: var(--base-content-inverse, #fff);
                 max-width: 600px;
             }
 
@@ -351,15 +336,14 @@ export class YumeGallery extends HTMLElement {
                 margin-top: var(--spacing-small, 4px);
                 font-size: 0.8em;
                 opacity: 0.7;
-                color: var(--base-content-inverse, #fff);
             }
 
             .expand-prev,
             .expand-next,
             .expand-close {
                 position: absolute;
-                background: var(--component-gallery-arrow-background, var(--neutral-white-translucent, rgba(255,255,255,0.15)));
-                color: var(--component-gallery-arrow-color, var(--base-content-inverse, #fff));
+                background: var(--component-gallery-expand-button-background, rgba(255,255,255,0.15));
+                color: var(--component-gallery-expand-color, #fff);
                 border: none;
                 border-radius: var(--radii-full, 50%);
                 width: ${arrowS};
@@ -375,13 +359,13 @@ export class YumeGallery extends HTMLElement {
             .expand-prev:hover,
             .expand-next:hover,
             .expand-close:hover {
-                background: var(--base-background-hover, rgba(255,255,255,0.3));
+                background: var(--component-gallery-expand-button-background-hover, rgba(255,255,255,0.3));
             }
 
             .expand-prev:focus-visible,
             .expand-next:focus-visible,
             .expand-close:focus-visible {
-                outline: 2px solid var(--base-content-inverse, #fff);
+                outline: 2px solid var(--component-gallery-expand-color, #fff);
                 outline-offset: 2px;
             }
 
@@ -456,11 +440,27 @@ export class YumeGallery extends HTMLElement {
 
     _buildInteractiveStyles() {
         return `
-            .item {
+            .item-btn {
+                display: block;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                border: none;
+                background: none;
                 cursor: pointer;
+                font: inherit;
+                color: inherit;
+                border-radius: inherit;
             }
 
-            .item::after {
+            .item-btn img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .item-btn::after {
                 content: "";
                 position: absolute;
                 inset: 0;
@@ -471,12 +471,12 @@ export class YumeGallery extends HTMLElement {
                 border-radius: inherit;
             }
 
-            .item:hover::after,
-            .item:focus-visible::after {
+            .item-btn:hover::after,
+            .item-btn:focus-visible::after {
                 opacity: 1;
             }
 
-            .item:focus-visible {
+            .item-btn:focus-visible {
                 outline: 2px solid var(--primary-content--);
                 outline-offset: 2px;
             }
@@ -595,27 +595,18 @@ export class YumeGallery extends HTMLElement {
 
     _createItemWrapper(data, index) {
         const attrs = { class: "item", part: "item", role: "listitem", "data-index": String(index) };
-
-        if (this.expandable) {
-            attrs.tabindex = "0";
-            attrs.role = "button";
-            attrs["aria-label"] = `View image: ${data.alt || `Image ${index + 1}`}`;
-        }
-
         const img = _el("img", { src: data.src, alt: data.alt, part: "item-img", draggable: "false" });
-        const wrapper = _el("div", attrs, [img]);
 
         if (this.expandable) {
-            wrapper.addEventListener("click", () => this.open(index));
-            wrapper.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    this.open(index);
-                }
-            });
+            const btn = _el("button", {
+                class: "item-btn",
+                "aria-label": `View image: ${data.alt || `Image ${index + 1}`}`,
+            }, [img]);
+            btn.addEventListener("click", () => this.open(index));
+            return _el("div", attrs, [btn]);
         }
 
-        return wrapper;
+        return _el("div", attrs, [img]);
     }
 
     _createNavButton(name, label, iconName, slotName, disabled) {

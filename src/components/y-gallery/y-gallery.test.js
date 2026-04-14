@@ -188,8 +188,9 @@ describe("YumeGallery", () => {
         await new Promise((r) => setTimeout(r, 0));
 
         const item = el.shadowRoot.querySelector(".item");
-        expect(item.getAttribute("tabindex")).to.equal("0");
-        expect(item.getAttribute("role")).to.equal("button");
+        const btn = item.querySelector(".item-btn");
+        expect(btn).to.exist;
+        expect(btn.tagName).to.equal("BUTTON");
     });
 
     it("does not make items interactive when expandable=false", async () => {
@@ -199,7 +200,7 @@ describe("YumeGallery", () => {
         await new Promise((r) => setTimeout(r, 0));
 
         const item = el.shadowRoot.querySelector(".item");
-        expect(item.hasAttribute("tabindex")).to.be.false;
+        expect(item.querySelector(".item-btn")).to.be.null;
     });
 
     // ── Expand event ──────────────────────────────────────────
@@ -210,8 +211,8 @@ describe("YumeGallery", () => {
         </y-gallery>`);
         await new Promise((r) => setTimeout(r, 0));
 
-        const item = el.shadowRoot.querySelector(".item");
-        setTimeout(() => item.click());
+        const btn = el.shadowRoot.querySelector(".item .item-btn");
+        setTimeout(() => btn.click());
 
         const event = await oneEvent(el, "expand");
         expect(event).to.exist;
@@ -459,14 +460,19 @@ describe("YumeGallery", () => {
         expect(item.getAttribute("role")).to.equal("listitem");
     });
 
-    it("expandable items have aria-label with alt text", async () => {
+    it("expandable items keep role=listitem with a nested button", async () => {
         const el = await fixture(html`<y-gallery>
             <img src="a.jpg" alt="Mountain vista">
         </y-gallery>`);
         await new Promise((r) => setTimeout(r, 0));
 
         const item = el.shadowRoot.querySelector(".item");
-        expect(item.getAttribute("aria-label")).to.equal("View image: Mountain vista");
+        expect(item.getAttribute("role")).to.equal("listitem");
+
+        const btn = item.querySelector(".item-btn");
+        expect(btn).to.exist;
+        expect(btn.tagName).to.equal("BUTTON");
+        expect(btn.getAttribute("aria-label")).to.equal("View image: Mountain vista");
     });
 
     it("expanded view has dialog role with aria-modal", async () => {
@@ -741,6 +747,24 @@ describe("YumeGallery", () => {
 
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("5");
+    });
+
+    it("preserves expanded overlay when attribute changes while open", async () => {
+        const el = await fixture(html`<y-gallery>
+            <img src="a.jpg" alt="A">
+            <img src="b.jpg" alt="B">
+        </y-gallery>`);
+        await new Promise((r) => setTimeout(r, 0));
+
+        el.open(0);
+        await new Promise((r) => setTimeout(r, 0));
+        expect(el.shadowRoot.querySelector(".expand-overlay")).to.exist;
+
+        el.setAttribute("size", "large");
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.shadowRoot.querySelector(".expand-overlay")).to.exist;
+        expect(el.shadowRoot.querySelector(".expand-img")).to.exist;
     });
 
     // ── Host display ──────────────────────────────────────────
