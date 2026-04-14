@@ -1,5 +1,26 @@
 import "../y-icon/y-icon.js";
 
+function _el(tag, attrs, children) {
+    const node = document.createElement(tag);
+
+    if (attrs) {
+        for (const [k, v] of Object.entries(attrs)) {
+            if (v != null && v !== false)
+                node.setAttribute(k, v === true ? "" : v);
+        }
+    }
+
+    if (children) {
+        for (const child of children) {
+            if (typeof child === "string")
+                node.appendChild(document.createTextNode(child));
+            else if (child) node.appendChild(child);
+        }
+    }
+
+    return node;
+}
+
 export class YumeGallery extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -113,10 +134,13 @@ export class YumeGallery extends HTMLElement {
     /** Closes the expanded view. */
     close() {
         if (this._expandedIndex < 0) return;
+
         const idx = this._expandedIndex;
         this._expandedIndex = -1;
+
         this._removeExpandedView();
         document.removeEventListener("keydown", this._onKeyDown);
+
         this.dispatchEvent(
             new CustomEvent("close", {
                 bubbles: true,
@@ -124,6 +148,7 @@ export class YumeGallery extends HTMLElement {
                 detail: { index: idx },
             }),
         );
+
         if (this._previouslyFocused) {
             this._previouslyFocused.focus();
             this._previouslyFocused = null;
@@ -133,14 +158,18 @@ export class YumeGallery extends HTMLElement {
     /** Advances to the next image in the expanded view. */
     next() {
         if (this._expandedIndex < 0) return;
+
         const prevIndex = this._expandedIndex;
         let nextIndex = prevIndex + 1;
+
         if (nextIndex >= this._items.length) {
             if (this.loop) nextIndex = 0;
             else return;
         }
+
         this._expandedIndex = nextIndex;
         this._updateExpandedView();
+
         this.dispatchEvent(
             new CustomEvent("navigate", {
                 bubbles: true,
@@ -179,12 +208,15 @@ export class YumeGallery extends HTMLElement {
     /** Returns to the previous image in the expanded view. */
     previous() {
         if (this._expandedIndex < 0) return;
+
         const prevIndex = this._expandedIndex;
         let nextIndex = prevIndex - 1;
+
         if (nextIndex < 0) {
             if (this.loop) nextIndex = this._items.length - 1;
             else return;
         }
+
         this._expandedIndex = nextIndex;
         this._updateExpandedView();
         this.dispatchEvent(
@@ -214,13 +246,6 @@ export class YumeGallery extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
-    _bindSlotListener() {
-        const slot = this.shadowRoot.querySelector("slot");
-        if (slot) {
-            slot.addEventListener("slotchange", () => this._indexItems());
-        }
-    }
-
     _bindExpandedListeners() {
         const overlay = this.shadowRoot.querySelector(".expand-overlay");
         if (!overlay) return;
@@ -240,137 +265,14 @@ export class YumeGallery extends HTMLElement {
         });
     }
 
-    _buildExpandedHTML() {
-        const item = this._items[this._expandedIndex];
-        const caption = item.caption || item.alt || "";
-        const counter = `${this._expandedIndex + 1} / ${this._items.length}`;
-        const size = this.size;
-        const iconSize =
-            size === "small"
-                ? "medium"
-                : size === "large"
-                  ? "x-large"
-                  : "large";
-        const isFirst = this._expandedIndex === 0;
-        const isLast = this._expandedIndex === this._items.length - 1;
-        const prevDisabled = !this.loop && isFirst;
-        const nextDisabled = !this.loop && isLast;
-
-        return `
-            <div class="expand-overlay" part="expand-overlay" role="dialog" aria-modal="true" aria-label="Image viewer">
-                <button class="expand-close" part="expand-close" aria-label="Close image viewer">
-                    <slot name="expand-close-icon"><y-icon name="close" size="${iconSize}"></y-icon></slot>
-                </button>
-                <button class="expand-prev" part="expand-prev" aria-label="Previous image"${prevDisabled ? ' aria-disabled="true"' : ""}>
-                    <slot name="expand-prev-icon"><y-icon name="chevron-left" size="${iconSize}"></y-icon></slot>
-                </button>
-                <div class="expand-content">
-                    <img class="expand-img" part="expand-img" src="${item.fullSrc}" alt="${item.alt || ""}" aria-current="true">
-                    ${caption ? `<div class="expand-caption" part="expand-caption">${caption}</div>` : ""}
-                    <div class="expand-counter" part="expand-counter">${counter}</div>
-                </div>
-                <button class="expand-next" part="expand-next" aria-label="Next image"${nextDisabled ? ' aria-disabled="true"' : ""}>
-                    <slot name="expand-next-icon"><y-icon name="chevron-right" size="${iconSize}"></y-icon></slot>
-                </button>
-            </div>
-        `;
+    _bindSlotListener() {
+        const slot = this.shadowRoot.querySelector("slot");
+        if (slot) {
+            slot.addEventListener("slotchange", () => this._indexItems());
+        }
     }
 
-    _buildStyles() {
-        const layout = this.layout;
-        const columns = this.columns;
-        const gap = this._resolveGap();
-        const aspectRatio = this.aspectRatio;
-        const isExpandable = this.expandable;
-        const size = this.size;
-
-        const thumbnailMinWidth = {
-            small: "80px",
-            medium: "120px",
-            large: "180px",
-        };
-        const minW = thumbnailMinWidth[size] || thumbnailMinWidth.medium;
-
-        const arrowSize = {
-            small: "32px",
-            medium: "44px",
-            large: "56px",
-        };
-        const arrowS = arrowSize[size] || arrowSize.medium;
-
-        const tabletCols = Math.min(2, columns);
-
-        let layoutCSS = "";
-
-        if (layout === "grid") {
-            layoutCSS = `
-                .gallery {
-                    display: grid;
-                    grid-template-columns: repeat(var(--component-gallery-columns, ${columns}), 1fr);
-                    gap: ${gap};
-                }
-                .item img {
-                    aspect-ratio: var(--component-gallery-aspect-ratio, ${aspectRatio});
-                }
-                @media (max-width: 768px) {
-                    .gallery {
-                        grid-template-columns: repeat(${tabletCols}, 1fr);
-                    }
-                }
-                @media (max-width: 480px) {
-                    .gallery {
-                        grid-template-columns: 1fr;
-                    }
-                }
-            `;
-        } else if (layout === "masonry") {
-            layoutCSS = `
-                .gallery {
-                    columns: var(--component-gallery-columns, ${columns});
-                    column-gap: ${gap};
-                }
-                .item {
-                    break-inside: avoid;
-                    margin-bottom: ${gap};
-                }
-                @media (max-width: 768px) {
-                    .gallery {
-                        columns: ${tabletCols};
-                    }
-                }
-                @media (max-width: 480px) {
-                    .gallery {
-                        columns: 1;
-                    }
-                }
-            `;
-        } else if (layout === "row") {
-            layoutCSS = `
-                .gallery {
-                    display: flex;
-                    flex-direction: row;
-                    gap: ${gap};
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                }
-                .item {
-                    flex: 0 0 auto;
-                    min-width: ${minW};
-                }
-                .item img {
-                    aspect-ratio: var(--component-gallery-aspect-ratio, ${aspectRatio});
-                }
-            `;
-        } else if (layout === "column") {
-            layoutCSS = `
-                .gallery {
-                    display: flex;
-                    flex-direction: column;
-                    gap: ${gap};
-                }
-            `;
-        }
-
+    _buildBaseStyles() {
         return `
             :host {
                 display: block;
@@ -392,8 +294,6 @@ export class YumeGallery extends HTMLElement {
                 padding: 0;
             }
 
-            ${layoutCSS}
-
             .item {
                 position: relative;
                 overflow: hidden;
@@ -406,39 +306,14 @@ export class YumeGallery extends HTMLElement {
                 height: 100%;
                 object-fit: cover;
             }
+        `;
+    }
 
-            ${
-                isExpandable
-                    ? `
-            .item {
-                cursor: pointer;
-            }
+    _buildExpandStyles() {
+        const arrowSizeMap = { small: "32px", medium: "44px", large: "56px" };
+        const arrowS = arrowSizeMap[this.size] || arrowSizeMap.medium;
 
-            .item::after {
-                content: "";
-                position: absolute;
-                inset: 0;
-                background: var(--component-gallery-thumbnail-overlay-color, var(--neutral-black-translucent, rgba(0,0,0,0.12)));
-                opacity: 0;
-                transition: opacity 0.2s ease;
-                pointer-events: none;
-                border-radius: inherit;
-            }
-
-            .item:hover::after,
-            .item:focus-visible::after {
-                opacity: 1;
-            }
-
-            .item:focus-visible {
-                outline: 2px solid var(--primary-content--);
-                outline-offset: 2px;
-            }
-            `
-                    : ""
-            }
-
-            /* Expanded view */
+        return `
             .expand-overlay {
                 position: fixed;
                 inset: 0;
@@ -510,8 +385,8 @@ export class YumeGallery extends HTMLElement {
                 outline-offset: 2px;
             }
 
-            .expand-prev[aria-disabled="true"],
-            .expand-next[aria-disabled="true"] {
+            .expand-prev:disabled,
+            .expand-next:disabled {
                 opacity: 0.3;
                 cursor: default;
                 pointer-events: none;
@@ -534,6 +409,236 @@ export class YumeGallery extends HTMLElement {
                 right: var(--spacing-large, 16px);
             }
         `;
+    }
+
+    _buildExpandedDOM() {
+        const item = this._items[this._expandedIndex];
+        const caption = item.caption || item.alt || "";
+        const counter = `${this._expandedIndex + 1} / ${this._items.length}`;
+        const prevDisabled = !this.loop && this._expandedIndex === 0;
+        const nextDisabled =
+            !this.loop && this._expandedIndex === this._items.length - 1;
+
+        const closeBtn = this._createNavButton(
+            "expand-close",
+            "Close image viewer",
+            "close",
+            "expand-close-icon",
+        );
+        const prevBtn = this._createNavButton(
+            "expand-prev",
+            "Previous image",
+            "chevron-left",
+            "expand-prev-icon",
+            prevDisabled,
+        );
+        const nextBtn = this._createNavButton(
+            "expand-next",
+            "Next image",
+            "chevron-right",
+            "expand-next-icon",
+            nextDisabled,
+        );
+        const content = this._createExpandContent(item, caption, counter);
+
+        return _el(
+            "div",
+            {
+                class: "expand-overlay",
+                part: "expand-overlay",
+                role: "dialog",
+                "aria-modal": "true",
+                "aria-label": "Image viewer",
+            },
+            [closeBtn, prevBtn, content, nextBtn],
+        );
+    }
+
+    _buildInteractiveStyles() {
+        return `
+            .item {
+                cursor: pointer;
+            }
+
+            .item::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: var(--component-gallery-thumbnail-overlay-color, var(--neutral-black-translucent, rgba(0,0,0,0.12)));
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                pointer-events: none;
+                border-radius: inherit;
+            }
+
+            .item:hover::after,
+            .item:focus-visible::after {
+                opacity: 1;
+            }
+
+            .item:focus-visible {
+                outline: 2px solid var(--primary-content--);
+                outline-offset: 2px;
+            }
+        `;
+    }
+
+    _buildLayoutStyles() {
+        const gap = this._resolveGap();
+        const columns = this.columns;
+        const aspectRatio = this.aspectRatio;
+        const tabletCols = Math.min(2, columns);
+        const minW = this._getThumbnailMinWidth();
+
+        const responsiveCSS = `
+            @media (max-width: 768px) {
+                .gallery { ${this.layout === "grid" ? `grid-template-columns: repeat(${tabletCols}, 1fr)` : `columns: ${tabletCols}`}; }
+            }
+            @media (max-width: 480px) {
+                .gallery { ${this.layout === "grid" ? "grid-template-columns: 1fr" : "columns: 1"}; }
+            }
+        `;
+
+        switch (this.layout) {
+            case "grid":
+                return `
+                    .gallery {
+                        display: grid;
+                        grid-template-columns: repeat(var(--component-gallery-columns, ${columns}), 1fr);
+                        gap: ${gap};
+                    }
+                    .item img {
+                        aspect-ratio: var(--component-gallery-aspect-ratio, ${aspectRatio});
+                    }
+                    ${responsiveCSS}
+                `;
+            case "masonry":
+                return `
+                    .gallery {
+                        columns: var(--component-gallery-columns, ${columns});
+                        column-gap: ${gap};
+                    }
+                    .item {
+                        break-inside: avoid;
+                        margin-bottom: ${gap};
+                    }
+                    ${responsiveCSS}
+                `;
+            case "row":
+                return `
+                    .gallery {
+                        display: flex;
+                        flex-direction: row;
+                        gap: ${gap};
+                        overflow-x: auto;
+                        overflow-y: hidden;
+                    }
+                    .item {
+                        flex: 0 0 auto;
+                        min-width: ${minW};
+                    }
+                    .item img {
+                        aspect-ratio: var(--component-gallery-aspect-ratio, ${aspectRatio});
+                    }
+                `;
+            case "column":
+                return `
+                    .gallery {
+                        display: flex;
+                        flex-direction: column;
+                        gap: ${gap};
+                    }
+                `;
+            default:
+                return "";
+        }
+    }
+
+    _buildStyles() {
+        return [
+            this._buildBaseStyles(),
+            this._buildLayoutStyles(),
+            this.expandable ? this._buildInteractiveStyles() : "",
+            this._buildExpandStyles(),
+        ].join("\n");
+    }
+
+    _createExpandContent(item, caption, counter) {
+        const img = _el("img", {
+            class: "expand-img",
+            part: "expand-img",
+            src: item.fullSrc,
+            alt: item.alt || "",
+            "aria-current": "true",
+        });
+
+        const children = [img];
+
+        if (caption) {
+            children.push(
+                _el(
+                    "div",
+                    { class: "expand-caption", part: "expand-caption" },
+                    [caption],
+                ),
+            );
+        }
+
+        children.push(
+            _el("div", { class: "expand-counter", part: "expand-counter" }, [
+                counter,
+            ]),
+        );
+
+        return _el("div", { class: "expand-content" }, children);
+    }
+
+    _createItemWrapper(data, index) {
+        const attrs = { class: "item", part: "item", role: "listitem", "data-index": String(index) };
+
+        if (this.expandable) {
+            attrs.tabindex = "0";
+            attrs.role = "button";
+            attrs["aria-label"] = `View image: ${data.alt || `Image ${index + 1}`}`;
+        }
+
+        const img = _el("img", { src: data.src, alt: data.alt, part: "item-img", draggable: "false" });
+        const wrapper = _el("div", attrs, [img]);
+
+        if (this.expandable) {
+            wrapper.addEventListener("click", () => this.open(index));
+            wrapper.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    this.open(index);
+                }
+            });
+        }
+
+        return wrapper;
+    }
+
+    _createNavButton(name, label, iconName, slotName, disabled) {
+        const icon = _el("y-icon", {
+            name: iconName,
+            size: this._getExpandIconSize(),
+        });
+        const slot = _el("slot", { name: slotName }, [icon]);
+        const attrs = { class: name, part: name, "aria-label": label };
+
+        if (disabled) attrs.disabled = true;
+
+        return _el("button", attrs, [slot]);
+    }
+
+    _getExpandIconSize() {
+        const sizeMap = { small: "medium", medium: "large", large: "x-large" };
+        return sizeMap[this.size] || "large";
+    }
+
+    _getThumbnailMinWidth() {
+        const sizeMap = { small: "80px", medium: "120px", large: "180px" };
+        return sizeMap[this.size] || sizeMap.medium;
     }
 
     _getImageData(el) {
@@ -567,8 +672,6 @@ export class YumeGallery extends HTMLElement {
         if (!slot) return;
 
         const gallery = this.shadowRoot.querySelector(".gallery");
-
-        // Remove existing wrapper items
         gallery.querySelectorAll(".item").forEach((el) => el.remove());
 
         const assigned = slot.assignedElements({ flatten: true });
@@ -579,80 +682,28 @@ export class YumeGallery extends HTMLElement {
             if (!data) return;
 
             this._items.push(data);
-            const index = this._items.length - 1;
-
-            const wrapper = document.createElement("div");
-            wrapper.className = "item";
-            wrapper.setAttribute("part", "item");
-            wrapper.setAttribute("role", "listitem");
-            wrapper.setAttribute("data-index", String(index));
-
-            if (this.expandable) {
-                wrapper.setAttribute("tabindex", "0");
-                wrapper.setAttribute("role", "button");
-                wrapper.setAttribute(
-                    "aria-label",
-                    `View image: ${data.alt || `Image ${index + 1}`}`,
-                );
-                wrapper.addEventListener("click", () => this.open(index));
-                wrapper.addEventListener("keydown", (e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        this.open(index);
-                    }
-                });
-            }
-
-            // Clone the image for the shadow DOM display
-            const img = document.createElement("img");
-            img.setAttribute("src", data.src);
-            img.setAttribute("alt", data.alt);
-            img.setAttribute("part", "item-img");
-            img.setAttribute("draggable", "false");
-
-            wrapper.appendChild(img);
-            gallery.appendChild(wrapper);
+            gallery.appendChild(this._createItemWrapper(data, this._items.length - 1));
         });
     }
 
     _onKeyDown(e) {
         if (this._expandedIndex < 0) return;
-        if (e.key === "Escape") {
+
+        const keyActions = {
+            Escape: () => this.close(),
+            ArrowLeft: () => this.previous(),
+            ArrowRight: () => this.next(),
+        };
+
+        const action = keyActions[e.key];
+        if (action) {
             e.preventDefault();
-            this.close();
-        } else if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            this.previous();
-        } else if (e.key === "ArrowRight") {
-            e.preventDefault();
-            this.next();
-        } else if (e.key === "Tab") {
-            // Trap focus inside expanded view
-            const overlay = this.shadowRoot.querySelector(".expand-overlay");
-            if (!overlay) return;
-            const focusable = overlay.querySelectorAll(
-                "button:not([aria-disabled='true'])",
-            );
-            if (focusable.length === 0) return;
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-            if (e.shiftKey) {
-                if (
-                    document.activeElement === first ||
-                    this.shadowRoot.activeElement === first
-                ) {
-                    e.preventDefault();
-                    last.focus();
-                }
-            } else {
-                if (
-                    document.activeElement === last ||
-                    this.shadowRoot.activeElement === last
-                ) {
-                    e.preventDefault();
-                    first.focus();
-                }
-            }
+            action();
+            return;
+        }
+
+        if (e.key === "Tab") {
+            this._trapFocus(e);
         }
     }
 
@@ -668,34 +719,57 @@ export class YumeGallery extends HTMLElement {
             medium: "var(--component-gallery-gap-medium, 8px)",
             large: "var(--component-gallery-gap-large, 16px)",
         };
-        return gapMap[gap] || gap;
+
+        if (gapMap[gap]) return gapMap[gap];
+
+        if (typeof CSS !== "undefined" && CSS.supports && CSS.supports("gap", gap)) {
+            return gap;
+        }
+
+        return gapMap.medium;
     }
 
     _showExpandedView() {
         this._removeExpandedView();
-        const template = document.createElement("template");
-        template.innerHTML = this._buildExpandedHTML();
-        this.shadowRoot.appendChild(template.content.cloneNode(true));
+        this.shadowRoot.appendChild(this._buildExpandedDOM());
         this._bindExpandedListeners();
 
-        // Focus the close button
         const closeBtn = this.shadowRoot.querySelector(".expand-close");
+
         if (closeBtn) closeBtn.focus();
+    }
+
+    _trapFocus(e) {
+        const overlay = this.shadowRoot.querySelector(".expand-overlay");
+        if (!overlay) return;
+
+        const focusable = overlay.querySelectorAll("button:not(:disabled)");
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = this.shadowRoot.activeElement || document.activeElement;
+
+        if (e.shiftKey && active === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && active === last) {
+            e.preventDefault();
+            first.focus();
+        }
     }
 
     _updateExpandedView() {
         this._removeExpandedView();
-        const template = document.createElement("template");
-        template.innerHTML = this._buildExpandedHTML();
-        this.shadowRoot.appendChild(template.content.cloneNode(true));
+        this.shadowRoot.appendChild(this._buildExpandedDOM());
         this._bindExpandedListeners();
 
-        // Focus prev or next depending on direction
         const prevBtn = this.shadowRoot.querySelector(".expand-prev");
         const nextBtn = this.shadowRoot.querySelector(".expand-next");
-        if (prevBtn && !prevBtn.hasAttribute("aria-disabled")) {
+
+        if (prevBtn && !prevBtn.disabled) {
             prevBtn.focus();
-        } else if (nextBtn && !nextBtn.hasAttribute("aria-disabled")) {
+        } else if (nextBtn && !nextBtn.disabled) {
             nextBtn.focus();
         }
     }

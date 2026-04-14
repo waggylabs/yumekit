@@ -513,7 +513,7 @@ describe("YumeGallery", () => {
         expect(next.getAttribute("aria-label")).to.equal("Next image");
     });
 
-    it("prev button is aria-disabled at index 0 without loop", async () => {
+    it("prev button is disabled at index 0 without loop", async () => {
         const el = await fixture(html`<y-gallery>
             <img src="a.jpg" alt="A">
             <img src="b.jpg" alt="B">
@@ -524,10 +524,10 @@ describe("YumeGallery", () => {
         await new Promise((r) => setTimeout(r, 0));
 
         const prev = el.shadowRoot.querySelector(".expand-prev");
-        expect(prev.getAttribute("aria-disabled")).to.equal("true");
+        expect(prev.disabled).to.be.true;
     });
 
-    it("next button is aria-disabled at last index without loop", async () => {
+    it("next button is disabled at last index without loop", async () => {
         const el = await fixture(html`<y-gallery>
             <img src="a.jpg" alt="A">
             <img src="b.jpg" alt="B">
@@ -538,7 +538,7 @@ describe("YumeGallery", () => {
         await new Promise((r) => setTimeout(r, 0));
 
         const next = el.shadowRoot.querySelector(".expand-next");
-        expect(next.getAttribute("aria-disabled")).to.equal("true");
+        expect(next.disabled).to.be.true;
     });
 
     it("close button has aria-label", async () => {
