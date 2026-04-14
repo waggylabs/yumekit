@@ -743,7 +743,7 @@ Events: `change` (cancelable, `{ index, previousIndex, step }`), `complete` (`{ 
 
 Methods: `next()`, `previous()`, `goTo(index)`, `complete(index?)`, `reset()`
 
-CSS Custom Properties: `--component-stepper-indicator-size-{small,medium,large}`, `--component-stepper-connector-color`, `--component-stepper-connector-color-complete`, `--component-stepper-color-{pending,active,complete,error}`, `--component-stepper-label-color`, `--component-stepper-gap-{small,medium,large}`
+CSS Custom Properties: `--component-stepper-indicator-size-{small,medium,large}`, `--component-stepper-connector-color`, `--component-stepper-connector-color-complete`, `--component-stepper-color-{pending,active,complete,error}`, `--component-stepper-color-active-text`, `--component-stepper-color-complete-text`, `--component-stepper-color-error-text`, `--component-stepper-label-color`, `--component-stepper-gap-{small,medium,large}`
 
 CSS Parts: `indicators`, `indicator`, `indicator--active`, `indicator--complete`, `indicator--error`, `indicator-icon`, `indicator-label`, `indicator-description`, `connector`, `panels`, `panel`
 
