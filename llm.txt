@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 29 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 32 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -572,6 +572,41 @@ Events: `open`, `close`
 Methods: `show()`, `hide()`
 
 Slots: default (drawer content)
+
+---
+
+### y-gallery
+Media gallery with lightbox.
+
+Tag: `<y-gallery>`
+Attributes:
+- `layout` — `"grid"` (default) | `"row"` | `"column"` | `"masonry"`
+- `columns` — number (default `3`), grid/masonry only
+- `gap` — `"small"` | `"medium"` (default) | `"large"` or any CSS length
+- `aspect-ratio` — thumbnail aspect ratio, e.g. `"1/1"` (default), `"4/3"`, `"16/9"` — grid/row only
+- `expandable` — boolean (default `true`), clicking opens lightbox
+- `loop` — boolean, navigation wraps around
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+
+Children: `<img>` or `<figure>` with `<figcaption>`. Images support `data-src` for full-size source.
+
+Events: `expand` (cancelable, `{ index, src, element }`), `close` (`{ index }`), `navigate` (`{ index, previousIndex, direction }`)
+
+Methods: `open(index)`, `close()`, `next()`, `previous()`
+
+Slots: default, `expand-prev-icon`, `expand-next-icon`, `expand-close-icon`
+
+CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expand-caption`, `expand-prev`, `expand-next`, `expand-close`, `expand-counter`
+
+```html
+<y-gallery layout="masonry" columns="3" loop>
+  <img src="thumb1.jpg" data-src="full1.jpg" alt="Mountain vista">
+  <figure>
+    <img src="thumb2.jpg" data-src="full2.jpg" alt="Sunset">
+    <figcaption>Golden hour at the coast</figcaption>
+  </figure>
+</y-gallery>
+```
 
 ---
 

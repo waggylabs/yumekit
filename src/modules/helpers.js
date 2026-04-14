@@ -287,6 +287,35 @@ export function parseColorString(str) {
 // =============================================================================
 
 /**
+ * Create a DOM element with attributes and children in a single call.
+ * @param {string} tag — element tag name (e.g. "div", "button", "y-icon")
+ * @param {Object} [attrs] — attribute key/value pairs; `null`, `undefined`,
+ *   and `false` values are skipped; `true` sets a valueless attribute.
+ * @param {Array<string|Node>} [children] — text strings or DOM nodes to append
+ * @returns {HTMLElement}
+ */
+export function createElement(tag, attrs, children) {
+    const node = document.createElement(tag);
+
+    if (attrs) {
+        for (const [k, v] of Object.entries(attrs)) {
+            if (v != null && v !== false)
+                node.setAttribute(k, v === true ? "" : v);
+        }
+    }
+
+    if (children) {
+        for (const child of children) {
+            if (typeof child === "string")
+                node.appendChild(document.createTextNode(child));
+            else if (child) node.appendChild(child);
+        }
+    }
+
+    return node;
+}
+
+/**
  * Watch a label slot inside a wrapper element and toggle the wrapper's
  * visibility based on whether the slot has meaningful content.
  * CSS should default the wrapper to `display: none`.
