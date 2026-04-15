@@ -15,6 +15,7 @@ import arrowDown from "./arrow-down.svg";
 import arrowLeft from "./arrow-left.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
+import bug from "./bug.svg";
 import ban from "./ban.svg";
 import bell from "./bell.svg";
 import bluetooth from "./bluetooth.svg";
@@ -64,6 +65,7 @@ import compTooltip from "./comp-tooltip.svg";
 import compTextarea from "./comp-textarea.svg";
 import compRating from "./comp-rating.svg";
 import compass from "./compass.svg";
+import copy from "./copy.svg";
 import diagram from "./diagram.svg";
 import discord from "./discord.svg";
 import downFromBracket from "./down-from-bracket.svg";
@@ -79,6 +81,9 @@ import faceSmile from "./face-smile.svg";
 import faceNeutral from "./face-neutral.svg";
 import faceFrown from "./face-frown.svg";
 import fan from "./fan.svg";
+import fastBack from "./fast-back.svg";
+import fastForward from "./fast-forward.svg";
+import flower from "./flower.svg";
 import figma from "./figma.svg";
 import filter from "./filter.svg";
 import flask from "./flask.svg";
@@ -104,20 +109,28 @@ import minus from "./minus.svg";
 import monitor from "./monitor.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
+import paste from "./paste.svg";
+import pause from "./pause.svg";
 import pencil from "./pencil.svg";
 import paperAirplane from "./paper-airplane.svg";
+import play from "./play.svg";
 import plug from "./plug.svg";
 import plus from "./plus.svg";
 import puzzle from "./puzzle.svg";
+import redo from "./redo.svg";
 import rightFromBracket from "./right-from-bracket.svg";
 import rightToBracket from "./right-to-bracket.svg";
 import save from "./save.svg";
+import scissors from "./scissors.svg";
 import search from "./search.svg";
 import settings from "./settings.svg";
 import share from "./share.svg";
 import shield from "./shield.svg";
+import skipBack from "./skip-back.svg";
+import skipForward from "./skip-forward.svg";
 import smartphone from "./smartphone.svg";
 import stack from "./stack.svg";
+import stop from "./stop.svg";
 import star from "./star.svg";
 import thumbsDown from "./thumbs-down.svg";
 import thumbsUp from "./thumbs-up.svg";
@@ -130,6 +143,7 @@ import thermometerHigh from "./thermometer-high.svg";
 import thermometerLow from "./thermometer-low.svg";
 import tools from "./tools.svg";
 import trash from "./trash.svg";
+import undo from "./undo.svg";
 import unlock from "./unlock.svg";
 import upFromBracket from "./up-from-bracket.svg";
 import upToBracket from "./up-to-bracket.svg";
@@ -145,6 +159,7 @@ registerIcons({
     "arrow-left": arrowLeft,
     "arrow-right": arrowRight,
     "arrow-up": arrowUp,
+    bug,
     ban,
     bell,
     bluetooth,
@@ -194,6 +209,7 @@ registerIcons({
     "comp-textarea": compTextarea,
     "comp-rating": compRating,
     compass,
+    copy,
     diagram,
     discord,
     "down-from-bracket": downFromBracket,
@@ -209,6 +225,9 @@ registerIcons({
     "face-neutral": faceNeutral,
     "face-smile": faceSmile,
     fan,
+    "fast-back": fastBack,
+    "fast-forward": fastForward,
+    flower,
     figma,
     filter,
     flask,
@@ -235,21 +254,29 @@ registerIcons({
     monitor,
     moon,
     palette,
+    paste,
+    pause,
     "paper-airplane": paperAirplane,
     pencil,
+    play,
     plug,
     plus,
     puzzle,
+    redo,
     "right-from-bracket": rightFromBracket,
     "right-to-bracket": rightToBracket,
     save,
+    scissors,
     search,
     settings,
     share,
     shield,
+    "skip-back": skipBack,
+    "skip-forward": skipForward,
     smartphone,
     stack,
     star,
+    stop,
     sun,
     "thumbs-down": thumbsDown,
     "thumbs-up": thumbsUp,
@@ -261,6 +288,7 @@ registerIcons({
     "thermometer-low": thermometerLow,
     tools,
     trash,
+    undo,
     unlock,
     "up-from-bracket": upFromBracket,
     "up-to-bracket": upToBracket,
