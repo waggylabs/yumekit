@@ -36,6 +36,62 @@ Yumekit is authored in plain JavaScript. Please follow the conventions already p
 - Keep components self-contained: styles live in the Shadow DOM, logic in the class, no shared global state.
 - Run the linter before submitting: `npm run lint`.
 
+## Component Authoring Guidelines
+
+### Class structure
+
+Every component class must have exactly four comment-delimited sections in this order — no more, no subdivisions:
+
+```
+// Lifecycle
+// Getters / Setters
+// Public
+// Private
+```
+
+Methods within their subdivision must be listed alphabetically.
+
+### Method style
+
+Follow a **define → compute → return/apply** flow within each method where possible: gather inputs and state at the top, do the work in the middle, produce output at the end. Keep methods small and focused — if a method grows long or does multiple distinct things, extract a named helper. Minimize nesting by preferring early returns over deep `if/else` trees. Separate distinct logical units of work with blank lines. This ruleset allows humans and AI to have a predictable and human-readable code structure upon which to base future updates.
+
+### DOM element creation
+
+Use the `createElement` helper (imported as `_el`) from `src/modules/helpers.js` for all element creation inside components. Do not use manual `document.createElement` + `setAttribute` chains.
+
+```js
+import { createElement as _el } from "../../modules/helpers.js";
+
+const btn = _el("button", { role: "tab", "aria-label": label }, [labelText]);
+```
+
+### Icons
+
+Use `<y-icon name="...">` for all icons. Never inline SVG strings or constants. Import `y-icon.js` at the top of any component that renders icons.
+
+### Slot patterns
+
+Always render named slots unconditionally and place default/fallback content as **children of the slot element**. Never use `querySelector` to decide whether to create a slot. This breaks framework rendering (React, Vue, etc.) where children may arrive after the element upgrades.
+
+```js
+// Correct
+const slot = _el("slot", { name: "icon" });
+slot.appendChild(defaultIcon);
+parent.appendChild(slot);
+
+// Wrong — slot is conditional on a render-time DOM query
+if (this.querySelector('[slot="icon"]')) { ... }
+```
+
+### New component checklist
+
+Every new component requireschanges to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, `variables.css`, `.figma/variables.json`, entry in `llm.txt`, and a `y-*.stories.js` stories file.
+
+### Testing
+
+- Tests co-locate with the component source file.
+- Use `sinon.createSandbox()` at the `describe` level with `afterEach(() => sandbox.restore())`.
+
 ## AI Assistance
 
 AI tools can be helpful for brainstorming and prototyping, but they are not a substitute for human judgment and expertise.
