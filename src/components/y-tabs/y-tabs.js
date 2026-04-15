@@ -1,3 +1,5 @@
+import "../y-icon/y-icon.js";
+
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
         return ["options", "size", "position"];
@@ -135,7 +137,24 @@ export class YumeTabs extends HTMLElement {
         btn.tabIndex = isActive && !isDisabled ? 0 : -1;
         btn.dataset.id = tab.id;
 
-        if (this.querySelector(`[slot="left-icon-${tab.id}"]`)) {
+        if (this.querySelector(`[slot="tab-content-${tab.id}"]`)) {
+            const contentSlot = document.createElement("slot");
+            contentSlot.name = `tab-content-${tab.id}`;
+            btn.appendChild(contentSlot);
+            return btn;
+        }
+
+        if (tab.leftIcon) {
+            const icon = document.createElement("y-icon");
+            icon.setAttribute("name", tab.leftIcon);
+            icon.setAttribute("size", this.size);
+            btn.appendChild(icon);
+        } else if (this.querySelector(`[slot="left-icon-${tab.id}"]`)) {
+            console.warn(
+                `[y-tabs] The "left-icon-${tab.id}" slot is deprecated. ` +
+                `Use the leftIcon property on the tab options object instead, ` +
+                `or use the "tab-content-${tab.id}" slot for custom content.`
+            );
             const leftSlot = document.createElement("slot");
             leftSlot.name = `left-icon-${tab.id}`;
             leftSlot.className = "icon-slot";
@@ -146,7 +165,17 @@ export class YumeTabs extends HTMLElement {
         labelSpan.textContent = tab.label;
         btn.appendChild(labelSpan);
 
-        if (this.querySelector(`[slot="right-icon-${tab.id}"]`)) {
+        if (tab.rightIcon) {
+            const icon = document.createElement("y-icon");
+            icon.setAttribute("name", tab.rightIcon);
+            icon.setAttribute("size", this.size);
+            btn.appendChild(icon);
+        } else if (this.querySelector(`[slot="right-icon-${tab.id}"]`)) {
+            console.warn(
+                `[y-tabs] The "right-icon-${tab.id}" slot is deprecated. ` +
+                `Use the rightIcon property on the tab options object instead, ` +
+                `or use the "tab-content-${tab.id}" slot for custom content.`
+            );
             const rightSlot = document.createElement("slot");
             rightSlot.name = `right-icon-${tab.id}`;
             rightSlot.className = "icon-slot";

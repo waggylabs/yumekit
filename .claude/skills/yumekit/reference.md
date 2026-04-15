@@ -735,22 +735,37 @@ Methods: `.show(message, options?)`, `.hide()`
 
 | Attribute  | Values / Notes                                               |
 |-----------|--------------------------------------------------------------|
-| `options` | JSON: `[{"id":"tab1","label":"Tab 1"}, ...]`                 |
-| `active`  | currently active tab id                                       |
+| `options` | JSON array of tab objects (see shape below)                  |
 | `position`| `top` (default) \| `bottom` \| `left` \| `right`            |
 | `size`    | `small` \| `medium` \| `large`                              |
 
-Events: `change` — `event.detail.id` is the selected tab id
+Options object shape: `{ id, label, slot, disabled?, leftIcon?, rightIcon? }`
+- `leftIcon` / `rightIcon` — `y-icon` name; renders a `<y-icon>` inside the tab button
 
-Slots: one slot per tab, named by `id` from options
+Methods: `activateTab(id)`
+
+Slots:
+- `{slot}` — tab panel content (one per tab, named by the `slot` field in options)
+- `tab-content-{id}` — fully replaces the tab button's inner content; use for custom markup, badges, etc.
+
+Deprecated slots (still functional, emit `console.warn`; use `leftIcon`/`rightIcon` instead):
+- `left-icon-{id}`, `right-icon-{id}`
 
 ```html
+<!-- Icons via options (preferred) -->
 <y-tabs
-  options='[{"id":"overview","label":"Overview"},{"id":"settings","label":"Settings"}]'
-  active="overview"
+  options='[{"id":"overview","label":"Overview","slot":"overview","leftIcon":"home"},{"id":"settings","label":"Settings","slot":"settings","leftIcon":"settings"}]'
 >
   <div slot="overview">Overview content here.</div>
   <div slot="settings">Settings content here.</div>
+</y-tabs>
+
+<!-- Custom tab button content -->
+<y-tabs options='[{"id":"overview","label":"Overview","slot":"overview"}]'>
+  <span slot="tab-content-overview" style="display:inline-flex;align-items:center;gap:4px">
+    <y-icon name="home" size="small"></y-icon> Overview
+  </span>
+  <div slot="overview">Overview content here.</div>
 </y-tabs>
 ```
 

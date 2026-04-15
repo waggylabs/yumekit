@@ -1,5 +1,6 @@
 import { fixture, expect, html } from "@open-wc/testing";
-import "./y-tabs.js"; // path to your component file
+import sinon from "sinon";
+import "./y-tabs.js";
 
 describe("YumeTabs", () => {
     const options = [
@@ -245,5 +246,117 @@ describe("YumeTabs", () => {
         `);
         const css = el.shadowRoot.querySelector("style").textContent;
         expect(css).to.include("--component-tab-gap-small");
+    });
+
+    it("renders y-icon for leftIcon option property", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
+            { id: "two", label: "Two", slot: "two-slot" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        const icon = btn1.querySelector("y-icon");
+        expect(icon).to.exist;
+        expect(icon.getAttribute("name")).to.equal("home");
+        expect(icon.getAttribute("size")).to.equal("medium");
+    });
+
+    it("renders y-icon for rightIcon option property", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", rightIcon: "arrow-right" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}">
+                <div slot="one-slot">First</div>
+            </y-tabs>
+        `);
+        const btn = el.shadowRoot.querySelector('button[data-id="one"]');
+        const children = [...btn.children];
+        const icon = btn.querySelector("y-icon");
+        expect(icon).to.exist;
+        expect(icon.getAttribute("name")).to.equal("arrow-right");
+        // icon comes after the label span
+        expect(children.indexOf(icon)).to.be.greaterThan(children.indexOf(btn.querySelector("span")));
+    });
+
+    it("y-icon inherits the component size", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}" size="large">
+                <div slot="one-slot">First</div>
+            </y-tabs>
+        `);
+        const icon = el.shadowRoot.querySelector('button[data-id="one"] y-icon');
+        expect(icon.getAttribute("size")).to.equal("large");
+    });
+
+    it("tab-content slot replaces default button content", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <span slot="tab-content-one">Custom One</span>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        const contentSlot = btn1.querySelector('slot[name="tab-content-one"]');
+        expect(contentSlot).to.exist;
+        // No label span when tab-content slot is used
+        expect(btn1.querySelector("span")).to.not.exist;
+    });
+
+    it("tab-content slot takes priority over leftIcon/rightIcon", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}">
+                <span slot="tab-content-one">Custom</span>
+                <div slot="one-slot">First</div>
+            </y-tabs>
+        `);
+        const btn = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn.querySelector('slot[name="tab-content-one"]')).to.exist;
+        expect(btn.querySelector("y-icon")).to.not.exist;
+    });
+
+    it("deprecated left-icon slot still renders with a console warning", async () => {
+        const warn = sinon.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="left-icon-one" name="home" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn1.querySelector('slot[name="left-icon-one"]')).to.exist;
+        expect(warn.calledWith(sinon.match(/left-icon-one.*deprecated/))).to.be.true;
+        warn.restore();
+    });
+
+    it("deprecated right-icon slot still renders with a console warning", async () => {
+        const warn = sinon.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="right-icon-one" name="chevron-right" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn1.querySelector('slot[name="right-icon-one"]')).to.exist;
+        expect(warn.calledWith(sinon.match(/right-icon-one.*deprecated/))).to.be.true;
+        warn.restore();
     });
 });
