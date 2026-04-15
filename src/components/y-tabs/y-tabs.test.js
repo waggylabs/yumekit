@@ -3,6 +3,9 @@ import sinon from "sinon";
 import "./y-tabs.js";
 
 describe("YumeTabs", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
     const options = [
         { id: "one", label: "One", slot: "one-slot" },
         { id: "two", label: "Two", slot: "two-slot", disabled: true },
@@ -248,6 +251,33 @@ describe("YumeTabs", () => {
         expect(css).to.include("--component-tab-gap-small");
     });
 
+    it("tab buttons always have aria-label from tab.label", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const buttons = el.shadowRoot.querySelectorAll("button");
+        buttons.forEach((btn, i) => {
+            expect(btn.getAttribute("aria-label")).to.equal(options[i].label);
+        });
+    });
+
+    it("aria-label is set even when tab-content slot is used with icon-only content", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <span slot="tab-content-one"><y-icon name="home"></y-icon></span>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn.getAttribute("aria-label")).to.equal("One");
+    });
+
     it("renders y-icon for leftIcon option property", async () => {
         const iconOptions = [
             { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
@@ -276,12 +306,13 @@ describe("YumeTabs", () => {
             </y-tabs>
         `);
         const btn = el.shadowRoot.querySelector('button[data-id="one"]');
-        const children = [...btn.children];
-        const icon = btn.querySelector("y-icon");
+        const slot = btn.querySelector('slot[name="tab-content-one"]');
+        const slotChildren = [...slot.children];
+        const icon = slot.querySelector("y-icon");
         expect(icon).to.exist;
         expect(icon.getAttribute("name")).to.equal("arrow-right");
         // icon comes after the label span
-        expect(children.indexOf(icon)).to.be.greaterThan(children.indexOf(btn.querySelector("span")));
+        expect(slotChildren.indexOf(icon)).to.be.greaterThan(slotChildren.indexOf(slot.querySelector("span")));
     });
 
     it("y-icon inherits the component size", async () => {
@@ -297,39 +328,49 @@ describe("YumeTabs", () => {
         expect(icon.getAttribute("size")).to.equal("large");
     });
 
-    it("tab-content slot replaces default button content", async () => {
+    it("tab-content slot is always rendered for each tab button", async () => {
         const el = await fixture(html`
             <y-tabs options="${JSON.stringify(options)}">
-                <span slot="tab-content-one">Custom One</span>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        for (const tab of options) {
+            const btn = el.shadowRoot.querySelector(`button[data-id="${tab.id}"]`);
+            expect(btn.querySelector(`slot[name="tab-content-${tab.id}"]`)).to.exist;
+        }
+    });
+
+    it("tab-content slot fallback contains the label span", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
                 <div slot="one-slot">First</div>
                 <div slot="two-slot">Second</div>
                 <div slot="three-slot">Third</div>
             </y-tabs>
         `);
         const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
-        const contentSlot = btn1.querySelector('slot[name="tab-content-one"]');
-        expect(contentSlot).to.exist;
-        // No label span when tab-content slot is used
-        expect(btn1.querySelector("span")).to.not.exist;
+        const slot = btn1.querySelector('slot[name="tab-content-one"]');
+        expect(slot.querySelector("span")).to.exist;
+        expect(slot.querySelector("span").textContent).to.equal("One");
     });
 
-    it("tab-content slot takes priority over leftIcon/rightIcon", async () => {
+    it("tab-content slot leftIcon fallback is inside the slot", async () => {
         const iconOptions = [
             { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
         ];
         const el = await fixture(html`
             <y-tabs options="${JSON.stringify(iconOptions)}">
-                <span slot="tab-content-one">Custom</span>
                 <div slot="one-slot">First</div>
             </y-tabs>
         `);
-        const btn = el.shadowRoot.querySelector('button[data-id="one"]');
-        expect(btn.querySelector('slot[name="tab-content-one"]')).to.exist;
-        expect(btn.querySelector("y-icon")).to.not.exist;
+        const slot = el.shadowRoot.querySelector('button[data-id="one"] slot[name="tab-content-one"]');
+        expect(slot.querySelector("y-icon")).to.exist;
     });
 
     it("deprecated left-icon slot still renders with a console warning", async () => {
-        const warn = sinon.stub(console, "warn");
+        const warn = sandbox.stub(console, "warn");
         const el = await fixture(html`
             <y-tabs options="${JSON.stringify(options)}">
                 <y-icon slot="left-icon-one" name="home" size="small"></y-icon>
@@ -341,11 +382,27 @@ describe("YumeTabs", () => {
         const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
         expect(btn1.querySelector('slot[name="left-icon-one"]')).to.exist;
         expect(warn.calledWith(sinon.match(/left-icon-one.*deprecated/))).to.be.true;
-        warn.restore();
+    });
+
+    it("deprecated left-icon slot warning is emitted only once across re-renders", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="left-icon-one" name="home" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        el.size = "large";
+        el.size = "small";
+        el.activateTab("three");
+        const count = warn.args.filter(([msg]) => /left-icon-one.*deprecated/.test(msg)).length;
+        expect(count).to.equal(1);
     });
 
     it("deprecated right-icon slot still renders with a console warning", async () => {
-        const warn = sinon.stub(console, "warn");
+        const warn = sandbox.stub(console, "warn");
         const el = await fixture(html`
             <y-tabs options="${JSON.stringify(options)}">
                 <y-icon slot="right-icon-one" name="chevron-right" size="small"></y-icon>
@@ -357,6 +414,22 @@ describe("YumeTabs", () => {
         const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
         expect(btn1.querySelector('slot[name="right-icon-one"]')).to.exist;
         expect(warn.calledWith(sinon.match(/right-icon-one.*deprecated/))).to.be.true;
-        warn.restore();
+    });
+
+    it("deprecated right-icon slot warning is emitted only once across re-renders", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="right-icon-one" name="chevron-right" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        el.size = "large";
+        el.size = "small";
+        el.activateTab("three");
+        const count = warn.args.filter(([msg]) => /right-icon-one.*deprecated/.test(msg)).length;
+        expect(count).to.equal(1);
     });
 });

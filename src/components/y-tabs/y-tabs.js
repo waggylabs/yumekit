@@ -1,4 +1,5 @@
 import "../y-icon/y-icon.js";
+import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
@@ -13,6 +14,7 @@ export class YumeTabs extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this._activeTab = "";
+        this._warnedSlots = new Set();
     }
 
     connectedCallback() {
@@ -22,16 +24,16 @@ export class YumeTabs extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
-        if ((name === "options" || name === "size" || name === "position") && oldVal !== newVal) {
-            this.render();
-        }
+        if (oldVal === newVal) return;
+        if (name === "options") this._warnedSlots.clear();
+        this.render();
     }
 
     // -------------------------------------------------------------------------
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** @type {Array<Object>} Tab definitions with id, label, slot, and optional disabled flag. */
+    /** @type {Array<Object>} Tab definitions. Each object: `{ id, label, slot, disabled?, leftIcon?, rightIcon? }`. `leftIcon`/`rightIcon` are `y-icon` names rendered inside the tab button. Use the `tab-content-{id}` slot to supply fully custom tab button content instead. */
     get options() {
         try {
             return JSON.parse(this.getAttribute("options") || "[]");
@@ -90,10 +92,7 @@ export class YumeTabs extends HTMLElement {
         style.textContent = this._getStyles();
         this.shadowRoot.appendChild(style);
 
-        const tablist = document.createElement("div");
-        tablist.className = "tablist";
-        tablist.setAttribute("role", "tablist");
-        tablist.setAttribute("part", "tablist");
+        const tablist = _el("div", { class: "tablist", role: "tablist", part: "tablist" });
         tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
         this.shadowRoot.appendChild(tablist);
 
@@ -106,17 +105,38 @@ export class YumeTabs extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
-    _createPanel(slotName) {
-        const panel = document.createElement("div");
-        panel.className = "tabpanel";
-        panel.id = `panel-${this._activeTab}`;
-        panel.setAttribute("role", "tabpanel");
-        panel.setAttribute("part", "content");
-        panel.setAttribute("aria-labelledby", `tab-${this._activeTab}`);
+    _appendDeprecatedIconSlot(parent, side, tabId) {
+        const slotName = `${side}-icon-${tabId}`;
 
-        const contentSlot = document.createElement("slot");
-        contentSlot.name = slotName;
-        panel.appendChild(contentSlot);
+        if (!this.querySelector(`[slot="${slotName}"]`)) return;
+
+        if (!this._warnedSlots.has(slotName)) {
+            this._warnedSlots.add(slotName);
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[y-tabs] The "${slotName}" slot is deprecated. ` +
+                `Use the ${side}Icon property on the tab options object instead, ` +
+                `or use the "tab-content-${tabId}" slot for custom content.`
+            );
+        }
+
+        parent.appendChild(_el("slot", { name: slotName, class: "icon-slot" }));
+    }
+
+    _createIcon(name) {
+        return _el("y-icon", { name, size: this.size });
+    }
+
+    _createPanel(slotName) {
+        const panel = _el("div", {
+            class: "tabpanel",
+            id: `panel-${this._activeTab}`,
+            role: "tabpanel",
+            part: "content",
+            "aria-labelledby": `tab-${this._activeTab}`,
+        });
+
+        panel.appendChild(_el("slot", { name: slotName }));
 
         return panel;
     }
@@ -124,62 +144,36 @@ export class YumeTabs extends HTMLElement {
     _createTabButton(tab) {
         const isActive = tab.id === this._activeTab;
         const isDisabled = !!tab.disabled;
-        const btn = document.createElement("button");
 
-        btn.id = `tab-${tab.id}`;
-        btn.setAttribute("role", "tab");
-        btn.setAttribute("part", "tab");
-        btn.setAttribute("aria-selected", isActive);
-        btn.setAttribute("aria-controls", `panel-${tab.id}`);
-        btn.setAttribute("aria-disabled", isDisabled);
+        const btn = _el("button", {
+            id: `tab-${tab.id}`,
+            role: "tab",
+            part: "tab",
+            "aria-label": tab.label,
+            "aria-selected": String(isActive),
+            "aria-controls": `panel-${tab.id}`,
+            "aria-disabled": String(isDisabled),
+        });
 
         if (isDisabled) btn.disabled = true;
         btn.tabIndex = isActive && !isDisabled ? 0 : -1;
         btn.dataset.id = tab.id;
 
-        if (this.querySelector(`[slot="tab-content-${tab.id}"]`)) {
-            const contentSlot = document.createElement("slot");
-            contentSlot.name = `tab-content-${tab.id}`;
-            btn.appendChild(contentSlot);
-            return btn;
-        }
+        const contentSlot = _el("slot", { name: `tab-content-${tab.id}` });
+        btn.appendChild(contentSlot);
 
         if (tab.leftIcon) {
-            const icon = document.createElement("y-icon");
-            icon.setAttribute("name", tab.leftIcon);
-            icon.setAttribute("size", this.size);
-            btn.appendChild(icon);
-        } else if (this.querySelector(`[slot="left-icon-${tab.id}"]`)) {
-            console.warn(
-                `[y-tabs] The "left-icon-${tab.id}" slot is deprecated. ` +
-                `Use the leftIcon property on the tab options object instead, ` +
-                `or use the "tab-content-${tab.id}" slot for custom content.`
-            );
-            const leftSlot = document.createElement("slot");
-            leftSlot.name = `left-icon-${tab.id}`;
-            leftSlot.className = "icon-slot";
-            btn.appendChild(leftSlot);
+            contentSlot.appendChild(this._createIcon(tab.leftIcon));
+        } else {
+            this._appendDeprecatedIconSlot(contentSlot, "left", tab.id);
         }
 
-        const labelSpan = document.createElement("span");
-        labelSpan.textContent = tab.label;
-        btn.appendChild(labelSpan);
+        contentSlot.appendChild(_el("span", {}, [tab.label]));
 
         if (tab.rightIcon) {
-            const icon = document.createElement("y-icon");
-            icon.setAttribute("name", tab.rightIcon);
-            icon.setAttribute("size", this.size);
-            btn.appendChild(icon);
-        } else if (this.querySelector(`[slot="right-icon-${tab.id}"]`)) {
-            console.warn(
-                `[y-tabs] The "right-icon-${tab.id}" slot is deprecated. ` +
-                `Use the rightIcon property on the tab options object instead, ` +
-                `or use the "tab-content-${tab.id}" slot for custom content.`
-            );
-            const rightSlot = document.createElement("slot");
-            rightSlot.name = `right-icon-${tab.id}`;
-            rightSlot.className = "icon-slot";
-            btn.appendChild(rightSlot);
+            contentSlot.appendChild(this._createIcon(tab.rightIcon));
+        } else {
+            this._appendDeprecatedIconSlot(contentSlot, "right", tab.id);
         }
 
         return btn;
@@ -282,13 +276,20 @@ export class YumeTabs extends HTMLElement {
 
     _handleTabKeydown(e, buttons) {
         const idx = buttons.indexOf(e.currentTarget);
+
         if (e.key === "ArrowRight") {
             e.preventDefault();
             this._findSiblingButton(buttons, idx, 1)?.focus();
-        } else if (e.key === "ArrowLeft") {
+            return;
+        }
+
+        if (e.key === "ArrowLeft") {
             e.preventDefault();
             this._findSiblingButton(buttons, idx, -1)?.focus();
-        } else if (e.key === "Enter" || e.key === " ") {
+            return;
+        }
+
+        if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             this.activateTab(e.currentTarget.dataset.id);
         }
@@ -306,9 +307,7 @@ export class YumeTabs extends HTMLElement {
         buttons.forEach((button) => {
             if (button.disabled) return;
             button.addEventListener("click", () => this.activateTab(button.dataset.id));
-            button.addEventListener("keydown", (e) => {
-                this._handleTabKeydown(e, buttons);
-            });
+            button.addEventListener("keydown", (e) => this._handleTabKeydown(e, buttons));
         });
     }
 }

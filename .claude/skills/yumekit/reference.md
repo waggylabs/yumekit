@@ -67,7 +67,7 @@ Navigation breadcrumb trail with collapse/expand support and SPA-friendly naviga
 
 **Events:** `navigate` (cancelable, `detail: { href }`), `expand`
 
-**Slots:** `separator` (custom separator element), `{index}-icon` (per-item icon override)
+**Slots:** `separator` (custom separator element), `{index}-item` (fully replaces a breadcrumb item's content — use for custom icons, badges, or markup beyond what the `icon` option provides)
 
 **CSS Parts:** `breadcrumbs`, `list`, `item`, `item--current`, `link`, `separator`, `expand-btn`
 
@@ -739,7 +739,7 @@ Methods: `.show(message, options?)`, `.hide()`
 | `position`| `top` (default) \| `bottom` \| `left` \| `right`            |
 | `size`    | `small` \| `medium` \| `large`                              |
 
-Options object shape: `{ id, label, slot, disabled?, leftIcon?, rightIcon? }`
+Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":false,"leftIcon":"home","rightIcon":"arrow-right"}` — `id`, `label`, and `slot` are required; `disabled`, `leftIcon`, `rightIcon` are optional.
 - `leftIcon` / `rightIcon` — `y-icon` name; renders a `<y-icon>` inside the tab button
 
 Methods: `activateTab(id)`

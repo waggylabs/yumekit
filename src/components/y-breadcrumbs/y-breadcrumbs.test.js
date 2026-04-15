@@ -137,14 +137,47 @@ describe("YumeBreadcrumbs", () => {
         expect(icon.getAttribute("name")).to.equal("home");
     });
 
-    it("renders custom icon slot", async () => {
+    it("item slot is always rendered for every item", async () => {
+        const el = await fixture(
+            html`<y-breadcrumbs items="${ITEMS_3}"></y-breadcrumbs>`,
+        );
+
+        const items = el.shadowRoot.querySelectorAll("li.item:not(.expand)");
+        items.forEach((li, index) => {
+            expect(li.querySelector(`slot[name="${index}-item"]`)).to.exist;
+        });
+    });
+
+    it("item slot fallback contains the link", async () => {
+        const el = await fixture(
+            html`<y-breadcrumbs items="${ITEMS_3}"></y-breadcrumbs>`,
+        );
+
+        const li = el.shadowRoot.querySelectorAll("li.item:not(.expand)")[0];
+        const itemSlot = li.querySelector('slot[name="0-item"]');
+        expect(itemSlot.querySelector("a, span.current-text")).to.exist;
+    });
+
+    it("item slot fallback contains y-icon when item has icon property", async () => {
+        const el = await fixture(
+            html`<y-breadcrumbs items="${ITEMS_WITH_ICON}"></y-breadcrumbs>`,
+        );
+
+        const li = el.shadowRoot.querySelectorAll("li.item:not(.expand)")[0];
+        const itemSlot = li.querySelector('slot[name="0-item"]');
+        const icon = itemSlot.querySelector("y-icon");
+        expect(icon).to.exist;
+        expect(icon.getAttribute("name")).to.equal("home");
+    });
+
+    it("item slot replaces the entire breadcrumb item content", async () => {
         const el = await fixture(
             html`<y-breadcrumbs items="${ITEMS_3}">
-                <y-icon slot="0-icon" name="home"></y-icon>
+                <span slot="0-item">Custom Home</span>
             </y-breadcrumbs>`,
         );
 
-        const slot = el.shadowRoot.querySelector('slot[name="0-icon"]');
+        const slot = el.shadowRoot.querySelector('slot[name="0-item"]');
         expect(slot).to.exist;
     });
 

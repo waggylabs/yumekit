@@ -110,7 +110,7 @@ Attributes:
 - `history` — set to `"false"` for full-page navigation instead of pushState
 
 Events: `navigate` (cancelable, `detail: { href }`), `expand`
-Slots: `separator`, `{index}-icon`
+Slots: `separator`, `{index}-item` (replaces entire item content)
 CSS Parts: `breadcrumbs`, `list`, `item`, `item--current`, `link`, `separator`, `expand-btn`
 
 ```html
@@ -753,7 +753,7 @@ Tabbed interface.
 
 Tag: `<y-tabs>`
 Attributes:
-- `options` — JSON array (stringified): `[{"id", "label", "slot", "disabled"?, "leftIcon"?, "rightIcon"?}]`
+- `options` — JSON array (stringified): `[{"id":"tab1","label":"Tab 1","slot":"tab1"}]`
   - `id` — unique tab identifier
   - `label` — display text
   - `slot` — name of the slot containing this tab's panel content
