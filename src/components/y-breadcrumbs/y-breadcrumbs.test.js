@@ -249,6 +249,21 @@ describe("YumeBreadcrumbs", () => {
         expect(el.shadowRoot.querySelector(".expand-btn")).to.not.exist;
     });
 
+    it("treats max-items < 2 as no limit to avoid slice(-0) bug", async () => {
+        const el = await fixture(
+            html`<y-breadcrumbs
+                items="${ITEMS_5}"
+                max-items="1"
+            ></y-breadcrumbs>`,
+        );
+
+        expect(el.maxItems).to.be.null;
+        expect(el.shadowRoot.querySelector(".expand-btn")).to.not.exist;
+
+        const items = el.shadowRoot.querySelectorAll("li.item:not(.expand)");
+        expect(items.length).to.equal(5);
+    });
+
     // ── Navigate event ────────────────────────────────────────
 
     it("fires navigate event when a link is clicked", async () => {
@@ -306,6 +321,29 @@ describe("YumeBreadcrumbs", () => {
         expect(pushed.some((a) => a[2] === "/")).to.be.true;
 
         window.history.pushState({}, "", "/");
+    });
+
+    it("does not intercept modified clicks (cmd/ctrl)", async () => {
+        const el = await fixture(
+            html`<y-breadcrumbs items="${ITEMS_3}"></y-breadcrumbs>`,
+        );
+
+        const navigateFired = [];
+        el.addEventListener("navigate", (e) => navigateFired.push(e));
+
+        // Suppress default at window capture so the test page doesn't navigate,
+        // while still allowing our handler to decide whether to fire navigate.
+        const suppressNav = (e) => e.preventDefault();
+        window.addEventListener("click", suppressNav, true);
+
+        const link = el.shadowRoot.querySelector("a.link");
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, cancelable: true, metaKey: true }));
+        link.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, cancelable: true, ctrlKey: true }));
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        window.removeEventListener("click", suppressNav, true);
+        expect(navigateFired.length).to.equal(0);
     });
 
     // ── Accessibility ─────────────────────────────────────────
@@ -438,6 +476,23 @@ describe("YumeBreadcrumbs", () => {
         );
         el.separator = ">";
         expect(el.getAttribute("separator")).to.equal(">");
+    });
+
+    it("separator setter removes attribute when null, undefined, or empty string", async () => {
+        const el = await fixture(
+            html`<y-breadcrumbs items="${ITEMS_3}" separator=">"></y-breadcrumbs>`,
+        );
+
+        el.separator = null;
+        expect(el.hasAttribute("separator")).to.be.false;
+
+        el.separator = ">";
+        el.separator = undefined;
+        expect(el.hasAttribute("separator")).to.be.false;
+
+        el.separator = ">";
+        el.separator = "";
+        expect(el.hasAttribute("separator")).to.be.false;
     });
 
     it("maxItems setter updates the attribute", async () => {

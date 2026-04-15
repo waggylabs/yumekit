@@ -58,7 +58,7 @@ export class YumeBreadcrumbs extends HTMLElement {
     /** Maximum visible items before collapsing. */
     get maxItems() {
         const val = parseInt(this.getAttribute("max-items"), 10);
-        return Number.isFinite(val) && val > 0 ? val : null;
+        return Number.isFinite(val) && val >= 2 ? val : null;
     }
     set maxItems(val) {
         if (val === null || val === undefined) {
@@ -73,7 +73,11 @@ export class YumeBreadcrumbs extends HTMLElement {
         return this.getAttribute("separator");
     }
     set separator(val) {
-        this.setAttribute("separator", val);
+        if (val === null || val === undefined || val === "") {
+            this.removeAttribute("separator");
+        } else {
+            this.setAttribute("separator", val);
+        }
     }
 
     /** Controls padding, font size, and icon size. */
@@ -215,8 +219,8 @@ export class YumeBreadcrumbs extends HTMLElement {
             );
 
             anchor.addEventListener("click", (e) => {
-                e.preventDefault();
-                this._onNavigate(item.href);
+                if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                this._onNavigate(e, item.href);
             });
 
             li.appendChild(anchor);
@@ -394,7 +398,7 @@ export class YumeBreadcrumbs extends HTMLElement {
         );
     }
 
-    _onNavigate(href) {
+    _onNavigate(e, href) {
         const event = new CustomEvent("navigate", {
             bubbles: true,
             composed: true,
@@ -402,7 +406,12 @@ export class YumeBreadcrumbs extends HTMLElement {
             detail: { href },
         });
 
-        if (!this.dispatchEvent(event)) return;
+        if (!this.dispatchEvent(event)) {
+            e.preventDefault();
+            return;
+        }
+
+        e.preventDefault();
 
         if (this.getAttribute("history") !== "false") {
             window.history.pushState({}, "", href);
