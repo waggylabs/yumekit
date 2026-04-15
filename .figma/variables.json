@@ -1911,6 +1911,62 @@
               "$value": "{spacing.x-large}"
             }
           },
+          "breadcrumbs": {
+            "font-size-small": {
+              "$scopes": [
+                "FONT_SIZE"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 12
+            },
+            "font-size-medium": {
+              "$scopes": [
+                "FONT_SIZE"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 14
+            },
+            "font-size-large": {
+              "$scopes": [
+                "FONT_SIZE"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 16
+            },
+            "gap-small": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.2x-small}"
+            },
+            "gap-medium": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.x-small}"
+            },
+            "gap-large": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.small}"
+            }
+          },
           "card": {
             "border-radius-inner": {
               "$scopes": [

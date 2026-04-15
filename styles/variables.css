@@ -332,6 +332,14 @@
     --component-card-padding-inner: var(--spacing-medium);
     --component-card-padding-outer: var(--spacing-x-large);
 
+    /* breadcrumbs */
+    --component-breadcrumbs-font-size-small: 0.75em;
+    --component-breadcrumbs-font-size-medium: 0.875em;
+    --component-breadcrumbs-font-size-large: 1em;
+    --component-breadcrumbs-gap-small: var(--spacing-2x-small);
+    --component-breadcrumbs-gap-medium: var(--spacing-x-small);
+    --component-breadcrumbs-gap-large: var(--spacing-small);
+
     /* checkbox */
     --component-checkbox-icon-size: var(--sizing-2x-small);
     --component-checkbox-size: var(--sizing-x-small);
@@ -611,6 +619,10 @@
     --component-appbar-inner-border-width: var(
         --component-sidebar-border-width
     );
+    --component-breadcrumbs-color: var(--primary-content--);
+    --component-breadcrumbs-color-hover: var(--primary-content-hover);
+    --component-breadcrumbs-color-current: var(--base-content--);
+    --component-breadcrumbs-separator-color: var(--base-content-lighter);
     --component-checkbox-background: var(--base-background-component);
     --component-checkbox-color: var(--base-content--);
     --component-checkbox-border-color: var(--base-content--);

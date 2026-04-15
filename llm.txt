@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 33 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 34 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.4.1
@@ -94,6 +94,30 @@ Attributes:
 <y-theme theme="blue-light">
   <!-- app content -->
 </y-theme>
+```
+
+---
+
+### y-breadcrumbs
+Navigation breadcrumb trail with collapse/expand and SPA navigation.
+
+Tag: `<y-breadcrumbs>`
+Attributes:
+- `items` — JSON array of `{ text, href?, icon? }` objects
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `separator` — separator character (default: chevron-right icon when unset)
+- `max-items` — collapses middle items when count exceeds this value
+- `history` — set to `"false"` for full-page navigation instead of pushState
+
+Events: `navigate` (cancelable, `detail: { href }`), `expand`
+Slots: `separator`, `{index}-icon`
+CSS Parts: `breadcrumbs`, `list`, `item`, `item--current`, `link`, `separator`, `expand-btn`
+
+```html
+<y-breadcrumbs
+    items='[{"text":"Home","href":"/"},{"text":"Products","href":"/products"},{"text":"Widget"}]'
+    max-items="3"
+></y-breadcrumbs>
 ```
 
 ---
@@ -832,6 +856,14 @@ Additional tokens:
 
 Component-specific tokens (subset — see `styles/variables.css` for the full list):
 ```
+/* y-breadcrumbs */
+--component-breadcrumbs-font-size-small/medium/large  /* font size per size variant */
+--component-breadcrumbs-gap-small/medium/large         /* gap between items per size variant */
+--component-breadcrumbs-color                          /* link color */
+--component-breadcrumbs-color-hover                    /* link hover color */
+--component-breadcrumbs-color-current                  /* current (last) item color */
+--component-breadcrumbs-separator-color                /* separator color */
+
 /* y-color */
 --component-color-swatch-size-small/medium/large  /* swatch width/height per size */
 --component-color-swatch-border-radius             /* swatch corner radius */

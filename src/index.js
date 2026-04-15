@@ -13,7 +13,9 @@ if (
 
 export * from "./components/y-appbar/y-appbar.js";
 export * from "./components/y-avatar/y-avatar.js";
+export * from "./components/y-banner/y-banner.js";
 export * from "./components/y-badge/y-badge.js";
+export * from "./components/y-breadcrumbs/y-breadcrumbs.js";
 export * from "./components/y-button/y-button.js";
 export * from "./components/y-button-group/y-button-group.js";
 export * from "./components/y-card/y-card.js";
@@ -37,6 +39,8 @@ export * from "./components/y-rating/y-rating.js";
 export * from "./components/y-radio/y-radio.js";
 export * from "./components/y-select/y-select.js";
 export * from "./components/y-slider/y-slider.js";
+export * from "./components/y-stack/y-stack.js";
+export * from "./components/y-stepper/y-stepper.js";
 export * from "./components/y-switch/y-switch.js";
 export * from "./components/y-table/y-table.js";
 export * from "./components/y-tag/y-tag.js";
