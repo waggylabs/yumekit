@@ -110,7 +110,7 @@ Attributes:
 - `history` — set to `"false"` for full-page navigation instead of pushState
 
 Events: `navigate` (cancelable, `detail: { href }`), `expand`
-Slots: `separator`, `{index}-icon`
+Slots: `separator`, `{index}-item` (replaces entire item content)
 CSS Parts: `breadcrumbs`, `list`, `item`, `item--current`, `link`, `separator`, `expand-btn`
 
 ```html
@@ -753,18 +753,37 @@ Tabbed interface.
 
 Tag: `<y-tabs>`
 Attributes:
-- `options` — JSON string: `[{"id": "tab1", "label": "Tab 1"}, ...]`
-- `active` — currently active tab id
+- `options` — JSON array (stringified): `[{"id":"tab1","label":"Tab 1","slot":"tab1"}]`
+  - `id` — unique tab identifier
+  - `label` — display text
+  - `slot` — name of the slot containing this tab's panel content
+  - `disabled` — (boolean) prevents selection
+  - `leftIcon` — `y-icon` name rendered to the left of the label
+  - `rightIcon` — `y-icon` name rendered to the right of the label
 - `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
 
-Events: `change` (detail: `{ id }`)
+Methods: `activateTab(id)`
 
-Slots: Use matching slot names from options `id` for tab panel content:
+Slots:
+- `{slot}` (named, from options) — tab panel content
+- `tab-content-{id}` — fully replaces the tab button's inner content; use for custom icons, badges, or anything beyond a simple `y-icon`
+
+Deprecated slots (use `leftIcon`/`rightIcon` option properties instead):
+- `left-icon-{id}` — icon to the left of the tab label
+- `right-icon-{id}` — icon to the right of the tab label
+
 ```html
-<y-tabs options='[{"id":"a","label":"A"},{"id":"b","label":"B"}]'>
+<!-- Icons via options (preferred) -->
+<y-tabs options='[{"id":"home","label":"Home","slot":"home","leftIcon":"home"},{"id":"settings","label":"Settings","slot":"settings","leftIcon":"settings"}]'>
+  <div slot="home">Home content</div>
+  <div slot="settings">Settings content</div>
+</y-tabs>
+
+<!-- Custom tab content via slot -->
+<y-tabs options='[{"id":"a","label":"A","slot":"a"}]'>
+  <span slot="tab-content-a"><y-icon name="star"></y-icon> A</span>
   <div slot="a">Content A</div>
-  <div slot="b">Content B</div>
 </y-tabs>
 ```
 

@@ -115,15 +115,38 @@ export const WithIcons = {
     render: () => `
         <y-tabs
             options='${JSON.stringify([
+                { id: "home", label: "Home", slot: "home", leftIcon: "home" },
+                { id: "user", label: "Profile", slot: "user", leftIcon: "user" },
+                { id: "settings", label: "Settings", slot: "settings", leftIcon: "settings" },
+            ])}'
+            style="width:400px"
+        >
+            <div slot="home"><p>Home content.</p></div>
+            <div slot="user"><p>Profile content.</p></div>
+            <div slot="settings"><p>Settings content.</p></div>
+        </y-tabs>
+    `,
+};
+
+export const WithTabContentSlot = {
+    render: () => `
+        <y-tabs
+            options='${JSON.stringify([
                 { id: "home", label: "Home", slot: "home" },
                 { id: "user", label: "Profile", slot: "user" },
                 { id: "settings", label: "Settings", slot: "settings" },
             ])}'
             style="width:400px"
         >
-            <y-icon slot="left-icon-home" name="home" size="small"></y-icon>
-            <y-icon slot="left-icon-user" name="user" size="small"></y-icon>
-            <y-icon slot="left-icon-settings" name="settings" size="small"></y-icon>
+            <span slot="tab-content-home" style="display:inline-flex;align-items:center;gap:4px">
+                <y-icon name="home" size="small"></y-icon> Home
+            </span>
+            <span slot="tab-content-user" style="display:inline-flex;align-items:center;gap:4px">
+                <y-icon name="user" size="small"></y-icon> Profile
+            </span>
+            <span slot="tab-content-settings" style="display:inline-flex;align-items:center;gap:4px">
+                <y-icon name="settings" size="small"></y-icon> Settings
+            </span>
             <div slot="home"><p>Home content.</p></div>
             <div slot="user"><p>Profile content.</p></div>
             <div slot="settings"><p>Settings content.</p></div>

@@ -42,6 +42,12 @@ Delete any empty sections before publishing.
 - New `y-color` component — a form-associated color input with a trigger/popup pattern (like `<y-date>`). Renders a color swatch preview and value string in the trigger; opens a `<y-colorpicker>` popup on click. Supports `value`, `format`, `formats`, `show-alpha`, `placeholder`, `name`, `disabled`, `invalid`, `clearable`, `size`, and `label-position` attributes. Uses `ElementInternals` for `FormData` participation.
 - New `y-banner` component — a full-width informational banner that renders in a semantic color with matching text. Supports `color` (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`), `icon` attribute (or `icon` slot), `position` (`"push"` | `"overlap"`), `sticky` (fixed to viewport when overlapping), `dismissable` close button, `size` (`"small"` | `"medium"` | `"large"`), and an `action` slot for CTA elements.
 - New `y-stack` component — a layout container for arranging child elements in rows, columns, grids, or masonry patterns. Supports `mode` (`"flex"` | `"grid"` | `"masonry"`), `direction`, `columns`, `gap` (maps to `--spacing-*` tokens), `wrap`, `align`, `justify`, and `responsive` attributes. Masonry mode uses JS absolute positioning with `ResizeObserver`. Responsive mode auto-collapses columns at configurable breakpoints.
+- `y-tabs`: `leftIcon` and `rightIcon` properties on option objects — set a `<y-icon>` name directly in the options JSON to render icons without requiring extra child elements or named slots.
+- `y-tabs`: `tab-content-{id}` slot — place any content (icons, badges, custom markup) inside the tab button itself by targeting this slot. Takes full precedence over `leftIcon`/`rightIcon` and the default label rendering.
+
+### Deprecated
+
+- `y-tabs`: `left-icon-{id}` and `right-icon-{id}` slots — these slots still function but emit a `console.warn` directing users to the `leftIcon`/`rightIcon` option properties or the `tab-content-{id}` slot. They will be removed before the release of version 1.0.
 
 ## [0.4.2] - 2026-04-07
 

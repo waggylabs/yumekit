@@ -1,7 +1,11 @@
 import { fixture, expect, html } from "@open-wc/testing";
-import "./y-tabs.js"; // path to your component file
+import sinon from "sinon";
+import "./y-tabs.js";
 
 describe("YumeTabs", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
     const options = [
         { id: "one", label: "One", slot: "one-slot" },
         { id: "two", label: "Two", slot: "two-slot", disabled: true },
@@ -245,5 +249,187 @@ describe("YumeTabs", () => {
         `);
         const css = el.shadowRoot.querySelector("style").textContent;
         expect(css).to.include("--component-tab-gap-small");
+    });
+
+    it("tab buttons always have aria-label from tab.label", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const buttons = el.shadowRoot.querySelectorAll("button");
+        buttons.forEach((btn, i) => {
+            expect(btn.getAttribute("aria-label")).to.equal(options[i].label);
+        });
+    });
+
+    it("aria-label is set even when tab-content slot is used with icon-only content", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <span slot="tab-content-one"><y-icon name="home"></y-icon></span>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn.getAttribute("aria-label")).to.equal("One");
+    });
+
+    it("renders y-icon for leftIcon option property", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
+            { id: "two", label: "Two", slot: "two-slot" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        const icon = btn1.querySelector("y-icon");
+        expect(icon).to.exist;
+        expect(icon.getAttribute("name")).to.equal("home");
+        expect(icon.getAttribute("size")).to.equal("medium");
+    });
+
+    it("renders y-icon for rightIcon option property", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", rightIcon: "arrow-right" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}">
+                <div slot="one-slot">First</div>
+            </y-tabs>
+        `);
+        const btn = el.shadowRoot.querySelector('button[data-id="one"]');
+        const slot = btn.querySelector('slot[name="tab-content-one"]');
+        const slotChildren = [...slot.children];
+        const icon = slot.querySelector("y-icon");
+        expect(icon).to.exist;
+        expect(icon.getAttribute("name")).to.equal("arrow-right");
+        // icon comes after the label span
+        expect(slotChildren.indexOf(icon)).to.be.greaterThan(slotChildren.indexOf(slot.querySelector("span")));
+    });
+
+    it("y-icon inherits the component size", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}" size="large">
+                <div slot="one-slot">First</div>
+            </y-tabs>
+        `);
+        const icon = el.shadowRoot.querySelector('button[data-id="one"] y-icon');
+        expect(icon.getAttribute("size")).to.equal("large");
+    });
+
+    it("tab-content slot is always rendered for each tab button", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        for (const tab of options) {
+            const btn = el.shadowRoot.querySelector(`button[data-id="${tab.id}"]`);
+            expect(btn.querySelector(`slot[name="tab-content-${tab.id}"]`)).to.exist;
+        }
+    });
+
+    it("tab-content slot fallback contains the label span", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        const slot = btn1.querySelector('slot[name="tab-content-one"]');
+        expect(slot.querySelector("span")).to.exist;
+        expect(slot.querySelector("span").textContent).to.equal("One");
+    });
+
+    it("tab-content slot leftIcon fallback is inside the slot", async () => {
+        const iconOptions = [
+            { id: "one", label: "One", slot: "one-slot", leftIcon: "home" },
+        ];
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(iconOptions)}">
+                <div slot="one-slot">First</div>
+            </y-tabs>
+        `);
+        const slot = el.shadowRoot.querySelector('button[data-id="one"] slot[name="tab-content-one"]');
+        expect(slot.querySelector("y-icon")).to.exist;
+    });
+
+    it("deprecated left-icon slot still renders with a console warning", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="left-icon-one" name="home" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn1.querySelector('slot[name="left-icon-one"]')).to.exist;
+        expect(warn.calledWith(sinon.match(/left-icon-one.*deprecated/))).to.be.true;
+    });
+
+    it("deprecated left-icon slot warning is emitted only once across re-renders", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="left-icon-one" name="home" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        el.size = "large";
+        el.size = "small";
+        el.activateTab("three");
+        const count = warn.args.filter(([msg]) => /left-icon-one.*deprecated/.test(msg)).length;
+        expect(count).to.equal(1);
+    });
+
+    it("deprecated right-icon slot still renders with a console warning", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="right-icon-one" name="chevron-right" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
+        expect(btn1.querySelector('slot[name="right-icon-one"]')).to.exist;
+        expect(warn.calledWith(sinon.match(/right-icon-one.*deprecated/))).to.be.true;
+    });
+
+    it("deprecated right-icon slot warning is emitted only once across re-renders", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <y-icon slot="right-icon-one" name="chevron-right" size="small"></y-icon>
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        el.size = "large";
+        el.size = "small";
+        el.activateTab("three");
+        const count = warn.args.filter(([msg]) => /right-icon-one.*deprecated/.test(msg)).length;
+        expect(count).to.equal(1);
     });
 });

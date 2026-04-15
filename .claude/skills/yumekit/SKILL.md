@@ -12,6 +12,8 @@ Use [reference.md](reference.md) for the full component API and attribute detail
 Use [patterns.md](patterns.md) for multi-component layout recipes.
 Use [examples/](examples/) for complete working examples to adapt.
 
+When writing or modifying component source code, follow the authoring standards in [CONTRIBUTING.md](../../../CONTRIBUTING.md#component-authoring-standards) and [CLAUDE.md](../../../CLAUDE.md).
+
 ## Rules
 
 1. **Always wrap output in `<y-theme>`** with `theme="blue-light"` unless the user specifies otherwise. Built-in themes: `blue-light`, `blue-dark`, `orange-light`, `orange-dark`. For custom CSS, pass a URL path: `theme="/my-theme.css"`.

@@ -179,25 +179,9 @@ export class YumeBreadcrumbs extends HTMLElement {
             part: parts.join(" "),
         });
 
-        const iconSlotName = `${index}-icon`;
-        const hasIconSlot = !!this.querySelector(`[slot="${iconSlotName}"]`);
-
-        if (hasIconSlot) {
-            li.appendChild(
-                _el("slot", { name: iconSlotName, class: "item-icon" }),
-            );
-        } else if (item.icon) {
-            li.appendChild(
-                _el("y-icon", {
-                    name: item.icon,
-                    size: this._getIconSize(),
-                    class: "item-icon",
-                }),
-            );
-        }
-
+        let linkEl;
         if (isCurrent || !item.href) {
-            const span = _el(
+            linkEl = _el(
                 "span",
                 {
                     class: "link current-text",
@@ -206,9 +190,8 @@ export class YumeBreadcrumbs extends HTMLElement {
                 },
                 [item.text],
             );
-            li.appendChild(span);
         } else {
-            const anchor = _el(
+            linkEl = _el(
                 "a",
                 {
                     class: "link",
@@ -217,14 +200,20 @@ export class YumeBreadcrumbs extends HTMLElement {
                 },
                 [item.text],
             );
-
-            anchor.addEventListener("click", (e) => {
+            linkEl.addEventListener("click", (e) => {
                 if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
                 this._onNavigate(e, item.href);
             });
-
-            li.appendChild(anchor);
         }
+
+        const itemSlot = _el("slot", { name: `${index}-item` });
+        if (item.icon) {
+            itemSlot.appendChild(
+                _el("y-icon", { name: item.icon, size: this._getIconSize(), class: "item-icon" }),
+            );
+        }
+        itemSlot.appendChild(linkEl);
+        li.appendChild(itemSlot);
 
         return li;
     }
