@@ -26,6 +26,7 @@ export class YumeDock extends HTMLElement {
         if (!this.hasAttribute("aria-label"))
             this.setAttribute("aria-label", "Dock navigation");
         this.render();
+        this._teardownBreakpoint();
         this._setupBreakpoint();
     }
 
@@ -49,7 +50,8 @@ export class YumeDock extends HTMLElement {
     /** Viewport width below which dock is visible (px). When omitted, always visible. */
     get breakpoint() {
         const val = this.getAttribute("breakpoint");
-        return val ? Number(val) : null;
+        const num = Number(val);
+        return Number.isFinite(num) && num > 0 ? num : null;
     }
     set breakpoint(val) {
         if (val == null) this.removeAttribute("breakpoint");
@@ -126,7 +128,12 @@ export class YumeDock extends HTMLElement {
 
     _buildItem(item) {
         if (item.slot && this.querySelector(`[slot="${item.slot}"]`)) {
-            const wrapper = _el("div", { class: "item", part: "item" });
+            const wrapper = _el("div", {
+                class: "item",
+                part: "item",
+                tabindex: "0",
+                role: "group",
+            });
             wrapper.appendChild(_el("slot", { name: item.slot }));
             return wrapper;
         }
@@ -256,7 +263,7 @@ export class YumeDock extends HTMLElement {
             window.location.href = item.href;
         } else {
             window.history.pushState({}, "", item.href);
-            window.dispatchEvent(new PopStateEvent("popstate"));
+            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
         }
     }
 
@@ -277,24 +284,33 @@ export class YumeDock extends HTMLElement {
     }
 
     _setupItemKeyboard(bar) {
-        const getItems = () => Array.from(bar.querySelectorAll(".item"));
+        const slot = bar.querySelector("slot:not([name])");
+
+        const getItems = () => {
+            const shadowItems = Array.from(bar.querySelectorAll(".item"));
+            const slottedItems = slot
+                ? Array.from(slot.assignedElements({ flatten: true }))
+                : [];
+            return [...shadowItems, ...slottedItems];
+        };
 
         bar.addEventListener("keydown", (e) => {
             const items = getItems();
-            const idx = items.indexOf(e.target);
+            const path = e.composedPath();
+            const idx = items.findIndex(
+                (item) => item === e.target || path.includes(item),
+            );
             if (idx === -1) return;
 
             if (e.key === "ArrowRight") {
                 e.preventDefault();
-                const next = items[(idx + 1) % items.length];
-                next.focus();
+                items[(idx + 1) % items.length].focus();
             } else if (e.key === "ArrowLeft") {
                 e.preventDefault();
-                const prev = items[(idx - 1 + items.length) % items.length];
-                prev.focus();
+                items[(idx - 1 + items.length) % items.length].focus();
             } else if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                e.target.click();
+                items[idx].click();
             }
         });
     }
