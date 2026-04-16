@@ -17,7 +17,7 @@
 
 ## Overview
 
-YumeKit is a collection of 34 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
+YumeKit is a collection of 35 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
@@ -86,6 +86,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Date         | `<y-date>`         | Date input                                          |
 | DatePicker   | `<y-datepicker>`   | A date and time picker                              |
 | Dialog       | `<y-dialog>`       | Modal dialog                                        |
+| Dock         | `<y-dock>`         | Fixed navigation dock                               |
 | Drawer       | `<y-drawer>`       | Side drawer / sidebar                               |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                         |
 | Icon         | `<y-icon>`         | SVG icon display                                    |

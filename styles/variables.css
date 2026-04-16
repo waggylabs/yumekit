@@ -367,6 +367,13 @@
     --component-colorpicker-border-radius: var(--radii-x-small);
     --component-colorpicker-checkerboard-size: 8px;
 
+    /* dock */
+    --component-dock-height-small: 52px;
+    --component-dock-height-medium: 60px;
+    --component-dock-height-large: 72px;
+    --component-dock-border-width: var(--border-x-thin);
+    --component-dock-z-index: 8000;
+
     /* dialog */
     --component-dialog-border-radius-inner: var(--radii-x-small);
     --component-dialog-border-radius-outer: var(--radii-small);
@@ -627,6 +634,10 @@
     --component-checkbox-color: var(--base-content--);
     --component-checkbox-border-color: var(--base-content--);
     --component-checkbox-accent: var(--primary-content--);
+    --component-dock-background: var(--base-background-component);
+    --component-dock-color: var(--base-content-lighter);
+    --component-dock-color-active: var(--primary-content--);
+    --component-dock-border-color: var(--base-border);
     --component-dialog-background: var(--base-background-component);
     --component-dialog-color: var(--base-content--);
     --component-dialog-border-color: var(--base-border);

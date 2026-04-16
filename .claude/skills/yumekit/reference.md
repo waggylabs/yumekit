@@ -673,6 +673,61 @@ Slots: `header`, `footer`, default (body)
 
 ---
 
+## y-dock
+
+Fixed navigation bar (dock) for primary app navigation. Displays icon+label items with optional per-item slot templates.
+
+| Attribute     | Values / Notes                                                                                  |
+|--------------|--------------------------------------------------------------------------------------------------|
+| `items`      | JSON array of `{ name, icon, href?, selected?, slot? }` objects                                 |
+| `position`   | `bottom` (default) \| `top` — which edge of the viewport the dock anchors to                   |
+| `breakpoint` | number (px) — when set, dock is only visible below this width; omit for always visible          |
+| `size`       | `small` \| `medium` (default) \| `large`                                                        |
+| `history`    | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`  |
+
+**Events:** `navigate` (cancelable, `detail: { href }`)
+
+**Slots:** default (direct child elements as dock items), `{item.slot}` (per-item custom template)
+
+**CSS Parts:** `bar`, `item`
+
+**CSS Custom Properties:**
+- `--component-dock-height` — overall dock bar height (overrides size-based default)
+- `--component-dock-background` — dock bar background color
+- `--component-dock-border-color` — border color on the edge facing the content
+- `--component-dock-border-width` — border width
+- `--component-dock-color` — default item text/icon color
+- `--component-dock-color-active` — selected item text/icon color
+- `--component-dock-z-index` — stacking order (default: `8000`)
+
+```html
+<!-- Basic bottom dock -->
+<y-dock
+    items='[{"name":"Home","icon":"home","href":"/","selected":true},{"name":"Search","icon":"search","href":"/search"},{"name":"Profile","icon":"settings","href":"/profile"}]'
+></y-dock>
+
+<!-- Per-item custom slot template -->
+<y-dock
+    items='[{"name":"Home","icon":"home","href":"/"},{"name":"Create","icon":"plus","slot":"create-action"},{"name":"Profile","icon":"settings","href":"/profile"}]'
+>
+    <y-button slot="create-action" color="primary" style-type="filled" size="small" left-icon="plus">Create</y-button>
+</y-dock>
+
+<!-- Mobile-only dock (hidden above 768px) -->
+<y-dock breakpoint="768" items='[...]'></y-dock>
+
+<!-- React Router integration -->
+<y-dock id="dock" items='[...]'></y-dock>
+<script type="module">
+  document.getElementById("dock").addEventListener("navigate", (e) => {
+    e.preventDefault();
+    myRouter.navigate(e.detail.href);
+  });
+</script>
+```
+
+---
+
 ## y-menu
 
 Positioned relative to an `anchor` element. Does NOT use slots for items.
