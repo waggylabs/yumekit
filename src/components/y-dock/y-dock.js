@@ -21,9 +21,10 @@ export class YumeDock extends HTMLElement {
         if (!this.hasAttribute("position"))
             this.setAttribute("position", "bottom");
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-
-        this.setAttribute("role", "navigation");
-        this.setAttribute("aria-label", "Dock navigation");
+        if (!this.hasAttribute("role"))
+            this.setAttribute("role", "navigation");
+        if (!this.hasAttribute("aria-label"))
+            this.setAttribute("aria-label", "Dock navigation");
         this.render();
         this._setupBreakpoint();
     }
