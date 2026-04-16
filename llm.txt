@@ -1,9 +1,9 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 34 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 35 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.4.1
+0.4.3
 
 ## License
 MIT
@@ -658,6 +658,30 @@ Slots: `header`, `footer`, default (body)
 <script>
   document.getElementById("my-dialog").show();
 </script>
+```
+
+---
+
+### y-dock
+Fixed navigation bar (dock) for primary app navigation. Displays icon+label items with optional per-item slot templates.
+
+Tag: `<y-dock>`
+Attributes:
+- `items` — JSON array of `{ name, icon, href?, selected?, slot? }` objects
+- `position` — `"bottom"` (default) | `"top"` — which edge of the viewport the dock anchors to
+- `breakpoint` — number (px) — when set, dock is only visible below this viewport width; omit for always visible
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
+
+Events: `navigate` (cancelable, `detail: { href }`)
+Slots: default (direct child elements as dock items), `{item.slot}` (per-item custom template)
+CSS Parts: `bar`, `item`
+CSS Custom Properties: `--component-dock-height`, `--component-dock-background`, `--component-dock-border-color`, `--component-dock-border-width`, `--component-dock-color`, `--component-dock-color-active`, `--component-dock-z-index`
+
+```html
+<y-dock
+  items='[{"name":"Home","icon":"home","href":"/","selected":true},{"name":"Search","icon":"search","href":"/search"},{"name":"Profile","icon":"settings","href":"/profile"}]'
+></y-dock>
 ```
 
 ---

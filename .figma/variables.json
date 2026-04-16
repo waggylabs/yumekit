@@ -2190,6 +2190,43 @@
               "$value": 8
             }
           },
+          "dock": {
+            "height-small": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 52
+            },
+            "height-medium": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 60
+            },
+            "height-large": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 72
+            },
+            "border-width": {
+              "$scopes": ["STROKE_FLOAT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{border.x-thin}"
+            },
+            "z-index": {
+              "$scopes": ["ALL_SCOPES"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 8000
+            }
+          },
           "dialog": {
             "border-radius-inner": {
               "$scopes": [
