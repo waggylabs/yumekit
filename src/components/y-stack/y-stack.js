@@ -156,19 +156,19 @@ export class YumeStack extends HTMLElement {
         const responsive = this.responsive;
 
         let containerCSS;
-        let responsiveCSS = "";
+        let slottedCSS = "";
 
         if (mode === "grid") {
+            const columnsTemplate = responsive
+                ? this._buildResponsiveGridTemplate(cols, gapValue)
+                : `repeat(var(--component-stack-columns, ${cols}), 1fr)`;
             containerCSS = `
                 .container {
                     display: grid;
-                    grid-template-columns: repeat(var(--component-stack-columns, ${cols}), 1fr);
+                    grid-template-columns: ${columnsTemplate};
                     gap: ${gapValue};
                 }
             `;
-            if (responsive) {
-                responsiveCSS = this._buildResponsiveGridCSS(cols);
-            }
         } else if (mode === "masonry") {
             containerCSS = `
                 .container {
@@ -177,6 +177,7 @@ export class YumeStack extends HTMLElement {
             `;
         } else {
             const dir = this.direction;
+            const wrap = this.wrap || (responsive && dir === "row");
             const alignMap = {
                 start: "flex-start",
                 end: "flex-end",
@@ -197,14 +198,15 @@ export class YumeStack extends HTMLElement {
                 .container {
                     display: flex;
                     flex-direction: ${dir};
-                    flex-wrap: ${this.wrap ? "wrap" : "nowrap"};
+                    flex-wrap: ${wrap ? "wrap" : "nowrap"};
                     align-items: ${alignMap[this.align] || "stretch"};
                     justify-content: ${justifyMap[this.justify] || "flex-start"};
                     gap: ${gapValue};
                 }
             `;
-            if (responsive && dir === "row") {
-                responsiveCSS = this._buildResponsiveFlexCSS();
+
+            if (wrap) {
+                slottedCSS = `::slotted(*) { flex-shrink: 0; }`;
             }
         }
 
@@ -214,35 +216,16 @@ export class YumeStack extends HTMLElement {
                 box-sizing: border-box;
             }
             ${containerCSS}
-            ${responsiveCSS}
+            ${slottedCSS}
         `);
         return sheet;
     }
 
-    _buildResponsiveFlexCSS() {
-        return `
-            @media (max-width: var(--component-stack-mobile-breakpoint, 576px)) {
-                .container {
-                    flex-direction: column;
-                }
-            }
-        `;
-    }
-
-    _buildResponsiveGridCSS(cols) {
-        const tabletCols = Math.min(2, cols);
-        return `
-            @media (max-width: var(--component-stack-tablet-breakpoint, 768px)) {
-                .container {
-                    grid-template-columns: repeat(${tabletCols}, 1fr);
-                }
-            }
-            @media (max-width: var(--component-stack-mobile-breakpoint, 576px)) {
-                .container {
-                    grid-template-columns: 1fr;
-                }
-            }
-        `;
+    _buildResponsiveGridTemplate(cols, gapValue) {
+        const minWidth = `var(--component-stack-min-item-width, 240px)`;
+        const evenShare = `calc((100% - ${cols - 1} * ${gapValue}) / ${cols})`;
+        const itemMin = `min(100%, max(${minWidth}, ${evenShare}))`;
+        return `repeat(auto-fit, minmax(${itemMin}, 1fr))`;
     }
 
     _clearMasonryPositions() {
@@ -343,14 +326,14 @@ export class YumeStack extends HTMLElement {
 
     _resolveGap() {
         const gapMap = {
-            none: "var(--spacing-none)",
-            "x-small": "var(--spacing-x-small)",
-            small: "var(--spacing-small)",
-            medium: "var(--spacing-medium)",
-            large: "var(--spacing-large)",
-            "x-large": "var(--spacing-x-large)",
-            "2x-large": "var(--spacing-2x-large)",
-            "4x-large": "var(--spacing-4x-large)",
+            none: "var(--spacing-none, 0px)",
+            "x-small": "var(--spacing-x-small, 4px)",
+            small: "var(--spacing-small, 6px)",
+            medium: "var(--spacing-medium, 8px)",
+            large: "var(--spacing-large, 12px)",
+            "x-large": "var(--spacing-x-large, 16px)",
+            "2x-large": "var(--spacing-2x-large, 24px)",
+            "4x-large": "var(--spacing-4x-large, 32px)",
         };
         return `var(--component-stack-gap, ${gapMap[this.gap] || gapMap.medium})`;
     }

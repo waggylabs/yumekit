@@ -331,11 +331,16 @@ Layout container for rows, columns, grids, or masonry. Purely structural — no 
 | `wrap`       | boolean — allow flex items to wrap (flex mode only)                                         |
 | `align`      | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — cross-axis alignment   |
 | `justify`    | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — flex only    |
-| `responsive` | boolean — auto-collapse columns at narrow viewports                                         |
+| `responsive` | boolean — auto-collapse columns based on the stack's container width (not viewport)        |
 
 Slot: default (child elements to lay out)
 
-CSS Custom Properties: `--component-stack-gap`, `--component-stack-columns`, `--component-stack-mobile-breakpoint` (default `576px`), `--component-stack-tablet-breakpoint` (default `768px`)
+`responsive` behavior by mode:
+- **grid**: uses `repeat(auto-fit, minmax(...))` so columns collapse when the container narrows, capped at the `columns` value. Each item is at least `--component-stack-min-item-width` wide.
+- **flex** + `direction="row"`: automatically enables `wrap` so items flow to the next line when they no longer fit.
+- **masonry**: column count drops to `2` below the tablet breakpoint and `1` below the mobile breakpoint, measured against container width.
+
+CSS Custom Properties: `--component-stack-gap`, `--component-stack-columns`, `--component-stack-min-item-width` (default `240px`, grid responsive only), `--component-stack-mobile-breakpoint` (default `576px`, masonry only), `--component-stack-tablet-breakpoint` (default `768px`, masonry only)
 
 CSS Parts: `container`
 

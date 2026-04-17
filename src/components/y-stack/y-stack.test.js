@@ -178,6 +178,32 @@ describe("YumeStack", () => {
         expect(styles.flexWrap).to.equal("nowrap");
     });
 
+    it("prevents slotted children from shrinking when wrap is set", async () => {
+        const el = await fixture(html`<y-stack wrap><div>A</div></y-stack>`);
+        const child = el.querySelector("div");
+        expect(getComputedStyle(child).flexShrink).to.equal("0");
+    });
+
+    it("allows slotted children to shrink when wrap is not set", async () => {
+        const el = await fixture(html`<y-stack><div>A</div></y-stack>`);
+        const child = el.querySelector("div");
+        expect(getComputedStyle(child).flexShrink).to.equal("1");
+    });
+
+    it("auto-enables wrap on row flex when responsive is set", async () => {
+        const el = await fixture(html`<y-stack responsive><div>A</div></y-stack>`);
+        const container = el.shadowRoot.querySelector(".container");
+        expect(getComputedStyle(container).flexWrap).to.equal("wrap");
+        const child = el.querySelector("div");
+        expect(getComputedStyle(child).flexShrink).to.equal("0");
+    });
+
+    it("does not auto-enable wrap on column flex when responsive is set", async () => {
+        const el = await fixture(html`<y-stack direction="column" responsive><div>A</div></y-stack>`);
+        const container = el.shadowRoot.querySelector(".container");
+        expect(getComputedStyle(container).flexWrap).to.equal("nowrap");
+    });
+
     it("maps align=center to align-items: center", async () => {
         const el = await fixture(html`<y-stack align="center"><div>A</div></y-stack>`);
         const container = el.shadowRoot.querySelector(".container");
@@ -209,6 +235,29 @@ describe("YumeStack", () => {
         const styles = getComputedStyle(container);
         // Computed value resolves 1fr to pixel widths — count the space-separated values
         const colCount = styles.gridTemplateColumns.trim().split(/\s+/).length;
+        expect(colCount).to.equal(4);
+    });
+
+    it("collapses responsive grid columns when container is narrower than min-item-width", async () => {
+        const el = await fixture(html`
+            <y-stack mode="grid" columns="4" responsive style="width:400px">
+                <div>A</div><div>B</div><div>C</div><div>D</div>
+            </y-stack>
+        `);
+        const container = el.shadowRoot.querySelector(".container");
+        const colCount = getComputedStyle(container).gridTemplateColumns.trim().split(/\s+/).length;
+        // 400px container with default 240px min — should collapse to 1 column
+        expect(colCount).to.equal(1);
+    });
+
+    it("keeps full responsive grid columns when container is wide enough", async () => {
+        const el = await fixture(html`
+            <y-stack mode="grid" columns="4" responsive style="width:1200px">
+                <div>A</div><div>B</div><div>C</div><div>D</div>
+            </y-stack>
+        `);
+        const container = el.shadowRoot.querySelector(".container");
+        const colCount = getComputedStyle(container).gridTemplateColumns.trim().split(/\s+/).length;
         expect(colCount).to.equal(4);
     });
 
