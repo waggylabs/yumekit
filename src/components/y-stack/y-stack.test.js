@@ -45,8 +45,13 @@ describe("YumeStack", () => {
         expect(el.columns).to.equal(3);
     });
 
-    it("defaults responsive to false", async () => {
+    it("defaults responsive to true", async () => {
         const el = await fixture(html`<y-stack></y-stack>`);
+        expect(el.responsive).to.be.true;
+    });
+
+    it("disables responsive when responsive=\"false\" is set", async () => {
+        const el = await fixture(html`<y-stack responsive="false"></y-stack>`);
         expect(el.responsive).to.be.false;
     });
 
@@ -134,16 +139,17 @@ describe("YumeStack", () => {
     });
 
     it("reflects responsive attribute via getter", async () => {
-        const el = await fixture(html`<y-stack responsive></y-stack>`);
-        expect(el.responsive).to.be.true;
+        const el = await fixture(html`<y-stack responsive="false"></y-stack>`);
+        expect(el.responsive).to.be.false;
     });
 
     it("sets responsive via setter", async () => {
         const el = await fixture(html`<y-stack></y-stack>`);
-        el.responsive = true;
-        expect(el.hasAttribute("responsive")).to.be.true;
         el.responsive = false;
+        expect(el.getAttribute("responsive")).to.equal("false");
+        el.responsive = true;
         expect(el.hasAttribute("responsive")).to.be.false;
+        expect(el.responsive).to.be.true;
     });
 
     // -------------------------------------------------------------------------
@@ -171,8 +177,8 @@ describe("YumeStack", () => {
         expect(styles.flexWrap).to.equal("wrap");
     });
 
-    it("applies nowrap when wrap is not set", async () => {
-        const el = await fixture(html`<y-stack><div>A</div></y-stack>`);
+    it("applies nowrap when wrap is not set and responsive is disabled", async () => {
+        const el = await fixture(html`<y-stack responsive="false"><div>A</div></y-stack>`);
         const container = el.shadowRoot.querySelector(".container");
         const styles = getComputedStyle(container);
         expect(styles.flexWrap).to.equal("nowrap");
@@ -184,8 +190,8 @@ describe("YumeStack", () => {
         expect(getComputedStyle(child).flexShrink).to.equal("0");
     });
 
-    it("allows slotted children to shrink when wrap is not set", async () => {
-        const el = await fixture(html`<y-stack><div>A</div></y-stack>`);
+    it("allows slotted children to shrink when wrap is off and responsive is disabled", async () => {
+        const el = await fixture(html`<y-stack responsive="false"><div>A</div></y-stack>`);
         const child = el.querySelector("div");
         expect(getComputedStyle(child).flexShrink).to.equal("1");
     });
@@ -230,7 +236,7 @@ describe("YumeStack", () => {
     });
 
     it("applies correct number of grid columns", async () => {
-        const el = await fixture(html`<y-stack mode="grid" columns="4" style="width:400px"><div>A</div></y-stack>`);
+        const el = await fixture(html`<y-stack mode="grid" columns="4" responsive="false" style="width:400px"><div>A</div></y-stack>`);
         const container = el.shadowRoot.querySelector(".container");
         const styles = getComputedStyle(container);
         // Computed value resolves 1fr to pixel widths — count the space-separated values

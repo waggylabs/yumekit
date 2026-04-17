@@ -110,13 +110,19 @@ export class YumeStack extends HTMLElement {
         this.setAttribute("justify", val);
     }
 
-    /** Auto-reduce columns at narrow viewports. */
+    /**
+     * Auto-reduce columns at narrow container widths. Defaults to `true`;
+     * set `responsive="false"` to disable.
+     */
     get responsive() {
-        return this.hasAttribute("responsive");
+        return this.getAttribute("responsive") !== "false";
     }
     set responsive(val) {
-        if (val) this.setAttribute("responsive", "");
-        else this.removeAttribute("responsive");
+        if (val === false || val === "false") {
+            this.setAttribute("responsive", "false");
+        } else {
+            this.removeAttribute("responsive");
+        }
     }
 
     // -------------------------------------------------------------------------

@@ -23,7 +23,16 @@ export default {
         },
         gap: {
             control: "select",
-            options: ["none", "x-small", "small", "medium", "large", "x-large", "2x-large", "4x-large"],
+            options: [
+                "none",
+                "x-small",
+                "small",
+                "medium",
+                "large",
+                "x-large",
+                "2x-large",
+                "4x-large",
+            ],
             description: "Gap between items, maps to --spacing-* tokens.",
             table: { defaultValue: { summary: "medium" } },
         },
@@ -65,7 +74,16 @@ export default {
         justify: "start",
         responsive: false,
     },
-    render: ({ mode, direction, gap, columns, wrap, align, justify, responsive }) => `
+    render: ({
+        mode,
+        direction,
+        gap,
+        columns,
+        wrap,
+        align,
+        justify,
+        responsive,
+    }) => `
         <y-stack
             mode="${mode}"
             direction="${direction}"
@@ -147,7 +165,18 @@ export const RowWithJustify = {
 export const GapSizes = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:24px">
-            ${["none", "x-small", "small", "medium", "large", "x-large", "2x-large", "4x-large"].map((g) => `
+            ${[
+                "none",
+                "x-small",
+                "small",
+                "medium",
+                "large",
+                "x-large",
+                "2x-large",
+                "4x-large",
+            ]
+                .map(
+                    (g) => `
                 <div>
                     <p style="margin:0 0 8px"><strong>gap="${g}"</strong></p>
                     <y-stack direction="row" gap="${g}">
@@ -156,7 +185,9 @@ export const GapSizes = {
                         <y-button color="primary" size="small">C</y-button>
                     </y-stack>
                 </div>
-            `).join("")}
+            `,
+                )
+                .join("")}
         </div>
     `,
 };
@@ -193,7 +224,7 @@ export const GridResponsive = {
 
 export const Masonry = {
     render: () => `
-        <y-stack mode="masonry" columns="3" gap="large">
+        <y-stack mode="masonry" columns="3" gap="large" responsive>
             <y-card><div slot="header"><strong>Short</strong></div><p>Brief content.</p></y-card>
             <y-card><div slot="header"><strong>Tall</strong></div><p>This card has more content to make it taller than the others, demonstrating masonry layout.</p></y-card>
             <y-card><div slot="header"><strong>Medium</strong></div><p>Some content here.</p></y-card>
