@@ -39,6 +39,15 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-banner": El<{
+                color?: string;
+                icon?: string;
+                position?: "push" | "overlap";
+                sticky?: boolean | string;
+                dismissable?: boolean | string;
+                dismissed?: boolean | string;
+                size?: "small" | "medium" | "large";
+            }>;
             "y-button": El<{
                 "left-icon"?: string;
                 "right-icon"?: string;
@@ -74,6 +83,26 @@ declare module "react" {
                 disabled?: boolean | string;
                 indeterminate?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
+            }>;
+            "y-color": El<{
+                name?: string;
+                value?: string;
+                format?: "hex" | "rgb" | "hsl" | "hsv";
+                formats?: Array<"hex" | "rgb" | "hsl" | "hsv"> | string;
+                "show-alpha"?: boolean | string;
+                placeholder?: string;
+                disabled?: boolean | string;
+                invalid?: boolean | string;
+                clearable?: boolean | string;
+                size?: "small" | "medium" | "large";
+                "label-position"?: "top" | "bottom";
+            }>;
+            "y-colorpicker": El<{
+                value?: string;
+                format?: "hex" | "rgb" | "hsl" | "hsv";
+                formats?: Array<"hex" | "rgb" | "hsl" | "hsv"> | string;
+                "show-alpha"?: boolean | string;
+                size?: "small" | "medium" | "large";
             }>;
             "y-date": El<{
                 name?: string;
@@ -126,6 +155,13 @@ declare module "react" {
                     | "bottom-left"
                     | "bottom-center"
                     | "bottom-right";
+            }>;
+            "y-dock": El<{
+                items?: unknown[] | string;
+                position?: "top" | "bottom";
+                breakpoint?: string | number;
+                size?: "small" | "medium" | "large";
+                history?: string;
             }>;
             "y-drawer": El<{
                 visible?: boolean | string;
