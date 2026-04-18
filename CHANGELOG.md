@@ -45,6 +45,7 @@ Delete any empty sections before publishing.
 - New `y-stack` component — a layout container for arranging child elements in rows, columns, grids, or masonry patterns. Supports `mode` (`"flex"` | `"grid"` | `"masonry"`), `direction`, `columns`, `gap` (maps to `--spacing-*` tokens), `wrap`, `align`, `justify`, and `responsive` attributes. Masonry mode uses JS absolute positioning with `ResizeObserver`. Responsive mode auto-collapses columns at configurable breakpoints.
 - `y-tabs`: `leftIcon` and `rightIcon` properties on option objects — set a `<y-icon>` name directly in the options JSON to render icons without requiring extra child elements or named slots.
 - `y-tabs`: `tab-content-{id}` slot — place any content (icons, badges, custom markup) inside the tab button itself by targeting this slot. Takes full precedence over `leftIcon`/`rightIcon` and the default label rendering.
+- 14 new bundled icons: `bug`, `copy`, `fast-back`, `fast-forward`, `flower`, `paste`, `pause`, `play`, `redo`, `scissors`, `skip-back`, `skip-forward`, `stop`, `undo`.
 
 ### Fixed
 

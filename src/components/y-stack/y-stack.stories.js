@@ -72,7 +72,7 @@ export default {
         wrap: false,
         align: "stretch",
         justify: "start",
-        responsive: false,
+        responsive: true,
     },
     render: ({
         mode,
