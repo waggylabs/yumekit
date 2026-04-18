@@ -1911,6 +1911,62 @@
               "$value": "{spacing.x-large}"
             }
           },
+          "breadcrumbs": {
+            "font-size-small": {
+              "$scopes": [
+                "FONT_SIZE"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 12
+            },
+            "font-size-medium": {
+              "$scopes": [
+                "FONT_SIZE"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 14
+            },
+            "font-size-large": {
+              "$scopes": [
+                "FONT_SIZE"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 16
+            },
+            "gap-small": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.2x-small}"
+            },
+            "gap-medium": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.x-small}"
+            },
+            "gap-large": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.small}"
+            }
+          },
           "card": {
             "border-radius-inner": {
               "$scopes": [
@@ -1995,6 +2051,180 @@
               "$libraryName": "",
               "$collectionName": "Numerics",
               "$value": "{sizing.x-small}"
+            }
+          },
+          "color": {
+            "swatch-size-small": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{sizing.small}"
+            },
+            "swatch-size-medium": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{sizing.medium}"
+            },
+            "swatch-size-large": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{sizing.large}"
+            },
+            "swatch-border-radius": {
+              "$scopes": ["CORNER_RADIUS"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{radii.small}"
+            },
+            "trigger-gap": {
+              "$scopes": ["GAP"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.x-small}"
+            },
+            "popup-offset": {
+              "$scopes": ["GAP"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 4
+            },
+            "z-index": {
+              "$scopes": ["ALL_SCOPES"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 200
+            }
+          },
+          "colorpicker": {
+            "width-small": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 200
+            },
+            "width": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 260
+            },
+            "width-large": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 320
+            },
+            "canvas-height-small": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 120
+            },
+            "canvas-height": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 160
+            },
+            "canvas-height-large": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 200
+            },
+            "slider-height": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 12
+            },
+            "slider-thumb-size": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 16
+            },
+            "canvas-handle-size": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 16
+            },
+            "gap": {
+              "$scopes": ["GAP"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.medium}"
+            },
+            "border-radius": {
+              "$scopes": ["CORNER_RADIUS"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{radii.x-small}"
+            },
+            "checkerboard-size": {
+              "$scopes": ["ALL_SCOPES"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 8
+            }
+          },
+          "dock": {
+            "height-small": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 52
+            },
+            "height-medium": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 60
+            },
+            "height-large": {
+              "$scopes": ["WIDTH_HEIGHT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 72
+            },
+            "border-width": {
+              "$scopes": ["STROKE_FLOAT"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{border.x-thin}"
+            },
+            "z-index": {
+              "$scopes": ["ALL_SCOPES"],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 8000
             }
           },
           "dialog": {
@@ -2426,6 +2656,62 @@
               "$libraryName": "",
               "$collectionName": "Numerics",
               "$value": "{radii.x-small}"
+            }
+          },
+          "stepper": {
+            "indicator-size-small": {
+              "$scopes": [
+                "WIDTH_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 28
+            },
+            "indicator-size-medium": {
+              "$scopes": [
+                "WIDTH_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 36
+            },
+            "indicator-size-large": {
+              "$scopes": [
+                "WIDTH_HEIGHT"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": 44
+            },
+            "gap-small": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.x-small}"
+            },
+            "gap-medium": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.small}"
+            },
+            "gap-large": {
+              "$scopes": [
+                "GAP"
+              ],
+              "$type": "float",
+              "$libraryName": "",
+              "$collectionName": "Numerics",
+              "$value": "{spacing.medium}"
             }
           },
           "switch": {

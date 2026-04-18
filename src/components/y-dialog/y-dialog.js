@@ -1,3 +1,5 @@
+import { resolveAnchor } from "../../modules/helpers.js";
+
 class YumeDialog extends HTMLElement {
     static get observedAttributes() {
         return ["visible", "anchor", "closable", "show-backdrop", "animate", "position"];
@@ -20,10 +22,17 @@ class YumeDialog extends HTMLElement {
         if (this.visible) this.show();
     }
 
+    disconnectedCallback() {
+        this._teardownAnchor();
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
         if (name === "visible") this.visible ? this.show() : this.hide();
-        if (name === "anchor") this._setupAnchor();
+        if (name === "anchor") {
+            this._teardownAnchor();
+            this._setupAnchor();
+        }
         if (name === "closable") this.render();
     }
 
@@ -259,15 +268,22 @@ class YumeDialog extends HTMLElement {
     }
 
     _setupAnchor() {
+        const id = this.anchor;
+        if (!id) return;
+        this._anchorResolveDispose = resolveAnchor(this, id, (el) => {
+            this._anchorEl = el;
+            el.addEventListener("click", this._onAnchorClick);
+        });
+    }
+
+    _teardownAnchor() {
+        if (this._anchorResolveDispose) {
+            this._anchorResolveDispose();
+            this._anchorResolveDispose = null;
+        }
         if (this._anchorEl) {
             this._anchorEl.removeEventListener("click", this._onAnchorClick);
-        }
-        if (this.anchor) {
-            const el = document.getElementById(this.anchor);
-            if (el) {
-                this._anchorEl = el;
-                el.addEventListener("click", this._onAnchorClick);
-            }
+            this._anchorEl = null;
         }
     }
 }

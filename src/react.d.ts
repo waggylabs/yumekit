@@ -25,11 +25,27 @@ declare module "react" {
                 shape?: string;
                 color?: string;
             }>;
+            "y-breadcrumbs": El<{
+                items?: string;
+                size?: "small" | "medium" | "large";
+                separator?: string;
+                "max-items"?: string | number;
+                history?: string;
+            }>;
             "y-badge": El<{
                 value?: string;
                 position?: "top" | "bottom";
                 alignment?: "right" | "left";
                 color?: string;
+                size?: "small" | "medium" | "large";
+            }>;
+            "y-banner": El<{
+                color?: string;
+                icon?: string;
+                position?: "push" | "overlap";
+                sticky?: boolean | string;
+                dismissable?: boolean | string;
+                dismissed?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
             "y-button": El<{
@@ -67,6 +83,26 @@ declare module "react" {
                 disabled?: boolean | string;
                 indeterminate?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
+            }>;
+            "y-color": El<{
+                name?: string;
+                value?: string;
+                format?: "hex" | "rgb" | "hsl" | "hsv";
+                formats?: Array<"hex" | "rgb" | "hsl" | "hsv"> | string;
+                "show-alpha"?: boolean | string;
+                placeholder?: string;
+                disabled?: boolean | string;
+                invalid?: boolean | string;
+                clearable?: boolean | string;
+                size?: "small" | "medium" | "large";
+                "label-position"?: "top" | "bottom";
+            }>;
+            "y-colorpicker": El<{
+                value?: string;
+                format?: "hex" | "rgb" | "hsl" | "hsv";
+                formats?: Array<"hex" | "rgb" | "hsl" | "hsv"> | string;
+                "show-alpha"?: boolean | string;
+                size?: "small" | "medium" | "large";
             }>;
             "y-date": El<{
                 name?: string;
@@ -120,11 +156,27 @@ declare module "react" {
                     | "bottom-center"
                     | "bottom-right";
             }>;
+            "y-dock": El<{
+                items?: unknown[] | string;
+                position?: "top" | "bottom";
+                breakpoint?: string | number;
+                size?: "small" | "medium" | "large";
+                history?: string;
+            }>;
             "y-drawer": El<{
                 visible?: boolean | string;
                 anchor?: string;
                 position?: "left" | "right" | "top" | "bottom";
                 resizable?: boolean | string;
+            }>;
+            "y-gallery": El<{
+                layout?: "grid" | "row" | "column" | "masonry";
+                columns?: string | number;
+                gap?: "small" | "medium" | "large" | string;
+                "aspect-ratio"?: string;
+                expandable?: boolean | string;
+                loop?: boolean | string;
+                size?: "small" | "medium" | "large";
             }>;
             "y-icon": El<{
                 name?: string;
@@ -214,6 +266,25 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 orientation?: "horizontal" | "vertical";
+            }>;
+            "y-stack": El<{
+                direction?: "row" | "column";
+                mode?: "flex" | "grid" | "masonry";
+                columns?: string | number;
+                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                wrap?: boolean | string;
+                align?: "start" | "center" | "end" | "stretch" | "baseline";
+                justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
+                responsive?: boolean | string;
+            }>;
+            "y-stepper": El<{
+                items?: unknown[] | string;
+                current?: number | string;
+                orientation?: "horizontal" | "vertical";
+                position?: "start" | "end";
+                size?: "small" | "medium" | "large";
+                linear?: boolean | string;
+                editable?: boolean | string;
             }>;
             "y-switch": El<{
                 name?: string;

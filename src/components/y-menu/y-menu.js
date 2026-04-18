@@ -1,4 +1,5 @@
 import { chevronRight } from "../../icons/index.js";
+import { resolveAnchor } from "../../modules/helpers.js";
 
 class YumeMenu extends HTMLElement {
     static get observedAttributes() {
@@ -308,19 +309,24 @@ class YumeMenu extends HTMLElement {
 
     _setupAnchor() {
         const id = this.anchor;
-        if (id) {
-            const root = this.getRootNode();
-            const el = root?.getElementById
-                ? root.getElementById(id)
-                : document.getElementById(id);
-            if (el) {
+        if (!id) return;
+        const root = this.getRootNode();
+        this._anchorResolveDispose = resolveAnchor(
+            this,
+            id,
+            (el) => {
                 this._anchorEl = el;
-                this._anchorEl.addEventListener("click", this._onAnchorClick);
-            }
-        }
+                el.addEventListener("click", this._onAnchorClick);
+            },
+            root && root.getElementById ? root : document,
+        );
     }
 
     _teardownAnchor() {
+        if (this._anchorResolveDispose) {
+            this._anchorResolveDispose();
+            this._anchorResolveDispose = null;
+        }
         if (this._anchorEl) {
             this._anchorEl.removeEventListener("click", this._onAnchorClick);
             this._anchorEl = null;

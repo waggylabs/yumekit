@@ -332,9 +332,47 @@
     --component-card-padding-inner: var(--spacing-medium);
     --component-card-padding-outer: var(--spacing-x-large);
 
+    /* breadcrumbs */
+    --component-breadcrumbs-font-size-small: 0.75em;
+    --component-breadcrumbs-font-size-medium: 0.875em;
+    --component-breadcrumbs-font-size-large: 1em;
+    --component-breadcrumbs-gap-small: var(--spacing-2x-small);
+    --component-breadcrumbs-gap-medium: var(--spacing-x-small);
+    --component-breadcrumbs-gap-large: var(--spacing-small);
+
     /* checkbox */
     --component-checkbox-icon-size: var(--sizing-2x-small);
     --component-checkbox-size: var(--sizing-x-small);
+
+    /* color */
+    --component-color-swatch-size-small: var(--sizing-small);
+    --component-color-swatch-size-medium: var(--sizing-medium);
+    --component-color-swatch-size-large: var(--sizing-large);
+    --component-color-swatch-border-radius: var(--radii-small);
+    --component-color-trigger-gap: var(--spacing-x-small);
+    --component-color-popup-offset: 4px;
+    --component-color-z-index: 200;
+
+    /* colorpicker */
+    --component-colorpicker-width-small: 200px;
+    --component-colorpicker-width: 260px;
+    --component-colorpicker-width-large: 320px;
+    --component-colorpicker-canvas-height-small: 120px;
+    --component-colorpicker-canvas-height: 160px;
+    --component-colorpicker-canvas-height-large: 200px;
+    --component-colorpicker-slider-height: 12px;
+    --component-colorpicker-slider-thumb-size: 16px;
+    --component-colorpicker-canvas-handle-size: 16px;
+    --component-colorpicker-gap: var(--spacing-medium);
+    --component-colorpicker-border-radius: var(--radii-x-small);
+    --component-colorpicker-checkerboard-size: 8px;
+
+    /* dock */
+    --component-dock-height-small: 52px;
+    --component-dock-height-medium: 60px;
+    --component-dock-height-large: 72px;
+    --component-dock-border-width: var(--border-x-thin);
+    --component-dock-z-index: 8000;
 
     /* dialog */
     --component-dialog-border-radius-inner: var(--radii-x-small);
@@ -351,6 +389,19 @@
     --component-drawer-handle-width: var(--spacing-x-small);
     --component-drawer-padding: var(--spacing-medium);
     --component-drawer-z-index: 5000;
+
+    /* gallery */
+    --component-gallery-gap-small: var(--spacing-x-small);
+    --component-gallery-gap-medium: var(--spacing-medium);
+    --component-gallery-gap-large: var(--spacing-large);
+    --component-gallery-columns: 3;
+    --component-gallery-aspect-ratio: 1/1;
+    --component-gallery-thumbnail-radius: var(--radii-small);
+    --component-gallery-thumbnail-overlay-color: var(--neutral-black-translucent);
+    --component-gallery-expand-background: rgba(0, 0, 0, 0.9);
+    --component-gallery-expand-z-index: 1000;
+    --component-gallery-arrow-color: var(--base-content-inverse);
+    --component-gallery-arrow-background: var(--neutral-white-translucent);
 
     /* icon */
     --component-icon-size-x-large: 28px;
@@ -394,6 +445,20 @@
     --component-radio-dot-size: var(--spacing-medium);
     --component-radio-size: var(--sizing-2x-small);
 
+    /* colorpicker */
+    --component-colorpicker-width-small: 200px;
+    --component-colorpicker-width: 260px;
+    --component-colorpicker-width-large: 320px;
+    --component-colorpicker-canvas-height-small: 120px;
+    --component-colorpicker-canvas-height: 160px;
+    --component-colorpicker-canvas-height-large: 200px;
+    --component-colorpicker-slider-height: 12px;
+    --component-colorpicker-slider-thumb-size: 16px;
+    --component-colorpicker-canvas-handle-size: 16px;
+    --component-colorpicker-gap: var(--spacing-medium);
+    --component-colorpicker-border-radius: var(--radii-x-small);
+    --component-colorpicker-checkerboard-size: 8px;
+
     /* date / datepicker */
     --component-date-z-index: 200;
     --component-datepicker-border-radius: var(--radii-medium);
@@ -405,6 +470,18 @@
     /* sidebar */
     --component-sidebar-border-radius: var(--radii-small);
     --component-sidebar-border-width: var(--border-x-thin);
+
+    /* stack */
+    --component-stack-mobile-breakpoint: 576px;
+    --component-stack-tablet-breakpoint: 768px;
+
+    /* stepper */
+    --component-stepper-indicator-size-small: 28px;
+    --component-stepper-indicator-size-medium: 36px;
+    --component-stepper-indicator-size-large: 44px;
+    --component-stepper-gap-small: var(--spacing-x-small);
+    --component-stepper-gap-medium: var(--spacing-small);
+    --component-stepper-gap-large: var(--spacing-medium);
 
     /* slider */
     --component-slider-border-radius-inner: var(--radii-small);
@@ -532,6 +609,15 @@
     --help-content-inverse: var(--neutral-white);
     --help-content-hover: var(--indigo-dark-7);
     --help-content-active: var(--indigo-dark-6);
+    --component-banner-padding-small: var(--spacing-x-small) var(--spacing-medium);
+    --component-banner-padding-medium: var(--spacing-medium) var(--spacing-x-large);
+    --component-banner-padding-large: var(--spacing-large) var(--spacing-2x-large);
+    --component-banner-gap: var(--spacing-medium);
+    --component-banner-icon-size-small: var(--component-icon-size-small);
+    --component-banner-icon-size-medium: var(--component-icon-size-medium);
+    --component-banner-icon-size-large: var(--component-icon-size-large);
+    --component-banner-z-index: 200;
+    --component-banner-border-radius: 0;
     --component-appbar-background: var(--base-background-component);
     --component-appbar-color: var(--base-content--);
     --component-appbar-border-color: var(--base-border);
@@ -540,10 +626,18 @@
     --component-appbar-inner-border-width: var(
         --component-sidebar-border-width
     );
+    --component-breadcrumbs-color: var(--primary-content--);
+    --component-breadcrumbs-color-hover: var(--primary-content-hover);
+    --component-breadcrumbs-color-current: var(--base-content--);
+    --component-breadcrumbs-separator-color: var(--base-content-lighter);
     --component-checkbox-background: var(--base-background-component);
     --component-checkbox-color: var(--base-content--);
     --component-checkbox-border-color: var(--base-content--);
     --component-checkbox-accent: var(--primary-content--);
+    --component-dock-background: var(--base-background-component);
+    --component-dock-color: var(--base-content-lighter);
+    --component-dock-color-active: var(--primary-content--);
+    --component-dock-border-color: var(--base-border);
     --component-dialog-background: var(--base-background-component);
     --component-dialog-color: var(--base-content--);
     --component-dialog-border-color: var(--base-border);
@@ -600,6 +694,16 @@
     --component-datepicker-border-color: var(--base-border);
     --component-datepicker-header-color: var(--base-content-light);
     --component-datepicker-shadow: var(--base-shadow);
+    --component-stepper-connector-color: var(--base-border);
+    --component-stepper-connector-color-complete: var(--primary-content--);
+    --component-stepper-color-pending: var(--base-border);
+    --component-stepper-color-active: var(--primary-content--);
+    --component-stepper-color-active-text: var(--primary-content-inverse);
+    --component-stepper-color-complete: var(--success-content--);
+    --component-stepper-color-complete-text: var(--success-content-inverse);
+    --component-stepper-color-error: var(--error-content--);
+    --component-stepper-color-error-text: var(--error-content-inverse);
+    --component-stepper-label-color: var(--base-content--);
     --component-tabs-background: var(--base-background-component);
     --component-tabs-color: var(--base-content--);
     --component-tabs-border-color: var(--base-border);

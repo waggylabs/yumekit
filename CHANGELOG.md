@@ -31,13 +31,50 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.4.3] - 2026-04-17
+
+### Added
+
+- New `y-dock` component — a fixed navigation bar (dock) that displays icon+label items for primary app navigation. Accepts items via a JSON `items` attribute, slotted templates, or direct child elements. Attributes: `items` (JSON array of `{ name, icon, href?, selected?, slot? }`), `position` (`"bottom"` | `"top"`), `breakpoint` (viewport width below which dock is visible — omit for always visible), `size` (`"small"` | `"medium"` | `"large"`), `history` (omit for `pushState` SPA navigation; set to `"false"` for full-page navigation). Events: cancelable `navigate` (`detail: { href }`). Full ARIA support with `role="navigation"`, `aria-current="page"`, and keyboard navigation (Arrow Left/Right, Enter/Space).
+
+- New `y-stepper` component — a multi-step wizard that guides users through a sequential flow. Step content is provided via named slots defined in the `items` JSON array (`{ label, slot, description?, icon?, status? }`). Supports `current` (zero-based active step index), `orientation` (`"horizontal"` | `"vertical"`), `position` (`"start"` | `"end"` — controls whether indicators appear before or after the content), `size` (`"small"` | `"medium"` | `"large"`), `linear` (restricts free navigation), and `editable` (allows returning to completed steps). Methods: `next()`, `previous()`, `goTo(index)`, `complete(index?)`, `reset()`. Events: cancelable `change`, `complete`, `finish`. Full ARIA support with `role="list"`, `aria-current="step"`, `aria-controls`/`aria-labelledby` linkage, and keyboard navigation.
+
+- New `y-breadcrumbs` component — a navigation breadcrumb trail. Accepts an `items` JSON array (`{ text, href?, icon? }`). Supports `separator` (custom separator character or slotted icon), `max-items` (collapses middle items with an expand button), `size` (`"small"` | `"medium"` | `"large"`), and `history` (set to `"false"` for full-page navigation instead of `pushState`). Fires cancelable `navigate` and `expand` events. Full ARIA with `<nav aria-label="Breadcrumb">`, `<ol>`, `aria-current="page"`, and `aria-hidden` separators.
+
+- New `y-gallery` component — a media gallery that accepts `<img>` or `<figure>` children and arranges them in `grid`, `row`, `column`, or `masonry` layouts. Supports `columns`, `gap` (`"small"` | `"medium"` | `"large"` or any CSS length), `aspect-ratio`, `expandable` (lightbox with prev/next navigation), `loop`, and `size` attributes. The expanded view uses `<y-icon>` for nav arrows and supports `data-src` for full-resolution images, `<figcaption>` captions, and image counter. Icon slots (`expand-prev-icon`, `expand-next-icon`, `expand-close-icon`) allow custom icons. Fires `expand`, `close`, and `navigate` events.
+
+- New `y-colorpicker` component — a standalone color picker widget with a 2D saturation/brightness canvas, hue slider, optional alpha slider, format selector, and channel inputs. Supports `value` (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsv()`, `hsva()`), `format` (`"hex"` | `"rgb"` | `"hsl"` | `"hsv"`), `formats` (JSON array of available formats), `show-alpha` (alpha channel), and `size` attributes.
+
+- New `y-color` component — a form-associated color input with a trigger/popup pattern (like `<y-date>`). Renders a color swatch preview and value string in the trigger; opens a `<y-colorpicker>` popup on click. Supports `value`, `format`, `formats`, `show-alpha`, `placeholder`, `name`, `disabled`, `invalid`, `clearable`, `size`, and `label-position` attributes. Uses `ElementInternals` for `FormData` participation.
+
+- New `y-banner` component — a full-width informational banner that renders in a semantic color with matching text. Supports `color` (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`), `icon` attribute (or `icon` slot), `position` (`"push"` | `"overlap"`), `sticky` (fixed to viewport when overlapping), `dismissable` close button, `size` (`"small"` | `"medium"` | `"large"`), and an `action` slot for CTA elements.
+
+- New `y-stack` component — a layout container for arranging child elements in rows, columns, grids, or masonry patterns. Supports `mode` (`"flex"` | `"grid"` | `"masonry"`), `direction`, `columns`, `gap` (maps to `--spacing-*` tokens), `wrap`, `align`, `justify`, and `responsive` attributes. Masonry mode uses JS absolute positioning with `ResizeObserver`. Responsive mode auto-collapses columns at configurable breakpoints.
+
+- `y-tabs`: `leftIcon` and `rightIcon` properties on option objects — set a `<y-icon>` name directly in the options JSON to render icons without requiring extra child elements or named slots.
+
+- `y-tabs`: `tab-content-{id}` slot — place any content (icons, badges, custom markup) inside the tab button itself by targeting this slot. Takes full precedence over `leftIcon`/`rightIcon` and the default label rendering.
+
+- 14 new bundled icons: `bug`, `copy`, `fast-back`, `fast-forward`, `flower`, `paste`, `pause`, `play`, `redo`, `scissors`, `skip-back`, `skip-forward`, `stop`, `undo`.
+
+### Fixed
+
+- `y-dialog`, `y-drawer`, `y-menu`: anchor lookup now tolerates DOM insertion races. Previously, setting the `anchor` attribute before the anchor element was in the DOM (common with React portals and async / lazy mounts) left the component without a click listener. Resolution now tries `getElementById` synchronously, retries once on the next animation frame, and falls back to a `MutationObserver` that fires when the anchor appears. `y-dialog` also now cleans up its anchor listener on disconnect.
+
+### Deprecated
+
+- `y-tabs`: `left-icon-{id}` and `right-icon-{id}` slots — these slots still function but emit a `console.warn` directing users to the `leftIcon`/`rightIcon` option properties or the `tab-content-{id}` slot. They will be removed before the release of version 1.0.
+
 ## [0.4.2] - 2026-04-07
 
 ### Added
 
 - New `y-button-group` component — wraps `y-button` (and other elements such as `y-input` or `y-select`) into a visually connected toolbar. Automatically removes inner border-radius on middle children and collapses shared borders to avoid double-border artifacts. Supports `orientation` attribute (`"horizontal"` (default) | `"vertical"`). Works with any slotted child that respects the `--component-button-border-radius-outer` CSS custom property.
+
 - `href`, `target`, and `rel` attributes on `y-button`. When `href` is set the internal element switches from `<button>` to `<a>`, preserving all visual styles and size/color/style-type variants. Disabled state is handled via `aria-disabled` and `pointer-events: none` since `<a>` has no native disabled.
+
 - `navigate` custom event on `y-appbar`, `y-panel`, and `y-menu`. Fires before any navigation when an item with an `href` / `url` is clicked. The event is cancelable (`e.preventDefault()`) and carries `event.detail.href` — React Router and other SPA routers can intercept it without any framework-specific glue.
+
 - `history` attribute on `y-appbar` and `y-menu` (already present on `y-panel`). When omitted (default), navigation uses `history.pushState` + a synthetic `popstate` event so all `popstate`-based routers (React Router `BrowserRouter`, Vue Router, etc.) respond automatically. Set `history="false"` to opt back in to full-page `window.location.href` navigation.
 
 ### Changed
@@ -49,16 +86,23 @@ Delete any empty sections before publishing.
 ### Added
 
 - New `y-date` component — a form-associated date (and optional time) input field. Displays a trigger button that opens a `y-datepicker` popup. Supports `name`, `value`, `label`, `label-position`, `placeholder`, `size`, `disabled`, `required`, `invalid`, `clearable`, `show-hours`, `min`, `max`, `format`, and `mode` attributes. Emits `change` and `input` events. Fully keyboard accessible with `aria-expanded` management.
+
 - New `y-datepicker` component — a standalone calendar and optional time picker widget. Supports single date and date range selection via the `mode` attribute. Configurable with `value`, `min`, `max`, `show-hours`, `show-seconds`, `format`, `first-day-of-week`, `year-range`, and `panel-count` attributes. Emits a `change` event with the selected date value or `[start, end]` range array. Public API: `clear()`, `formatDate(date)`.
+
 - 10 new bundled icons: `fan`, `thermometer-high`, `thermometer-low`, `ban`, `bluetooth`, `unlock`, `plug`, `gasoline`, `ev-charger`, `tools`.
+
 - `comp-date` icon added to the bundled icon registry.
+
 - Storybook integration — all 28 components now have Storybook stories. Includes a theme background selector that applies the correct design tokens for each active theme.
+
 - 18 new built-in themes (9 color families × dark + light): `green`, `red`, `teal`, `yellow`, `indigo`, `purple`, `pink`, `brown`, `olive`. All are usable by name in the `theme` attribute of `<y-theme>`.
 
 ### Changed
 
 - All component source files moved into per-component subdirectories under `src/components/` (e.g. `src/components/y-button/y-button.js`). Tests co-located alongside their component files.
+
 - `--lime-*` color tokens in `variables.css` renamed to `--olive-*` to better reflect the adjusted core color (`#838807`).
+
 - Core token values adjusted for WCAG 3:1 accessibility compliance against both black and white backgrounds: `--green--`, `--teal--`, `--indigo--`, and `--olive--` (formerly `--lime--`). Corresponding dark and light scale variants regenerated using linear RGB interpolation.
 
 ### Fixed
@@ -72,9 +116,13 @@ Delete any empty sections before publishing.
 ### Added
 
 - New `y-textarea` component — a form-associated multi-line text input. Supports `name`, `value`, `placeholder`, `label`, `label-position`, `rows`, `size`, `disabled`, `required`, and `invalid` attributes. Exposes `input` and `change` events.
+
 - New `y-rating` component — a form-associated star/icon rating input. Supports `icon`, `color`, `max`, `value`, `size`, `disabled`, `readonly`, `required`, and `name` attributes. Click-to-clear on the active icon (unless `required`). Full ARIA support (`role="radiogroup"` / `role="img"` when readonly, per-icon `role="radio"` with labels).
+
 - 12 new bundled icons: `heart`, `thumbs-up`, `thumbs-down`, `flask`, `briefcase`, `thumbtack`, `map-marker`, `pencil`, `code`, `circle-question`, `comp-textarea`, `comp-rating`.
+
 - Two new icons: `ellipsis-v` (three vertical dots) and `ellipsis-h` (three horizontal dots). Both are available in the icon registry via `all.js`.
+
 - `y-select`: new `searchable` attribute — enables autocomplete-style inline filtering. In single mode the value display is replaced by a text input that clears on open (showing the current selection as a placeholder) and restores the selected label on close. In multi-tag mode the input appears after the last tag and the dropdown stays open after each selection.
 - `y-select`: new `clearable` attribute — shows a clear button (using the `close` icon) when a value is selected.
 - `y-select` tag display mode: per-option `color` field — each option object in the `options` array may now include a `color` key (predefined scheme or CSS color) to individually color its tag.
@@ -84,9 +132,13 @@ Delete any empty sections before publishing.
 ### Changed
 
 - `y-table` sort indicator: replaced the dual up/down arrow with a single directional arrow that matches the active sort direction. Unsorted columns show no icon.
+
 - Theme semantic variables reordered for consistency: `--{scheme}-border` now always appears after `--{scheme}-background-active` and before `--{scheme}-content--` across all theme files and the default variables.
+
 - `y-tag` flat background now resolves directly from `--{color}-background-app` rather than through an intermediate `--component-tag-flat-background-{color}` variable. Custom themes no longer need to define those per-component overrides.
+
 - Icon system: `.svg` files are now the single source of truth. `src/icons/index.js` re-exports directly from the files rather than duplicating SVG markup as strings. Affected icons had their `stroke-width` and `width`/`height` attributes reconciled between files and component usage.
+
 - `y-drawer` grip handle now uses static `ellipsisV`/`ellipsisH` icon imports instead of the `gripDots()` function.
 
 ### Fixed
@@ -96,7 +148,9 @@ Delete any empty sections before publishing.
 ### Removed
 
 - `--component-tag-flat-background-{color}` CSS variables removed from `variables.css` and all theme files. Use `--{color}-background-app` directly if overriding tag flat backgrounds in a custom theme.
+
 - `gripDots(horizontal)` function removed from `src/icons/index.js`.
+
 - Stale `--base-background-border` and `--error-background-border` variable references cleaned up across all theme files (renamed to `--base-border` / `--error-border` in 0.3.9).
 
 ## [0.3.10] - 2026-03-25
