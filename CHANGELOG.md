@@ -46,6 +46,10 @@ Delete any empty sections before publishing.
 - `y-tabs`: `leftIcon` and `rightIcon` properties on option objects — set a `<y-icon>` name directly in the options JSON to render icons without requiring extra child elements or named slots.
 - `y-tabs`: `tab-content-{id}` slot — place any content (icons, badges, custom markup) inside the tab button itself by targeting this slot. Takes full precedence over `leftIcon`/`rightIcon` and the default label rendering.
 
+### Fixed
+
+- `y-dialog`, `y-drawer`, `y-menu`: anchor lookup now tolerates DOM insertion races. Previously, setting the `anchor` attribute before the anchor element was in the DOM (common with React portals and async / lazy mounts) left the component without a click listener. Resolution now tries `getElementById` synchronously, retries once on the next animation frame, and falls back to a `MutationObserver` that fires when the anchor appears. `y-dialog` also now cleans up its anchor listener on disconnect.
+
 ### Deprecated
 
 - `y-tabs`: `left-icon-{id}` and `right-icon-{id}` slots — these slots still function but emit a `console.warn` directing users to the `leftIcon`/`rightIcon` option properties or the `tab-content-{id}` slot. They will be removed before the release of version 1.0.

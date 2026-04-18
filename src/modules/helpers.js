@@ -341,6 +341,64 @@ export function manageLabelVisibility(labelWrapper) {
 }
 
 /**
+ * Resolve an anchor element by id for a web component, tolerating DOM insertion
+ * races. A synchronous lookup runs first; if it misses, one
+ * `requestAnimationFrame` retry covers the common React portal commit-ordering
+ * case, and a final `MutationObserver` fallback covers async / lazy mounts.
+ *
+ * The callback fires at most once. If the host disconnects before the anchor
+ * appears, resolution is aborted. Callers must invoke the returned dispose
+ * function on teardown (disconnectedCallback, attribute change, etc.) to
+ * cancel any pending rAF or observer.
+ *
+ * @param {HTMLElement} host — component instance; resolution aborts if it disconnects.
+ * @param {string} id — the anchor element's id.
+ * @param {(el: HTMLElement) => void} onFound — invoked once when the anchor resolves.
+ * @param {Document|ShadowRoot} [root=document] — root to search within.
+ * @returns {() => void} — dispose function.
+ */
+export function resolveAnchor(host, id, onFound, root = document) {
+    let disposed = false;
+    let rafId = null;
+    let observer = null;
+
+    const dispose = () => {
+        disposed = true;
+        if (rafId != null) cancelAnimationFrame(rafId);
+        if (observer) observer.disconnect();
+        rafId = null;
+        observer = null;
+    };
+
+    const find = () => {
+        if (disposed) return true;
+        const el = root.getElementById
+            ? root.getElementById(id)
+            : document.getElementById(id);
+        if (el) {
+            dispose();
+            onFound(el);
+            return true;
+        }
+        return false;
+    };
+
+    if (find()) return dispose;
+    if (!host.isConnected) return dispose;
+
+    rafId = requestAnimationFrame(() => {
+        rafId = null;
+        if (find()) return;
+        const target = root === document ? document.body : root;
+        if (!target) return;
+        observer = new MutationObserver(find);
+        observer.observe(target, { childList: true, subtree: true });
+    });
+
+    return dispose;
+}
+
+/**
  * Resolve a CSS custom-property value to a concrete color string.
  * Reads from the given element's computed style.
  * @param {string} varExpr — e.g. "var(--primary-content--)"

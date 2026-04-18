@@ -1,4 +1,5 @@
 import { ellipsisV, ellipsisH } from "../../icons/index.js";
+import { resolveAnchor } from "../../modules/helpers.js";
 
 class YumeDrawer extends HTMLElement {
     static get observedAttributes() {
@@ -425,13 +426,11 @@ class YumeDrawer extends HTMLElement {
 
     _setupAnchor() {
         const id = this.anchor;
-        if (id) {
-            const el = document.getElementById(id);
-            if (el) {
-                this._anchorEl = el;
-                this._anchorEl.addEventListener("click", this._onAnchorClick);
-            }
-        }
+        if (!id) return;
+        this._anchorResolveDispose = resolveAnchor(this, id, (el) => {
+            this._anchorEl = el;
+            el.addEventListener("click", this._onAnchorClick);
+        });
     }
 
     _show() {
@@ -451,6 +450,10 @@ class YumeDrawer extends HTMLElement {
     }
 
     _teardownAnchor() {
+        if (this._anchorResolveDispose) {
+            this._anchorResolveDispose();
+            this._anchorResolveDispose = null;
+        }
         if (this._anchorEl) {
             this._anchorEl.removeEventListener("click", this._onAnchorClick);
             this._anchorEl = null;
