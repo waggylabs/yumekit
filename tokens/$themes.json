@@ -1,0 +1,270 @@
+[
+  {
+    "id": "colors-default",
+    "name": "Default",
+    "group": "Colors",
+    "selectedTokenSets": {
+      "core/colors": "enabled"
+    }
+  },
+  {
+    "id": "numerics-default",
+    "name": "Default",
+    "group": "Numerics",
+    "selectedTokenSets": {
+      "core/numerics": "enabled"
+    }
+  },
+  {
+    "id": "components-default",
+    "name": "Default",
+    "group": "Components",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "enabled"
+    }
+  },
+  {
+    "id": "themes-blue-dark",
+    "name": "Blue Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/blue-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-blue-light",
+    "name": "Blue Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/blue-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-brown-dark",
+    "name": "Brown Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/brown-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-brown-light",
+    "name": "Brown Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/brown-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-green-dark",
+    "name": "Green Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/green-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-green-light",
+    "name": "Green Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/green-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-indigo-dark",
+    "name": "Indigo Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/indigo-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-indigo-light",
+    "name": "Indigo Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/indigo-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-olive-dark",
+    "name": "Olive Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/olive-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-olive-light",
+    "name": "Olive Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/olive-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-orange-dark",
+    "name": "Orange Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/orange-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-orange-light",
+    "name": "Orange Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/orange-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-pink-dark",
+    "name": "Pink Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/pink-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-pink-light",
+    "name": "Pink Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/pink-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-purple-dark",
+    "name": "Purple Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/purple-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-purple-light",
+    "name": "Purple Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/purple-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-red-dark",
+    "name": "Red Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/red-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-red-light",
+    "name": "Red Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/red-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-teal-dark",
+    "name": "Teal Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/teal-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-teal-light",
+    "name": "Teal Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/teal-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-yellow-dark",
+    "name": "Yellow Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/yellow-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-yellow-light",
+    "name": "Yellow Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/yellow-light": "enabled"
+    }
+  }
+]

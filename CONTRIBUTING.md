@@ -85,12 +85,40 @@ if (this.querySelector('[slot="icon"]')) { ... }
 
 ### New component checklist
 
-Every new component requireschanges to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, `variables.css`, `.figma/variables.json`, entry in `llm.txt`, and a `y-*.stories.js` stories file.
+Every new component requires changes to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, its token sets under `tokens/` (see [Design Tokens](#design-tokens)), entry in `llm.txt`, and a `y-*.stories.js` stories file.
 
 ### Testing
 
 - Tests co-locate with the component source file.
 - Use `sinon.createSandbox()` at the `describe` level with `afterEach(() => sandbox.restore())`.
+
+## Design Tokens
+
+Tokens are the source of truth for the visual design system. The JSON under `tokens/` drives the generated CSS under `styles/`.
+
+### Layout
+
+- `tokens/core/colors.json` — palette primitives (neutral, red, blue, etc.)
+- `tokens/core/numerics.json` — border / spacing / radii / sizing / font-size primitives
+- `tokens/core/components.json` — component dimensional tokens (widths, sizes, gaps)
+- `tokens/themes/{name}.json` — per-theme semantic tokens and component color overrides
+- `tokens/$themes.json` — Tokens Studio theme manifest
+- `tokens/$metadata.json` — token-set order
+
+### Building CSS
+
+Run `npm run build:tokens` to regenerate all files under `styles/`. The full `npm run build` runs this first before bundling, and `prepublishOnly` invokes `build`, so published packages always reflect the current tokens.
+
+Generated outputs:
+
+- `styles/variables.css` — palette + numerics + component dims + the default theme (Blue Light)
+- `styles/{slug}.css` — per-theme override files (one per Themes entry in the manifest)
+
+The generated CSS is committed so consumers can use the library without running the build.
+
+### Figma sync
+
+Use the [Tokens Studio for Figma](https://tokens.studio/) plugin pointed at this repo's `tokens/` directory to keep Figma Variables in sync with code.
 
 ## AI Assistance
 

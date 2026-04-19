@@ -1,0 +1,29 @@
+{
+  "tokenSetOrder": [
+    "core/colors",
+    "core/numerics",
+    "core/components",
+    "themes/blue-dark",
+    "themes/blue-light",
+    "themes/brown-dark",
+    "themes/brown-light",
+    "themes/green-dark",
+    "themes/green-light",
+    "themes/indigo-dark",
+    "themes/indigo-light",
+    "themes/olive-dark",
+    "themes/olive-light",
+    "themes/orange-dark",
+    "themes/orange-light",
+    "themes/pink-dark",
+    "themes/pink-light",
+    "themes/purple-dark",
+    "themes/purple-light",
+    "themes/red-dark",
+    "themes/red-light",
+    "themes/teal-dark",
+    "themes/teal-light",
+    "themes/yellow-dark",
+    "themes/yellow-light"
+  ]
+}

@@ -62,7 +62,11 @@ if (this.querySelector('[slot="my-slot"]')) { ... }
 
 ## New Component Checklist
 
-Every new component requires: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, `variables.css`, `.figma/variables.json`, `llm.txt` entry, and a story in `y-*.stories.js`.
+Every new component requires: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, token entries under `tokens/core/components.json` and each `tokens/themes/*.json` (run `npm run build:tokens` to regenerate `styles/`), `llm.txt` entry, and a story in `y-*.stories.js`.
+
+## Design Tokens
+
+Tokens under `tokens/` are the source of truth. `styles/*.css` is generated — never edit it directly. Run `npm run build:tokens` after any token change. `npm run build` chains the tokens build first.
 
 ## Testing
 
