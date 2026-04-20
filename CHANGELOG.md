@@ -31,6 +31,16 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.4.4]
+
+### Added
+
+- `y-appbar`: new `nav` slot lets consumers supply their own link elements (e.g. Vue Router's `<router-link>`, React Router's `<NavLink>`, plain `<a>`) in place of — or in addition to — the auto-generated `y-button` items. Slotted nav children render in the appbar body after any items from the `items` attribute, get full-width treatment in vertical mode, and are hidden-overflow when collapsed. In mobile (hamburger) mode the same slot is rendered inside the dropdown panel below the items, preserving the desktop priority order.
+
+### Changed
+
+- `y-appbar`: mobile hamburger menu replaced its internal `y-menu` with a self-contained dropdown panel so it can host both auto-generated nav buttons and arbitrary slotted nav children. Behaviour is otherwise unchanged — items still drive the menu, the hamburger toggles open/closed, and clicks outside the appbar dismiss the panel.
+
 ## [0.4.3] - 2026-04-17
 
 ### Added

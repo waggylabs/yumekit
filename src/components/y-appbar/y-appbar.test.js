@@ -114,6 +114,36 @@ describe("YumeAppbar", () => {
         expect(buttons.length).to.equal(3);
     });
 
+    it("exposes a nav slot for user-supplied link elements", async () => {
+        const el = await fixture(html`
+            <y-appbar>
+                <a slot="nav" href="/a">A</a>
+                <a slot="nav" href="/b">B</a>
+            </y-appbar>
+        `);
+        const navSlot = el.shadowRoot.querySelector(
+            '.appbar-body slot[name="nav"]',
+        );
+        expect(navSlot).to.not.be.null;
+        const assigned = navSlot.assignedElements();
+        expect(assigned.length).to.equal(2);
+        expect(assigned[0].getAttribute("href")).to.equal("/a");
+    });
+
+    it("renders items and slotted nav together", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${sampleItems}>
+                <a slot="nav" href="/extra">Extra</a>
+            </y-appbar>
+        `);
+        const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
+        expect(buttons.length).to.equal(3);
+        const navSlot = el.shadowRoot.querySelector(
+            '.appbar-body slot[name="nav"]',
+        );
+        expect(navSlot.assignedElements().length).to.equal(1);
+    });
+
     it("renders y-button elements with color and style-type", async () => {
         const el = await fixture(html`
             <y-appbar .items=${sampleItems}></y-appbar>
@@ -353,7 +383,7 @@ describe("YumeAppbar", () => {
             <y-appbar .items=${namedIconItems}></y-appbar>
         `);
         const icons = el.shadowRoot.querySelectorAll(
-            ".appbar-body y-button y-icon",
+            '.appbar-body y-button y-icon[slot="left-icon"]',
         );
         expect(icons.length).to.equal(3);
     });
@@ -446,7 +476,7 @@ describe("YumeAppbar", () => {
             <y-appbar .items=${sampleItems}></y-appbar>
         `);
         const icons = el.shadowRoot.querySelectorAll(
-            ".appbar-body y-button y-icon",
+            '.appbar-body y-button y-icon[slot="left-icon"]',
         );
         expect(icons.length).to.equal(0);
     });
@@ -686,29 +716,59 @@ describe("YumeAppbar", () => {
         expect(assigned.length).to.be.greaterThan(0);
     });
 
-    it("_toMenuItems maps href to url and preserves text", async () => {
-        const el = await fixture(html`<y-appbar></y-appbar>`);
-        const result = el._toMenuItems([
-            { text: "Home", href: "/home", icon: "home" },
-            { text: "About" },
-        ]);
-        expect(result[0].url).to.equal("/home");
-        expect(result[0].text).to.equal("Home");
-        expect(result[0].icon).to.equal("home");
-        expect(result[1].url).to.be.undefined;
+    it("mobile dropdown panel renders items as nav buttons", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal" .items=${namedIconItems}></y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        expect(panel).to.not.be.null;
+        const buttons = panel.querySelectorAll(".nav-item y-button");
+        expect(buttons.length).to.equal(3);
     });
 
-    it("_toMenuItems recursively converts children", async () => {
-        const el = await fixture(html`<y-appbar></y-appbar>`);
-        const result = el._toMenuItems([
-            {
-                text: "Parent",
-                href: "/parent",
-                children: [{ text: "Child", href: "/child" }],
-            },
-        ]);
-        expect(result[0].children).to.be.an("array").with.length(1);
-        expect(result[0].children[0].url).to.equal("/child");
+    it("mobile dropdown panel exposes a nav slot after items", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal" .items=${namedIconItems}>
+                <a slot="nav" href="/extra">Extra</a>
+            </y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        const navSlot = panel.querySelector('slot[name="nav"]');
+        expect(navSlot).to.not.be.null;
+        const items = panel.querySelectorAll(".nav-item");
+        expect(items.length).to.equal(3);
+        // Slot must follow the items in DOM order (same priority as desktop).
+        const children = Array.from(panel.children);
+        const lastItem = children.findIndex((c) => c.classList.contains("nav-item"));
+        const slotIdx = children.indexOf(navSlot);
+        expect(slotIdx).to.be.greaterThan(lastItem);
+        expect(navSlot.assignedElements().length).to.equal(1);
+    });
+
+    it("mobile hamburger toggles the dropdown panel open", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal" .items=${namedIconItems}></y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+        await new Promise((r) => setTimeout(r, 0));
+
+        const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        expect(panel.classList.contains("open")).to.be.false;
+        menuBtn.click();
+        expect(panel.classList.contains("open")).to.be.true;
+        expect(menuBtn.getAttribute("aria-expanded")).to.equal("true");
+        menuBtn.click();
+        expect(panel.classList.contains("open")).to.be.false;
     });
 
     it("mobile layout passes size to the hamburger menu button", async () => {
