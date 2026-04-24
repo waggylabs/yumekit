@@ -114,15 +114,15 @@ describe("YumeAppbar", () => {
         expect(buttons.length).to.equal(3);
     });
 
-    it("exposes a nav slot for user-supplied link elements", async () => {
+    it("exposes a default slot for user-supplied link elements", async () => {
         const el = await fixture(html`
             <y-appbar>
-                <a slot="nav" href="/a">A</a>
-                <a slot="nav" href="/b">B</a>
+                <a href="/a">A</a>
+                <a href="/b">B</a>
             </y-appbar>
         `);
         const navSlot = el.shadowRoot.querySelector(
-            '.appbar-body slot[name="nav"]',
+            ".appbar-body slot:not([name])",
         );
         expect(navSlot).to.not.be.null;
         const assigned = navSlot.assignedElements();
@@ -133,13 +133,13 @@ describe("YumeAppbar", () => {
     it("renders items and slotted nav together", async () => {
         const el = await fixture(html`
             <y-appbar .items=${sampleItems}>
-                <a slot="nav" href="/extra">Extra</a>
+                <a href="/extra">Extra</a>
             </y-appbar>
         `);
         const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
         expect(buttons.length).to.equal(3);
         const navSlot = el.shadowRoot.querySelector(
-            '.appbar-body slot[name="nav"]',
+            ".appbar-body slot:not([name])",
         );
         expect(navSlot.assignedElements().length).to.equal(1);
     });
@@ -730,10 +730,10 @@ describe("YumeAppbar", () => {
         expect(buttons.length).to.equal(3);
     });
 
-    it("mobile dropdown panel exposes a nav slot after items", async () => {
+    it("mobile dropdown panel exposes a default slot after items", async () => {
         const el = await fixture(html`
             <y-appbar orientation="horizontal" .items=${namedIconItems}>
-                <a slot="nav" href="/extra">Extra</a>
+                <a href="/extra">Extra</a>
             </y-appbar>
         `);
         el._isMobile = true;
@@ -741,7 +741,7 @@ describe("YumeAppbar", () => {
         await new Promise((r) => setTimeout(r, 0));
 
         const panel = el.shadowRoot.querySelector(".mobile-panel");
-        const navSlot = panel.querySelector('slot[name="nav"]');
+        const navSlot = panel.querySelector("slot:not([name])");
         expect(navSlot).to.not.be.null;
         const items = panel.querySelectorAll(".nav-item");
         expect(items.length).to.equal(3);

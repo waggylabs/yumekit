@@ -586,14 +586,14 @@ Events: `navigate` (cancelable, `detail: { href }`)
 
 Methods: `toggle()` — flip collapsed state
 
-Slots: `logo`, `title`, `header`, `footer`, `nav` (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same slot is rendered inside the hamburger dropdown panel after the items.)
+Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same unslotted children are rendered inside the hamburger dropdown panel after the items.)
 
 ```html
 <!-- Mix items array with framework router links -->
 <y-appbar orientation="vertical" items='[{"text":"Home","icon":"home","href":"/"}]'>
   <span slot="title">MyApp</span>
-  <router-link slot="nav" to="/projects">Projects</router-link>
-  <router-link slot="nav" to="/settings">Settings</router-link>
+  <router-link to="/projects">Projects</router-link>
+  <router-link to="/settings">Settings</router-link>
 </y-appbar>
 ```
 

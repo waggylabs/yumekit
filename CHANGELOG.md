@@ -35,7 +35,7 @@ Delete any empty sections before publishing.
 
 ### Added
 
-- `y-appbar`: new `nav` slot lets consumers supply their own link elements (e.g. Vue Router's `<router-link>`, React Router's `<NavLink>`, plain `<a>`) in place of — or in addition to — the auto-generated `y-button` items. Slotted nav children render in the appbar body after any items from the `items` attribute, get full-width treatment in vertical mode, and are hidden-overflow when collapsed. In mobile (hamburger) mode the same slot is rendered inside the dropdown panel below the items, preserving the desktop priority order.
+- `y-appbar`: the default (unnamed) slot now lets consumers supply their own link elements (e.g. Vue Router's `<router-link>`, React Router's `<NavLink>`, plain `<a>`) in place of — or in addition to — the auto-generated `y-button` items. Unslotted children render in the appbar body after any items from the `items` attribute, get full-width treatment in vertical mode, and are hidden-overflow when collapsed. In mobile (hamburger) mode the same slot is rendered inside the dropdown panel below the items, preserving the desktop priority order.
 
 ### Changed
 

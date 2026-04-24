@@ -140,22 +140,22 @@ export const NavigateEvent = {
     },
 };
 
-export const NavSlot = {
-    name: "Custom Nav Links (slot)",
+export const CustomNavChildren = {
+    name: "Custom Nav Links (default slot)",
     render: () => `
         <div style="height:400px;display:flex">
             <y-appbar orientation="vertical">
                 <y-icon slot="logo" name="bolt" size="medium"></y-icon>
                 <span slot="title">MyApp</span>
-                <a slot="nav" href="/dashboard" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
+                <a href="/dashboard" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
                     <y-icon name="home" size="medium"></y-icon>
                     Dashboard
                 </a>
-                <a slot="nav" href="/projects" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
+                <a href="/projects" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
                     <y-icon name="folder" size="medium"></y-icon>
                     Projects
                 </a>
-                <a slot="nav" href="/reports" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
+                <a href="/reports" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
                     <y-icon name="chart" size="medium"></y-icon>
                     Reports
                 </a>

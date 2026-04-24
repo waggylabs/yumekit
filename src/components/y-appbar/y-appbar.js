@@ -192,7 +192,7 @@ export class YumeAppbar extends HTMLElement {
                 this._buildNavItem(item, cfg, isVertical, isCollapsed, menuDir),
             );
         });
-        body.appendChild(_el("slot", { name: "nav" }));
+        body.appendChild(_el("slot", {}));
 
         return body;
     }
@@ -479,14 +479,14 @@ export class YumeAppbar extends HTMLElement {
             ::slotted(*) {
                 display: block;
             }
-            .appbar.vertical ::slotted([slot="nav"]) {
+            .appbar.vertical ::slotted(:not([slot])) {
                 width: 100%;
             }
-            .appbar.horizontal ::slotted([slot="nav"]) {
+            .appbar.horizontal ::slotted(:not([slot])) {
                 display: inline-flex;
                 align-items: center;
             }
-            .appbar.vertical.collapsed ::slotted([slot="nav"]) {
+            .appbar.vertical.collapsed ::slotted(:not([slot])) {
                 width: var(--_icon-col-width);
                 overflow: hidden;
             }
@@ -596,7 +596,7 @@ export class YumeAppbar extends HTMLElement {
                 this._buildNavItem(item, cfg, true, false, "down"),
             );
         });
-        panel.appendChild(_el("slot", { name: "nav" }));
+        panel.appendChild(_el("slot", {}));
 
         menuBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -703,7 +703,7 @@ export class YumeAppbar extends HTMLElement {
                 width: 100%;
                 justify-content: flex-start;
             }
-            .mobile-panel ::slotted([slot="nav"]) {
+            .mobile-panel ::slotted(:not([slot])) {
                 width: 100%;
             }
 
