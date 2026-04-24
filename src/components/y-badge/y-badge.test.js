@@ -72,44 +72,43 @@ describe("YumeBadge", () => {
     it("renders inline when no slotted target content exists", async () => {
         const el = await fixture(html`<y-badge value="AU"></y-badge>`);
         const badge = el.shadowRoot.querySelector(".badge");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const slot = el.shadowRoot.querySelector("slot");
 
         expect(badge).to.exist;
-        expect(style).to.include("position: static;");
-        expect(el.shadowRoot.querySelector("slot")).to.not.exist;
+        expect(slot).to.exist;
+        expect(slot.assignedNodes({ flatten: true })).to.have.lengthOf(0);
+        expect(getComputedStyle(badge).position).to.equal("static");
     });
 
-    it("treats a non-empty text node child as target content", async () => {
-        // A text node with non-empty trimmed content should make _hasTargetContent return true
-        const el = await fixture(html`<y-badge value="5">some text</y-badge>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
-
-        // Because _hasTargetContent returns true, the badge should be positioned absolute
-        expect(style).to.include("position: absolute");
-        // The slot should be rendered since there is target content
-        expect(el.shadowRoot.querySelector("slot")).to.exist;
+    it("renders overlay mode when an element child is present", async () => {
+        const el = await fixture(
+            html`<y-badge value="5"><span>Target</span></y-badge>`,
+        );
+        const badge = el.shadowRoot.querySelector(".badge");
+        expect(getComputedStyle(badge).position).to.equal("absolute");
     });
 
-    it("ignores a whitespace-only text node child — renders inline", async () => {
-        // A text node whose trimmed content is "" should not count as target content
+    it("renders inline for a whitespace-only text node child", async () => {
         const el = await fixture(html`<y-badge value="3">   </y-badge>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
-
-        expect(style).to.include("position: static;");
-        expect(el.shadowRoot.querySelector("slot")).to.not.exist;
+        const badge = el.shadowRoot.querySelector(".badge");
+        expect(getComputedStyle(badge).position).to.equal("static");
     });
 
-    it("ignores a comment node child — returns false", async () => {
-        // Comment nodes are neither ELEMENT_NODE nor TEXT_NODE
+    it("renders inline when only comment nodes are present", async () => {
         const el = await fixture(html`<y-badge value="7"></y-badge>`);
-        // Insert a comment node as the only child
         el.appendChild(document.createComment("just a comment"));
-        // Manually re-render so the new child is evaluated
-        el.render();
+        const badge = el.shadowRoot.querySelector(".badge");
+        expect(getComputedStyle(badge).position).to.equal("static");
+    });
 
-        const style = el.shadowRoot.querySelector("style").textContent;
-        // A comment node alone should not be treated as target content
-        expect(style).to.include("position: static;");
-        expect(el.shadowRoot.querySelector("slot")).to.not.exist;
+    it("switches to overlay mode when an element child is added after mount", async () => {
+        const el = await fixture(html`<y-badge value="9"></y-badge>`);
+        const badge = el.shadowRoot.querySelector(".badge");
+        expect(getComputedStyle(badge).position).to.equal("static");
+
+        el.appendChild(document.createElement("span"));
+        // slotchange fires asynchronously after slot assignment settles
+        await new Promise((r) => setTimeout(r, 0));
+        expect(getComputedStyle(badge).position).to.equal("absolute");
     });
 });
