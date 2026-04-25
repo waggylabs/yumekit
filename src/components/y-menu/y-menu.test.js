@@ -23,11 +23,11 @@ describe("YumeMenu", () => {
     it("renders menu items correctly", async () => {
         const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
 
-        const ul = el.shadowRoot.querySelector("ul.menu");
+        const ul = el.shadowRoot.querySelector(".menu");
         expect(ul).to.exist;
 
         // Only count top-level menu items (ignore submenu children)
-        const topItems = ul.querySelectorAll(":scope > li.menuitem");
+        const topItems = ul.querySelectorAll(":scope > .menuitem");
         expect(topItems.length).to.equal(3);
     });
 
@@ -52,9 +52,9 @@ describe("YumeMenu", () => {
 
     it("renders submenu for items with children", async () => {
         const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
-        const items = el.shadowRoot.querySelectorAll("li.menuitem");
+        const items = el.shadowRoot.querySelectorAll(".menuitem");
         const hasSubmenu = Array.from(items).some((item) =>
-            item.querySelector("ul.submenu"),
+            item.querySelector(".submenu"),
         );
 
         expect(hasSubmenu).to.be.true;
@@ -114,7 +114,7 @@ describe("YumeMenu", () => {
         el.visible = true;
         await new Promise((r) => setTimeout(r, 0));
 
-        const leafItem = el.shadowRoot.querySelector("li.menuitem");
+        const leafItem = el.shadowRoot.querySelector(".menuitem");
         leafItem.click();
         await new Promise((r) => setTimeout(r, 0));
 
@@ -127,9 +127,9 @@ describe("YumeMenu", () => {
         el.visible = true;
         await new Promise((r) => setTimeout(r, 0));
 
-        const items = el.shadowRoot.querySelectorAll("li.menuitem");
+        const items = el.shadowRoot.querySelectorAll(".menuitem");
         const parentItem = Array.from(items).find((li) =>
-            li.querySelector("ul.submenu"),
+            li.querySelector(".submenu"),
         );
         parentItem.click();
         await new Promise((r) => setTimeout(r, 0));
@@ -194,7 +194,7 @@ describe("YumeMenu", () => {
     it("item with url navigates on click (url property is set on li)", async () => {
         const urlItems = [{ text: "Go Home", url: "/home" }];
         const el = await fixture(html`<y-menu .items=${urlItems}></y-menu>`);
-        const li = el.shadowRoot.querySelector("li.menuitem");
+        const li = el.shadowRoot.querySelector(".menuitem");
         expect(li).to.exist;
         // The item-content should contain the text
         const content = li.querySelector(".item-content");
@@ -204,7 +204,7 @@ describe("YumeMenu", () => {
     it("item without url does not attach a navigation handler but still renders", async () => {
         const noUrlItems = [{ text: "No Nav" }];
         const el = await fixture(html`<y-menu .items=${noUrlItems}></y-menu>`);
-        const li = el.shadowRoot.querySelector("li.menuitem");
+        const li = el.shadowRoot.querySelector(".menuitem");
         expect(li).to.exist;
         const content = li.querySelector(".item-content");
         expect(content.textContent).to.equal("No Nav");
@@ -214,7 +214,7 @@ describe("YumeMenu", () => {
         const el = await fixture(
             html`<y-menu history="false" .items=${[{ text: "Home", href: "/home" }]}></y-menu>`,
         );
-        const li = el.shadowRoot.querySelector("li.menuitem");
+        const li = el.shadowRoot.querySelector(".menuitem");
 
         const navigatePromise = oneEvent(el, "navigate");
         // Cancel so the test doesn't actually navigate the browser.
@@ -230,7 +230,7 @@ describe("YumeMenu", () => {
         const el = await fixture(
             html`<y-menu history="false" .items=${[{ text: "Home", href: "/new", url: "/old" }]}></y-menu>`,
         );
-        const li = el.shadowRoot.querySelector("li.menuitem");
+        const li = el.shadowRoot.querySelector(".menuitem");
 
         const navigatePromise = oneEvent(el, "navigate");
         el.addEventListener("navigate", (e) => e.preventDefault(), { once: true });
@@ -272,11 +272,45 @@ describe("YumeMenu", () => {
         expect(event.type).to.equal("close");
     });
 
+    it("does not dispatch open during initial upgrade for an element with the visible attribute set", async () => {
+        let opened = false;
+        const onOpen = () => { opened = true; };
+        document.addEventListener("open", onOpen);
+        try {
+            await fixture(html`<y-menu visible></y-menu>`);
+            expect(opened).to.be.false;
+        } finally {
+            document.removeEventListener("open", onOpen);
+        }
+    });
+
+    it("does not dispatch open when visible is set on a disconnected element", async () => {
+        const el = document.createElement("y-menu");
+        let opened = false;
+        el.addEventListener("open", () => { opened = true; });
+        el.visible = true;
+        expect(opened).to.be.false;
+    });
+
+    it("dispatches the next visible transition after the element connects", async () => {
+        const el = await fixture(html`<y-menu visible></y-menu>`);
+        // Initial open suppressed; next transition should fire normally.
+        const closePromise = oneEvent(el, "close");
+        el.visible = false;
+        const closeEvt = await closePromise;
+        expect(closeEvt.type).to.equal("close");
+
+        const openPromise = oneEvent(el, "open");
+        el.visible = true;
+        const openEvt = await openPromise;
+        expect(openEvt.type).to.equal("open");
+    });
+
     it("dispatches select event with detail.value defaulting to text", async () => {
         const el = await fixture(
             html`<y-menu .items=${[{ text: "Copy" }]}></y-menu>`,
         );
-        const li = el.shadowRoot.querySelector("li.menuitem");
+        const li = el.shadowRoot.querySelector(".menuitem");
         const selectPromise = oneEvent(el, "select");
         li.click();
         const event = await selectPromise;
@@ -288,22 +322,22 @@ describe("YumeMenu", () => {
         const el = await fixture(
             html`<y-menu .items=${[{ text: "Copy", value: "cmd:copy" }]}></y-menu>`,
         );
-        const li = el.shadowRoot.querySelector("li.menuitem");
+        const li = el.shadowRoot.querySelector(".menuitem");
         const selectPromise = oneEvent(el, "select");
         li.click();
         const event = await selectPromise;
         expect(event.detail.value).to.equal("cmd:copy");
     });
 
-    it("does not dispatch select for items with children when their li is clicked", async () => {
+    it("does not dispatch select for items with children when the parent item is clicked", async () => {
         const el = await fixture(
             html`<y-menu .items=${[{ text: "Parent", children: [{ text: "Child" }] }]}></y-menu>`,
         );
-        const rootUl = el.shadowRoot.querySelector("ul.menu");
-        const parentLi = Array.from(rootUl.children).find((c) => c.tagName === "LI");
+        const root = el.shadowRoot.querySelector(".menu");
+        const parentItem = root.querySelector(":scope > .menuitem");
         let fired = false;
         el.addEventListener("select", () => { fired = true; });
-        parentLi.click();
+        parentItem.click();
         expect(fired).to.be.false;
     });
 
@@ -339,11 +373,65 @@ describe("YumeMenu", () => {
         expect(event.detail.value).to.equal("Plain Link");
     });
 
+    it("applies menuitem-like styling to slotted default-slot children via ::slotted", async () => {
+        const el = await fixture(html`
+            <y-menu><button data-value="x">X</button></y-menu>
+        `);
+        const btn = el.querySelector("button");
+        const computed = getComputedStyle(btn);
+        // Slotted padding should match the menuitem padding (resolved button-padding token).
+        expect(computed.cursor).to.equal("pointer");
+        expect(parseFloat(computed.paddingTop)).to.be.greaterThan(0);
+    });
+
+    it("rebinds a slotted child when it is moved between y-menu instances", async () => {
+        const wrapper = await fixture(html`
+            <div>
+                <y-menu id="m1"><button data-value="x">X</button></y-menu>
+                <y-menu id="m2"></y-menu>
+            </div>
+        `);
+        const m1 = wrapper.querySelector("#m1");
+        const m2 = wrapper.querySelector("#m2");
+        const btn = m1.querySelector("button");
+
+        // Move the child from m1 to m2 and let slotchange settle on both.
+        m2.appendChild(btn);
+        await oneEvent(m2.shadowRoot.querySelector(".menu > slot"), "slotchange");
+
+        // Click should fire select on m2 (the new owner), not m1.
+        let firedOnM1 = false;
+        m1.addEventListener("select", () => { firedOnM1 = true; });
+        const selectOnM2 = oneEvent(m2, "select");
+        btn.click();
+        const evt = await selectOnM2;
+        expect(evt.detail.value).to.equal("x");
+        expect(firedOnM1).to.be.false;
+    });
+
+    it("removes click handlers from slotted children on disconnect", async () => {
+        const host = await fixture(html`
+            <div>
+                <y-menu><button data-value="x">X</button></y-menu>
+            </div>
+        `);
+        const menu = host.querySelector("y-menu");
+        const btn = menu.querySelector("button");
+
+        host.removeChild(menu);
+
+        // After disconnect, clicking the (now-orphan) child must not dispatch select on the menu.
+        let fired = false;
+        menu.addEventListener("select", () => { fired = true; });
+        btn.click();
+        expect(fired).to.be.false;
+    });
+
     it("renders item.icon as a y-icon element inside the menu item", async () => {
         const el = await fixture(
             html`<y-menu .items=${[{ text: "Edit", icon: "edit" }]}></y-menu>`,
         );
-        const icon = el.shadowRoot.querySelector("li.menuitem y-icon");
+        const icon = el.shadowRoot.querySelector(".menuitem y-icon");
         expect(icon).to.not.be.null;
         expect(icon.getAttribute("name")).to.equal("edit");
     });
@@ -354,7 +442,7 @@ describe("YumeMenu", () => {
                 <span slot="my-item">Replacement</span>
             </y-menu>
         `);
-        const slot = el.shadowRoot.querySelector('li.menuitem slot[name="my-item"]');
+        const slot = el.shadowRoot.querySelector('.menuitem slot[name="my-item"]');
         expect(slot).to.not.be.null;
         const assigned = slot.assignedElements();
         expect(assigned.length).to.equal(1);
@@ -382,11 +470,11 @@ describe("YumeMenu", () => {
             },
         ];
         const el = await fixture(html`<y-menu .items=${nested}></y-menu>`);
-        const submenu = el.shadowRoot.querySelector("ul.submenu");
+        const submenu = el.shadowRoot.querySelector(".submenu");
         expect(submenu).to.exist;
-        const nestedSubmenu = submenu.querySelector("ul.submenu");
+        const nestedSubmenu = submenu.querySelector(".submenu");
         expect(nestedSubmenu).to.exist;
-        expect(nestedSubmenu.querySelector("li").textContent).to.include("Grandchild");
+        expect(nestedSubmenu.querySelector(".menuitem").textContent).to.include("Grandchild");
     });
 
     it("renders item as selected when item.selected is true", async () => {
@@ -395,7 +483,7 @@ describe("YumeMenu", () => {
             { text: "Inactive" },
         ];
         const el = await fixture(html`<y-menu .items=${selectedItems}></y-menu>`);
-        const items = el.shadowRoot.querySelectorAll("li.menuitem");
+        const items = el.shadowRoot.querySelectorAll(".menuitem");
         expect(items[0].classList.contains("selected")).to.be.true;
         expect(items[0].getAttribute("aria-current")).to.equal("true");
         expect(items[1].classList.contains("selected")).to.be.false;

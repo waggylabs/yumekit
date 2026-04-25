@@ -16,6 +16,8 @@ export class YumeMenu extends HTMLElement {
         this._onAnchorClick = this._onAnchorClick.bind(this);
         this._onDocumentClick = this._onDocumentClick.bind(this);
         this._onScrollOrResize = this._onScrollOrResize.bind(this);
+        this._isReady = false;
+        this._slottedHandlers = new Map();
     }
 
     connectedCallback() {
@@ -32,10 +34,13 @@ export class YumeMenu extends HTMLElement {
         this.style.zIndex = "1000";
         this.style.display = "none";
         if (this.visible) this._updatePosition();
+
+        this._isReady = true;
     }
 
     disconnectedCallback() {
         this._teardownAnchor();
+        this._teardownSlottedItems();
 
         document.removeEventListener("click", this._onDocumentClick);
         window.removeEventListener("scroll", this._onScrollOrResize, true);
@@ -56,7 +61,7 @@ export class YumeMenu extends HTMLElement {
             this._updatePosition();
         }
 
-        if (name === "visible") {
+        if (name === "visible" && this._isReady) {
             this.dispatchEvent(new CustomEvent(this.visible ? "open" : "close", {
                 bubbles: true,
                 composed: true,
@@ -123,17 +128,17 @@ export class YumeMenu extends HTMLElement {
 
         const style = _el("style", {}, [this._buildStyles()]);
 
-        const rootUl = this._createMenuList(this.items);
-        rootUl.classList.add("menu");
-        rootUl.setAttribute("role", "menu");
-        rootUl.setAttribute("part", "menu");
+        const root = this._createMenuList(this.items);
+        root.classList.add("menu");
+        root.setAttribute("role", "menu");
+        root.setAttribute("part", "menu");
 
         const childSlot = _el("slot");
         childSlot.addEventListener("slotchange", () => this._processSlottedItems());
-        rootUl.appendChild(childSlot);
+        root.appendChild(childSlot);
 
         this.shadowRoot.appendChild(style);
-        this.shadowRoot.appendChild(rootUl);
+        this.shadowRoot.appendChild(root);
         this._processSlottedItems();
     }
 
@@ -166,44 +171,49 @@ export class YumeMenu extends HTMLElement {
     _buildStyles() {
         const paddingVar = `var(--component-button-padding-${this.size}, 0.5rem)`;
         return `
-            ul.menu,
-            ul.submenu {
-                list-style: none;
-                margin: 0;
-                padding: 0;
+            .menu,
+            .submenu {
                 background: var(--component-menu-background, #0c0c0d);
                 border: var(--component-menu-border-width, 1px) solid var(--component-menu-border-color, #37383a);
                 border-radius: var(--component-menu-border-radius, 4px);
                 box-shadow: var(--component-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
                 min-width: 150px;
+                display: flex;
+                flex-direction: column;
             }
 
-            li.menuitem {
+            .menuitem,
+            ::slotted(:not([slot])) {
                 cursor: pointer;
                 padding: ${paddingVar};
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
                 white-space: nowrap;
                 color: var(--component-menu-color, #f7f7fa);
                 font-size: var(--font-size-button, 1em);
+                box-sizing: border-box;
+            }
+
+            .menuitem {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
                 position: relative;
             }
 
-            li.menuitem:hover {
+            .menuitem:hover,
+            ::slotted(:not([slot]):hover) {
                 background: var(--component-menu-hover-background, #292a2b);
             }
 
-            li.menuitem.selected {
+            .menuitem.selected {
                 background: var(--component-menu-selected-background);
                 color: var(--component-menu-selected-color);
             }
 
-            li.menuitem.selected:hover {
+            .menuitem.selected:hover {
                 background: var(--component-menu-selected-background);
             }
 
-            ul.submenu {
+            .submenu {
                 position: absolute;
                 top: 0;
                 left: 100%;
@@ -211,8 +221,8 @@ export class YumeMenu extends HTMLElement {
                 z-index: var(--component-menu-z-index, 1001);
             }
 
-            li.menuitem:hover > ul.submenu {
-                display: block;
+            .menuitem:hover > .submenu {
+                display: flex;
             }
 
             .submenu-indicator {
@@ -303,7 +313,7 @@ export class YumeMenu extends HTMLElement {
         const isSelected = !!item.selected;
         const partValue = isSelected ? "menuitem selected" : "menuitem";
 
-        const li = _el("li", {
+        const itemEl = _el("div", {
             class: partValue,
             role: "menuitem",
             part: partValue,
@@ -311,28 +321,28 @@ export class YumeMenu extends HTMLElement {
             tabindex: "0",
         });
 
-        li.appendChild(this._createItemContent(item));
+        itemEl.appendChild(this._createItemContent(item));
 
         if (item.url && !item.href) YumeMenu._warnUrlDeprecated();
 
-        li.addEventListener("click", () => this._activateItem(item));
+        itemEl.addEventListener("click", () => this._activateItem(item));
 
         if (item.children?.length > 0) {
-            li.appendChild(this._createSubmenuIndicator());
+            itemEl.appendChild(this._createSubmenuIndicator());
 
             const submenu = this._createMenuList(item.children);
             submenu.classList.add("submenu");
             submenu.setAttribute("role", "menu");
-            li.appendChild(submenu);
+            itemEl.appendChild(submenu);
         }
 
-        return li;
+        return itemEl;
     }
 
     _createMenuList(items) {
-        const ul = _el("ul");
-        items.forEach((item) => ul.appendChild(this._createMenuItem(item)));
-        return ul;
+        const container = _el("div");
+        items.forEach((item) => container.appendChild(this._createMenuItem(item)));
+        return container;
     }
 
     _createSubmenuIndicator() {
@@ -388,18 +398,27 @@ export class YumeMenu extends HTMLElement {
     }
 
     _processSlottedItems() {
-        const slot = this.shadowRoot.querySelector("ul.menu > slot");
+        const slot = this.shadowRoot.querySelector(".menu > slot");
         if (!slot) return;
 
-        slot.assignedElements().forEach((el) => {
-            if (el._yMenuItemBound) return;
-            el._yMenuItemBound = true;
+        const assigned = new Set(slot.assignedElements());
+
+        for (const [el, handler] of this._slottedHandlers) {
+            if (assigned.has(el)) continue;
+            el.removeEventListener("click", handler);
+            this._slottedHandlers.delete(el);
+        }
+
+        for (const el of assigned) {
+            if (this._slottedHandlers.has(el)) continue;
 
             if (!el.hasAttribute("role")) el.setAttribute("role", "menuitem");
             if (el.tabIndex < 0) el.tabIndex = 0;
 
-            el.addEventListener("click", () => this._activateSlottedItem(el));
-        });
+            const handler = () => this._activateSlottedItem(el);
+            el.addEventListener("click", handler);
+            this._slottedHandlers.set(el, handler);
+        }
     }
 
     _setupAnchor() {
@@ -427,6 +446,13 @@ export class YumeMenu extends HTMLElement {
             this._anchorEl.removeEventListener("click", this._onAnchorClick);
             this._anchorEl = null;
         }
+    }
+
+    _teardownSlottedItems() {
+        for (const [el, handler] of this._slottedHandlers) {
+            el.removeEventListener("click", handler);
+        }
+        this._slottedHandlers.clear();
     }
 
     _updatePosition() {

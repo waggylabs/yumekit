@@ -19,7 +19,8 @@ export default {
     argTypes: {
         items: {
             control: "text",
-            description: 'JSON array of `{ text, value?, href?, icon?, slot?, selected?, children? }` objects. (`url` is accepted as a deprecated alias for `href`.)',
+            description:
+                "JSON array of `{ text, value?, href?, icon?, slot?, selected?, children? }` objects. (`url` is accepted as a deprecated alias for `href`.)",
         },
         direction: {
             control: "select",
@@ -35,7 +36,8 @@ export default {
         },
         visible: {
             control: "boolean",
-            description: "Whether the menu is open. Set to true to preview direction and size changes in real time.",
+            description:
+                "Whether the menu is open. Set to true to preview direction and size changes in real time.",
             table: { defaultValue: { summary: false } },
         },
     },
@@ -118,7 +120,7 @@ export const WithIcons = {
             <y-menu
                 anchor="menu-icons-anchor"
                 items='${JSON.stringify([
-                    { text: "Edit", value: "edit", icon: "edit" },
+                    { text: "Edit", value: "edit", icon: "pencil" },
                     { text: "Copy", value: "copy", icon: "copy" },
                     { text: "Delete", value: "delete", icon: "trash" },
                 ])}'
