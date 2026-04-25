@@ -12,6 +12,7 @@ export class YumeBadge extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._onSlotChange = this._onSlotChange.bind(this);
         this.render();
     }
 
@@ -54,21 +55,24 @@ export class YumeBadge extends HTMLElement {
     render() {
         const [badgeColor, badgeTextColor] = this._getBadgeColors(this.color);
         const { fontSize, padding, minSize } = this._getSizeAttributes(this.size);
-        const hasTarget = this._hasTargetContent();
-        const positionCSS = hasTarget
-            ? this._getBadgePosition(this.position, this.alignment)
-            : "";
+        const positionCSS = this._getBadgePosition(this.position, this.alignment);
 
         this.shadowRoot.innerHTML = `
             <style>
                 :host {
-                    position: ${hasTarget ? "relative" : "static"};
                     display: inline-flex;
                     align-items: center;
                 }
+                .root {
+                    position: static;
+                    display: inline-flex;
+                    align-items: center;
+                }
+                .root.has-target {
+                    position: relative;
+                }
                 .badge {
-                    position: ${hasTarget ? "absolute" : "static"};
-                    ${positionCSS}
+                    position: static;
                     background: ${badgeColor};
                     color: ${badgeTextColor};
                     font-size: ${fontSize};
@@ -83,14 +87,24 @@ export class YumeBadge extends HTMLElement {
                     height: ${minSize};
                     z-index: 20;
                 }
+                .root.has-target .badge {
+                    position: absolute;
+                    ${positionCSS}
+                }
                 ::slotted(*) {
                     position: relative;
                     display: inline-block;
                 }
             </style>
-            ${hasTarget ? "<slot></slot>" : ""}
-            <div class="badge" part="badge">${this.value}</div>
+            <div class="root" part="root">
+                <slot></slot>
+                <div class="badge" part="badge">${this.value}</div>
+            </div>
         `;
+
+        const slot = this.shadowRoot.querySelector("slot");
+        slot.addEventListener("slotchange", this._onSlotChange);
+        this._onSlotChange();
     }
 
     // -------------------------------------------------------------------------
@@ -142,12 +156,14 @@ export class YumeBadge extends HTMLElement {
         return sizeMap[size] || sizeMap.small;
     }
 
-    _hasTargetContent() {
-        return Array.from(this.childNodes).some((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) return true;
-            if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() !== "";
-            return false;
-        });
+    _onSlotChange() {
+        const slot = this.shadowRoot.querySelector("slot");
+        const root = this.shadowRoot.querySelector(".root");
+        if (!slot || !root) return;
+        const hasElement = slot
+            .assignedNodes({ flatten: true })
+            .some((n) => n.nodeType === Node.ELEMENT_NODE);
+        root.classList.toggle("has-target", hasElement);
     }
 }
 
