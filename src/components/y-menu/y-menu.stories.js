@@ -17,7 +17,7 @@ export default {
     argTypes: {
         items: {
             control: "text",
-            description: 'JSON array of `{ text, url?, selected?, children? }` objects.',
+            description: 'JSON array of `{ text, href?, selected?, children? }` objects. (`url` is accepted as a deprecated alias for `href`.)',
         },
         direction: {
             control: "select",

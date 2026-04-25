@@ -1,4 +1,4 @@
-import { fixture, html, expect } from "@open-wc/testing";
+import { fixture, html, expect, oneEvent } from "@open-wc/testing";
 import "../../icons/all.js";
 import "./y-appbar.js";
 
@@ -112,6 +112,36 @@ describe("YumeAppbar", () => {
         `);
         const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
         expect(buttons.length).to.equal(3);
+    });
+
+    it("exposes a default slot for user-supplied link elements", async () => {
+        const el = await fixture(html`
+            <y-appbar>
+                <a href="/a">A</a>
+                <a href="/b">B</a>
+            </y-appbar>
+        `);
+        const navSlot = el.shadowRoot.querySelector(
+            ".appbar-body slot:not([name])",
+        );
+        expect(navSlot).to.not.be.null;
+        const assigned = navSlot.assignedElements();
+        expect(assigned.length).to.equal(2);
+        expect(assigned[0].getAttribute("href")).to.equal("/a");
+    });
+
+    it("renders items and slotted nav together", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${sampleItems}>
+                <a href="/extra">Extra</a>
+            </y-appbar>
+        `);
+        const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
+        expect(buttons.length).to.equal(3);
+        const navSlot = el.shadowRoot.querySelector(
+            ".appbar-body slot:not([name])",
+        );
+        expect(navSlot.assignedElements().length).to.equal(1);
     });
 
     it("renders y-button elements with color and style-type", async () => {
@@ -353,7 +383,7 @@ describe("YumeAppbar", () => {
             <y-appbar .items=${namedIconItems}></y-appbar>
         `);
         const icons = el.shadowRoot.querySelectorAll(
-            ".appbar-body y-button y-icon",
+            '.appbar-body y-button y-icon[slot="left-icon"]',
         );
         expect(icons.length).to.equal(3);
     });
@@ -446,7 +476,7 @@ describe("YumeAppbar", () => {
             <y-appbar .items=${sampleItems}></y-appbar>
         `);
         const icons = el.shadowRoot.querySelectorAll(
-            ".appbar-body y-button y-icon",
+            '.appbar-body y-button y-icon[slot="left-icon"]',
         );
         expect(icons.length).to.equal(0);
     });
@@ -607,7 +637,6 @@ describe("YumeAppbar", () => {
         const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const appbar = el.shadowRoot.querySelector(".appbar");
         expect(appbar).to.not.be.null;
@@ -621,34 +650,20 @@ describe("YumeAppbar", () => {
         const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
         expect(menuBtn).to.not.be.null;
         expect(menuBtn.getAttribute("aria-label")).to.equal("Open menu");
     });
 
-    it("mobile layout renders a y-menu when items are present", async () => {
-        const el = await fixture(
-            html`<y-appbar orientation="horizontal" .items=${sampleItems}></y-appbar>`
-        );
-        el._isMobile = true;
-        el.render();
-        await new Promise((r) => setTimeout(r, 0));
-
-        const mobileMenu = el.shadowRoot.querySelector(".mobile-start y-menu");
-        expect(mobileMenu).to.not.be.null;
-        expect(mobileMenu.getAttribute("direction")).to.equal("down");
-    });
-
-    it("mobile layout does not render a y-menu when there are no items", async () => {
+    it("mobile layout panel renders no nav items when items are absent", async () => {
         const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
-        const mobileMenu = el.shadowRoot.querySelector(".mobile-start y-menu");
-        expect(mobileMenu).to.be.null;
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        expect(panel).to.not.be.null;
+        expect(panel.querySelectorAll(".nav-item").length).to.equal(0);
     });
 
     it("mobile layout includes logo and title slots in the center section", async () => {
@@ -660,7 +675,6 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const center = el.shadowRoot.querySelector(".mobile-center");
         const logoSlot = center.querySelector('slot[name="logo"]');
@@ -677,38 +691,69 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const endSection = el.shadowRoot.querySelector(".mobile-end");
         const footerSlot = endSection.querySelector('slot[name="footer"]');
         expect(footerSlot).to.not.be.null;
-        const assigned = footerSlot.assignedNodes({ flatten: true });
-        expect(assigned.length).to.be.greaterThan(0);
+        if (footerSlot.assignedNodes({ flatten: true }).length === 0) {
+            await oneEvent(footerSlot, "slotchange");
+        }
+        expect(footerSlot.assignedNodes({ flatten: true }).length).to.be.greaterThan(0);
     });
 
-    it("_toMenuItems maps href to url and preserves text", async () => {
-        const el = await fixture(html`<y-appbar></y-appbar>`);
-        const result = el._toMenuItems([
-            { text: "Home", href: "/home", icon: "home" },
-            { text: "About" },
-        ]);
-        expect(result[0].url).to.equal("/home");
-        expect(result[0].text).to.equal("Home");
-        expect(result[0].icon).to.equal("home");
-        expect(result[1].url).to.be.undefined;
+    it("mobile dropdown panel renders items as nav buttons", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal" .items=${namedIconItems}></y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        expect(panel).to.not.be.null;
+        const buttons = panel.querySelectorAll(".nav-item y-button");
+        expect(buttons.length).to.equal(3);
     });
 
-    it("_toMenuItems recursively converts children", async () => {
-        const el = await fixture(html`<y-appbar></y-appbar>`);
-        const result = el._toMenuItems([
-            {
-                text: "Parent",
-                href: "/parent",
-                children: [{ text: "Child", href: "/child" }],
-            },
-        ]);
-        expect(result[0].children).to.be.an("array").with.length(1);
-        expect(result[0].children[0].url).to.equal("/child");
+    it("mobile dropdown panel exposes a default slot after items", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal" .items=${namedIconItems}>
+                <a href="/extra">Extra</a>
+            </y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        const navSlot = panel.querySelector("slot:not([name])");
+        expect(navSlot).to.not.be.null;
+        const items = panel.querySelectorAll(".nav-item");
+        expect(items.length).to.equal(3);
+        // Slot must follow the items in DOM order (same priority as desktop).
+        const children = Array.from(panel.children);
+        const lastItem = children.findIndex((c) => c.classList.contains("nav-item"));
+        const slotIdx = children.indexOf(navSlot);
+        expect(slotIdx).to.be.greaterThan(lastItem);
+        if (navSlot.assignedElements().length === 0) {
+            await oneEvent(navSlot, "slotchange");
+        }
+        expect(navSlot.assignedElements().length).to.equal(1);
+    });
+
+    it("mobile hamburger toggles the dropdown panel open", async () => {
+        const el = await fixture(html`
+            <y-appbar orientation="horizontal" .items=${namedIconItems}></y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+
+        const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        expect(panel.classList.contains("open")).to.be.false;
+        menuBtn.click();
+        expect(panel.classList.contains("open")).to.be.true;
+        expect(menuBtn.getAttribute("aria-expanded")).to.equal("true");
+        menuBtn.click();
+        expect(panel.classList.contains("open")).to.be.false;
     });
 
     it("mobile layout passes size to the hamburger menu button", async () => {
@@ -717,7 +762,6 @@ describe("YumeAppbar", () => {
         );
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
         expect(menuBtn.getAttribute("size")).to.equal("large");
@@ -729,7 +773,6 @@ describe("YumeAppbar", () => {
         );
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include(":host([sticky])");

@@ -31,6 +31,26 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.4.4]
+
+### Fixed
+
+- `y-badge`: slotted children would disappear when the badge was upgraded before its children were parsed (e.g. when `y-badge.js` loaded before the tag appeared in the HTML stream). The shadow DOM now always includes a `<slot>` and toggles overlay vs. inline layout via a `slotchange`-driven class on an internal root element, so children projected in after upgrade are always picked up. Knock-on: text-only and comment-only children no longer trigger overlay mode (only element children do). This matches how the component is actually used in practice.
+
+### Added
+
+- `y-appbar`: the default (unnamed) slot now lets consumers supply their own link elements (e.g. Vue Router's `<router-link>`, React Router's `<NavLink>`, plain `<a>`) in place of — or in addition to — the auto-generated `y-button` items. Unslotted children render in the appbar body after any items from the `items` attribute, get full-width treatment in vertical mode, and are hidden-overflow when collapsed. In mobile (hamburger) mode the same slot is rendered inside the dropdown panel below the items, preserving the desktop priority order.
+
+- `y-menu`: items now accept `href` for navigation, matching `y-appbar`, `y-dock`, and `y-breadcrumbs`. This fixes a bug where `y-appbar` submenu items (which use `href`) would not navigate when passed through to a nested `y-menu`.
+
+### Changed
+
+- `y-appbar`: mobile hamburger menu replaced its internal `y-menu` with a self-contained dropdown panel so it can host both auto-generated nav buttons and arbitrary slotted nav children. Behaviour is otherwise unchanged — items still drive the menu, the hamburger toggles open/closed, and clicks outside the appbar dismiss the panel.
+
+### Deprecated
+
+- `y-menu`: `item.url` is deprecated in favour of `item.href`. Existing code keeps working and emits a one-time console warning per page load; `url` will be removed in a future release.
+
 ## [0.4.3] - 2026-04-17
 
 ### Added

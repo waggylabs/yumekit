@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 35 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.4.3
+0.4.4
 
 ## License
 MIT
@@ -569,15 +569,33 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 ---
 
 ### y-appbar
-Top/side navigation bar.
+Top/side navigation bar with collapsible vertical sidebar mode and a mobile hamburger fallback.
 
 Tag: `<y-appbar>`
 Attributes:
-- `orientation` — `"horizontal"` (default) | `"vertical"`
-- `sticky` — boolean
-- `color` — color scheme name
+- `orientation` — `"vertical"` (default) | `"horizontal"`
+- `collapsed` — boolean, vertical only — collapses sidebar to icon-only width
+- `items` — JSON array of `{ text, icon?, href?, selected?, slot?, children? }` objects driving the auto-generated nav buttons
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `menu-direction` — `"right"` | `"down"` — direction submenus pop out (auto: vertical → right, horizontal → down)
+- `sticky` — `"start"` | `"end"` — sticks the appbar to the named edge
+- `mobile-breakpoint` — number (px) — viewport width below which horizontal appbar switches to mobile hamburger mode (default 768)
+- `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
 
-Slots: `brand`, `nav`, `actions`, default
+Events: `navigate` (cancelable, `detail: { href }`)
+
+Methods: `toggle()` — flip collapsed state
+
+Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same unslotted children are rendered inside the hamburger dropdown panel after the items.)
+
+```html
+<!-- Mix items array with framework router links -->
+<y-appbar orientation="vertical" items='[{"text":"Home","icon":"home","href":"/"}]'>
+  <span slot="title">MyApp</span>
+  <router-link to="/projects">Projects</router-link>
+  <router-link to="/settings">Settings</router-link>
+</y-appbar>
+```
 
 ---
 
@@ -691,17 +709,17 @@ Dropdown menu. Positioned relative to an anchor element.
 
 Tag: `<y-menu>`
 Attributes:
-- `items` — JSON string: `[{"text": "Edit", "url": "...", "selected": true, "children": [...], "icon-template": "slot-name", "template": "slot-name"}, ...]`
+- `items` — JSON string: `[{"text": "Edit", "href": "...", "selected": true, "children": [...], "icon-template": "slot-name", "template": "slot-name"}, ...]`
 - `anchor` — CSS selector or element ID of the trigger element
 - `visible` — boolean
 - `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
 
-Events: none (item clicks fire navigation via `url`, or listen for DOM events on the element)
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
 Item object fields:
 - `text` — display text
-- `url` — optional navigation URL
+- `href` — optional navigation URL (note: `url` is accepted as a deprecated alias and will be removed in a future release)
 - `selected` — boolean, highlights the active item
 - `children` — array of sub-items (nested submenu)
 - `icon-template` — `<template slot="name">` inside `<y-menu>` for a custom icon
