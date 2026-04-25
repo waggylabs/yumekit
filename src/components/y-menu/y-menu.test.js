@@ -60,11 +60,13 @@ describe("YumeMenu", () => {
         expect(hasSubmenu).to.be.true;
     });
 
-    it("displays chevron SVG indicator for nested items", async () => {
+    it("displays chevron y-icon indicator for nested items", async () => {
         const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
         const indicators = el.shadowRoot.querySelectorAll(".submenu-indicator");
         expect(indicators.length).to.equal(1);
-        expect(indicators[0].querySelector("svg")).to.exist;
+        const icon = indicators[0].querySelector("y-icon");
+        expect(icon).to.exist;
+        expect(icon.getAttribute("name")).to.equal("chevron-right");
     });
 
     it("hides menu when visible is toggled off", async () => {
@@ -252,6 +254,119 @@ describe("YumeMenu", () => {
         await fixture(html`<y-menu .items=${[{ text: "A", url: "/a" }]}></y-menu>`);
         await fixture(html`<y-menu .items=${[{ text: "B", url: "/b" }]}></y-menu>`);
         expect(warn.calledOnce).to.be.true;
+    });
+
+    it("dispatches open event when visible becomes true", async () => {
+        const el = await fixture(html`<y-menu></y-menu>`);
+        const openPromise = oneEvent(el, "open");
+        el.visible = true;
+        const event = await openPromise;
+        expect(event.type).to.equal("open");
+    });
+
+    it("dispatches close event when visible becomes false", async () => {
+        const el = await fixture(html`<y-menu visible></y-menu>`);
+        const closePromise = oneEvent(el, "close");
+        el.visible = false;
+        const event = await closePromise;
+        expect(event.type).to.equal("close");
+    });
+
+    it("dispatches select event with detail.value defaulting to text", async () => {
+        const el = await fixture(
+            html`<y-menu .items=${[{ text: "Copy" }]}></y-menu>`,
+        );
+        const li = el.shadowRoot.querySelector("li.menuitem");
+        const selectPromise = oneEvent(el, "select");
+        li.click();
+        const event = await selectPromise;
+        expect(event.detail.value).to.equal("Copy");
+        expect(event.detail.item.text).to.equal("Copy");
+    });
+
+    it("uses explicit item.value for select detail when set", async () => {
+        const el = await fixture(
+            html`<y-menu .items=${[{ text: "Copy", value: "cmd:copy" }]}></y-menu>`,
+        );
+        const li = el.shadowRoot.querySelector("li.menuitem");
+        const selectPromise = oneEvent(el, "select");
+        li.click();
+        const event = await selectPromise;
+        expect(event.detail.value).to.equal("cmd:copy");
+    });
+
+    it("does not dispatch select for items with children when their li is clicked", async () => {
+        const el = await fixture(
+            html`<y-menu .items=${[{ text: "Parent", children: [{ text: "Child" }] }]}></y-menu>`,
+        );
+        const rootUl = el.shadowRoot.querySelector("ul.menu");
+        const parentLi = Array.from(rootUl.children).find((c) => c.tagName === "LI");
+        let fired = false;
+        el.addEventListener("select", () => { fired = true; });
+        parentLi.click();
+        expect(fired).to.be.false;
+    });
+
+    it("treats light-DOM children as additional menu items and fires select on click", async () => {
+        const el = await fixture(html`
+            <y-menu>
+                <button data-value="foo">Foo</button>
+            </y-menu>
+        `);
+        const child = el.querySelector("button");
+        expect(child.getAttribute("role")).to.equal("menuitem");
+        expect(child.tabIndex).to.equal(0);
+
+        const selectPromise = oneEvent(el, "select");
+        child.click();
+        const event = await selectPromise;
+        expect(event.detail.value).to.equal("foo");
+        expect(event.detail.element).to.equal(child);
+    });
+
+    it("falls back to textContent for slotted child value when data-value is absent", async () => {
+        const el = await fixture(html`
+            <y-menu>
+                <a href="/x">Plain Link</a>
+            </y-menu>
+        `);
+        const child = el.querySelector("a");
+        const selectPromise = oneEvent(el, "select");
+        // Cancel the default <a> navigation so the test doesn't navigate the page.
+        child.addEventListener("click", (e) => e.preventDefault(), { once: true });
+        child.click();
+        const event = await selectPromise;
+        expect(event.detail.value).to.equal("Plain Link");
+    });
+
+    it("renders item.icon as a y-icon element inside the menu item", async () => {
+        const el = await fixture(
+            html`<y-menu .items=${[{ text: "Edit", icon: "edit" }]}></y-menu>`,
+        );
+        const icon = el.shadowRoot.querySelector("li.menuitem y-icon");
+        expect(icon).to.not.be.null;
+        expect(icon.getAttribute("name")).to.equal("edit");
+    });
+
+    it("renders a named slot when item.slot is set, with the default content as fallback", async () => {
+        const el = await fixture(html`
+            <y-menu .items=${[{ text: "Custom", slot: "my-item" }]}>
+                <span slot="my-item">Replacement</span>
+            </y-menu>
+        `);
+        const slot = el.shadowRoot.querySelector('li.menuitem slot[name="my-item"]');
+        expect(slot).to.not.be.null;
+        const assigned = slot.assignedElements();
+        expect(assigned.length).to.equal(1);
+        expect(assigned[0].textContent).to.equal("Replacement");
+    });
+
+    it("logs a deprecation warning when item.template is used", async () => {
+        YumeMenu._templateFieldDeprecationWarned = false;
+        const warn = sandbox.stub(console, "warn");
+        await fixture(html`<y-menu .items=${[{ text: "T", template: "missing" }]}></y-menu>`);
+        expect(warn.calledOnce).to.be.true;
+        expect(warn.firstCall.args[0]).to.include("template");
     });
 
     it("renders submenu items recursively", async () => {

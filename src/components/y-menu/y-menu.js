@@ -1,5 +1,5 @@
-import { chevronRight } from "../../icons/index.js";
-import { resolveAnchor } from "../../modules/helpers.js";
+import { resolveAnchor, createElement as _el } from "../../modules/helpers.js";
+import "../y-icon/y-icon.js";
 
 export class YumeMenu extends HTMLElement {
     static get observedAttributes() {
@@ -55,6 +55,13 @@ export class YumeMenu extends HTMLElement {
         if (name === "visible" || name === "direction") {
             this._updatePosition();
         }
+
+        if (name === "visible") {
+            this.dispatchEvent(new CustomEvent(this.visible ? "open" : "close", {
+                bubbles: true,
+                composed: true,
+            }));
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -69,6 +76,16 @@ export class YumeMenu extends HTMLElement {
     get direction() { return this.getAttribute("direction") || "down"; }
     set direction(val) { this.setAttribute("direction", val); }
 
+    /**
+     * Navigation mode: omit for pushState (SPA-friendly), set to "false" for full-page navigation.
+     * Regardless of this setting, a cancelable "navigate" event is always dispatched first.
+     */
+    get history() { return this.getAttribute("history"); }
+    set history(val) {
+        if (val != null) this.setAttribute("history", val);
+        else this.removeAttribute("history");
+    }
+
     /** Menu items array (JSON attribute). */
     get items() {
         try {
@@ -79,16 +96,6 @@ export class YumeMenu extends HTMLElement {
     }
     set items(val) {
         this.setAttribute("items", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
-    }
-
-    /**
-     * Navigation mode: omit for pushState (SPA-friendly), set to "false" for full-page navigation.
-     * Regardless of this setting, a cancelable "navigate" event is always dispatched first.
-     */
-    get history() { return this.getAttribute("history"); }
-    set history(val) {
-        if (val != null) this.setAttribute("history", val);
-        else this.removeAttribute("history");
     }
 
     /** Size: "small" | "medium" | "large" (default "medium"). */
@@ -114,21 +121,47 @@ export class YumeMenu extends HTMLElement {
     render() {
         this.shadowRoot.innerHTML = "";
 
-        const style = document.createElement("style");
-        style.textContent = this._buildStyles();
-        this.shadowRoot.appendChild(style);
+        const style = _el("style", {}, [this._buildStyles()]);
 
         const rootUl = this._createMenuList(this.items);
         rootUl.classList.add("menu");
         rootUl.setAttribute("role", "menu");
         rootUl.setAttribute("part", "menu");
 
+        const childSlot = _el("slot");
+        childSlot.addEventListener("slotchange", () => this._processSlottedItems());
+        rootUl.appendChild(childSlot);
+
+        this.shadowRoot.appendChild(style);
         this.shadowRoot.appendChild(rootUl);
+        this._processSlottedItems();
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
+
+    _activateItem(item) {
+        if (item.children?.length > 0) return;
+
+        this._dispatchSelect({
+            value: item.value ?? item.text,
+            item,
+        });
+
+        const href = item.href ?? item.url;
+        if (href) this._navigateTo(href);
+
+        this.visible = false;
+    }
+
+    _activateSlottedItem(el) {
+        this._dispatchSelect({
+            value: el.dataset.value ?? el.textContent.trim(),
+            element: el,
+        });
+        this.visible = false;
+    }
 
     _buildStyles() {
         const paddingVar = `var(--component-button-padding-${this.size}, 0.5rem)`;
@@ -189,13 +222,11 @@ export class YumeMenu extends HTMLElement {
                 opacity: 0.6;
             }
 
-            .submenu-indicator svg {
-                width: 16px;
-                height: 16px;
-            }
-
             .item-content {
                 flex: 1;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
             }
         `;
     }
@@ -208,103 +239,140 @@ export class YumeMenu extends HTMLElement {
         });
     }
 
-    static _warnUrlDeprecated() {
-        if (YumeMenu._urlDeprecationWarned) return;
-        YumeMenu._urlDeprecationWarned = true;
-        console.warn(
-            "[y-menu] item.url is deprecated; use item.href instead. Support for item.url will be removed in a future release.",
-        );
+    _computeMenuOffset(direction, anchorRect, menuRect, vw, vh) {
+        if (direction === "right") {
+            let top = anchorRect.top;
+            let left = anchorRect.right;
+            if (left + menuRect.width > vw) left = anchorRect.left - menuRect.width;
+            if (top + menuRect.height > vh) top = anchorRect.top - menuRect.height;
+            return { top, left };
+        }
+
+        if (direction === "up") {
+            let top = anchorRect.top - menuRect.height;
+            let left = anchorRect.left;
+            if (top < 0) top = anchorRect.bottom;
+            if (left + menuRect.width > vw) left = vw - menuRect.width - 10;
+            return { top, left };
+        }
+
+        if (direction === "left") {
+            let top = anchorRect.top;
+            let left = anchorRect.left - menuRect.width;
+            if (left < 0) left = anchorRect.right;
+            if (top + menuRect.height > vh) top = anchorRect.top - menuRect.height;
+            return { top, left };
+        }
+
+        // "down" (default)
+        let top = anchorRect.bottom;
+        let left = anchorRect.left;
+        if (top + menuRect.height > vh) top = anchorRect.top - menuRect.height;
+        if (left + menuRect.width > vw) left = vw - menuRect.width - 10;
+        return { top, left };
+    }
+
+    _createItemContent(item) {
+        const wrapper = _el("span", { class: "item-content" });
+
+        if (item.icon) {
+            wrapper.appendChild(_el("y-icon", { name: item.icon, size: this.size }));
+        } else if (item["icon-template"]) {
+            YumeMenu._warnTemplateFieldDeprecated();
+            const tpl = this._findTemplate(item["icon-template"]);
+            if (tpl) wrapper.appendChild(tpl.content.cloneNode(true));
+        }
+
+        if (item.template) {
+            YumeMenu._warnTemplateFieldDeprecated();
+            const tpl = this._findTemplate(item.template);
+            if (tpl) wrapper.appendChild(tpl.content.cloneNode(true));
+            else wrapper.append(item.text ?? "");
+        } else {
+            wrapper.append(item.text ?? "");
+        }
+
+        if (!item.slot) return wrapper;
+
+        const slotEl = _el("slot", { name: item.slot });
+        slotEl.appendChild(wrapper);
+        return slotEl;
+    }
+
+    _createMenuItem(item) {
+        const isSelected = !!item.selected;
+        const partValue = isSelected ? "menuitem selected" : "menuitem";
+
+        const li = _el("li", {
+            class: partValue,
+            role: "menuitem",
+            part: partValue,
+            "aria-current": isSelected ? "true" : "false",
+            tabindex: "0",
+        });
+
+        li.appendChild(this._createItemContent(item));
+
+        if (item.url && !item.href) YumeMenu._warnUrlDeprecated();
+
+        li.addEventListener("click", () => this._activateItem(item));
+
+        if (item.children?.length > 0) {
+            li.appendChild(this._createSubmenuIndicator());
+
+            const submenu = this._createMenuList(item.children);
+            submenu.classList.add("submenu");
+            submenu.setAttribute("role", "menu");
+            li.appendChild(submenu);
+        }
+
+        return li;
     }
 
     _createMenuList(items) {
-        const ul = document.createElement("ul");
-
-        items.forEach((item) => {
-            const li = document.createElement("li");
-            li.className = item.selected ? "menuitem selected" : "menuitem";
-            li.setAttribute("role", "menuitem");
-            li.setAttribute("part", item.selected ? "menuitem selected" : "menuitem");
-            li.setAttribute("aria-current", item.selected ? "true" : "false");
-            li.tabIndex = 0;
-
-            const contentWrapper = document.createElement("span");
-            contentWrapper.className = "item-content";
-
-            if (item["icon-template"]) {
-                const iconTpl = this._findTemplate(item["icon-template"]);
-                if (iconTpl)
-                    contentWrapper.appendChild(iconTpl.content.cloneNode(true));
-            }
-
-            if (item.template) {
-                const textTpl = this._findTemplate(item.template);
-                if (textTpl) {
-                    contentWrapper.appendChild(textTpl.content.cloneNode(true));
-                } else {
-                    contentWrapper.append(item.text);
-                }
-            } else {
-                contentWrapper.append(item.text);
-            }
-
-            li.appendChild(contentWrapper);
-
-            if (item.url && !item.href) {
-                YumeMenu._warnUrlDeprecated();
-            }
-            const href = item.href ?? item.url;
-            if (href) {
-                li.addEventListener("click", () => {
-                    const event = new CustomEvent("navigate", {
-                        bubbles: true,
-                        composed: true,
-                        cancelable: true,
-                        detail: { href },
-                    });
-                    const cancelled = !this.dispatchEvent(event);
-                    if (cancelled) return;
-                    if (this.getAttribute("history") !== "false") {
-                        history.pushState({}, "", href);
-                        window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
-                    } else {
-                        window.location.href = href;
-                    }
-                });
-            }
-
-            if (!item.children?.length) {
-                li.addEventListener("click", () => {
-                    this.visible = false;
-                });
-            }
-
-            if (item.children?.length) {
-                const indicator = document.createElement("span");
-                indicator.className = "submenu-indicator";
-                indicator.innerHTML = chevronRight;
-                li.appendChild(indicator);
-
-                const submenu = this._createMenuList(item.children);
-                submenu.classList.add("submenu");
-                submenu.setAttribute("role", "menu");
-                li.appendChild(submenu);
-            }
-
-            ul.appendChild(li);
-        });
-
+        const ul = _el("ul");
+        items.forEach((item) => ul.appendChild(this._createMenuItem(item)));
         return ul;
+    }
+
+    _createSubmenuIndicator() {
+        return _el("span", { class: "submenu-indicator" }, [
+            _el("y-icon", { name: "chevron-right", size: this.size }),
+        ]);
+    }
+
+    _dispatchSelect(detail) {
+        this.dispatchEvent(new CustomEvent("select", {
+            detail,
+            bubbles: true,
+            composed: true,
+        }));
     }
 
     _findTemplate(name) {
         return this.querySelector(`template[slot="${name}"]`);
     }
 
+    _navigateTo(href) {
+        const event = new CustomEvent("navigate", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail: { href },
+        });
+        if (!this.dispatchEvent(event)) return;
+
+        if (this.getAttribute("history") === "false") {
+            window.location.href = href;
+        } else {
+            history.pushState({}, "", href);
+            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+        }
+    }
+
     _onAnchorClick(e) {
         e.stopPropagation();
-        if (!this.visible) {
-            YumeMenu._closeAll(this);
-        }
+        if (!this.visible) YumeMenu._closeAll(this);
         this.visible = !this.visible;
     }
 
@@ -319,9 +387,25 @@ export class YumeMenu extends HTMLElement {
         if (this.visible) this._updatePosition();
     }
 
+    _processSlottedItems() {
+        const slot = this.shadowRoot.querySelector("ul.menu > slot");
+        if (!slot) return;
+
+        slot.assignedElements().forEach((el) => {
+            if (el._yMenuItemBound) return;
+            el._yMenuItemBound = true;
+
+            if (!el.hasAttribute("role")) el.setAttribute("role", "menuitem");
+            if (el.tabIndex < 0) el.tabIndex = 0;
+
+            el.addEventListener("click", () => this._activateSlottedItem(el));
+        });
+    }
+
     _setupAnchor() {
         const id = this.anchor;
         if (!id) return;
+
         const root = this.getRootNode();
         this._anchorResolveDispose = resolveAnchor(
             this,
@@ -353,7 +437,7 @@ export class YumeMenu extends HTMLElement {
 
         const anchorRect = this._anchorEl.getBoundingClientRect();
 
-        // Temporarily show off-screen to measure actual dimensions
+        // Measure menu off-screen so we know its size before placing it.
         this.style.visibility = "hidden";
         this.style.display = "block";
         const menuRect = this.getBoundingClientRect();
@@ -361,58 +445,38 @@ export class YumeMenu extends HTMLElement {
 
         const vw = window.innerWidth;
         const vh = window.innerHeight;
+        const { top, left } = this._computeMenuOffset(
+            this.direction,
+            anchorRect,
+            menuRect,
+            vw,
+            vh,
+        );
 
-        let top, left;
+        const clampedTop = Math.max(0, Math.min(top, vh - menuRect.height));
+        const clampedLeft = Math.max(0, Math.min(left, vw - menuRect.width));
 
-        if (this.direction === "right") {
-            top = anchorRect.top;
-            left = anchorRect.right;
-
-            if (left + menuRect.width > vw) {
-                left = anchorRect.left - menuRect.width;
-            }
-            if (top + menuRect.height > vh) {
-                top = anchorRect.top - menuRect.height;
-            }
-        } else if (this.direction === "up") {
-            top = anchorRect.top - menuRect.height;
-            left = anchorRect.left;
-
-            if (top < 0) {
-                top = anchorRect.bottom;
-            }
-            if (left + menuRect.width > vw) {
-                left = vw - menuRect.width - 10;
-            }
-        } else if (this.direction === "left") {
-            top = anchorRect.top;
-            left = anchorRect.left - menuRect.width;
-
-            if (left < 0) {
-                left = anchorRect.right;
-            }
-            if (top + menuRect.height > vh) {
-                top = anchorRect.top - menuRect.height;
-            }
-        } else {
-            // "down" (default)
-            top = anchorRect.bottom;
-            left = anchorRect.left;
-
-            if (top + menuRect.height > vh) {
-                top = anchorRect.top - menuRect.height;
-            }
-            if (left + menuRect.width > vw) {
-                left = vw - menuRect.width - 10;
-            }
-        }
-
-        top = Math.max(0, Math.min(top, vh - menuRect.height));
-        left = Math.max(0, Math.min(left, vw - menuRect.width));
-
-        this.style.top = `${top}px`;
-        this.style.left = `${left}px`;
+        this.style.top = `${clampedTop}px`;
+        this.style.left = `${clampedLeft}px`;
         this.style.display = "block";
+    }
+
+    static _warnTemplateFieldDeprecated() {
+        if (YumeMenu._templateFieldDeprecationWarned) return;
+        YumeMenu._templateFieldDeprecationWarned = true;
+        // eslint-disable-next-line no-console
+        console.warn(
+            "[y-menu] item.template and item['icon-template'] are deprecated; use item.icon (icon name) and item.slot (named slot) instead. Support will be removed in a future release.",
+        );
+    }
+
+    static _warnUrlDeprecated() {
+        if (YumeMenu._urlDeprecationWarned) return;
+        YumeMenu._urlDeprecationWarned = true;
+        // eslint-disable-next-line no-console
+        console.warn(
+            "[y-menu] item.url is deprecated; use item.href instead. Support for item.url will be removed in a future release.",
+        );
     }
 }
 
