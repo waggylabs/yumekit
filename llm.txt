@@ -709,17 +709,17 @@ Dropdown menu. Positioned relative to an anchor element.
 
 Tag: `<y-menu>`
 Attributes:
-- `items` — JSON string: `[{"text": "Edit", "url": "...", "selected": true, "children": [...], "icon-template": "slot-name", "template": "slot-name"}, ...]`
+- `items` — JSON string: `[{"text": "Edit", "href": "...", "selected": true, "children": [...], "icon-template": "slot-name", "template": "slot-name"}, ...]`
 - `anchor` — CSS selector or element ID of the trigger element
 - `visible` — boolean
 - `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
 
-Events: none (item clicks fire navigation via `url`, or listen for DOM events on the element)
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
 Item object fields:
 - `text` — display text
-- `url` — optional navigation URL
+- `href` — optional navigation URL (note: `url` is accepted as a deprecated alias and will be removed in a future release)
 - `selected` — boolean, highlights the active item
 - `children` — array of sub-items (nested submenu)
 - `icon-template` — `<template slot="name">` inside `<y-menu>` for a custom icon

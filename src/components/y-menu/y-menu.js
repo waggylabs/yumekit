@@ -1,7 +1,7 @@
 import { chevronRight } from "../../icons/index.js";
 import { resolveAnchor } from "../../modules/helpers.js";
 
-class YumeMenu extends HTMLElement {
+export class YumeMenu extends HTMLElement {
     static get observedAttributes() {
         return ["items", "anchor", "visible", "direction", "size", "history"];
     }
@@ -208,6 +208,14 @@ class YumeMenu extends HTMLElement {
         });
     }
 
+    static _warnUrlDeprecated() {
+        if (YumeMenu._urlDeprecationWarned) return;
+        YumeMenu._urlDeprecationWarned = true;
+        console.warn(
+            "[y-menu] item.url is deprecated; use item.href instead. Support for item.url will be removed in a future release.",
+        );
+    }
+
     _createMenuList(items) {
         const ul = document.createElement("ul");
 
@@ -241,21 +249,25 @@ class YumeMenu extends HTMLElement {
 
             li.appendChild(contentWrapper);
 
-            if (item.url) {
+            if (item.url && !item.href) {
+                YumeMenu._warnUrlDeprecated();
+            }
+            const href = item.href ?? item.url;
+            if (href) {
                 li.addEventListener("click", () => {
                     const event = new CustomEvent("navigate", {
                         bubbles: true,
                         composed: true,
                         cancelable: true,
-                        detail: { href: item.url },
+                        detail: { href },
                     });
                     const cancelled = !this.dispatchEvent(event);
                     if (cancelled) return;
                     if (this.getAttribute("history") !== "false") {
-                        history.pushState({}, "", item.url);
+                        history.pushState({}, "", href);
                         window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
                     } else {
-                        window.location.href = item.url;
+                        window.location.href = href;
                     }
                 });
             }

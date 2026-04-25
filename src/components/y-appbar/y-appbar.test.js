@@ -1,4 +1,4 @@
-import { fixture, html, expect } from "@open-wc/testing";
+import { fixture, html, expect, oneEvent } from "@open-wc/testing";
 import "../../icons/all.js";
 import "./y-appbar.js";
 
@@ -637,7 +637,6 @@ describe("YumeAppbar", () => {
         const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const appbar = el.shadowRoot.querySelector(".appbar");
         expect(appbar).to.not.be.null;
@@ -651,34 +650,20 @@ describe("YumeAppbar", () => {
         const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
         expect(menuBtn).to.not.be.null;
         expect(menuBtn.getAttribute("aria-label")).to.equal("Open menu");
     });
 
-    it("mobile layout renders a y-menu when items are present", async () => {
-        const el = await fixture(
-            html`<y-appbar orientation="horizontal" .items=${sampleItems}></y-appbar>`
-        );
-        el._isMobile = true;
-        el.render();
-        await new Promise((r) => setTimeout(r, 0));
-
-        const mobileMenu = el.shadowRoot.querySelector(".mobile-start y-menu");
-        expect(mobileMenu).to.not.be.null;
-        expect(mobileMenu.getAttribute("direction")).to.equal("down");
-    });
-
-    it("mobile layout does not render a y-menu when there are no items", async () => {
+    it("mobile layout panel renders no nav items when items are absent", async () => {
         const el = await fixture(html`<y-appbar orientation="horizontal"></y-appbar>`);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
-        const mobileMenu = el.shadowRoot.querySelector(".mobile-start y-menu");
-        expect(mobileMenu).to.be.null;
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        expect(panel).to.not.be.null;
+        expect(panel.querySelectorAll(".nav-item").length).to.equal(0);
     });
 
     it("mobile layout includes logo and title slots in the center section", async () => {
@@ -690,7 +675,6 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const center = el.shadowRoot.querySelector(".mobile-center");
         const logoSlot = center.querySelector('slot[name="logo"]');
@@ -707,13 +691,14 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const endSection = el.shadowRoot.querySelector(".mobile-end");
         const footerSlot = endSection.querySelector('slot[name="footer"]');
         expect(footerSlot).to.not.be.null;
-        const assigned = footerSlot.assignedNodes({ flatten: true });
-        expect(assigned.length).to.be.greaterThan(0);
+        if (footerSlot.assignedNodes({ flatten: true }).length === 0) {
+            await oneEvent(footerSlot, "slotchange");
+        }
+        expect(footerSlot.assignedNodes({ flatten: true }).length).to.be.greaterThan(0);
     });
 
     it("mobile dropdown panel renders items as nav buttons", async () => {
@@ -722,7 +707,6 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const panel = el.shadowRoot.querySelector(".mobile-panel");
         expect(panel).to.not.be.null;
@@ -738,7 +722,6 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const panel = el.shadowRoot.querySelector(".mobile-panel");
         const navSlot = panel.querySelector("slot:not([name])");
@@ -750,6 +733,9 @@ describe("YumeAppbar", () => {
         const lastItem = children.findIndex((c) => c.classList.contains("nav-item"));
         const slotIdx = children.indexOf(navSlot);
         expect(slotIdx).to.be.greaterThan(lastItem);
+        if (navSlot.assignedElements().length === 0) {
+            await oneEvent(navSlot, "slotchange");
+        }
         expect(navSlot.assignedElements().length).to.equal(1);
     });
 
@@ -759,7 +745,6 @@ describe("YumeAppbar", () => {
         `);
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
         const panel = el.shadowRoot.querySelector(".mobile-panel");
@@ -777,7 +762,6 @@ describe("YumeAppbar", () => {
         );
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
         expect(menuBtn.getAttribute("size")).to.equal("large");
@@ -789,7 +773,6 @@ describe("YumeAppbar", () => {
         );
         el._isMobile = true;
         el.render();
-        await new Promise((r) => setTimeout(r, 0));
 
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include(":host([sticky])");

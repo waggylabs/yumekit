@@ -184,12 +184,12 @@ export class YumeAppbar extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
-    _buildBody(cfg, isVertical, isCollapsed, menuDir) {
+    _buildBody(cfg, isCollapsed, menuDir) {
         const body = _el("div", { class: "appbar-body", part: "body" });
 
         this.items.forEach((item) => {
             body.appendChild(
-                this._buildNavItem(item, cfg, isVertical, isCollapsed, menuDir),
+                this._buildNavItem(item, cfg, isCollapsed, menuDir),
             );
         });
         body.appendChild(_el("slot", {}));
@@ -244,7 +244,7 @@ export class YumeAppbar extends HTMLElement {
         bar.style.setProperty("--_icon-col-width", iconColWidth);
 
         bar.appendChild(this._buildHeader());
-        bar.appendChild(this._buildBody(cfg, isVertical, isCollapsed, menuDir));
+        bar.appendChild(this._buildBody(cfg, isCollapsed, menuDir));
         bar.appendChild(this._buildFooter(cfg, isVertical, isCollapsed));
 
         return bar;
@@ -569,6 +569,7 @@ export class YumeAppbar extends HTMLElement {
 
     _buildMobileStart(cfg) {
         const menuBtnId = this._uid("appbar-mobile-menu");
+        const panelId = this._uid("appbar-mobile-panel");
 
         const menuBtn = _el(
             "y-button",
@@ -578,7 +579,7 @@ export class YumeAppbar extends HTMLElement {
                 "style-type": "flat",
                 size: cfg.buttonSize,
                 "aria-label": "Open menu",
-                "aria-haspopup": "true",
+                "aria-controls": panelId,
                 "aria-expanded": "false",
             },
             [
@@ -590,13 +591,16 @@ export class YumeAppbar extends HTMLElement {
             ],
         );
 
-        const panel = _el("div", { class: "mobile-panel", role: "menu" });
+        const panel = _el("div", { id: panelId, class: "mobile-panel" });
         this.items.forEach((item) => {
-            panel.appendChild(
-                this._buildNavItem(item, cfg, true, false, "down"),
-            );
+            panel.appendChild(this._buildNavItem(item, cfg, false, "down"));
         });
         panel.appendChild(_el("slot", {}));
+
+        const closePanel = () => {
+            panel.classList.remove("open");
+            menuBtn.setAttribute("aria-expanded", "false");
+        };
 
         menuBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -604,10 +608,11 @@ export class YumeAppbar extends HTMLElement {
             menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
         });
 
+        panel.addEventListener("navigate", closePanel);
+
         this._mobileOutsideClick = (e) => {
             if (e.composedPath().includes(this)) return;
-            panel.classList.remove("open");
-            menuBtn.setAttribute("aria-expanded", "false");
+            closePanel();
         };
         document.addEventListener("pointerdown", this._mobileOutsideClick);
 
@@ -718,7 +723,7 @@ export class YumeAppbar extends HTMLElement {
         `;
     }
 
-    _buildNavItem(item, cfg, isVertical, isCollapsed, menuDir) {
+    _buildNavItem(item, cfg, isCollapsed, menuDir) {
         const hasChildren = item.children?.length > 0;
         const showLabel = item.text && !isCollapsed;
         const showArrow = hasChildren && !isCollapsed;
@@ -737,7 +742,7 @@ export class YumeAppbar extends HTMLElement {
             btn.appendChild(
                 _el("y-icon", {
                     slot: "right-icon",
-                    name: isVertical ? "chevron-right" : "chevron-down",
+                    name: `chevron-${menuDir}`,
                     size: cfg.iconSize,
                 }),
             );

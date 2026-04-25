@@ -1,8 +1,13 @@
-import { fixture, html, expect } from "@open-wc/testing";
+import sinon from "sinon";
+import { fixture, html, expect, oneEvent } from "@open-wc/testing";
 import "./y-menu.js";
+import { YumeMenu } from "./y-menu.js";
 import "../y-button/y-button.js";
 
 describe("YumeMenu", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
     const testItems = [
         { text: "Dashboard", url: "/dashboard" },
         {
@@ -201,6 +206,52 @@ describe("YumeMenu", () => {
         expect(li).to.exist;
         const content = li.querySelector(".item-content");
         expect(content.textContent).to.equal("No Nav");
+    });
+
+    it("item with href dispatches navigate event with detail.href on click", async () => {
+        const el = await fixture(
+            html`<y-menu history="false" .items=${[{ text: "Home", href: "/home" }]}></y-menu>`,
+        );
+        const li = el.shadowRoot.querySelector("li.menuitem");
+
+        const navigatePromise = oneEvent(el, "navigate");
+        // Cancel so the test doesn't actually navigate the browser.
+        el.addEventListener("navigate", (e) => e.preventDefault(), { once: true });
+        li.click();
+        const event = await navigatePromise;
+        expect(event.detail.href).to.equal("/home");
+    });
+
+    it("href takes precedence over url when both are present", async () => {
+        YumeMenu._urlDeprecationWarned = false;
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(
+            html`<y-menu history="false" .items=${[{ text: "Home", href: "/new", url: "/old" }]}></y-menu>`,
+        );
+        const li = el.shadowRoot.querySelector("li.menuitem");
+
+        const navigatePromise = oneEvent(el, "navigate");
+        el.addEventListener("navigate", (e) => e.preventDefault(), { once: true });
+        li.click();
+        const event = await navigatePromise;
+        expect(event.detail.href).to.equal("/new");
+        expect(warn.called).to.be.false;
+    });
+
+    it("logs a deprecation warning when item.url is used without item.href", async () => {
+        YumeMenu._urlDeprecationWarned = false;
+        const warn = sandbox.stub(console, "warn");
+        await fixture(html`<y-menu .items=${[{ text: "Old", url: "/old" }]}></y-menu>`);
+        expect(warn.calledOnce).to.be.true;
+        expect(warn.firstCall.args[0]).to.include("item.url is deprecated");
+    });
+
+    it("only emits the url deprecation warning once across multiple instances", async () => {
+        YumeMenu._urlDeprecationWarned = false;
+        const warn = sandbox.stub(console, "warn");
+        await fixture(html`<y-menu .items=${[{ text: "A", url: "/a" }]}></y-menu>`);
+        await fixture(html`<y-menu .items=${[{ text: "B", url: "/b" }]}></y-menu>`);
+        expect(warn.calledOnce).to.be.true;
     });
 
     it("renders submenu items recursively", async () => {

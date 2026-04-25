@@ -788,16 +788,16 @@ Positioned relative to an `anchor` element. Does NOT use slots for items.
 
 | Attribute   | Values / Notes                                                                                |
 | ----------- | --------------------------------------------------------------------------------------------- |
-| `items`     | JSON: `[{"text":"Edit","url":"...","selected":true,"children":[...]}]`                        |
+| `items`     | JSON: `[{"text":"Edit","href":"...","selected":true,"children":[...]}]`                       |
 | `anchor`    | CSS selector or element ID of the trigger element                                             |
 | `visible`   | boolean                                                                                       |
 | `direction` | `down` (default) \| `up` \| `left` \| `right`                                                 |
 | `size`      | `small` \| `medium` \| `large`                                                                |
 | `history`   | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
-Item object fields: `text`, `url`, `selected`, `children`, `icon-template`, `template`
+Item object fields: `text`, `href`, `selected`, `children`, `icon-template`, `template`. (`url` is accepted as a deprecated alias for `href` and will be removed in a future release.)
 
-Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `url` is clicked.
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
 Use `<template slot="name">` inside `<y-menu>` for custom icon/content templates.
 
