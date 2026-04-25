@@ -1,5 +1,7 @@
 import "./y-menu.js";
 import "../y-button/y-button.js";
+import "../y-icon/y-icon.js";
+import "../../icons/all.js";
 
 const defaultItems = JSON.stringify([
     { text: "Edit" },
@@ -17,7 +19,8 @@ export default {
     argTypes: {
         items: {
             control: "text",
-            description: 'JSON array of `{ text, href?, selected?, children? }` objects. (`url` is accepted as a deprecated alias for `href`.)',
+            description:
+                "JSON array of `{ text, value?, href?, icon?, slot?, selected?, children? }` objects. (`url` is accepted as a deprecated alias for `href`.)",
         },
         direction: {
             control: "select",
@@ -33,7 +36,8 @@ export default {
         },
         visible: {
             control: "boolean",
-            description: "Whether the menu is open. Set to true to preview direction and size changes in real time.",
+            description:
+                "Whether the menu is open. Set to true to preview direction and size changes in real time.",
             table: { defaultValue: { summary: false } },
         },
     },
@@ -105,6 +109,58 @@ export const Sizes = {
 
             <y-button id="menu-lg" color="base">Large</y-button>
             <y-menu anchor="menu-lg" size="large" items='${defaultItems}'></y-menu>
+        </div>
+    `,
+};
+
+export const WithIcons = {
+    render: () => `
+        <div style="padding:16px">
+            <y-button id="menu-icons-anchor" color="primary">Actions</y-button>
+            <y-menu
+                anchor="menu-icons-anchor"
+                items='${JSON.stringify([
+                    { text: "Edit", value: "edit", icon: "pencil" },
+                    { text: "Copy", value: "copy", icon: "copy" },
+                    { text: "Delete", value: "delete", icon: "trash" },
+                ])}'
+            ></y-menu>
+        </div>
+        <script type="module">
+            document.querySelector("y-menu").addEventListener("select", (e) => {
+                console.log("selected:", e.detail.value);
+            });
+        </script>
+    `,
+};
+
+export const WithSlottedChildren = {
+    render: () => `
+        <div style="padding:16px">
+            <y-button id="menu-slotted-anchor" color="primary">Links</y-button>
+            <y-menu anchor="menu-slotted-anchor">
+                <a href="/docs" data-value="docs" style="display:block;color:inherit;text-decoration:none">Docs</a>
+                <a href="/faq" data-value="faq" style="display:block;color:inherit;text-decoration:none">FAQ</a>
+                <a href="/support" data-value="support" style="display:block;color:inherit;text-decoration:none">Support</a>
+            </y-menu>
+        </div>
+    `,
+};
+
+export const WithCustomSlotPerItem = {
+    render: () => `
+        <div style="padding:16px">
+            <y-button id="menu-custom-anchor" color="primary">Account</y-button>
+            <y-menu
+                anchor="menu-custom-anchor"
+                items='${JSON.stringify([
+                    { text: "Signed in as Alex", slot: "user-banner" },
+                    { text: "Profile", value: "profile" },
+                    { text: "Sign out", value: "signout" },
+                ])}'
+            >
+                <strong slot="user-banner" style="color:#a78bfa">★ Signed in as Alex</strong>
+            </y-menu>
         </div>
     `,
 };

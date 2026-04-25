@@ -43,6 +43,16 @@ Delete any empty sections before publishing.
 
 - `y-menu`: items now accept `href` for navigation, matching `y-appbar`, `y-dock`, and `y-breadcrumbs`. This fixes a bug where `y-appbar` submenu items (which use `href`) would not navigate when passed through to a nested `y-menu`.
 
+- `y-menu`: new lifecycle and selection events. `open` and `close` fire on visibility transitions. `select` fires when a leaf item is activated, carrying `detail: { value, item?, element? }` so consumers can react without subscribing to `navigate`.
+
+- `y-menu`: items support a new `value` field, used as `event.detail.value` on the `select` event. Defaults to `item.text` when omitted.
+
+- `y-menu`: items support a new `icon` field (icon name passed to `<y-icon>`), bringing y-menu in line with `y-appbar`, `y-dock`, and other components that render named icons.
+
+- `y-menu`: items support a new `slot` field that names a slot in the menu's light DOM whose content replaces that item's default content (matching the `y-appbar` per-item slot pattern).
+
+- `y-menu`: light-DOM children placed directly inside `<y-menu>` (without a `slot` attribute) are now treated as additional menu items. Each child receives `role="menuitem"` and `tabindex="0"` automatically, and clicking fires the `select` event with `detail.value` derived from `data-value` or `textContent`.
+
 ### Changed
 
 - `y-appbar`: mobile hamburger menu replaced its internal `y-menu` with a self-contained dropdown panel so it can host both auto-generated nav buttons and arbitrary slotted nav children. Behaviour is otherwise unchanged — items still drive the menu, the hamburger toggles open/closed, and clicks outside the appbar dismiss the panel.
@@ -50,6 +60,8 @@ Delete any empty sections before publishing.
 ### Deprecated
 
 - `y-menu`: `item.url` is deprecated in favour of `item.href`. Existing code keeps working and emits a one-time console warning per page load; `url` will be removed in a future release.
+
+- `y-menu`: `item.template` and `item['icon-template']` are deprecated in favour of `item.slot` (named slot for custom item content) and `item.icon` (icon name). Existing code keeps working and emits a one-time console warning per page load; the template fields will be removed in a future release.
 
 ## [0.4.3] - 2026-04-17
 

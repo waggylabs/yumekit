@@ -784,34 +784,44 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 
 ## y-menu
 
-Positioned relative to an `anchor` element. Does NOT use slots for items.
+Positioned relative to an `anchor` element. Items can be defined via the `items` JSON attribute or as light-DOM children.
 
 | Attribute   | Values / Notes                                                                                |
 | ----------- | --------------------------------------------------------------------------------------------- |
-| `items`     | JSON: `[{"text":"Edit","href":"...","selected":true,"children":[...]}]`                       |
+| `items`     | JSON: `[{"text":"Edit","value":"...","href":"...","icon":"...","selected":true,"children":[...]}]` |
 | `anchor`    | CSS selector or element ID of the trigger element                                             |
 | `visible`   | boolean                                                                                       |
 | `direction` | `down` (default) \| `up` \| `left` \| `right`                                                 |
 | `size`      | `small` \| `medium` \| `large`                                                                |
 | `history`   | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
-Item object fields: `text`, `href`, `selected`, `children`, `icon-template`, `template`. (`url` is accepted as a deprecated alias for `href` and will be removed in a future release.)
+Item object fields: `text`, `value` (defaults to `text`), `href`, `icon` (icon name for `<y-icon>`), `slot` (named slot for custom item content), `selected`, `children`.
 
-Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+Deprecated item fields (still work, will be removed in a future release): `url` (use `href`), `icon-template` and `template` (use `icon` and `slot`).
 
-Use `<template slot="name">` inside `<y-menu>` for custom icon/content templates.
+Light-DOM children of `<y-menu>` are appended as additional menu items. Each child is given `role="menuitem"` and `tabindex="0"` automatically; on click the menu fires `select` with `detail.value` from `data-value` (or `textContent`) and closes.
+
+Events:
+
+- `open` — when the menu becomes visible.
+- `close` — when the menu is dismissed.
+- `select` — `detail: { value, item?, element? }`. Fires when a leaf item is activated. `item` is set for JSON-defined items; `element` is set for slotted children.
+- `navigate` — cancelable; `detail.href`. Fires before navigation when an item with `href` is clicked. Cancel to handle navigation in app code.
 
 ```html
 <y-button id="opts-btn" right-icon="chevron-down">Options</y-button>
 <y-menu
     id="opts-menu"
     anchor="#opts-btn"
-    items='[{"text":"Edit"},{"text":"Delete"}]'
+    items='[{"text":"Edit","value":"edit","icon":"edit"},{"text":"Delete","value":"delete","icon":"trash"}]'
 ></y-menu>
 
 <script type="module">
     document.getElementById("opts-btn").addEventListener("click", () => {
         document.getElementById("opts-menu").visible = true;
+    });
+    document.getElementById("opts-menu").addEventListener("select", (e) => {
+        console.log("selected:", e.detail.value);
     });
 </script>
 ```

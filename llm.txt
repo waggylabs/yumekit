@@ -705,25 +705,38 @@ CSS Custom Properties: `--component-dock-height`, `--component-dock-background`,
 ---
 
 ### y-menu
-Dropdown menu. Positioned relative to an anchor element.
+Dropdown menu. Positioned relative to an anchor element. Items can be defined via the `items` JSON attribute or as light-DOM children.
 
 Tag: `<y-menu>`
 Attributes:
-- `items` — JSON string: `[{"text": "Edit", "href": "...", "selected": true, "children": [...], "icon-template": "slot-name", "template": "slot-name"}, ...]`
+- `items` — JSON string: `[{"text": "Edit", "value": "edit", "href": "...", "icon": "edit", "slot": "name", "selected": true, "children": [...]}, ...]`
 - `anchor` — CSS selector or element ID of the trigger element
 - `visible` — boolean
 - `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
+- `history` — omit (default) for SPA `pushState` navigation; `"false"` for full-page `window.location.href`
 
-Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+Events:
+- `open` — fires when the menu becomes visible
+- `close` — fires when the menu is dismissed
+- `select` — fires when a leaf item is activated. `event.detail = { value, item?, element? }`. `item` is set for JSON-defined items; `element` is set for slotted children.
+- `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
 Item object fields:
 - `text` — display text
-- `href` — optional navigation URL (note: `url` is accepted as a deprecated alias and will be removed in a future release)
+- `value` — value reported in the `select` event (defaults to `text`)
+- `href` — optional navigation URL
+- `icon` — icon name rendered via `<y-icon>` (e.g. `"edit"`, `"trash"`)
+- `slot` — named slot in light DOM whose content replaces this item's default content
 - `selected` — boolean, highlights the active item
 - `children` — array of sub-items (nested submenu)
-- `icon-template` — `<template slot="name">` inside `<y-menu>` for a custom icon
-- `template` — `<template slot="name">` inside `<y-menu>` for custom item content
+
+Deprecated item fields (still work; will be removed in a future release):
+- `url` — use `href`
+- `icon-template` — use `icon`
+- `template` — use `slot`
+
+Light-DOM children of `<y-menu>` (without a `slot` attribute) become additional menu items. Each child is automatically given `role="menuitem"` and `tabindex="0"`. On click the menu fires `select` with `detail.value` from the child's `data-value` (or its `textContent`) and closes.
 
 ```html
 <y-button id="options-btn">Options</y-button>
