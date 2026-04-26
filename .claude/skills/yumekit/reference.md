@@ -370,13 +370,16 @@ Slot: default (grid items). Children may use `style="grid-column: span 2"` or si
 
 Events: `y-grid-layout` — `{ mode, columns, containerWidth }`, fires after each masonry settle.
 
-Responsive behavior (integer `columns` only): collapses to `1` column at or below the mobile breakpoint and `min(2, columns)` at or below the tablet breakpoint, measured against container width. Raw template strings opt out automatically.
+Responsive behavior (integer `columns` only — raw template strings and `columns="auto"` opt out automatically):
+
+- **Grid mode** uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width`. Items shrink down toward `min-item-width` and the column count drops as the container narrows. The mobile/tablet breakpoint tokens are **not** used in grid mode.
+- **Masonry mode** is breakpoint-driven: drops to `1` column at or below `--component-grid-mobile-breakpoint` and `min(2, columns)` at or below `--component-grid-tablet-breakpoint`, measured against container width.
 
 Masonry mode positions items absolutely into the shortest column via JS using a `ResizeObserver` and rAF-batched relayouts. Ignores grid-only attributes and child `grid-column` / `grid-row` styles.
 
 A11y: layout-only — no role or ARIA. Tab order follows DOM order; in `dense` and `masonry` modes the visual order may diverge from the focus order.
 
-CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`), `--component-grid-mobile-breakpoint` (default `576px`), `--component-grid-tablet-breakpoint` (default `768px`), `--component-grid-auto-rows`, `--component-grid-auto-columns`
+CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`, used by grid-mode auto-fit and `columns="auto"`), `--component-grid-mobile-breakpoint` (default `576px`, masonry only), `--component-grid-tablet-breakpoint` (default `768px`, masonry only), `--component-grid-auto-rows`, `--component-grid-auto-columns`
 
 CSS Parts: `container`
 

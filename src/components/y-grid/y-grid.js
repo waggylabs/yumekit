@@ -261,11 +261,16 @@ export class YumeGrid extends HTMLElement {
         const sheet = this._buildStyleSheet();
         this.shadowRoot.adoptedStyleSheets = [sheet];
 
-        if (this.mode === "masonry") {
-            this._layoutMasonry();
-        } else {
+        if (this.mode !== "masonry") {
             this._clearMasonryPositions();
+            return;
         }
+
+        // Initial connect (or grid → masonry switch): defer the layout pass
+        // to _initMasonry so we don't emit y-grid-layout twice. When the
+        // observer is already running, attribute changes coalesce into the
+        // single pending rAF.
+        if (this._resizeObserver) this._scheduleMasonryLayout();
     }
 
     _buildAutoFlow() {
@@ -309,8 +314,11 @@ export class YumeGrid extends HTMLElement {
     }
 
     _buildResponsiveColumnsTemplate(cols, minWidth) {
-        const gapValue = this._resolveGap();
-        const evenShare = `calc((100% - ${cols - 1} * ${gapValue}) / ${cols})`;
+        // Match the gap actually applied along the inline axis so the
+        // container width at which auto-fit drops a column stays accurate
+        // when column-gap diverges from the unified gap.
+        const columnGap = this._resolveSideGap("column-gap");
+        const evenShare = `calc((100% - ${cols - 1} * ${columnGap}) / ${cols})`;
         const itemMin = `min(100%, max(${minWidth}, ${evenShare}))`;
         return `repeat(auto-fit, minmax(${itemMin}, 1fr))`;
     }
@@ -390,6 +398,11 @@ export class YumeGrid extends HTMLElement {
     }
 
     _emitLayoutEvent(containerWidth, columnCount) {
+        const height = this._container ? this._container.style.height : "";
+        const signature = `${this.mode}|${columnCount}|${containerWidth}|${height}`;
+        if (signature === this._lastLayoutSignature) return;
+        this._lastLayoutSignature = signature;
+
         this.dispatchEvent(
             new CustomEvent("y-grid-layout", {
                 bubbles: true,
@@ -441,12 +454,9 @@ export class YumeGrid extends HTMLElement {
     _initMasonry() {
         this._teardownMasonry();
         this._observedItems = new Set();
-        this._resizeObserver = new ResizeObserver(() => {
-            if (this._masonryRAF) cancelAnimationFrame(this._masonryRAF);
-            this._masonryRAF = requestAnimationFrame(() =>
-                this._layoutMasonry(),
-            );
-        });
+        this._resizeObserver = new ResizeObserver(() =>
+            this._scheduleMasonryLayout(),
+        );
         this._resizeObserver.observe(this._container);
         this._syncMasonryObserver();
     }
@@ -464,13 +474,14 @@ export class YumeGrid extends HTMLElement {
             return;
         }
 
-        const gapPx = this._resolveGapPx();
-        const colWidth = (containerWidth - gapPx * (cols - 1)) / cols;
+        const colGapPx = this._resolveGapPx(this._resolveSideGap("column-gap"));
+        const rowGapPx = this._resolveGapPx(this._resolveSideGap("row-gap"));
+        const colWidth = (containerWidth - colGapPx * (cols - 1)) / cols;
         const colHeights = new Array(cols).fill(0);
 
         items.forEach((item) => {
             const shortest = colHeights.indexOf(Math.min(...colHeights));
-            const x = shortest * (colWidth + gapPx);
+            const x = shortest * (colWidth + colGapPx);
             const y = colHeights[shortest];
 
             item.style.position = "absolute";
@@ -478,10 +489,10 @@ export class YumeGrid extends HTMLElement {
             item.style.left = `${x}px`;
             item.style.width = `${colWidth}px`;
 
-            colHeights[shortest] += item.offsetHeight + gapPx;
+            colHeights[shortest] += item.offsetHeight + rowGapPx;
         });
 
-        this._container.style.height = `${Math.max(...colHeights) - gapPx}px`;
+        this._container.style.height = `${Math.max(...colHeights) - rowGapPx}px`;
         this._emitLayoutEvent(containerWidth, cols);
     }
 
@@ -489,9 +500,9 @@ export class YumeGrid extends HTMLElement {
         return GAP_TOKEN_MAP[this.gap] || GAP_TOKEN_MAP.medium;
     }
 
-    _resolveGapPx() {
+    _resolveGapPx(cssLength) {
         const temp = _el("div", {
-            style: `position:absolute;visibility:hidden;width:${this._resolveGap()}`,
+            style: `position:absolute;visibility:hidden;width:${cssLength}`,
         });
         this._container.appendChild(temp);
         const px = temp.offsetWidth;
@@ -503,6 +514,14 @@ export class YumeGrid extends HTMLElement {
         const raw = this.getAttribute(attrName);
         const key = raw && GAP_TOKEN_MAP[raw] ? raw : this.gap;
         return GAP_TOKEN_MAP[key] || GAP_TOKEN_MAP.medium;
+    }
+
+    _scheduleMasonryLayout() {
+        if (this._masonryRAF) cancelAnimationFrame(this._masonryRAF);
+        this._masonryRAF = requestAnimationFrame(() => {
+            this._masonryRAF = null;
+            this._layoutMasonry();
+        });
     }
 
     _syncMasonryObserver() {
@@ -527,7 +546,7 @@ export class YumeGrid extends HTMLElement {
             }
         }
 
-        this._layoutMasonry();
+        this._scheduleMasonryLayout();
     }
 
     _teardownMasonry() {
@@ -540,6 +559,7 @@ export class YumeGrid extends HTMLElement {
             cancelAnimationFrame(this._masonryRAF);
             this._masonryRAF = null;
         }
+        this._lastLayoutSignature = null;
     }
 }
 

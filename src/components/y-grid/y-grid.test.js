@@ -288,6 +288,25 @@ describe("YumeGrid", () => {
         );
     });
 
+    it("uses column-gap (not unified gap) for responsive column-width math", async () => {
+        const el = await fixture(html`
+            <y-grid columns="3" gap="none" column-gap="4x-large" responsive style="width:600px">
+                <div>A</div><div>B</div><div>C</div>
+            </y-grid>
+        `);
+        // The responsive template lives in the adopted stylesheet — read it
+        // directly because computed gridTemplateColumns is resolved to fr/px.
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const containerRule = [...sheet.cssRules].find(
+            (r) => r.selectorText === ".container",
+        );
+        const template = containerRule.style.gridTemplateColumns;
+        // 4x-large maps to var(--spacing-4x-large, 32px); the unified gap
+        // (none → 0px) must not appear in the calc.
+        expect(template).to.include("--spacing-4x-large");
+        expect(template).not.to.include("--spacing-none");
+    });
+
     // -------------------------------------------------------------------------
     // Masonry mode
     // -------------------------------------------------------------------------
@@ -313,6 +332,42 @@ describe("YumeGrid", () => {
         expect(items[1].style.position).to.equal("absolute");
     });
 
+    it("honors row-gap when packing items into the same column in masonry mode", async () => {
+        const el = await fixture(html`
+            <y-grid mode="masonry" columns="2" gap="none" row-gap="4x-large" responsive="false" style="width:400px">
+                <div style="height:50px">A</div>
+                <div style="height:50px">B</div>
+                <div style="height:50px">C</div>
+            </y-grid>
+        `);
+        await new Promise((r) =>
+            requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
+        const items = el.querySelectorAll("div");
+        // Items 0 and 1 fill columns 0 and 1 (y=0 each). Item 2 stacks under
+        // one of them, separated by row-gap (4x-large = 32px). gap="none" so
+        // bug would put item 2 at y=50 instead of y=82.
+        expect(items[2].style.top).to.equal("82px");
+    });
+
+    it("honors column-gap for horizontal placement in masonry mode", async () => {
+        const el = await fixture(html`
+            <y-grid mode="masonry" columns="2" gap="none" column-gap="4x-large" responsive="false" style="width:432px">
+                <div style="height:50px">A</div>
+                <div style="height:50px">B</div>
+            </y-grid>
+        `);
+        await new Promise((r) =>
+            requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
+        const items = el.querySelectorAll("div");
+        // 432px container, 2 cols, 32px column-gap → colWidth = (432 - 32) / 2 = 200.
+        // Item B sits in column 1 at x = colWidth + column-gap = 232.
+        expect(items[0].style.left).to.equal("0px");
+        expect(items[1].style.left).to.equal("232px");
+        expect(items[1].style.width).to.equal("200px");
+    });
+
     it("emits y-grid-layout after a masonry settle", async () => {
         const el = await fixture(html`
             <y-grid mode="masonry" columns="2" responsive="false" style="width:400px">
@@ -324,6 +379,27 @@ describe("YumeGrid", () => {
         expect(event.detail.mode).to.equal("masonry");
         expect(event.detail.columns).to.equal(2);
         expect(event.detail.containerWidth).to.equal(400);
+    });
+
+    it("emits y-grid-layout exactly once on initial masonry connect", async () => {
+        const events = [];
+        const handler = (e) => events.push(e);
+        document.addEventListener("y-grid-layout", handler);
+        try {
+            await fixture(html`
+                <y-grid mode="masonry" columns="2" responsive="false" style="width:400px">
+                    <div style="height:100px">A</div>
+                    <div style="height:100px">B</div>
+                </y-grid>
+            `);
+            // Allow any deferred rAF callbacks to flush before counting.
+            await new Promise((r) =>
+                requestAnimationFrame(() => requestAnimationFrame(r)),
+            );
+            expect(events.length).to.equal(1);
+        } finally {
+            document.removeEventListener("y-grid-layout", handler);
+        }
     });
 
     // -------------------------------------------------------------------------

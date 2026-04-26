@@ -674,13 +674,15 @@ Attributes:
 
 Children may use inline `style="grid-column: span N"` or `grid-row` to span tracks. Spans are ignored in masonry mode.
 
-Responsive behavior (integer `columns` only): collapses to 1 column at or below the mobile breakpoint and `min(2, columns)` at or below the tablet breakpoint, measured against container width. With `columns="auto"` the grid uses `auto-fit` directly.
+Responsive behavior (integer `columns` only — raw template strings and `columns="auto"` opt out automatically):
+- Grid mode uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width`. Items shrink toward `min-item-width` and the column count drops as the container narrows. The mobile/tablet breakpoint tokens are **not** used in grid mode.
+- Masonry mode is breakpoint-driven: drops to 1 column at or below `--component-grid-mobile-breakpoint` and `min(2, columns)` at or below `--component-grid-tablet-breakpoint`, measured against container width.
 
 Masonry mode: positions items absolutely into the shortest column via JS, respecting `columns` (or responsive column count) and `gap`. A `ResizeObserver` on container and items drives rAF-batched relayouts. Ignores `align`, `justify`, `align-content`, `justify-content`, `auto-flow`, `auto-rows`, `auto-columns`, `rows`, `dense`, and child grid spans.
 
 Events: `y-grid-layout` (`{ mode, columns, containerWidth }`) — fires after each masonry settle.
 
-CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`), `--component-grid-mobile-breakpoint` (default `576px`), `--component-grid-tablet-breakpoint` (default `768px`), `--component-grid-auto-rows`, `--component-grid-auto-columns`
+CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`, used by grid-mode auto-fit and `columns="auto"`), `--component-grid-mobile-breakpoint` (default `576px`, masonry only), `--component-grid-tablet-breakpoint` (default `768px`, masonry only), `--component-grid-auto-rows`, `--component-grid-auto-columns`
 
 CSS Parts: `container`
 
