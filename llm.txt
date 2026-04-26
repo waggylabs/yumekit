@@ -653,14 +653,13 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 ---
 
 ### y-grid
-Layout container that arranges children using CSS Grid, with optional masonry layout. Use `y-stack` for flex layouts.
+CSS-Grid layout container. Pure CSS — no JS positioning, no events. Use `y-masonry` for shortest-column packing, or `y-stack` for flex layouts.
 
 Tag: `<y-grid>`
 Attributes:
-- `mode` — `"grid"` (default) | `"masonry"`
 - `columns` — integer column count (default `3`), `"auto"` for auto-fit, or a raw `grid-template-columns` value (e.g. `"1fr 2fr auto"`)
 - `rows` — integer or raw `grid-template-rows` value (default unset → implicit rows)
-- `auto-flow` — `"row"` (default) | `"column"` | `"row dense"` | `"column dense"` (ignored in masonry)
+- `auto-flow` — `"row"` (default) | `"column"` | `"row dense"` | `"column dense"`
 - `auto-rows`, `auto-columns` — raw values for `grid-auto-rows` / `grid-auto-columns`
 - `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
 - `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
@@ -672,21 +671,15 @@ Attributes:
 - `responsive` — boolean (default `true`); set `responsive="false"` to opt out. Only applies when `columns` is an integer.
 - `dense` — boolean shortcut for `auto-flow="row dense"`
 
-Children may use inline `style="grid-column: span N"` or `grid-row` to span tracks. Spans are ignored in masonry mode.
+Children may use inline `style="grid-column: span N"` or `grid-row` to span tracks.
 
-Responsive behavior (integer `columns` only — raw template strings and `columns="auto"` opt out automatically):
-- Grid mode uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width`. Items shrink toward `min-item-width` and the column count drops as the container narrows. The mobile/tablet breakpoint tokens are **not** used in grid mode.
-- Masonry mode is breakpoint-driven: drops to 1 column at or below `--component-grid-mobile-breakpoint` and `min(2, columns)` at or below `--component-grid-tablet-breakpoint`, measured against container width.
+Responsive behavior (integer `columns` only — raw template strings and `columns="auto"` opt out automatically): uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width`. Items shrink toward `min-item-width` and the column count drops smoothly as the container narrows.
 
-Masonry mode: positions items absolutely into the shortest column via JS, respecting `columns` (or responsive column count) and `gap`. A `ResizeObserver` on container and items drives rAF-batched relayouts. Ignores `align`, `justify`, `align-content`, `justify-content`, `auto-flow`, `auto-rows`, `auto-columns`, `rows`, `dense`, and child grid spans.
-
-Events: `y-grid-layout` (`{ mode, columns, containerWidth }`) — fires after each masonry settle.
-
-CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`, used by grid-mode auto-fit and `columns="auto"`), `--component-grid-mobile-breakpoint` (default `576px`, masonry only), `--component-grid-tablet-breakpoint` (default `768px`, masonry only), `--component-grid-auto-rows`, `--component-grid-auto-columns`
+CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`), `--component-grid-auto-rows`, `--component-grid-auto-columns`
 
 CSS Parts: `container`
 
-A11y: layout-only (no role, no aria). Tab order follows DOM order — in `dense` and `masonry` modes the visual order may diverge from the focus order.
+A11y: layout-only (no role, no aria). Tab order follows DOM order — in `dense` mode the visual order may diverge from the focus order.
 
 ```html
 <!-- Card grid, responsive -->
@@ -707,11 +700,41 @@ A11y: layout-only (no role, no aria). Tab order follows DOM order — in `dense`
   <y-card>1</y-card>
   <y-card>1</y-card>
 </y-grid>
+```
 
-<!-- Masonry -->
-<y-grid mode="masonry" columns="3" gap="large">
-  <y-card>...</y-card>
-</y-grid>
+---
+
+### y-masonry
+Layout container that packs children of varying heights into the shortest column via JS positioning. Use `y-grid` for uniform CSS-Grid layouts.
+
+Tag: `<y-masonry>`
+Attributes:
+- `columns` — integer column count (default `3`)
+- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
+- `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
+- `min-item-width` — used by responsive collapse (default `"240px"`)
+- `responsive` — boolean (default `true`); set `responsive="false"` to opt out
+
+Responsive behavior: drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default), measured against container width.
+
+Layout: positions items absolutely into the shortest column via JS, respecting `columns` (or responsive column count), `row-gap`, and `column-gap`. A `ResizeObserver` on container and items drives rAF-batched relayouts. Child `grid-column` / `grid-row` styles are ignored.
+
+Events: `y-masonry-layout` (`{ columns, containerWidth }`) — fires after each settle (deduped on no-change).
+
+Methods: `relayout()` — force an immediate repack (useful when item heights change in ways `ResizeObserver` won't catch synchronously, e.g. after an image loads).
+
+CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-min-item-width` (default `240px`), `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
+
+CSS Parts: `container`
+
+A11y: layout-only (no role, no aria). Tab order follows DOM order — visual order may diverge from focus order.
+
+```html
+<y-masonry columns="3" gap="large">
+  <y-card>Short content</y-card>
+  <y-card>Tall content with extra paragraphs to demonstrate the packing.</y-card>
+  <y-card>Medium content here.</y-card>
+</y-masonry>
 ```
 
 ---

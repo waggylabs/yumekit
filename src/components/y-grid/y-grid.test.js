@@ -1,4 +1,4 @@
-import { fixture, html, expect, oneEvent } from "@open-wc/testing";
+import { fixture, html, expect } from "@open-wc/testing";
 import "./y-grid.js";
 
 describe("YumeGrid", () => {
@@ -12,11 +12,6 @@ describe("YumeGrid", () => {
         expect(container).to.exist;
         expect(container.getAttribute("part")).to.equal("container");
         expect(container.querySelector("slot")).to.exist;
-    });
-
-    it("defaults to grid mode", async () => {
-        const el = await fixture(html`<y-grid></y-grid>`);
-        expect(el.mode).to.equal("grid");
     });
 
     it("defaults columns to 3", async () => {
@@ -67,13 +62,6 @@ describe("YumeGrid", () => {
     // -------------------------------------------------------------------------
     // Attribute reflection
     // -------------------------------------------------------------------------
-
-    it("reflects mode via getter and setter", async () => {
-        const el = await fixture(html`<y-grid mode="masonry"></y-grid>`);
-        expect(el.mode).to.equal("masonry");
-        el.mode = "grid";
-        expect(el.getAttribute("mode")).to.equal("grid");
-    });
 
     it("reflects columns via getter and setter", async () => {
         const el = await fixture(html`<y-grid columns="4"></y-grid>`);
@@ -308,119 +296,8 @@ describe("YumeGrid", () => {
     });
 
     // -------------------------------------------------------------------------
-    // Masonry mode
+    // Attribute updates
     // -------------------------------------------------------------------------
-
-    it("applies relative position to container in masonry mode", async () => {
-        const el = await fixture(
-            html`<y-grid mode="masonry"><div>A</div><div>B</div></y-grid>`,
-        );
-        const container = el.shadowRoot.querySelector(".container");
-        expect(getComputedStyle(container).position).to.equal("relative");
-    });
-
-    it("applies absolute positioning to children in masonry mode", async () => {
-        const el = await fixture(html`
-            <y-grid mode="masonry" columns="2" responsive="false" style="width:400px">
-                <div style="height:100px">A</div>
-                <div style="height:100px">B</div>
-            </y-grid>
-        `);
-        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const items = el.querySelectorAll("div");
-        expect(items[0].style.position).to.equal("absolute");
-        expect(items[1].style.position).to.equal("absolute");
-    });
-
-    it("honors row-gap when packing items into the same column in masonry mode", async () => {
-        const el = await fixture(html`
-            <y-grid mode="masonry" columns="2" gap="none" row-gap="4x-large" responsive="false" style="width:400px">
-                <div style="height:50px">A</div>
-                <div style="height:50px">B</div>
-                <div style="height:50px">C</div>
-            </y-grid>
-        `);
-        await new Promise((r) =>
-            requestAnimationFrame(() => requestAnimationFrame(r)),
-        );
-        const items = el.querySelectorAll("div");
-        // Items 0 and 1 fill columns 0 and 1 (y=0 each). Item 2 stacks under
-        // one of them, separated by row-gap (4x-large = 32px). gap="none" so
-        // bug would put item 2 at y=50 instead of y=82.
-        expect(items[2].style.top).to.equal("82px");
-    });
-
-    it("honors column-gap for horizontal placement in masonry mode", async () => {
-        const el = await fixture(html`
-            <y-grid mode="masonry" columns="2" gap="none" column-gap="4x-large" responsive="false" style="width:432px">
-                <div style="height:50px">A</div>
-                <div style="height:50px">B</div>
-            </y-grid>
-        `);
-        await new Promise((r) =>
-            requestAnimationFrame(() => requestAnimationFrame(r)),
-        );
-        const items = el.querySelectorAll("div");
-        // 432px container, 2 cols, 32px column-gap → colWidth = (432 - 32) / 2 = 200.
-        // Item B sits in column 1 at x = colWidth + column-gap = 232.
-        expect(items[0].style.left).to.equal("0px");
-        expect(items[1].style.left).to.equal("232px");
-        expect(items[1].style.width).to.equal("200px");
-    });
-
-    it("emits y-grid-layout after a masonry settle", async () => {
-        const el = await fixture(html`
-            <y-grid mode="masonry" columns="2" responsive="false" style="width:400px">
-                <div style="height:100px">A</div>
-                <div style="height:100px">B</div>
-            </y-grid>
-        `);
-        const event = await oneEvent(el, "y-grid-layout");
-        expect(event.detail.mode).to.equal("masonry");
-        expect(event.detail.columns).to.equal(2);
-        expect(event.detail.containerWidth).to.equal(400);
-    });
-
-    it("emits y-grid-layout exactly once on initial masonry connect", async () => {
-        const events = [];
-        const handler = (e) => events.push(e);
-        document.addEventListener("y-grid-layout", handler);
-        try {
-            await fixture(html`
-                <y-grid mode="masonry" columns="2" responsive="false" style="width:400px">
-                    <div style="height:100px">A</div>
-                    <div style="height:100px">B</div>
-                </y-grid>
-            `);
-            // Allow any deferred rAF callbacks to flush before counting.
-            await new Promise((r) =>
-                requestAnimationFrame(() => requestAnimationFrame(r)),
-            );
-            expect(events.length).to.equal(1);
-        } finally {
-            document.removeEventListener("y-grid-layout", handler);
-        }
-    });
-
-    // -------------------------------------------------------------------------
-    // Mode switching
-    // -------------------------------------------------------------------------
-
-    it("clears masonry positions when switching to grid mode", async () => {
-        const el = await fixture(html`
-            <y-grid mode="masonry" columns="2" responsive="false" style="width:400px">
-                <div style="height:100px">A</div>
-                <div style="height:100px">B</div>
-            </y-grid>
-        `);
-        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-        el.mode = "grid";
-        await new Promise((r) => setTimeout(r, 0));
-
-        const items = el.querySelectorAll("div");
-        expect(items[0].style.position).to.equal("");
-    });
 
     it("updates layout when attributes change", async () => {
         const el = await fixture(

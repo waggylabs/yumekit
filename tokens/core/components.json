@@ -560,6 +560,12 @@
       "min-item-width": {
         "$type": "dimension",
         "$value": "240px"
+      }
+    },
+    "masonry": {
+      "min-item-width": {
+        "$type": "dimension",
+        "$value": "240px"
       },
       "mobile-breakpoint": {
         "$type": "dimension",

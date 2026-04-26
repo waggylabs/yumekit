@@ -1,15 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
-
-const GAP_TOKEN_MAP = {
-    none: "var(--spacing-none, 0px)",
-    "x-small": "var(--spacing-x-small, 4px)",
-    small: "var(--spacing-small, 6px)",
-    medium: "var(--spacing-medium, 8px)",
-    large: "var(--spacing-large, 12px)",
-    "x-large": "var(--spacing-x-large, 16px)",
-    "2x-large": "var(--spacing-2x-large, 24px)",
-    "4x-large": "var(--spacing-4x-large, 32px)",
-};
+import { resolveGapToken } from "../../modules/helpers.js";
 
 const ALIGN_MAP = {
     start: "start",
@@ -39,7 +28,6 @@ const CONTENT_MAP = {
 export class YumeGrid extends HTMLElement {
     static get observedAttributes() {
         return [
-            "mode",
             "columns",
             "rows",
             "auto-flow",
@@ -65,47 +53,21 @@ export class YumeGrid extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
-        this._resizeObserver = null;
-        this._masonryRAF = null;
-        this._observedItems = null;
         this.render();
     }
 
     connectedCallback() {
-        this._applyLayout();
-        if (this.mode === "masonry") this._initMasonry();
-    }
-
-    disconnectedCallback() {
-        this._teardownMasonry();
+        this._applyStyles();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
-
-        const wasMasonry = name === "mode" && oldValue === "masonry";
-        const isMasonry = this.mode === "masonry";
-
-        if (wasMasonry) this._teardownMasonry();
-
-        this._applyLayout();
-
-        if (isMasonry && this.isConnected && !this._resizeObserver) {
-            this._initMasonry();
-        }
+        this._applyStyles();
     }
 
     // -------------------------------------------------------------------------
     // Getters / Setters
     // -------------------------------------------------------------------------
-
-    /** Layout algorithm: "grid" (default) | "masonry". */
-    get mode() {
-        return this.getAttribute("mode") || "grid";
-    }
-    set mode(val) {
-        this.setAttribute("mode", val);
-    }
 
     /**
      * Column count or template. Integer → `repeat(N, 1fr)`; `"auto"` →
@@ -127,7 +89,7 @@ export class YumeGrid extends HTMLElement {
         this.setAttribute("rows", String(val));
     }
 
-    /** Maps to `grid-auto-flow`. Ignored in masonry mode. */
+    /** Maps to `grid-auto-flow`. */
     get autoFlow() {
         return this.getAttribute("auto-flow") || "row";
     }
@@ -216,8 +178,8 @@ export class YumeGrid extends HTMLElement {
     }
 
     /**
-     * Auto-reduce columns at narrow container widths. Defaults to `true`;
-     * set `responsive="false"` to disable.
+     * Auto-reduce columns at narrow container widths via `auto-fit` /
+     * `minmax`. Defaults to `true`; set `responsive="false"` to disable.
      */
     get responsive() {
         return this.getAttribute("responsive") !== "false";
@@ -246,31 +208,16 @@ export class YumeGrid extends HTMLElement {
     render() {
         this.shadowRoot.innerHTML = `<div class="container" part="container"><slot></slot></div>`;
         this._container = this.shadowRoot.querySelector(".container");
-        this._slot = this.shadowRoot.querySelector("slot");
-        this._slot.addEventListener("slotchange", () => {
-            if (this.mode === "masonry") this._syncMasonryObserver();
-        });
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
-    _applyLayout() {
+    _applyStyles() {
         if (!this._container) return;
         const sheet = this._buildStyleSheet();
         this.shadowRoot.adoptedStyleSheets = [sheet];
-
-        if (this.mode !== "masonry") {
-            this._clearMasonryPositions();
-            return;
-        }
-
-        // Initial connect (or grid → masonry switch): defer the layout pass
-        // to _initMasonry so we don't emit y-grid-layout twice. When the
-        // observer is already running, attribute changes coalesce into the
-        // single pending rAF.
-        if (this._resizeObserver) this._scheduleMasonryLayout();
     }
 
     _buildAutoFlow() {
@@ -296,28 +243,11 @@ export class YumeGrid extends HTMLElement {
         return raw;
     }
 
-    _buildMasonryStyleSheet(gapValue, rowGapValue, columnGapValue) {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(`
-            :host {
-                display: block;
-                box-sizing: border-box;
-            }
-            .container {
-                position: relative;
-                gap: ${gapValue};
-                row-gap: ${rowGapValue};
-                column-gap: ${columnGapValue};
-            }
-        `);
-        return sheet;
-    }
-
     _buildResponsiveColumnsTemplate(cols, minWidth) {
         // Match the gap actually applied along the inline axis so the
         // container width at which auto-fit drops a column stays accurate
         // when column-gap diverges from the unified gap.
-        const columnGap = this._resolveSideGap("column-gap");
+        const columnGap = resolveGapToken(this, "column-gap");
         const evenShare = `calc((100% - ${cols - 1} * ${columnGap}) / ${cols})`;
         const itemMin = `min(100%, max(${minWidth}, ${evenShare}))`;
         return `repeat(auto-fit, minmax(${itemMin}, 1fr))`;
@@ -333,13 +263,9 @@ export class YumeGrid extends HTMLElement {
     }
 
     _buildStyleSheet() {
-        const gapValue = `var(--component-grid-gap, ${this._resolveGap()})`;
-        const rowGapValue = `var(--component-grid-row-gap, ${this._resolveSideGap("row-gap")})`;
-        const columnGapValue = `var(--component-grid-column-gap, ${this._resolveSideGap("column-gap")})`;
-
-        if (this.mode === "masonry") {
-            return this._buildMasonryStyleSheet(gapValue, rowGapValue, columnGapValue);
-        }
+        const gapValue = `var(--component-grid-gap, ${resolveGapToken(this, "gap")})`;
+        const rowGapValue = `var(--component-grid-row-gap, ${resolveGapToken(this, "row-gap")})`;
+        const columnGapValue = `var(--component-grid-column-gap, ${resolveGapToken(this, "column-gap")})`;
 
         const columnsTemplate = `var(--component-grid-columns, ${this._buildColumnsTemplate()})`;
         const rowsTemplateRaw = this._buildRowsTemplate();
@@ -384,182 +310,6 @@ export class YumeGrid extends HTMLElement {
             }
         `);
         return sheet;
-    }
-
-    _clearMasonryPositions() {
-        const items = this._getSlottedElements();
-        items.forEach((item) => {
-            item.style.position = "";
-            item.style.top = "";
-            item.style.left = "";
-            item.style.width = "";
-        });
-        if (this._container) this._container.style.height = "";
-    }
-
-    _emitLayoutEvent(containerWidth, columnCount) {
-        const height = this._container ? this._container.style.height : "";
-        const signature = `${this.mode}|${columnCount}|${containerWidth}|${height}`;
-        if (signature === this._lastLayoutSignature) return;
-        this._lastLayoutSignature = signature;
-
-        this.dispatchEvent(
-            new CustomEvent("y-grid-layout", {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    mode: this.mode,
-                    columns: columnCount,
-                    containerWidth,
-                },
-            }),
-        );
-    }
-
-    _getBreakpointValue(prop, fallback) {
-        const val = getComputedStyle(this).getPropertyValue(prop).trim();
-        return val ? parseInt(val, 10) : fallback;
-    }
-
-    _getMasonryColumnCount() {
-        const raw = this.columns;
-        const intCols = parseInt(raw, 10);
-        const isInteger = String(intCols) === String(raw).trim();
-        const baseCols = isInteger && intCols > 0 ? intCols : 3;
-
-        if (!this.responsive) return baseCols;
-
-        const mobileBreakpoint = this._getBreakpointValue(
-            "--component-grid-mobile-breakpoint",
-            576,
-        );
-        const tabletBreakpoint = this._getBreakpointValue(
-            "--component-grid-tablet-breakpoint",
-            768,
-        );
-        const width = this._container
-            ? this._container.offsetWidth
-            : window.innerWidth;
-
-        if (width <= mobileBreakpoint) return 1;
-        if (width <= tabletBreakpoint) return Math.min(2, baseCols);
-        return baseCols;
-    }
-
-    _getSlottedElements() {
-        if (!this._slot) return [];
-        return this._slot.assignedElements({ flatten: true });
-    }
-
-    _initMasonry() {
-        this._teardownMasonry();
-        this._observedItems = new Set();
-        this._resizeObserver = new ResizeObserver(() =>
-            this._scheduleMasonryLayout(),
-        );
-        this._resizeObserver.observe(this._container);
-        this._syncMasonryObserver();
-    }
-
-    _layoutMasonry() {
-        const items = this._getSlottedElements();
-        if (!this._container) return;
-
-        const containerWidth = this._container.offsetWidth;
-        const cols = this._getMasonryColumnCount();
-
-        if (!items.length) {
-            this._container.style.height = "";
-            this._emitLayoutEvent(containerWidth, cols);
-            return;
-        }
-
-        const colGapPx = this._resolveGapPx(this._resolveSideGap("column-gap"));
-        const rowGapPx = this._resolveGapPx(this._resolveSideGap("row-gap"));
-        const colWidth = (containerWidth - colGapPx * (cols - 1)) / cols;
-        const colHeights = new Array(cols).fill(0);
-
-        items.forEach((item) => {
-            const shortest = colHeights.indexOf(Math.min(...colHeights));
-            const x = shortest * (colWidth + colGapPx);
-            const y = colHeights[shortest];
-
-            item.style.position = "absolute";
-            item.style.top = `${y}px`;
-            item.style.left = `${x}px`;
-            item.style.width = `${colWidth}px`;
-
-            colHeights[shortest] += item.offsetHeight + rowGapPx;
-        });
-
-        this._container.style.height = `${Math.max(...colHeights) - rowGapPx}px`;
-        this._emitLayoutEvent(containerWidth, cols);
-    }
-
-    _resolveGap() {
-        return GAP_TOKEN_MAP[this.gap] || GAP_TOKEN_MAP.medium;
-    }
-
-    _resolveGapPx(cssLength) {
-        const temp = _el("div", {
-            style: `position:absolute;visibility:hidden;width:${cssLength}`,
-        });
-        this._container.appendChild(temp);
-        const px = temp.offsetWidth;
-        temp.remove();
-        return px;
-    }
-
-    _resolveSideGap(attrName) {
-        const raw = this.getAttribute(attrName);
-        const key = raw && GAP_TOKEN_MAP[raw] ? raw : this.gap;
-        return GAP_TOKEN_MAP[key] || GAP_TOKEN_MAP.medium;
-    }
-
-    _scheduleMasonryLayout() {
-        if (this._masonryRAF) cancelAnimationFrame(this._masonryRAF);
-        this._masonryRAF = requestAnimationFrame(() => {
-            this._masonryRAF = null;
-            this._layoutMasonry();
-        });
-    }
-
-    _syncMasonryObserver() {
-        if (!this._resizeObserver) {
-            this._initMasonry();
-            return;
-        }
-
-        const current = new Set(this._getSlottedElements());
-
-        for (const item of this._observedItems) {
-            if (!current.has(item)) {
-                this._resizeObserver.unobserve(item);
-                this._observedItems.delete(item);
-            }
-        }
-
-        for (const item of current) {
-            if (!this._observedItems.has(item)) {
-                this._resizeObserver.observe(item);
-                this._observedItems.add(item);
-            }
-        }
-
-        this._scheduleMasonryLayout();
-    }
-
-    _teardownMasonry() {
-        if (this._resizeObserver) {
-            this._resizeObserver.disconnect();
-            this._resizeObserver = null;
-            this._observedItems = null;
-        }
-        if (this._masonryRAF) {
-            cancelAnimationFrame(this._masonryRAF);
-            this._masonryRAF = null;
-        }
-        this._lastLayoutSignature = null;
     }
 }
 

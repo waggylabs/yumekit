@@ -179,7 +179,6 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
             }>;
             "y-grid": El<{
-                mode?: "grid" | "masonry";
                 columns?: string | number;
                 rows?: string | number;
                 "auto-flow"?: "row" | "column" | "row dense" | "column dense";
@@ -212,6 +211,14 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 placeholder?: string;
                 "label-position"?: "top" | "bottom";
+            }>;
+            "y-masonry": El<{
+                columns?: string | number;
+                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                "min-item-width"?: string;
+                responsive?: boolean | string;
             }>;
             "y-menu": El<{
                 items?: unknown[] | string;

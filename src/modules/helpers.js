@@ -443,3 +443,57 @@ export function hideEmptySlotContainers(shadowRoot, slotsConfig = {}) {
         }
     });
 }
+
+// =============================================================================
+// Spacing / gap utilities
+// =============================================================================
+
+/**
+ * Map of gap-token names to the CSS expression that resolves them, used by
+ * layout components (`y-grid`, `y-masonry`, `y-stack`) to translate the
+ * shared `gap` / `row-gap` / `column-gap` attribute scale to spacing tokens.
+ */
+export const GAP_TOKEN_MAP = {
+    none: "var(--spacing-none, 0px)",
+    "x-small": "var(--spacing-x-small, 4px)",
+    small: "var(--spacing-small, 6px)",
+    medium: "var(--spacing-medium, 8px)",
+    large: "var(--spacing-large, 12px)",
+    "x-large": "var(--spacing-x-large, 16px)",
+    "2x-large": "var(--spacing-2x-large, 24px)",
+    "4x-large": "var(--spacing-4x-large, 32px)",
+};
+
+/**
+ * Resolve a gap-token attribute on a host element to its CSS expression.
+ * Falls back to the unified `gap` attribute when the side override is unset
+ * or unknown, and to `medium` when neither resolves.
+ * @param {HTMLElement} host — the component element holding the attributes
+ * @param {string} attrName — `"gap"`, `"row-gap"`, or `"column-gap"`
+ * @returns {string} CSS expression, e.g. `var(--spacing-medium, 8px)`
+ */
+export function resolveGapToken(host, attrName) {
+    const raw = host.getAttribute(attrName);
+    if (raw && GAP_TOKEN_MAP[raw]) return GAP_TOKEN_MAP[raw];
+    const fallback = host.getAttribute("gap");
+    if (fallback && GAP_TOKEN_MAP[fallback]) return GAP_TOKEN_MAP[fallback];
+    return GAP_TOKEN_MAP.medium;
+}
+
+/**
+ * Measure a CSS length expression in pixels by appending a hidden probe
+ * element to the given container. Useful when JS-positioned layout (e.g.
+ * masonry) needs the resolved pixel value of a token-driven gap.
+ * @param {HTMLElement} container — element to append the probe to
+ * @param {string} cssLength — any valid `width` value (e.g. `var(--spacing-medium, 8px)`)
+ * @returns {number} resolved pixel width
+ */
+export function measureCSSLength(container, cssLength) {
+    const probe = createElement("div", {
+        style: `position:absolute;visibility:hidden;width:${cssLength}`,
+    });
+    container.appendChild(probe);
+    const px = probe.offsetWidth;
+    probe.remove();
+    return px;
+}

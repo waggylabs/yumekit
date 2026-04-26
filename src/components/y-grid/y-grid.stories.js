@@ -17,12 +17,6 @@ export default {
     title: "Components/Grid",
     tags: ["autodocs"],
     argTypes: {
-        mode: {
-            control: "select",
-            options: ["grid", "masonry"],
-            description: "Layout algorithm.",
-            table: { defaultValue: { summary: "grid" } },
-        },
         columns: {
             control: "text",
             description:
@@ -49,18 +43,17 @@ export default {
         },
         responsive: {
             control: "boolean",
-            description: "Auto-reduce columns at narrow container widths.",
+            description: "Auto-reduce columns at narrow container widths via auto-fit/minmax keyed off min-item-width.",
             table: { defaultValue: { summary: true } },
         },
         dense: {
             control: "boolean",
             description:
-                "Grid mode only. Shortcut for auto-flow=\"row dense\" — lets later items backfill earlier holes left by spanned items. Has no visible effect unless some items use grid-column: span. Ignored in masonry mode.",
+                "Shortcut for auto-flow=\"row dense\" — lets later items backfill earlier holes left by spanned items. Has no visible effect unless some items use grid-column: span.",
             table: { defaultValue: { summary: false } },
         },
     },
     args: {
-        mode: "grid",
         columns: "3",
         gap: "medium",
         align: "stretch",
@@ -68,9 +61,8 @@ export default {
         responsive: true,
         dense: false,
     },
-    render: ({ mode, columns, gap, align, justify, responsive, dense }) => `
+    render: ({ columns, gap, align, justify, responsive, dense }) => `
         <y-grid
-            mode="${mode}"
             columns="${columns}"
             gap="${gap}"
             align="${align}"
@@ -78,13 +70,13 @@ export default {
             ${responsive ? "responsive" : 'responsive="false"'}
             ${dense ? "dense" : ""}
         >
-            <y-card style="grid-column: span 2"><div slot="header"><strong>Wide</strong></div><p>Spans 2 columns — leaves a hole that <code>dense</code> can backfill in grid mode.</p></y-card>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief.</p></y-card>
-            <y-card><div slot="header"><strong>Tall</strong></div><p>This card carries extra content so masonry mode has uneven column heights to demonstrate its shortest-column packing.</p></y-card>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief.</p></y-card>
-            <y-card><div slot="header"><strong>Medium</strong></div><p>A moderate amount of content for variety.</p></y-card>
-            <y-card><div slot="header"><strong>Tall</strong></div><p>Another taller card so the masonry layout has visible variation across columns.</p></y-card>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief.</p></y-card>
+            <y-card style="grid-column: span 2"><div slot="header"><strong>Wide</strong></div><p>Spans 2 columns — leaves a hole that <code>dense</code> can backfill.</p></y-card>
+            <y-card><div slot="header"><strong>Card 2</strong></div><p>Content</p></y-card>
+            <y-card><div slot="header"><strong>Card 3</strong></div><p>Content</p></y-card>
+            <y-card><div slot="header"><strong>Card 4</strong></div><p>Content</p></y-card>
+            <y-card><div slot="header"><strong>Card 5</strong></div><p>Content</p></y-card>
+            <y-card><div slot="header"><strong>Card 6</strong></div><p>Content</p></y-card>
+            <y-card><div slot="header"><strong>Card 7</strong></div><p>Content</p></y-card>
         </y-grid>
     `,
 };
@@ -169,19 +161,6 @@ export const Dense = {
             <y-card><p>1</p></y-card>
             <y-card><p>1</p></y-card>
             <y-card><p>1</p></y-card>
-        </y-grid>
-    `,
-};
-
-export const Masonry = {
-    render: () => `
-        <y-grid mode="masonry" columns="3" gap="large" responsive>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief content.</p></y-card>
-            <y-card><div slot="header"><strong>Tall</strong></div><p>This card has more content to make it taller than the others, demonstrating masonry layout.</p></y-card>
-            <y-card><div slot="header"><strong>Medium</strong></div><p>Some content here.</p></y-card>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief.</p></y-card>
-            <y-card><div slot="header"><strong>Tall</strong></div><p>Another tall card with extra content to show the shortest-column-first packing behavior of masonry layout.</p></y-card>
-            <y-card><div slot="header"><strong>Medium</strong></div><p>Moderate content.</p></y-card>
         </y-grid>
     `,
 };
