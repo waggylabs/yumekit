@@ -31,6 +31,12 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.0]
+
+- New `y-grid` component — a pure-CSS layout container around CSS Grid (extracted from `y-stack` to give grid a dedicated component). Exposes the common Grid configuration as HTML attributes: `columns` (integer, `"auto"`, or raw `grid-template-columns`), `rows`, `auto-flow`, `auto-rows`, `auto-columns`, `gap`/`row-gap`/`column-gap` (mapped to `--spacing-*` tokens), `align`, `justify`, `align-content`, `justify-content`, `min-item-width`, `responsive`, and `dense`. Children may use inline `grid-column`/`grid-row` styles to span tracks. Responsive collapse (integer `columns` only) uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width` for smooth container-driven shrink.
+
+- New `y-masonry` component — a JS-positioned layout container that packs children of varying heights into the shortest column. Responsive collapse drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default).
+
 ## [0.4.4] - 2026-04-25
 
 ### Fixed
@@ -38,6 +44,8 @@ Delete any empty sections before publishing.
 - `y-badge`: slotted children would disappear when the badge was upgraded before its children were parsed (e.g. when `y-badge.js` loaded before the tag appeared in the HTML stream). The shadow DOM now always includes a `<slot>` and toggles overlay vs. inline layout via a `slotchange`-driven class on an internal root element, so children projected in after upgrade are always picked up. Knock-on: text-only and comment-only children no longer trigger overlay mode (only element children do). This matches how the component is actually used in practice.
 
 ### Added
+
+- New shared layout helpers in `src/modules/helpers.js`: `GAP_TOKEN_MAP`, `resolveGapToken(host, attrName)`, and `measureCSSLength(container, cssLength)` — used by `y-grid` and `y-masonry` to map the shared gap-token scale to CSS expressions and measure resolved pixel widths.
 
 - `y-appbar`: the default (unnamed) slot now lets consumers supply their own link elements (e.g. Vue Router's `<router-link>`, React Router's `<NavLink>`, plain `<a>`) in place of — or in addition to — the auto-generated `y-button` items. Unslotted children render in the appbar body after any items from the `items` attribute, get full-width treatment in vertical mode, and are hidden-overflow when collapsed. In mobile (hamburger) mode the same slot is rendered inside the dropdown panel below the items, preserving the desktop priority order.
 

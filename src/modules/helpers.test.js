@@ -7,6 +7,9 @@ import {
     resolveCSSColor,
     hideEmptySlotContainers,
     createElement,
+    GAP_TOKEN_MAP,
+    measureCSSLength,
+    resolveGapToken,
 } from "./helpers.js";
 
 describe("helpers", () => {
@@ -241,6 +244,50 @@ describe("helpers", () => {
             const el = createElement("div", {}, [null, "text", undefined]);
             expect(el.childNodes.length).to.equal(1);
             expect(el.textContent).to.equal("text");
+        });
+    });
+
+    // ── resolveGapToken ───────────────────────────────────────
+    describe("resolveGapToken", () => {
+        it("resolves a side-gap attribute to its token", () => {
+            const host = document.createElement("div");
+            host.setAttribute("row-gap", "large");
+            expect(resolveGapToken(host, "row-gap")).to.equal(
+                GAP_TOKEN_MAP.large,
+            );
+        });
+
+        it("falls back to gap when the side-gap is unset", () => {
+            const host = document.createElement("div");
+            host.setAttribute("gap", "small");
+            expect(resolveGapToken(host, "row-gap")).to.equal(
+                GAP_TOKEN_MAP.small,
+            );
+        });
+
+        it("falls back to medium when nothing is set", () => {
+            const host = document.createElement("div");
+            expect(resolveGapToken(host, "gap")).to.equal(GAP_TOKEN_MAP.medium);
+        });
+
+        it("ignores unknown values and falls back", () => {
+            const host = document.createElement("div");
+            host.setAttribute("gap", "wat");
+            expect(resolveGapToken(host, "gap")).to.equal(GAP_TOKEN_MAP.medium);
+        });
+    });
+
+    // ── measureCSSLength ──────────────────────────────────────
+    describe("measureCSSLength", () => {
+        it("measures a px length", async () => {
+            const container = await fixture(html`<div></div>`);
+            expect(measureCSSLength(container, "32px")).to.equal(32);
+        });
+
+        it("removes the probe element after measurement", async () => {
+            const container = await fixture(html`<div></div>`);
+            measureCSSLength(container, "16px");
+            expect(container.children.length).to.equal(0);
         });
     });
 });

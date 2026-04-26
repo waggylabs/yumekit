@@ -39,8 +39,11 @@
         "build": "npm run build:tokens && rollup -c && tsc && node scripts/copy-component-types.js",
         "build:tokens": "node scripts/build-tokens.js",
         "prepublishOnly": "npm run build",
+        "pretest": "npm run build:tokens",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage",
+        "prestorybook": "npm run build:tokens",
         "storybook": "storybook dev -p 6006",
+        "prebuild-storybook": "npm run build:tokens",
         "build-storybook": "storybook build"
     },
     "repository": {

@@ -114,8 +114,6 @@ Generated outputs:
 - `styles/variables.css` — palette + numerics + component dims + the default theme (Blue Light)
 - `styles/{slug}.css` — per-theme override files (one per Themes entry in the manifest)
 
-The generated CSS is committed so consumers can use the library without running the build.
-
 ### Figma sync
 
 Use the [Tokens Studio for Figma](https://tokens.studio/) plugin pointed at this repo's `tokens/` directory to keep Figma Variables in sync with code.

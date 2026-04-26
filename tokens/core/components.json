@@ -489,6 +489,10 @@
         "$type": "borderRadius",
         "$value": "{radii.small}"
       },
+      "border-radius-outer": {
+        "$type": "borderRadius",
+        "$value": "{radii.medium}"
+      },
       "border-width": {
         "$type": "borderWidth",
         "$value": "{border.x-thin}"
@@ -554,6 +558,22 @@
       "border-width": {
         "$type": "borderWidth",
         "$value": "{border.x-thin}"
+      }
+    },
+    "grid": {
+      "min-item-width": {
+        "$type": "dimension",
+        "$value": "240px"
+      }
+    },
+    "masonry": {
+      "mobile-breakpoint": {
+        "$type": "dimension",
+        "$value": "576px"
+      },
+      "tablet-breakpoint": {
+        "$type": "dimension",
+        "$value": "768px"
       }
     },
     "stack": {
