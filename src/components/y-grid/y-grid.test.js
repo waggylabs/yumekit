@@ -295,6 +295,23 @@ describe("YumeGrid", () => {
         expect(template).not.to.include("--spacing-none");
     });
 
+    it("threads --component-grid-column-gap through the responsive calc so overrides flow in", async () => {
+        const el = await fixture(html`
+            <y-grid columns="3" responsive style="width:600px">
+                <div>A</div><div>B</div><div>C</div>
+            </y-grid>
+        `);
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const containerRule = [...sheet.cssRules].find(
+            (r) => r.selectorText === ".container",
+        );
+        const template = containerRule.style.gridTemplateColumns;
+        // The collapse math must reference the same custom property that
+        // backs the rendered column-gap; otherwise an override on
+        // --component-grid-column-gap silently desyncs the calc.
+        expect(template).to.include("--component-grid-column-gap");
+    });
+
     // -------------------------------------------------------------------------
     // Attribute updates
     // -------------------------------------------------------------------------

@@ -712,7 +712,6 @@ Attributes:
 - `columns` — integer column count (default `3`)
 - `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
 - `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
-- `min-item-width` — used by responsive collapse (default `"240px"`)
 - `responsive` — boolean (default `true`); set `responsive="false"` to opt out
 
 Responsive behavior: drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default), measured against container width.
@@ -723,7 +722,7 @@ Events: `y-masonry-layout` (`{ columns, containerWidth }`) — fires after each 
 
 Methods: `relayout()` — force an immediate repack (useful when item heights change in ways `ResizeObserver` won't catch synchronously, e.g. after an image loads).
 
-CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-min-item-width` (default `240px`), `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
+CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
 
 CSS Parts: `container`
 

@@ -489,6 +489,10 @@
         "$type": "borderRadius",
         "$value": "{radii.small}"
       },
+      "border-radius-outer": {
+        "$type": "borderRadius",
+        "$value": "{radii.medium}"
+      },
       "border-width": {
         "$type": "borderWidth",
         "$value": "{border.x-thin}"
@@ -563,10 +567,6 @@
       }
     },
     "masonry": {
-      "min-item-width": {
-        "$type": "dimension",
-        "$value": "240px"
-      },
       "mobile-breakpoint": {
         "$type": "dimension",
         "$value": "576px"

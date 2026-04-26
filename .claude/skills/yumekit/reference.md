@@ -408,7 +408,6 @@ Layout container that packs children of varying heights into the shortest column
 | `gap`            | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens  |
 | `row-gap`        | same scale as `gap`; overrides row gap independently                                                                                    |
 | `column-gap`     | same scale as `gap`; overrides column gap independently                                                                                 |
-| `min-item-width` | used by responsive collapse (default `240px`)                                                                                           |
 | `responsive`     | boolean (default `true`); set `responsive="false"` to opt out                                                                           |
 
 Slot: default (masonry items). Child `grid-column` / `grid-row` styles are ignored — masonry is JS-positioned.
@@ -421,7 +420,7 @@ Responsive behavior: drops to `1` column at or below `--component-masonry-mobile
 
 A11y: layout-only — no role or ARIA. Tab order follows DOM order; visual order may diverge from focus order.
 
-CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-min-item-width` (default `240px`), `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
+CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
 
 CSS Parts: `container`
 

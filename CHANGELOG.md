@@ -31,6 +31,12 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.0]
+
+- New `y-grid` component — a pure-CSS layout container around CSS Grid (extracted from `y-stack` to give grid a dedicated component). Exposes the common Grid configuration as HTML attributes: `columns` (integer, `"auto"`, or raw `grid-template-columns`), `rows`, `auto-flow`, `auto-rows`, `auto-columns`, `gap`/`row-gap`/`column-gap` (mapped to `--spacing-*` tokens), `align`, `justify`, `align-content`, `justify-content`, `min-item-width`, `responsive`, and `dense`. Children may use inline `grid-column`/`grid-row` styles to span tracks. Responsive collapse (integer `columns` only) uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width` for smooth container-driven shrink.
+
+- New `y-masonry` component — a JS-positioned layout container that packs children of varying heights into the shortest column. Responsive collapse drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default).
+
 ## [0.4.4] - 2026-04-25
 
 ### Fixed
@@ -38,10 +44,6 @@ Delete any empty sections before publishing.
 - `y-badge`: slotted children would disappear when the badge was upgraded before its children were parsed (e.g. when `y-badge.js` loaded before the tag appeared in the HTML stream). The shadow DOM now always includes a `<slot>` and toggles overlay vs. inline layout via a `slotchange`-driven class on an internal root element, so children projected in after upgrade are always picked up. Knock-on: text-only and comment-only children no longer trigger overlay mode (only element children do). This matches how the component is actually used in practice.
 
 ### Added
-
-- New `y-grid` component — a pure-CSS layout container around CSS Grid (extracted from `y-stack` to give grid a dedicated component). Exposes the common Grid configuration as HTML attributes: `columns` (integer, `"auto"`, or raw `grid-template-columns`), `rows`, `auto-flow`, `auto-rows`, `auto-columns`, `gap`/`row-gap`/`column-gap` (mapped to `--spacing-*` tokens), `align`, `justify`, `align-content`, `justify-content`, `min-item-width`, `responsive`, and `dense`. Children may use inline `grid-column`/`grid-row` styles to span tracks. Responsive collapse (integer `columns` only) uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width` for smooth container-driven shrink.
-
-- New `y-masonry` component — a JS-positioned layout container that packs children of varying heights into the shortest column. Attributes: `columns` (integer, default `3`), `gap`/`row-gap`/`column-gap` (mapped to `--spacing-*` tokens), `min-item-width`, `responsive`. Uses a `ResizeObserver` on container and items with rAF-batched relayouts; emits `y-masonry-layout` (`{ columns, containerWidth }`) after each settle (deduped on no-change). Public method `relayout()` forces an immediate repack — useful when item heights change in ways `ResizeObserver` won't catch synchronously (e.g. after an image loads). Responsive collapse drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default). (Migration of existing `<y-stack mode="grid|masonry">` usages to `<y-grid>` / `<y-masonry>` and the corresponding cleanup of `y-stack` will land in a follow-up.)
 
 - New shared layout helpers in `src/modules/helpers.js`: `GAP_TOKEN_MAP`, `resolveGapToken(host, attrName)`, and `measureCSSLength(container, cssLength)` — used by `y-grid` and `y-masonry` to map the shared gap-token scale to CSS expressions and measure resolved pixel widths.
 

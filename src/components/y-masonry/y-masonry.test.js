@@ -29,11 +29,6 @@ describe("YumeMasonry", () => {
         expect(el.responsive).to.be.true;
     });
 
-    it("defaults minItemWidth to 240px", async () => {
-        const el = await fixture(html`<y-masonry></y-masonry>`);
-        expect(el.minItemWidth).to.equal("240px");
-    });
-
     it("renders as display: block", async () => {
         const el = await fixture(html`<y-masonry></y-masonry>`);
         expect(getComputedStyle(el).display).to.equal("block");
@@ -150,6 +145,30 @@ describe("YumeMasonry", () => {
         expect(items[2].style.top).to.equal("82px");
     });
 
+    it("matches CSS-custom-property overrides on row-gap", async () => {
+        const el = await fixture(html`
+            <y-masonry
+                columns="2"
+                gap="none"
+                responsive="false"
+                style="width:400px; --component-masonry-row-gap: 40px"
+            >
+                <div style="height:50px">A</div>
+                <div style="height:50px">B</div>
+                <div style="height:50px">C</div>
+            </y-masonry>
+        `);
+        await new Promise((r) =>
+            requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
+        const items = el.querySelectorAll("div");
+        // A and B fill the two columns at y=0. C stacks under one of them,
+        // separated by the overridden row-gap (40px) → top = 50 + 40 = 90.
+        // Without the fix, JS would still use the gap=none fallback (0px)
+        // and place C at y=50.
+        expect(items[2].style.top).to.equal("90px");
+    });
+
     it("honors column-gap for horizontal placement", async () => {
         const el = await fixture(html`
             <y-masonry columns="2" gap="none" column-gap="4x-large" responsive="false" style="width:432px">
@@ -181,6 +200,31 @@ describe("YumeMasonry", () => {
         const event = await oneEvent(el, "y-masonry-layout");
         expect(event.detail.columns).to.equal(2);
         expect(event.detail.containerWidth).to.equal(400);
+    });
+
+    it("emits y-masonry-layout when column-gap changes even if height stays the same", async () => {
+        const el = await fixture(html`
+            <y-masonry columns="2" gap="none" responsive="false" style="width:400px">
+                <div style="height:50px">A</div>
+                <div style="height:50px">B</div>
+            </y-masonry>
+        `);
+        await oneEvent(el, "y-masonry-layout");
+
+        let count = 0;
+        el.addEventListener("y-masonry-layout", () => count++);
+
+        // Override column-gap via the CSS custom property — width, columns,
+        // and total height all stay identical (two 50px items in two cols),
+        // so without including the gap in the dedupe signature the event
+        // would not re-fire.
+        el.style.setProperty("--component-masonry-column-gap", "40px");
+        el.relayout();
+        await new Promise((r) =>
+            requestAnimationFrame(() => requestAnimationFrame(r)),
+        );
+
+        expect(count).to.be.greaterThan(0);
     });
 
     it("emits y-masonry-layout exactly once on initial connect", async () => {

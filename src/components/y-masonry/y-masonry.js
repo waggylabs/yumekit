@@ -1,18 +1,8 @@
-import {
-    measureCSSLength,
-    resolveGapToken,
-} from "../../modules/helpers.js";
+import { resolveGapToken } from "../../modules/helpers.js";
 
 export class YumeMasonry extends HTMLElement {
     static get observedAttributes() {
-        return [
-            "columns",
-            "gap",
-            "row-gap",
-            "column-gap",
-            "min-item-width",
-            "responsive",
-        ];
+        return ["columns", "gap", "row-gap", "column-gap", "responsive"];
     }
 
     // -------------------------------------------------------------------------
@@ -80,14 +70,6 @@ export class YumeMasonry extends HTMLElement {
         this.setAttribute("column-gap", val);
     }
 
-    /** Minimum item width for responsive collapse. */
-    get minItemWidth() {
-        return this.getAttribute("min-item-width") || "240px";
-    }
-    set minItemWidth(val) {
-        this.setAttribute("min-item-width", val);
-    }
-
     /**
      * Auto-reduce columns at narrow container widths via mobile/tablet
      * breakpoint tokens. Defaults to `true`; set `responsive="false"` to
@@ -121,9 +103,7 @@ export class YumeMasonry extends HTMLElement {
         this.shadowRoot.innerHTML = `<div class="container" part="container"><slot></slot></div>`;
         this._container = this.shadowRoot.querySelector(".container");
         this._slot = this.shadowRoot.querySelector("slot");
-        this._slot.addEventListener("slotchange", () =>
-            this._syncObserver(),
-        );
+        this._slot.addEventListener("slotchange", () => this._syncObserver());
     }
 
     // -------------------------------------------------------------------------
@@ -152,9 +132,9 @@ export class YumeMasonry extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [sheet];
     }
 
-    _emitLayoutEvent(containerWidth, columnCount) {
+    _emitLayoutEvent(containerWidth, columnCount, colGapPx = 0, rowGapPx = 0, itemCount = 0) {
         const height = this._container ? this._container.style.height : "";
-        const signature = `${columnCount}|${containerWidth}|${height}`;
+        const signature = `${columnCount}|${containerWidth}|${colGapPx}|${rowGapPx}|${height}|${itemCount}`;
         if (signature === this._lastLayoutSignature) return;
         this._lastLayoutSignature = signature;
 
@@ -213,20 +193,16 @@ export class YumeMasonry extends HTMLElement {
         const containerWidth = this._container.offsetWidth;
         const cols = this._getColumnCount();
 
+        const containerStyles = getComputedStyle(this._container);
+        const colGapPx = parseFloat(containerStyles.columnGap) || 0;
+        const rowGapPx = parseFloat(containerStyles.rowGap) || 0;
+
         if (!items.length) {
             this._container.style.height = "";
-            this._emitLayoutEvent(containerWidth, cols);
+            this._emitLayoutEvent(containerWidth, cols, colGapPx, rowGapPx, 0);
             return;
         }
 
-        const colGapPx = measureCSSLength(
-            this._container,
-            resolveGapToken(this, "column-gap"),
-        );
-        const rowGapPx = measureCSSLength(
-            this._container,
-            resolveGapToken(this, "row-gap"),
-        );
         const colWidth = (containerWidth - colGapPx * (cols - 1)) / cols;
         const colHeights = new Array(cols).fill(0);
 
@@ -244,7 +220,7 @@ export class YumeMasonry extends HTMLElement {
         });
 
         this._container.style.height = `${Math.max(...colHeights) - rowGapPx}px`;
-        this._emitLayoutEvent(containerWidth, cols);
+        this._emitLayoutEvent(containerWidth, cols, colGapPx, rowGapPx, items.length);
     }
 
     _scheduleLayout() {

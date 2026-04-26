@@ -217,7 +217,6 @@ declare module "react" {
                 gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
                 "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
                 "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "min-item-width"?: string;
                 responsive?: boolean | string;
             }>;
             "y-menu": El<{

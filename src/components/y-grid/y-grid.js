@@ -225,7 +225,7 @@ export class YumeGrid extends HTMLElement {
         return this.autoFlow;
     }
 
-    _buildColumnsTemplate() {
+    _buildColumnsTemplate(columnGapValue) {
         const raw = this.columns;
         const minWidth = `var(--component-grid-min-item-width, ${this.minItemWidth})`;
         const intCols = parseInt(raw, 10);
@@ -236,19 +236,23 @@ export class YumeGrid extends HTMLElement {
         }
         if (isInteger && intCols > 0) {
             if (this.responsive) {
-                return this._buildResponsiveColumnsTemplate(intCols, minWidth);
+                return this._buildResponsiveColumnsTemplate(
+                    intCols,
+                    minWidth,
+                    columnGapValue,
+                );
             }
             return `repeat(${intCols}, 1fr)`;
         }
         return raw;
     }
 
-    _buildResponsiveColumnsTemplate(cols, minWidth) {
-        // Match the gap actually applied along the inline axis so the
-        // container width at which auto-fit drops a column stays accurate
-        // when column-gap diverges from the unified gap.
-        const columnGap = resolveGapToken(this, "column-gap");
-        const evenShare = `calc((100% - ${cols - 1} * ${columnGap}) / ${cols})`;
+    _buildResponsiveColumnsTemplate(cols, minWidth, columnGapValue) {
+        // Use the same expression that backs the rendered column-gap so
+        // overrides through --component-grid-column-gap (or the resolved
+        // token) flow into the auto-fit collapse math. Otherwise the visual
+        // gap and the calc would drift apart.
+        const evenShare = `calc((100% - ${cols - 1} * ${columnGapValue}) / ${cols})`;
         const itemMin = `min(100%, max(${minWidth}, ${evenShare}))`;
         return `repeat(auto-fit, minmax(${itemMin}, 1fr))`;
     }
@@ -267,7 +271,7 @@ export class YumeGrid extends HTMLElement {
         const rowGapValue = `var(--component-grid-row-gap, ${resolveGapToken(this, "row-gap")})`;
         const columnGapValue = `var(--component-grid-column-gap, ${resolveGapToken(this, "column-gap")})`;
 
-        const columnsTemplate = `var(--component-grid-columns, ${this._buildColumnsTemplate()})`;
+        const columnsTemplate = `var(--component-grid-columns, ${this._buildColumnsTemplate(columnGapValue)})`;
         const rowsTemplateRaw = this._buildRowsTemplate();
         const rowsTemplate = rowsTemplateRaw
             ? `var(--component-grid-rows, ${rowsTemplateRaw})`
