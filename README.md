@@ -89,6 +89,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Dock         | `<y-dock>`         | Fixed navigation dock                               |
 | Drawer       | `<y-drawer>`       | Side drawer / sidebar                               |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                         |
+| Grid         | `<y-grid>`         | CSS Grid + masonry layout container                 |
 | Icon         | `<y-icon>`         | SVG icon display                                    |
 | Input        | `<y-input>`        | Text input field                                    |
 | Menu         | `<y-menu>`         | Dropdown navigation menu                            |

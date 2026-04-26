@@ -343,6 +343,71 @@ Events: `change`, `input`
 
 ---
 
+## y-grid
+
+CSS Grid + masonry layout container. Use `y-stack` for flex layouts; use `y-grid` for everything two-dimensional.
+
+| Attribute         | Values / Notes                                                                                                                          |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`            | `grid` (default) \| `masonry`                                                                                                           |
+| `columns`         | integer (default `3`) → `repeat(N, 1fr)`; `"auto"` → `repeat(auto-fit, minmax(min-item-width, 1fr))`; raw template string passed through |
+| `rows`            | integer or raw `grid-template-rows` value (default unset)                                                                                |
+| `auto-flow`       | `row` (default) \| `column` \| `row dense` \| `column dense` — ignored in masonry                                                       |
+| `auto-rows`       | raw `grid-auto-rows` value (e.g. `"minmax(100px, auto)"`)                                                                               |
+| `auto-columns`    | raw `grid-auto-columns` value                                                                                                           |
+| `gap`             | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens  |
+| `row-gap`         | same scale as `gap`; overrides row gap independently                                                                                    |
+| `column-gap`      | same scale as `gap`; overrides column gap independently                                                                                 |
+| `align`           | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                               |
+| `justify`         | `start` \| `center` \| `end` \| `stretch` (default) — maps to `justify-items`                                                           |
+| `align-content`   | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly`                                                |
+| `justify-content` | same set as `align-content`, default `start`                                                                                            |
+| `min-item-width`  | minimum item width for `columns="auto"` and responsive collapse (default `240px`)                                                       |
+| `responsive`      | boolean (default `true`); set `responsive="false"` to opt out. Only applies when `columns` is an integer.                               |
+| `dense`           | boolean shortcut for `auto-flow="row dense"`                                                                                            |
+
+Slot: default (grid items). Children may use `style="grid-column: span 2"` or similar to span tracks; spans are ignored in masonry.
+
+Events: `y-grid-layout` — `{ mode, columns, containerWidth }`, fires after each masonry settle.
+
+Responsive behavior (integer `columns` only): collapses to `1` column at or below the mobile breakpoint and `min(2, columns)` at or below the tablet breakpoint, measured against container width. Raw template strings opt out automatically.
+
+Masonry mode positions items absolutely into the shortest column via JS using a `ResizeObserver` and rAF-batched relayouts. Ignores grid-only attributes and child `grid-column` / `grid-row` styles.
+
+A11y: layout-only — no role or ARIA. Tab order follows DOM order; in `dense` and `masonry` modes the visual order may diverge from the focus order.
+
+CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`), `--component-grid-mobile-breakpoint` (default `576px`), `--component-grid-tablet-breakpoint` (default `768px`), `--component-grid-auto-rows`, `--component-grid-auto-columns`
+
+CSS Parts: `container`
+
+```html
+<!-- Card grid, responsive -->
+<y-grid columns="3" gap="large" responsive>
+    <y-card>...</y-card>
+    <y-card>...</y-card>
+    <y-card>...</y-card>
+</y-grid>
+
+<!-- Auto-fit at min item width -->
+<y-grid columns="auto" min-item-width="200px" gap="medium">
+    <y-card>...</y-card>
+</y-grid>
+
+<!-- Item spans -->
+<y-grid columns="4" gap="medium" responsive="false">
+    <y-card style="grid-column: span 2">Wide</y-card>
+    <y-card>1</y-card>
+    <y-card>1</y-card>
+</y-grid>
+
+<!-- Masonry -->
+<y-grid mode="masonry" columns="3" gap="large">
+    <y-card>...</y-card>
+</y-grid>
+```
+
+---
+
 ## y-stack
 
 Layout container for rows, columns, grids, or masonry. Purely structural — no visual styling.

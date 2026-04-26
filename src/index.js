@@ -28,6 +28,7 @@ export * from "./components/y-dialog/y-dialog.js";
 export * from "./components/y-drawer/y-drawer.js";
 export * from "./components/y-dock/y-dock.js";
 export * from "./components/y-gallery/y-gallery.js";
+export * from "./components/y-grid/y-grid.js";
 export * from "./components/y-icon/y-icon.js";
 export { registerIcon, registerIcons, getIcon } from "./icons/registry.js";
 export * from "./components/y-input/y-input.js";

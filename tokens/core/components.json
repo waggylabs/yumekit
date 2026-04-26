@@ -556,6 +556,20 @@
         "$value": "{border.x-thin}"
       }
     },
+    "grid": {
+      "min-item-width": {
+        "$type": "dimension",
+        "$value": "240px"
+      },
+      "mobile-breakpoint": {
+        "$type": "dimension",
+        "$value": "576px"
+      },
+      "tablet-breakpoint": {
+        "$type": "dimension",
+        "$value": "768px"
+      }
+    },
     "stack": {
       "mobile-breakpoint": {
         "$type": "dimension",

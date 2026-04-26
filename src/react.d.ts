@@ -178,6 +178,24 @@ declare module "react" {
                 loop?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-grid": El<{
+                mode?: "grid" | "masonry";
+                columns?: string | number;
+                rows?: string | number;
+                "auto-flow"?: "row" | "column" | "row dense" | "column dense";
+                "auto-rows"?: string;
+                "auto-columns"?: string;
+                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                align?: "start" | "center" | "end" | "stretch" | "baseline";
+                justify?: "start" | "center" | "end" | "stretch";
+                "align-content"?: "start" | "center" | "end" | "stretch" | "between" | "around" | "evenly";
+                "justify-content"?: "start" | "center" | "end" | "stretch" | "between" | "around" | "evenly";
+                "min-item-width"?: string;
+                responsive?: boolean | string;
+                dense?: boolean | string;
+            }>;
             "y-icon": El<{
                 name?: string;
                 size?: "x-small" | "small" | "medium" | "large" | "x-large";
