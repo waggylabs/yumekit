@@ -31,14 +31,13 @@ export class YumeBreak extends HTMLElement {
     connectedCallback() {
         if (!this.hasAttribute("role")) this.setAttribute("role", "separator");
         this._syncAriaOrientation();
-        this._observeSlot();
+        this._updateContentVisibility();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
         this.render();
         this._syncAriaOrientation();
-        this._observeSlot();
     }
 
     // -------------------------------------------------------------------------
@@ -118,6 +117,7 @@ export class YumeBreak extends HTMLElement {
         });
 
         const slot = _el("slot");
+        slot.addEventListener("slotchange", () => this._updateContentVisibility());
         const fallback = this._buildFallbackContent();
         if (fallback) slot.appendChild(fallback);
 
@@ -133,6 +133,7 @@ export class YumeBreak extends HTMLElement {
 
         this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
         this.shadowRoot.replaceChildren(root);
+        this._updateContentVisibility();
     }
 
     // -------------------------------------------------------------------------
@@ -236,7 +237,15 @@ export class YumeBreak extends HTMLElement {
                 padding-block: var(--component-break-gap);
             }
 
-            .content.is-empty { display: none; }
+            /* Empty state: collapse to a single continuous line so dashed/
+               dotted patterns don't restart in the middle. */
+            .break.is-empty .content,
+            .break.is-empty .line-end { display: none; }
+            .break.is-empty .line-start { margin-inline-end: var(--_inset); }
+            :host([orientation="vertical"]) .break.is-empty .line-start {
+                margin-inline-end: 0;
+                margin-block-end: var(--_inset);
+            }
 
             .fallback {
                 display: inline-flex;
@@ -264,13 +273,6 @@ export class YumeBreak extends HTMLElement {
         return Boolean(this.label || this.icon);
     }
 
-    _observeSlot() {
-        const slot = this.shadowRoot?.querySelector("slot");
-        if (!slot) return;
-        slot.addEventListener("slotchange", () => this._updateContentVisibility());
-        this._updateContentVisibility();
-    }
-
     _syncAriaOrientation() {
         if (this.orientation === "vertical") {
             this.setAttribute("aria-orientation", "vertical");
@@ -280,9 +282,9 @@ export class YumeBreak extends HTMLElement {
     }
 
     _updateContentVisibility() {
-        const content = this.shadowRoot?.querySelector(".content");
-        if (!content) return;
-        content.classList.toggle("is-empty", !this._hasMeaningfulContent());
+        const root = this.shadowRoot?.querySelector(".break");
+        if (!root) return;
+        root.classList.toggle("is-empty", !this._hasMeaningfulContent());
     }
 }
 

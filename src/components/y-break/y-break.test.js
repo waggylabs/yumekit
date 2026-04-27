@@ -30,11 +30,16 @@ describe("YumeBreak", () => {
         expect(slot).to.exist;
     });
 
-    it("hides the content area when there is no slot/label/icon", async () => {
+    it("collapses to a single continuous line when there is no slot/label/icon", async () => {
         const el = await fixture(html`<y-break></y-break>`);
         await aTimeout(0);
-        const content = el.shadowRoot.querySelector(".content");
-        expect(content.classList.contains("is-empty")).to.be.true;
+        const root = el.shadowRoot.querySelector(".break");
+        expect(root.classList.contains("is-empty")).to.be.true;
+
+        // line-start absorbs both insets and line-end is hidden so dashed/
+        // dotted variants stay visually unbroken across the divider.
+        const lineEnd = el.shadowRoot.querySelector(".line-end");
+        expect(getComputedStyle(lineEnd).display).to.equal("none");
     });
 
     // ── Orientation ───────────────────────────────────────────
@@ -110,8 +115,9 @@ describe("YumeBreak", () => {
         const el = await fixture(html`<y-break label="OR"></y-break>`);
         await aTimeout(0);
         const content = el.shadowRoot.querySelector(".content");
+        const root = el.shadowRoot.querySelector(".break");
         expect(content.textContent).to.contain("OR");
-        expect(content.classList.contains("is-empty")).to.be.false;
+        expect(root.classList.contains("is-empty")).to.be.false;
     });
 
     it("renders a y-icon in the content fallback when icon is set", async () => {
@@ -146,8 +152,8 @@ describe("YumeBreak", () => {
         expect(assigned).to.have.length(1);
         expect(assigned[0].textContent).to.equal("real");
 
-        const content = el.shadowRoot.querySelector(".content");
-        expect(content.classList.contains("is-empty")).to.be.false;
+        const root = el.shadowRoot.querySelector(".break");
+        expect(root.classList.contains("is-empty")).to.be.false;
     });
 
     // ── Inset ─────────────────────────────────────────────────
@@ -186,6 +192,34 @@ describe("YumeBreak", () => {
         expect(el.shadowRoot.querySelector("[part~='line-start']")).to.exist;
         expect(el.shadowRoot.querySelector("[part~='line-end']")).to.exist;
         expect(el.shadowRoot.querySelector("[part='content']")).to.exist;
+    });
+
+    // ── Listener hygiene ──────────────────────────────────────
+    it("attaches exactly one slotchange listener per render (no leaks across attribute changes)", async () => {
+        const el = await fixture(html`<y-break></y-break>`);
+
+        // Force several re-renders.
+        el.setAttribute("variant", "dashed");
+        el.setAttribute("align", "start");
+        el.setAttribute("label", "A");
+        el.removeAttribute("label");
+        await aTimeout(0);
+
+        const slot = el.shadowRoot.querySelector("slot");
+        let calls = 0;
+        const original = el._updateContentVisibility.bind(el);
+        el._updateContentVisibility = () => {
+            calls += 1;
+            original();
+        };
+
+        // A slotchange fires once when light-DOM children are added.
+        const child = document.createElement("span");
+        child.textContent = "x";
+        el.appendChild(child);
+        await aTimeout(0);
+
+        expect(calls).to.equal(1);
     });
 
     // ── Property setters ──────────────────────────────────────

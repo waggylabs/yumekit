@@ -364,11 +364,11 @@
         "break": {
             "line-color": {
                 "$type": "color",
-                "$value": "{base.border}"
+                "$value": "{base.content.lightest}"
             },
             "content-color": {
                 "$type": "color",
-                "$value": "{base.content.light}"
+                "$value": "{base.content.lightest}"
             }
         },
         "checkbox": {
