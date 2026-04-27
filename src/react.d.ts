@@ -25,6 +25,14 @@ declare module "react" {
                 shape?: string;
                 color?: string;
             }>;
+            "y-break": El<{
+                orientation?: "horizontal" | "vertical";
+                align?: "start" | "center" | "end";
+                variant?: "solid" | "dashed" | "dotted";
+                label?: string;
+                icon?: string;
+                inset?: "none" | "sm" | "md" | "lg";
+            }>;
             "y-breadcrumbs": El<{
                 items?: string;
                 size?: "small" | "medium" | "large";

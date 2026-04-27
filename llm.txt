@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 35 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 40 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -94,6 +94,34 @@ Attributes:
 <y-theme theme="blue-light">
   <!-- app content -->
 </y-theme>
+```
+
+---
+
+### y-break
+Decorative divider that draws a horizontal or vertical line, optionally broken by centered content.
+
+Tag: `<y-break>`
+Attributes:
+- `orientation` — `"horizontal"` (default) | `"vertical"`. Vertical breaks need a height from their container (flex/grid parent or explicit height).
+- `align` — `"start"` | `"center"` (default) | `"end"` — position of the centered content along the line.
+- `variant` — `"solid"` (default) | `"dashed"` | `"dotted"` — line style.
+- `label` — string, plain text rendered in the center.
+- `icon` — registered icon name rendered in the center (icon then label when both are set).
+- `inset` — `"none"` (default) | `"sm"` | `"md"` | `"lg"` — padding applied to the outer ends of the line(s).
+
+Slots: default — slotted content takes precedence over `label` / `icon`.
+CSS Parts: `line`, `line-start`, `line-end`, `content`.
+
+The host receives `role="separator"`, plus `aria-orientation="vertical"` when vertical (horizontal is the implicit default and is omitted). With no slotted content, label, or icon, a single unbroken line is rendered.
+
+`--component-break-line-style` overrides the `variant` attribute per instance without re-render.
+
+```html
+<y-break></y-break>
+<y-break label="OR"></y-break>
+<y-break icon="star" variant="dashed"></y-break>
+<y-break align="start" inset="md"><y-tag color="primary">New section</y-tag></y-break>
 ```
 
 ---

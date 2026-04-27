@@ -124,6 +124,28 @@
         "$value": 0
       }
     },
+    "break": {
+      "line-thickness": {
+        "$type": "borderWidth",
+        "$value": "{border.x-thin}"
+      },
+      "gap": {
+        "$type": "spacing",
+        "$value": "{spacing.small}"
+      },
+      "min-length": {
+        "$type": "sizing",
+        "$value": "{sizing.x-small}"
+      },
+      "content-font-size": {
+        "$type": "fontSizes",
+        "$value": "0.875em"
+      },
+      "content-font-weight": {
+        "$type": "number",
+        "$value": 500
+      }
+    },
     "button": {
       "border-radius-inner": {
         "$type": "borderRadius",
