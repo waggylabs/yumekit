@@ -799,13 +799,17 @@ Drag-and-drop reorderable list. MVP — within-list reordering only.
 
 **Events:** `drag:start`, `drag:end`, `reorder` (`{ oldIndex, newIndex, item, list }`), `update` (`{ item, oldIndex, newIndex, list }`)
 
-**Methods:** `toArray()`, `contains(item)` (direct children only), `destroy()`
+**Methods:** `toArray()`, `hasItem(item)` (strict direct-child check; native `contains()` is unchanged), `destroy()`
 
 **Slots:** default — give each item a unique `data-id` so consumers can read order via `toArray()`.
 
 **Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). Focus stays on the moved item; a polite `aria-live` region announces _"Item moved from position X to position Y."_
 
-**CSS Parts:** `list`, `item`, `ghost`
+**CSS Parts:** `list` (shadow-DOM wrapper around the slot).
+
+**Styling items:** items are slotted light-DOM children, so style them with regular descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.) — `::part()` doesn't reach light DOM.
+
+**Styling the ghost:** target it via `[data-y-droplist-ghost]`, the class from `ghost-class` (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties.
 
 **CSS Custom Properties:**
 - `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`

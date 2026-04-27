@@ -664,7 +664,7 @@ Events (bubble + composed, not cancelable):
 
 Methods:
 - `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
-- `contains(item)` — true when `item` is a direct slotted child. Note: this overrides `Node.prototype.contains` and is intentionally stricter — descendants of slotted children return `false`.
+- `hasItem(item)` — true when `item` is a direct slotted child of the droplist. Use this for strict same-list membership checks; native `contains()` retains its standard ancestry semantics.
 - `destroy()` — removes all listeners and the mutation observer. The component re-initializes on disconnect/reconnect.
 
 Behavior:
@@ -674,7 +674,11 @@ Behavior:
 - Settle animation uses FLIP. Skipped when `animation="0"` or `prefers-reduced-motion: reduce`.
 - **Touch is not supported in the MVP** — track the touch follow-up before shipping to mobile.
 
-CSS Parts: `list`, `item`, `ghost`.
+CSS Parts: `list` (the shadow-DOM wrapper around the slot).
+
+Styling items: list items are slotted light-DOM children, so style them with regular descendant selectors (`y-droplist > *`, `y-droplist > .y-droplist__dragging`, etc.) — `::part()` doesn't reach light DOM.
+
+Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attribute selector, the class set by the `ghost-class` attribute (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties below.
 
 CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`.
 

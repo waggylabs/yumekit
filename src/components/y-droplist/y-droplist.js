@@ -102,22 +102,21 @@ export class YumeDroplist extends HTMLElement {
     // Public
     // -------------------------------------------------------------------------
 
-    /**
-     * True if `item` is a direct slotted child of this droplist.
-     * Note: this overrides Node.prototype.contains and is intentionally stricter —
-     * it returns false for descendants nested inside slotted children, and excludes
-     * the internal ghost placeholder. Use `Node.prototype.contains.call(el, x)` if
-     * you need native ancestry semantics.
-     */
-    contains(item) {
-        return (
-            Boolean(item) && item.parentNode === this && !this._isInternal(item)
-        );
-    }
-
     /** Removes all listeners and observers. The component re-initializes if reconnected to the DOM. */
     destroy() {
         this._teardown();
+    }
+
+    /**
+     * True if `item` is a direct slotted child of this droplist (excluding the
+     * internal ghost placeholder). Use this instead of the native `contains()`
+     * when you need a strict same-list membership check — e.g., to confirm an
+     * event target is one of this droplist's items rather than a nested descendant.
+     */
+    hasItem(item) {
+        return (
+            Boolean(item) && item.parentNode === this && !this._isInternal(item)
+        );
     }
 
     render() {
@@ -203,8 +202,11 @@ export class YumeDroplist extends HTMLElement {
     _createGhost(refItem) {
         const rect = refItem.getBoundingClientRect();
         const ghost = document.createElement("div");
+        // The ghost lives in light DOM (sibling of slotted items, so it participates
+        // in the host's flex flow), which means ::part() can't reach it. Style it
+        // via the [data-y-droplist-ghost] attribute selector, the ghost-class
+        // attribute, or the --component-droplist-ghost-* custom properties instead.
         ghost.setAttribute("data-y-droplist-ghost", "");
-        ghost.setAttribute("part", "ghost");
         ghost.setAttribute("aria-hidden", "true");
         ghost.classList.add(this.ghostClass);
         if (this.vertical) ghost.style.height = `${rect.height}px`;
@@ -268,7 +270,11 @@ export class YumeDroplist extends HTMLElement {
             child.setAttribute("role", "listitem");
             if (!child.hasAttribute("tabindex"))
                 child.setAttribute("tabindex", "0");
-            child.setAttribute("aria-grabbed", "false");
+            // Don't overwrite the active drag item's aria-grabbed="true" —
+            // ghost insertion and other mid-drag mutations re-trigger this method.
+            if (child !== this._dragItem) {
+                child.setAttribute("aria-grabbed", "false");
+            }
             if (this.disabled) child.removeAttribute("draggable");
             else child.setAttribute("draggable", "true");
         }

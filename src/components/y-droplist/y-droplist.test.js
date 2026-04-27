@@ -75,7 +75,7 @@ describe("YumeDroplist", () => {
         expect(el.hasAttribute("aria-disabled")).to.be.false;
     });
 
-    // ── toArray / contains ───────────────────────────────────
+    // ── toArray / hasItem / contains ──────────────────────────
     it("toArray returns data-id values in DOM order", async () => {
         const el = await fixture(html`
             <y-droplist>
@@ -97,7 +97,23 @@ describe("YumeDroplist", () => {
         expect(el.toArray()).to.deep.equal(["a", ""]);
     });
 
-    it("contains() returns true for direct children, false for descendants", async () => {
+    it("hasItem() returns true only for direct slotted children", async () => {
+        const el = await fixture(html`
+            <y-droplist>
+                <div data-id="a"><span>nested</span></div>
+            </y-droplist>
+        `);
+        const direct = el.firstElementChild;
+        const nested = direct.firstElementChild;
+        expect(el.hasItem(direct)).to.be.true;
+        expect(el.hasItem(nested)).to.be.false;
+        expect(el.hasItem(null)).to.be.false;
+    });
+
+    it("native contains() is preserved (returns true for nested descendants)", async () => {
+        // Regression: an earlier draft overrode Node.prototype.contains with
+        // strict direct-child semantics, breaking common patterns like
+        // click-outside detection. Native ancestry semantics must be intact.
         const el = await fixture(html`
             <y-droplist>
                 <div data-id="a"><span>nested</span></div>
@@ -106,8 +122,8 @@ describe("YumeDroplist", () => {
         const direct = el.firstElementChild;
         const nested = direct.firstElementChild;
         expect(el.contains(direct)).to.be.true;
-        expect(el.contains(nested)).to.be.false;
-        expect(el.contains(null)).to.be.false;
+        expect(el.contains(nested)).to.be.true;
+        expect(el.contains(document.body)).to.be.false;
     });
 
     // ── Keyboard reorder ──────────────────────────────────────
@@ -457,6 +473,43 @@ describe("YumeDroplist", () => {
 
         expect(reorderSpy).to.not.have.been.called;
         expect(el.toArray()).to.deep.equal(["a"]);
+    });
+
+    // ── Regression: aria-grabbed survives mid-drag mutations ──
+    it("preserves aria-grabbed='true' on the active drag item across mutations", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="a" style="height:40px">A</div>
+                <div data-id="b" style="height:40px">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        a.dispatchEvent(new DragEvent("dragstart", { bubbles: true, composed: true }));
+        expect(a.getAttribute("aria-grabbed")).to.equal("true");
+
+        // dragover inserts the ghost into the host's light DOM, which is a
+        // childList mutation that re-fires _initializeChildren via the observer.
+        el.dispatchEvent(new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        }));
+        // Let the MutationObserver microtask flush.
+        await aTimeout(0);
+
+        expect(a.getAttribute("aria-grabbed")).to.equal("true");
+
+        // Also verify direct DOM mutation while dragging doesn't clear it.
+        const c = document.createElement("div");
+        c.dataset.id = "c";
+        el.appendChild(c);
+        await aTimeout(0);
+
+        expect(a.getAttribute("aria-grabbed")).to.equal("true");
+        expect(c.getAttribute("aria-grabbed")).to.equal("false");
+
+        a.dispatchEvent(new DragEvent("dragend", { bubbles: true, composed: true }));
+        expect(a.getAttribute("aria-grabbed")).to.equal("false");
     });
 
     // ── CSS parts ─────────────────────────────────────────────
