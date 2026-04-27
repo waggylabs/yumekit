@@ -1,3 +1,5 @@
+import { createElement as _el } from "../../modules/helpers.js";
+
 export class YumeRadio extends HTMLElement {
     static formAssociated = true;
 
@@ -72,12 +74,15 @@ export class YumeRadio extends HTMLElement {
     // -------------------------------------------------------------------------
 
     render() {
+        const fieldset = _el(
+            "fieldset",
+            { role: "radiogroup", part: "radio" },
+            this._buildOptions(),
+        );
+
         this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
-        this.shadowRoot.innerHTML = `
-            <fieldset role="radiogroup" part="radio">
-                ${this._buildOptionsHTML()}
-            </fieldset>
-        `;
+        this.shadowRoot.replaceChildren(fieldset);
+
         this._bindRadioListeners();
     }
 
@@ -99,23 +104,28 @@ export class YumeRadio extends HTMLElement {
         });
     }
 
-    _buildOptionsHTML() {
+    _buildOptions() {
         const { name, disabled, value, options } = this;
-        return options.map((opt, idx) => `
-            <label part="label">
-                <input
-                    type="radio"
-                    name="${name}"
-                    value="${opt.value}"
-                    ${disabled ? "disabled" : ""}
-                    ${value === opt.value ? "checked" : ""}
-                    tabindex="${value ? (value === opt.value ? "0" : "-1") : idx === 0 ? "0" : "-1"}"
-                    role="radio"
-                    aria-checked="${value === opt.value}"
-                />
-                ${opt.label}
-            </label>
-        `).join("");
+
+        return options.map((opt, idx) => {
+            const isSelected = value === opt.value;
+            const tabindex = value
+                ? (isSelected ? "0" : "-1")
+                : (idx === 0 ? "0" : "-1");
+
+            const input = _el("input", {
+                type: "radio",
+                name,
+                value: opt.value,
+                disabled,
+                checked: isSelected,
+                tabindex,
+                role: "radio",
+                "aria-checked": String(isSelected),
+            });
+
+            return _el("label", { part: "label" }, [input, opt.label]);
+        });
     }
 
     _buildStyleSheet() {
@@ -156,7 +166,7 @@ export class YumeRadio extends HTMLElement {
                 left: 50%;
                 width: var(--component-radio-dot-size, 8px);
                 height: var(--component-radio-dot-size, 8px);
-                background: var(--component-radio-color);
+                background: var(--component-radio-accent);
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
             }

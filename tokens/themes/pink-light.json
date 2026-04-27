@@ -378,7 +378,7 @@
       },
       "accent": {
         "$type": "color",
-        "$value": "{primary.content.DEFAULT}"
+        "$value": "{primary.content.active}"
       }
     },
     "dock": {
@@ -580,7 +580,7 @@
       },
       "accent": {
         "$type": "color",
-        "$value": "{primary.content.DEFAULT}"
+        "$value": "{primary.content.active}"
       }
     },
     "select": {
