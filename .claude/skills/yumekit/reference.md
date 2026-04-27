@@ -436,30 +436,28 @@ CSS Parts: `container`
 
 ## y-stack
 
-Layout container for rows, columns, grids, or masonry. Purely structural — no visual styling.
+Flexbox layout container for rows or columns. Purely structural — no visual styling. For CSS Grid layouts use [`y-grid`](#y-grid); for shortest-column packing use [`y-masonry`](#y-masonry).
 
-| Attribute    | Values / Notes                                                                                                                          |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `mode`       | `flex` (default) \| `grid` \| `masonry`                                                                                                 |
-| `direction`  | `row` (default) \| `column` — flex mode only                                                                                            |
-| `columns`    | number of columns for grid/masonry (default: `3`)                                                                                       |
-| `gap`        | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens |
-| `wrap`       | boolean — allow flex items to wrap (flex mode only)                                                                                     |
-| `align`      | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — cross-axis alignment                                                |
-| `justify`    | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — flex only                                                 |
-| `responsive` | boolean (default `true`) — auto-adapt to the stack's container width (not viewport). Set `responsive="false"` to opt out                |
+| Attribute       | Values / Notes                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `direction`     | `row` (default) \| `row-reverse` \| `column` \| `column-reverse` — maps to `flex-direction`                                             |
+| `wrap`          | `nowrap` (default) \| `wrap` \| `wrap-reverse`. Boolean presence (no value) resolves to `wrap` for back-compat.                         |
+| `gap`           | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens |
+| `row-gap`       | same scale as `gap`; overrides row gap independently                                                                                    |
+| `column-gap`    | same scale as `gap`; overrides column gap independently                                                                                 |
+| `align`         | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                               |
+| `justify`       | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — maps to `justify-content`                                 |
+| `align-content` | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly` — maps to `align-content` (only meaningful with wrap) |
+| `inline`        | boolean — use `display: inline-flex` instead of `flex`                                                                                  |
+| `responsive`    | boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables `wrap` and collapses to `column` below the mobile breakpoint (measured against the stack's own container width). Set `responsive="false"` to opt out. |
 
 Slot: default (child elements to lay out)
 
-`responsive` behavior by mode:
-
-- **grid**: uses `repeat(auto-fit, minmax(...))` so columns collapse when the container narrows, capped at the `columns` value. Each item is at least `--component-stack-min-item-width` wide.
-- **flex** + `direction="row"`: automatically enables `wrap` so items flow to the next line when they no longer fit.
-- **masonry**: column count drops to `2` below the tablet breakpoint and `1` below the mobile breakpoint, measured against container width.
-
-CSS Custom Properties: `--component-stack-gap`, `--component-stack-columns`, `--component-stack-min-item-width` (default `240px`, grid responsive only), `--component-stack-mobile-breakpoint` (default `576px`, masonry only), `--component-stack-tablet-breakpoint` (default `768px`, masonry only)
+CSS Custom Properties: `--component-stack-gap`, `--component-stack-row-gap`, `--component-stack-column-gap`, `--component-stack-mobile-breakpoint` (default `576px`)
 
 CSS Parts: `container`
+
+Migration: `<y-stack mode="grid" …>` → [`<y-grid …>`](#y-grid); `<y-stack mode="masonry" …>` → [`<y-masonry …>`](#y-masonry).
 
 ```html
 <!-- Row of buttons -->
@@ -468,24 +466,28 @@ CSS Parts: `container`
     <y-button>Cancel</y-button>
 </y-stack>
 
-<!-- Card grid -->
-<y-stack mode="grid" columns="3" gap="large" responsive>
-    <y-card>...</y-card>
-    <y-card>...</y-card>
-    <y-card>...</y-card>
-</y-stack>
-
 <!-- Vertical form -->
 <y-stack direction="column" gap="medium">
     <y-input label="Name"></y-input>
     <y-input label="Email"></y-input>
 </y-stack>
 
-<!-- Masonry layout -->
-<y-stack mode="masonry" columns="3" gap="large" responsive>
-    <y-card>...</y-card>
-    <y-card>...</y-card>
+<!-- Wrapping toolbar with separate row/column gaps -->
+<y-stack direction="row" wrap row-gap="x-small" column-gap="large">
+    <y-button>One</y-button>
+    <y-button>Two</y-button>
+    <y-button>Three</y-button>
 </y-stack>
+
+<!-- Inline-flex action group inside flowing text -->
+<p>
+    Confirm
+    <y-stack inline gap="x-small">
+        <y-button size="small" color="primary">Yes</y-button>
+        <y-button size="small">No</y-button>
+    </y-stack>
+    to continue.
+</p>
 ```
 
 ---

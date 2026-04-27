@@ -33,9 +33,18 @@ Delete any empty sections before publishing.
 
 ## [0.5.0]
 
+### Added
+
 - New `y-grid` component — a pure-CSS layout container around CSS Grid (extracted from `y-stack` to give grid a dedicated component). Exposes the common Grid configuration as HTML attributes: `columns` (integer, `"auto"`, or raw `grid-template-columns`), `rows`, `auto-flow`, `auto-rows`, `auto-columns`, `gap`/`row-gap`/`column-gap` (mapped to `--spacing-*` tokens), `align`, `justify`, `align-content`, `justify-content`, `min-item-width`, `responsive`, and `dense`. Children may use inline `grid-column`/`grid-row` styles to span tracks. Responsive collapse (integer `columns` only) uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width` for smooth container-driven shrink.
 
 - New `y-masonry` component — a JS-positioned layout container that packs children of varying heights into the shortest column. Responsive collapse drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default).
+
+### Changed
+
+- **Breaking** `y-stack`: refocused as a flexbox-only primitive now that `y-grid` and `y-masonry` own their layout algorithms.
+    - **Removed**: `mode` attribute (and the `flex` / `grid` / `masonry` branches), the `columns` attribute, and the masonry observer/positioning machinery. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `--component-stack-columns`, `--component-stack-min-item-width`, and `--component-stack-tablet-breakpoint` CSS variables are gone with them.
+    - **Changed**: `direction` now also accepts `row-reverse` and `column-reverse`. `wrap` is now an enum (`nowrap` | `wrap` | `wrap-reverse`); presence without a value still resolves to `wrap` for back-compat. `responsive` on row directions now also collapses the stack to `column` below the mobile breakpoint via a CSS container query (in addition to the existing auto-wrap behavior).
+    - **Added**: `align-content`, `row-gap`, `column-gap`, and `inline` (boolean → `display: inline-flex`) attributes. New `--component-stack-row-gap` and `--component-stack-column-gap` CSS variables.
 
 ## [0.4.4] - 2026-04-25
 

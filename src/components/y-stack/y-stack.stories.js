@@ -1,98 +1,129 @@
 import "./y-stack.js";
-import "../y-card/y-card.js";
 import "../y-button/y-button.js";
 import "../y-input/y-input.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
+const GAP_OPTIONS = [
+    "none",
+    "x-small",
+    "small",
+    "medium",
+    "large",
+    "x-large",
+    "2x-large",
+    "4x-large",
+];
+
 export default {
     title: "Components/Stack",
     tags: ["autodocs"],
     argTypes: {
-        mode: {
-            control: "select",
-            options: ["flex", "grid", "masonry"],
-            description: "Layout algorithm.",
-            table: { defaultValue: { summary: "flex" } },
-        },
         direction: {
             control: "select",
-            options: ["row", "column"],
-            description: "Main axis direction (flex mode only).",
+            options: ["row", "row-reverse", "column", "column-reverse"],
+            description: "Main axis direction; maps to `flex-direction`.",
             table: { defaultValue: { summary: "row" } },
+        },
+        wrap: {
+            control: "select",
+            options: ["nowrap", "wrap", "wrap-reverse"],
+            description: "Maps to `flex-wrap`.",
+            table: { defaultValue: { summary: "nowrap" } },
         },
         gap: {
             control: "select",
-            options: [
-                "none",
-                "x-small",
-                "small",
-                "medium",
-                "large",
-                "x-large",
-                "2x-large",
-                "4x-large",
-            ],
-            description: "Gap between items, maps to --spacing-* tokens.",
+            options: GAP_OPTIONS,
+            description: "Gap between items, maps to `--spacing-*` tokens.",
             table: { defaultValue: { summary: "medium" } },
         },
-        columns: {
-            control: { type: "number", min: 1, max: 12 },
-            description: "Number of columns (grid and masonry modes).",
-            table: { defaultValue: { summary: 3 } },
+        rowGap: {
+            name: "row-gap",
+            control: "select",
+            options: ["", ...GAP_OPTIONS],
+            description: "Row gap override; falls back to `gap` when unset.",
         },
-        wrap: {
-            control: "boolean",
-            description: "Allow items to wrap (flex mode only).",
-            table: { defaultValue: { summary: false } },
+        columnGap: {
+            name: "column-gap",
+            control: "select",
+            options: ["", ...GAP_OPTIONS],
+            description: "Column gap override; falls back to `gap` when unset.",
         },
         align: {
             control: "select",
             options: ["start", "center", "end", "stretch", "baseline"],
-            description: "Cross-axis alignment.",
+            description: "Cross-axis alignment; maps to `align-items`.",
             table: { defaultValue: { summary: "stretch" } },
         },
         justify: {
             control: "select",
             options: ["start", "center", "end", "between", "around", "evenly"],
-            description: "Main-axis distribution (flex mode only).",
+            description: "Main-axis distribution; maps to `justify-content`.",
             table: { defaultValue: { summary: "start" } },
+        },
+        alignContent: {
+            name: "align-content",
+            control: "select",
+            options: [
+                "start",
+                "center",
+                "end",
+                "stretch",
+                "between",
+                "around",
+                "evenly",
+            ],
+            description:
+                "Cross-axis distribution between wrapped lines; maps to `align-content`.",
+            table: { defaultValue: { summary: "stretch" } },
+        },
+        inline: {
+            control: "boolean",
+            description: "Use `display: inline-flex` instead of `flex`.",
+            table: { defaultValue: { summary: false } },
         },
         responsive: {
             control: "boolean",
-            description: "Auto-reduce columns at narrow viewports.",
-            table: { defaultValue: { summary: false } },
+            description:
+                "On `direction=\"row\"`, auto-enable wrap and collapse to `column` below the mobile breakpoint.",
+            table: { defaultValue: { summary: true } },
         },
     },
     args: {
-        mode: "flex",
         direction: "row",
+        wrap: "nowrap",
         gap: "medium",
-        columns: 3,
-        wrap: false,
+        rowGap: "",
+        columnGap: "",
         align: "stretch",
         justify: "start",
+        alignContent: "stretch",
+        inline: false,
         responsive: true,
     },
     render: ({
-        mode,
         direction,
-        gap,
-        columns,
         wrap,
+        gap,
+        rowGap,
+        columnGap,
         align,
         justify,
+        alignContent,
+        inline,
         responsive,
     }) => `
         <y-stack
-            mode="${mode}"
             direction="${direction}"
+            wrap="${wrap}"
             gap="${gap}"
-            columns="${columns}"
+            ${rowGap ? `row-gap="${rowGap}"` : ""}
+            ${columnGap ? `column-gap="${columnGap}"` : ""}
             align="${align}"
             justify="${justify}"
-            ${wrap ? "wrap" : ""}
-            ${responsive ? "responsive" : ""}
+            align-content="${alignContent}"
+            ${inline ? "inline" : ""}
+            ${responsive ? "" : 'responsive="false"'}
         >
             <y-button color="primary">One</y-button>
             <y-button color="secondary">Two</y-button>
@@ -106,7 +137,7 @@ export const Default = {};
 
 export const Row = {
     render: () => `
-        <y-stack direction="row" gap="medium">
+        <y-stack direction="row" gap="medium" responsive="false">
             <y-button color="primary">Save</y-button>
             <y-button color="base">Cancel</y-button>
         </y-stack>
@@ -123,66 +154,42 @@ export const Column = {
     `,
 };
 
-export const RowWithJustify = {
+export const RowReverse = {
+    name: "Row Reverse",
     render: () => `
-        <div style="display:flex;flex-direction:column;gap:24px">
-            <div>
-                <p style="margin:0 0 8px"><strong>justify="start"</strong></p>
-                <y-stack direction="row" justify="start" gap="medium">
-                    <y-button color="primary">A</y-button>
-                    <y-button color="primary">B</y-button>
-                    <y-button color="primary">C</y-button>
-                </y-stack>
-            </div>
-            <div>
-                <p style="margin:0 0 8px"><strong>justify="center"</strong></p>
-                <y-stack direction="row" justify="center" gap="medium">
-                    <y-button color="primary">A</y-button>
-                    <y-button color="primary">B</y-button>
-                    <y-button color="primary">C</y-button>
-                </y-stack>
-            </div>
-            <div>
-                <p style="margin:0 0 8px"><strong>justify="end"</strong></p>
-                <y-stack direction="row" justify="end" gap="medium">
-                    <y-button color="primary">A</y-button>
-                    <y-button color="primary">B</y-button>
-                    <y-button color="primary">C</y-button>
-                </y-stack>
-            </div>
-            <div>
-                <p style="margin:0 0 8px"><strong>justify="between"</strong></p>
-                <y-stack direction="row" justify="between" gap="medium">
-                    <y-button color="primary">A</y-button>
-                    <y-button color="primary">B</y-button>
-                    <y-button color="primary">C</y-button>
-                </y-stack>
-            </div>
-        </div>
+        <y-stack direction="row-reverse" gap="medium" responsive="false">
+            <y-button color="primary">First in DOM</y-button>
+            <y-button color="secondary">Second</y-button>
+            <y-button color="success">Third</y-button>
+        </y-stack>
     `,
 };
 
-export const GapSizes = {
+export const Inline = {
+    render: () => `
+        <p style="margin:0">
+            Stacked actions inline with text →
+            <y-stack inline gap="x-small" align="center" responsive="false">
+                <y-button color="primary" size="small">Approve</y-button>
+                <y-button color="base" size="small">Skip</y-button>
+            </y-stack>
+            ← back to flowing text.
+        </p>
+    `,
+};
+
+export const RowWithJustify = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:24px">
-            ${[
-                "none",
-                "x-small",
-                "small",
-                "medium",
-                "large",
-                "x-large",
-                "2x-large",
-                "4x-large",
-            ]
+            ${["start", "center", "end", "between", "around", "evenly"]
                 .map(
-                    (g) => `
+                    (j) => `
                 <div>
-                    <p style="margin:0 0 8px"><strong>gap="${g}"</strong></p>
-                    <y-stack direction="row" gap="${g}">
-                        <y-button color="primary" size="small">A</y-button>
-                        <y-button color="primary" size="small">B</y-button>
-                        <y-button color="primary" size="small">C</y-button>
+                    <p style="margin:0 0 8px"><strong>justify="${j}"</strong></p>
+                    <y-stack direction="row" justify="${j}" gap="medium" responsive="false">
+                        <y-button color="primary">A</y-button>
+                        <y-button color="primary">B</y-button>
+                        <y-button color="primary">C</y-button>
                     </y-stack>
                 </div>
             `,
@@ -192,71 +199,94 @@ export const GapSizes = {
     `,
 };
 
-export const Grid = {
+export const AlignmentVariants = {
+    name: "Align Items",
     render: () => `
-        <y-stack mode="grid" columns="3" gap="large">
-            <y-card><div slot="header"><strong>Card 1</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 2</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 3</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 4</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 5</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 6</strong></div><p>Content</p></y-card>
-        </y-stack>
+        <div style="display:flex;flex-direction:column;gap:24px">
+            ${["start", "center", "end", "baseline", "stretch"]
+                .map(
+                    (a) => `
+                <div>
+                    <p style="margin:0 0 8px"><strong>align="${a}"</strong></p>
+                    <y-stack direction="row" align="${a}" gap="medium" responsive="false" style="height:80px;background:#f5f5f5;padding:8px">
+                        <y-button color="primary" size="small">Small</y-button>
+                        <y-button color="primary" size="medium">Medium</y-button>
+                        <y-button color="primary" size="large">Large</y-button>
+                    </y-stack>
+                </div>
+            `,
+                )
+                .join("")}
+        </div>
     `,
 };
 
-export const GridResponsive = {
-    name: "Grid (Responsive)",
+export const GapSizes = {
     render: () => `
-        <p style="margin:0 0 8px;color:#666">Resize the browser to see columns collapse.</p>
-        <y-stack mode="grid" columns="4" gap="large" responsive>
-            <y-card><div slot="header"><strong>Card 1</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 2</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 3</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 4</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 5</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 6</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 7</strong></div><p>Content</p></y-card>
-            <y-card><div slot="header"><strong>Card 8</strong></div><p>Content</p></y-card>
-        </y-stack>
+        <div style="display:flex;flex-direction:column;gap:24px">
+            ${GAP_OPTIONS.map(
+                (g) => `
+                <div>
+                    <p style="margin:0 0 8px"><strong>gap="${g}"</strong></p>
+                    <y-stack direction="row" gap="${g}" responsive="false">
+                        <y-button color="primary" size="small">A</y-button>
+                        <y-button color="primary" size="small">B</y-button>
+                        <y-button color="primary" size="small">C</y-button>
+                    </y-stack>
+                </div>
+            `,
+            ).join("")}
+        </div>
     `,
 };
 
-export const Masonry = {
+export const SeparateRowAndColumnGaps = {
+    name: "Row + Column Gap",
     render: () => `
-        <y-stack mode="masonry" columns="3" gap="large" responsive>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief content.</p></y-card>
-            <y-card><div slot="header"><strong>Tall</strong></div><p>This card has more content to make it taller than the others, demonstrating masonry layout.</p></y-card>
-            <y-card><div slot="header"><strong>Medium</strong></div><p>Some content here.</p></y-card>
-            <y-card><div slot="header"><strong>Short</strong></div><p>Brief.</p></y-card>
-            <y-card><div slot="header"><strong>Tall</strong></div><p>Another tall card with extra content to show the shortest-column-first packing behavior of masonry layout.</p></y-card>
-            <y-card><div slot="header"><strong>Medium</strong></div><p>Moderate content.</p></y-card>
-        </y-stack>
-    `,
-};
-
-export const WrapMode = {
-    name: "Flex Wrap",
-    render: () => `
-        <y-stack direction="row" gap="medium" wrap style="width:400px">
+        <y-stack direction="row" wrap row-gap="x-small" column-gap="2x-large" style="width:400px">
             <y-button color="primary">One</y-button>
             <y-button color="secondary">Two</y-button>
             <y-button color="success">Three</y-button>
             <y-button color="warning">Four</y-button>
             <y-button color="error">Five</y-button>
             <y-button color="help">Six</y-button>
-            <y-button color="primary">Seven</y-button>
-            <y-button color="secondary">Eight</y-button>
         </y-stack>
     `,
 };
 
-export const AlignCenter = {
+export const WrapVariants = {
+    name: "Wrap",
     render: () => `
-        <y-stack direction="row" align="center" gap="large">
-            <y-button color="primary" size="small">Small</y-button>
-            <y-button color="primary" size="medium">Medium</y-button>
-            <y-button color="primary" size="large">Large</y-button>
+        <div style="display:flex;flex-direction:column;gap:24px">
+            ${["nowrap", "wrap", "wrap-reverse"].map(
+                (w) => `
+                <div>
+                    <p style="margin:0 0 8px"><strong>wrap="${w}"</strong></p>
+                    <y-stack direction="row" wrap="${w}" gap="medium" responsive="false" style="width:300px;background:#f5f5f5;padding:8px">
+                        <y-button color="primary">One</y-button>
+                        <y-button color="secondary">Two</y-button>
+                        <y-button color="success">Three</y-button>
+                        <y-button color="warning">Four</y-button>
+                        <y-button color="error">Five</y-button>
+                    </y-stack>
+                </div>
+            `,
+            ).join("")}
+        </div>
+    `,
+};
+
+export const ResponsiveCollapse = {
+    name: "Responsive (Row → Column)",
+    render: () => `
+        <p style="margin:0 0 8px;color:#666">
+            Resize the stack's container — below the mobile breakpoint (576px by
+            default) the row collapses to a column.
+        </p>
+        <y-stack direction="row" gap="medium" responsive style="resize:horizontal;overflow:auto;border:1px dashed #ccc;padding:8px;width:800px">
+            <y-button color="primary">One</y-button>
+            <y-button color="secondary">Two</y-button>
+            <y-button color="success">Three</y-button>
         </y-stack>
     `,
 };
