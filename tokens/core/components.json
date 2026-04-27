@@ -366,6 +366,20 @@
         "$value": 1000
       }
     },
+    "droplist": {
+      "ghost-opacity": {
+        "$type": "number",
+        "$value": 0.5
+      },
+      "item-padding": {
+        "$type": "spacing",
+        "$value": "{spacing.x-small}"
+      },
+      "item-margin": {
+        "$type": "spacing",
+        "$value": "{spacing.2x-small}"
+      }
+    },
     "drawer": {
       "border-radius": {
         "$type": "borderRadius",

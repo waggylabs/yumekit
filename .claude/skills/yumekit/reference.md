@@ -785,6 +785,49 @@ Slot: default (drawer content)
 
 ---
 
+## y-droplist
+
+Drag-and-drop reorderable list. MVP — within-list reordering only.
+
+| Attribute     | Values / Notes                                                                          |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `disabled`    | boolean — disables drag and keyboard reorder                                            |
+| `vertical`    | default vertical; set `vertical="false"` to reorder horizontally                        |
+| `animation`   | settle-animation duration in ms (default `150`); `0` disables                           |
+| `ghost-class` | CSS class on the drop placeholder (default `y-droplist__ghost`)                         |
+| `drag-class`  | CSS class on the dragged item (default `y-droplist__dragging`)                          |
+
+**Events:** `drag:start`, `drag:end`, `reorder` (`{ oldIndex, newIndex, item, list }`), `update` (`{ item, oldIndex, newIndex, list }`)
+
+**Methods:** `toArray()`, `hasItem(item)` (strict direct-child check; native `contains()` is unchanged), `destroy()`
+
+**Slots:** default — give each item a unique `data-id` so consumers can read order via `toArray()`.
+
+**Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). Focus stays on the moved item; a polite `aria-live` region announces _"Item moved from position X to position Y."_
+
+**CSS Parts:** `list` (shadow-DOM wrapper around the slot).
+
+**Styling items:** items are slotted light-DOM children, so style them with regular descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.) — `::part()` doesn't reach light DOM.
+
+**Styling the ghost:** target it via `[data-y-droplist-ghost]`, the class from `ghost-class` (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties.
+
+**CSS Custom Properties:**
+- `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`
+- `--component-droplist-item-padding`, `--component-droplist-item-margin`
+- `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
+
+> Touch dragging is not supported in the MVP. Cross-list groups, handles, swap/clone, and auto-scroll are tracked as follow-ups.
+
+```html
+<y-droplist>
+    <div data-id="alpha">Alpha</div>
+    <div data-id="bravo">Bravo</div>
+    <div data-id="charlie">Charlie</div>
+</y-droplist>
+```
+
+---
+
 ## y-gallery
 
 Media gallery with lightbox. Accepts `<img>` or `<figure>` children.

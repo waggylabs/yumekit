@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 40 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 41 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -642,6 +642,59 @@ Events: `open`, `close`
 Methods: `show()`, `hide()`
 
 Slots: default (drawer content)
+
+---
+
+### y-droplist
+Drag-and-drop reorderable list. MVP scope: within-list reordering only — cross-list groups, handles, swap/clone, touch polyfill, and auto-scroll are tracked as follow-ups.
+
+Tag: `<y-droplist>`
+Attributes:
+- `disabled` — boolean. Removes `draggable` from all items, sets `aria-disabled` on the host, and ignores keyboard reorder shortcuts.
+- `vertical` — default reorders along the vertical axis. Set `vertical="false"` to reorder horizontally.
+- `animation` — settle-animation duration in ms (default `150`). `0` disables. Honors `prefers-reduced-motion: reduce` regardless of value.
+- `ghost-class` — CSS class applied to the placeholder shown at the projected drop position. Default `"y-droplist__ghost"`.
+- `drag-class` — CSS class applied to the dragged item. Default `"y-droplist__dragging"`.
+
+Events (bubble + composed, not cancelable):
+- `drag:start` — `{ originalEvent, item, list }`
+- `drag:end` — `{ originalEvent, item, list }` (always fires; `originalEvent` is the native dragend)
+- `reorder` — `{ oldIndex, newIndex, item, list }` (fires only when index changes)
+- `update` — `{ item, oldIndex, newIndex, list }` (fires immediately after `reorder`)
+
+Methods:
+- `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
+- `hasItem(item)` — true when `item` is a direct slotted child of the droplist. Use this for strict same-list membership checks; native `contains()` retains its standard ancestry semantics.
+- `destroy()` — removes all listeners and the mutation observer. The component re-initializes on disconnect/reconnect.
+
+Behavior:
+- Items get `role="listitem"`, `tabindex="0"`, `draggable="true"`, and `aria-grabbed="false"` automatically; new children added at runtime are auto-initialized via `MutationObserver`.
+- Keyboard reorder: focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when `vertical="false"`). Focus stays on the moved item; `reorder` and `update` fire identically to a mouse drop.
+- A polite `aria-live` region inside the shadow root announces moves: _"Item moved from position X to position Y."_
+- Settle animation uses FLIP. Skipped when `animation="0"` or `prefers-reduced-motion: reduce`.
+- **Touch is not supported in the MVP** — track the touch follow-up before shipping to mobile.
+
+CSS Parts: `list` (the shadow-DOM wrapper around the slot).
+
+Styling items: list items are slotted light-DOM children, so style them with regular descendant selectors (`y-droplist > *`, `y-droplist > .y-droplist__dragging`, etc.) — `::part()` doesn't reach light DOM.
+
+Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attribute selector, the class set by the `ghost-class` attribute (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties below.
+
+CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`.
+
+```html
+<y-droplist>
+    <div data-id="alpha">Alpha</div>
+    <div data-id="bravo">Bravo</div>
+    <div data-id="charlie">Charlie</div>
+</y-droplist>
+
+<script type="module">
+    document.querySelector("y-droplist").addEventListener("update", (e) => {
+        console.log("new order:", e.target.toArray());
+    });
+</script>
+```
 
 ---
 

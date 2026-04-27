@@ -461,6 +461,16 @@
         }
       }
     },
+    "droplist": {
+      "ghost-background": {
+        "$type": "color",
+        "$value": "{base.background.hover}"
+      },
+      "ghost-border-color": {
+        "$type": "color",
+        "$value": "{base.border}"
+      }
+    },
     "input": {
       "background": {
         "disabled": {

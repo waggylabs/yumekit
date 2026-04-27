@@ -177,6 +177,13 @@ declare module "react" {
                 position?: "left" | "right" | "top" | "bottom";
                 resizable?: boolean | string;
             }>;
+            "y-droplist": El<{
+                disabled?: boolean | string;
+                vertical?: "true" | "false" | string;
+                animation?: string | number;
+                "ghost-class"?: string;
+                "drag-class"?: string;
+            }>;
             "y-gallery": El<{
                 layout?: "grid" | "row" | "column" | "masonry";
                 columns?: string | number;
