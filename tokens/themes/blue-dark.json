@@ -361,6 +361,16 @@
                 }
             }
         },
+        "break": {
+            "line-color": {
+                "$type": "color",
+                "$value": "{base.content.lightest}"
+            },
+            "content-color": {
+                "$type": "color",
+                "$value": "{base.content.lightest}"
+            }
+        },
         "checkbox": {
             "background": {
                 "$type": "color",

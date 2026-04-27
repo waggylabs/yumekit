@@ -54,6 +54,41 @@ Injects design tokens as CSS custom properties. Wraps entire app.
 
 ---
 
+## y-break
+
+A divider that draws a line, optionally broken by centered content (text, icon, or any slotted element).
+
+| Attribute     | Values / Notes                                                                                |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| `orientation` | `horizontal` (default) \| `vertical` (host needs a height from its container when vertical)   |
+| `align`       | `start` \| `center` (default) \| `end` — position of centered content along the line          |
+| `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                        |
+| `label`       | Convenience text rendered in the center                                                       |
+| `icon`        | Convenience icon name rendered in the center (icon then label when both are set)              |
+| `inset`       | `none` (default) \| `sm` \| `md` \| `lg` — outer end padding                                  |
+
+**Slots:** default — content rendered in the center; takes precedence over `label` / `icon`.
+
+**CSS Parts:** `line`, `line-start`, `line-end`, `content`
+
+**CSS Custom Properties:** `--component-break-line-color`, `--component-break-line-thickness`, `--component-break-line-style` (override the `variant`), `--component-break-gap`, `--component-break-content-color`, `--component-break-content-font-size`, `--component-break-content-font-weight`, `--component-break-inset`, `--component-break-min-length`
+
+```html
+<y-break></y-break>
+<y-break label="OR"></y-break>
+<y-break icon="star" variant="dashed"></y-break>
+<y-break align="start"><y-tag color="primary">New section</y-tag></y-break>
+
+<!-- vertical needs a height from the container -->
+<div style="display:flex;align-items:stretch;height:40px">
+    <span>Left</span>
+    <y-break orientation="vertical"></y-break>
+    <span>Right</span>
+</div>
+```
+
+---
+
 ## y-breadcrumbs
 
 Navigation breadcrumb trail with collapse/expand support and SPA-friendly navigation.
