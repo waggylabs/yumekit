@@ -203,6 +203,8 @@ export class YumeStack extends HTMLElement {
             @container (max-width: ${breakpoint}px) {
                 .container {
                     flex-direction: column;
+                    flex-wrap: nowrap;
+                    align-content: stretch;
                 }
             }
         `;

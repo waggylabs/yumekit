@@ -85,7 +85,7 @@ export default {
         responsive: {
             control: "boolean",
             description:
-                "On `direction=\"row\"`, auto-enable wrap and collapse to `column` below the mobile breakpoint.",
+                'On `direction="row"`, auto-enable wrap and collapse to `column` below the mobile breakpoint.',
             table: { defaultValue: { summary: true } },
         },
     },
@@ -115,7 +115,7 @@ export default {
     }) => `
         <y-stack
             direction="${direction}"
-            wrap="${wrap}"
+            ${wrap !== "nowrap" ? `wrap="${wrap}"` : ""}
             gap="${gap}"
             ${rowGap ? `row-gap="${rowGap}"` : ""}
             ${columnGap ? `column-gap="${columnGap}"` : ""}
@@ -243,7 +243,7 @@ export const GapSizes = {
 export const SeparateRowAndColumnGaps = {
     name: "Row + Column Gap",
     render: () => `
-        <y-stack direction="row" wrap row-gap="x-small" column-gap="2x-large" style="width:400px">
+        <y-stack direction="row" wrap row-gap="x-small" column-gap="2x-large" responsive="false"style="width:400px">
             <y-button color="primary">One</y-button>
             <y-button color="secondary">Two</y-button>
             <y-button color="success">Three</y-button>
@@ -258,8 +258,9 @@ export const WrapVariants = {
     name: "Wrap",
     render: () => `
         <div style="display:flex;flex-direction:column;gap:24px">
-            ${["nowrap", "wrap", "wrap-reverse"].map(
-                (w) => `
+            ${["nowrap", "wrap", "wrap-reverse"]
+                .map(
+                    (w) => `
                 <div>
                     <p style="margin:0 0 8px"><strong>wrap="${w}"</strong></p>
                     <y-stack direction="row" wrap="${w}" gap="medium" responsive="false" style="width:300px;background:#f5f5f5;padding:8px">
@@ -271,7 +272,8 @@ export const WrapVariants = {
                     </y-stack>
                 </div>
             `,
-            ).join("")}
+                )
+                .join("")}
         </div>
     `,
 };

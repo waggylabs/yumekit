@@ -751,7 +751,7 @@ Attributes:
 - `justify` — `"start"` (default) | `"center"` | `"end"` | `"between"` | `"around"` | `"evenly"` — maps to `justify-content`
 - `align-content` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"between"` | `"around"` | `"evenly"` — maps to `align-content` (only meaningful with wrap)
 - `inline` — boolean; use `display: inline-flex` instead of `flex`
-- `responsive` — boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables wrap and collapses to `column` below the mobile breakpoint (measured against the stack's own container width via a CSS container query). Set `responsive="false"` to opt out.
+- `responsive` — boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables wrap and collapses to `column` below the mobile breakpoint (measured against the stack's own container width via a CSS container query). This collapse behavior does not apply when `inline` is set, because inline stacks do not use the container query. Set `responsive="false"` to opt out.
 
 CSS Custom Properties: `--component-stack-gap`, `--component-stack-row-gap`, `--component-stack-column-gap`, `--component-stack-mobile-breakpoint` (default `576px`)
 

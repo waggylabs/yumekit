@@ -347,23 +347,23 @@ Events: `change`, `input`
 
 CSS-Grid layout container. Pure CSS — no observer, no event. Use `y-masonry` for shortest-column packing, or `y-stack` for flex layouts.
 
-| Attribute         | Values / Notes                                                                                                                          |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Attribute         | Values / Notes                                                                                                                           |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `columns`         | integer (default `3`) → `repeat(N, 1fr)`; `"auto"` → `repeat(auto-fit, minmax(min-item-width, 1fr))`; raw template string passed through |
 | `rows`            | integer or raw `grid-template-rows` value (default unset)                                                                                |
-| `auto-flow`       | `row` (default) \| `column` \| `row dense` \| `column dense`                                                                            |
-| `auto-rows`       | raw `grid-auto-rows` value (e.g. `"minmax(100px, auto)"`)                                                                               |
-| `auto-columns`    | raw `grid-auto-columns` value                                                                                                           |
+| `auto-flow`       | `row` (default) \| `column` \| `row dense` \| `column dense`                                                                             |
+| `auto-rows`       | raw `grid-auto-rows` value (e.g. `"minmax(100px, auto)"`)                                                                                |
+| `auto-columns`    | raw `grid-auto-columns` value                                                                                                            |
 | `gap`             | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens  |
-| `row-gap`         | same scale as `gap`; overrides row gap independently                                                                                    |
-| `column-gap`      | same scale as `gap`; overrides column gap independently                                                                                 |
-| `align`           | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                               |
-| `justify`         | `start` \| `center` \| `end` \| `stretch` (default) — maps to `justify-items`                                                           |
-| `align-content`   | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly`                                                |
-| `justify-content` | same set as `align-content`, default `start`                                                                                            |
-| `min-item-width`  | minimum item width for `columns="auto"` and responsive collapse (default `240px`)                                                       |
-| `responsive`      | boolean (default `true`); set `responsive="false"` to opt out. Only applies when `columns` is an integer.                               |
-| `dense`           | boolean shortcut for `auto-flow="row dense"`                                                                                            |
+| `row-gap`         | same scale as `gap`; overrides row gap independently                                                                                     |
+| `column-gap`      | same scale as `gap`; overrides column gap independently                                                                                  |
+| `align`           | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                                |
+| `justify`         | `start` \| `center` \| `end` \| `stretch` (default) — maps to `justify-items`                                                            |
+| `align-content`   | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly`                                                 |
+| `justify-content` | same set as `align-content`, default `start`                                                                                             |
+| `min-item-width`  | minimum item width for `columns="auto"` and responsive collapse (default `240px`)                                                        |
+| `responsive`      | boolean (default `true`); set `responsive="false"` to opt out. Only applies when `columns` is an integer.                                |
+| `dense`           | boolean shortcut for `auto-flow="row dense"`                                                                                             |
 
 Slot: default (grid items). Children may use `style="grid-column: span 2"` or similar to span tracks.
 
@@ -402,13 +402,13 @@ CSS Parts: `container`
 
 Layout container that packs children of varying heights into the shortest column via JS positioning. Use `y-grid` for uniform CSS-Grid layouts.
 
-| Attribute        | Values / Notes                                                                                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `columns`        | integer column count (default `3`)                                                                                                      |
-| `gap`            | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens  |
-| `row-gap`        | same scale as `gap`; overrides row gap independently                                                                                    |
-| `column-gap`     | same scale as `gap`; overrides column gap independently                                                                                 |
-| `responsive`     | boolean (default `true`); set `responsive="false"` to opt out                                                                           |
+| Attribute    | Values / Notes                                                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`    | integer column count (default `3`)                                                                                                      |
+| `gap`        | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens |
+| `row-gap`    | same scale as `gap`; overrides row gap independently                                                                                    |
+| `column-gap` | same scale as `gap`; overrides column gap independently                                                                                 |
+| `responsive` | boolean (default `true`); set `responsive="false"` to opt out                                                                           |
 
 Slot: default (masonry items). Child `grid-column` / `grid-row` styles are ignored — masonry is JS-positioned.
 
@@ -427,7 +427,9 @@ CSS Parts: `container`
 ```html
 <y-masonry columns="3" gap="large">
     <y-card>Short content</y-card>
-    <y-card>Tall content with extra paragraphs to demonstrate the packing.</y-card>
+    <y-card
+        >Tall content with extra paragraphs to demonstrate the packing.</y-card
+    >
     <y-card>Medium content here.</y-card>
 </y-masonry>
 ```
@@ -438,18 +440,18 @@ CSS Parts: `container`
 
 Flexbox layout container for rows or columns. Purely structural — no visual styling. For CSS Grid layouts use [`y-grid`](#y-grid); for shortest-column packing use [`y-masonry`](#y-masonry).
 
-| Attribute       | Values / Notes                                                                                                                          |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `direction`     | `row` (default) \| `row-reverse` \| `column` \| `column-reverse` — maps to `flex-direction`                                             |
-| `wrap`          | `nowrap` (default) \| `wrap` \| `wrap-reverse`. Boolean presence (no value) resolves to `wrap` for back-compat.                         |
-| `gap`           | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens |
-| `row-gap`       | same scale as `gap`; overrides row gap independently                                                                                    |
-| `column-gap`    | same scale as `gap`; overrides column gap independently                                                                                 |
-| `align`         | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                               |
-| `justify`       | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — maps to `justify-content`                                 |
-| `align-content` | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly` — maps to `align-content` (only meaningful with wrap) |
-| `inline`        | boolean — use `display: inline-flex` instead of `flex`                                                                                  |
-| `responsive`    | boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables `wrap` and collapses to `column` below the mobile breakpoint (measured against the stack's own container width). Set `responsive="false"` to opt out. |
+| Attribute       | Values / Notes                                                                                                                                                                                                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `direction`     | `row` (default) \| `row-reverse` \| `column` \| `column-reverse` — maps to `flex-direction`                                                                                                                                                                                                      |
+| `wrap`          | `nowrap` (default) \| `wrap` \| `wrap-reverse`. Boolean presence (no value) resolves to `wrap` for back-compat.                                                                                                                                                                                  |
+| `gap`           | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens                                                                                                                                                          |
+| `row-gap`       | same scale as `gap`; overrides row gap independently                                                                                                                                                                                                                                             |
+| `column-gap`    | same scale as `gap`; overrides column gap independently                                                                                                                                                                                                                                          |
+| `align`         | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                                                                                                                                                                                        |
+| `justify`       | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — maps to `justify-content`                                                                                                                                                                                          |
+| `align-content` | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly` — maps to `align-content` (only meaningful with wrap)                                                                                                                                                   |
+| `inline`        | boolean — use `display: inline-flex` instead of `flex`                                                                                                                                                                                                                                           |
+| `responsive`    | boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables `wrap` and collapses to `column` below the mobile breakpoint (measured against the stack's own container width). This collapse behavior does not apply when `inline` is present. Set `responsive="false"` to opt out. |
 
 Slot: default (child elements to lay out)
 
@@ -879,14 +881,14 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 
 Positioned relative to an `anchor` element. Items can be defined via the `items` JSON attribute or as light-DOM children.
 
-| Attribute   | Values / Notes                                                                                |
-| ----------- | --------------------------------------------------------------------------------------------- |
+| Attribute   | Values / Notes                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------- |
 | `items`     | JSON: `[{"text":"Edit","value":"...","href":"...","icon":"...","selected":true,"children":[...]}]` |
-| `anchor`    | CSS selector or element ID of the trigger element                                             |
-| `visible`   | boolean                                                                                       |
-| `direction` | `down` (default) \| `up` \| `left` \| `right`                                                 |
-| `size`      | `small` \| `medium` \| `large`                                                                |
-| `history`   | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+| `anchor`    | CSS selector or element ID of the trigger element                                                  |
+| `visible`   | boolean                                                                                            |
+| `direction` | `down` (default) \| `up` \| `left` \| `right`                                                      |
+| `size`      | `small` \| `medium` \| `large`                                                                     |
+| `history`   | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`      |
 
 Item object fields: `text`, `value` (defaults to `text`), `href`, `icon` (icon name for `<y-icon>`), `slot` (named slot for custom item content), `selected`, `children`.
 
