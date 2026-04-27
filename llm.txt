@@ -653,7 +653,7 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 ---
 
 ### y-grid
-CSS-Grid layout container. Pure CSS — no JS positioning, no events. Use `y-masonry` for shortest-column packing, or `y-stack` for flex layouts.
+CSS-Grid layout container. Pure CSS — no JS positioning, no events. Use `y-masonry` for shortest-column packing, or `y-stack` for flexbox row/column layouts.
 
 Tag: `<y-grid>`
 Attributes:
@@ -734,6 +734,52 @@ A11y: layout-only (no role, no aria). Tab order follows DOM order — visual ord
   <y-card>Tall content with extra paragraphs to demonstrate the packing.</y-card>
   <y-card>Medium content here.</y-card>
 </y-masonry>
+```
+
+---
+
+### y-stack
+Flexbox layout container for rows or columns. Pure CSS — no JS positioning, no events. Use `y-grid` for CSS-Grid layouts or `y-masonry` for shortest-column packing.
+
+Tag: `<y-stack>`
+Attributes:
+- `direction` — `"row"` (default) | `"row-reverse"` | `"column"` | `"column-reverse"` — maps to `flex-direction`
+- `wrap` — `"nowrap"` (default) | `"wrap"` | `"wrap-reverse"`. Boolean presence (no value) resolves to `"wrap"` for back-compat.
+- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
+- `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
+- `align` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"baseline"` — maps to `align-items`
+- `justify` — `"start"` (default) | `"center"` | `"end"` | `"between"` | `"around"` | `"evenly"` — maps to `justify-content`
+- `align-content` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"between"` | `"around"` | `"evenly"` — maps to `align-content` (only meaningful with wrap)
+- `inline` — boolean; use `display: inline-flex` instead of `flex`
+- `responsive` — boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables wrap and collapses to `column` below the mobile breakpoint (measured against the stack's own container width via a CSS container query). This collapse behavior does not apply when `inline` is set, because inline stacks do not use the container query. Set `responsive="false"` to opt out.
+
+CSS Custom Properties: `--component-stack-gap`, `--component-stack-row-gap`, `--component-stack-column-gap`, `--component-stack-mobile-breakpoint` (default `576px`)
+
+CSS Parts: `container`
+
+Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `mode` and `columns` attributes have been removed.
+
+A11y: layout-only (no role, no aria). Tab order follows DOM order — `row-reverse` / `column-reverse` and `wrap-reverse` may make visual order diverge from focus order.
+
+```html
+<!-- Row of buttons -->
+<y-stack direction="row" gap="small">
+  <y-button>Save</y-button>
+  <y-button>Cancel</y-button>
+</y-stack>
+
+<!-- Vertical form -->
+<y-stack direction="column" gap="medium">
+  <y-input label="Name"></y-input>
+  <y-input label="Email"></y-input>
+</y-stack>
+
+<!-- Wrapping toolbar with separate row/column gaps -->
+<y-stack direction="row" wrap row-gap="x-small" column-gap="large">
+  <y-button>One</y-button>
+  <y-button>Two</y-button>
+  <y-button>Three</y-button>
+</y-stack>
 ```
 
 ---

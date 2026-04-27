@@ -5,17 +5,28 @@ import "../y-badge/y-badge.js";
 import "../y-input/y-input.js";
 
 const ALL_THEMES = [
-    "blue-dark",    "blue-light",
-    "orange-dark",  "orange-light",
-    "red-dark",     "red-light",
-    "green-dark",   "green-light",
-    "teal-dark",    "teal-light",
-    "yellow-dark",  "yellow-light",
-    "indigo-dark",  "indigo-light",
-    "purple-dark",  "purple-light",
-    "pink-dark",    "pink-light",
-    "brown-dark",   "brown-light",
-    "olive-dark",   "olive-light",
+    "blue-dark",
+    "blue-light",
+    "orange-dark",
+    "orange-light",
+    "red-dark",
+    "red-light",
+    "green-dark",
+    "green-light",
+    "teal-dark",
+    "teal-light",
+    "yellow-dark",
+    "yellow-light",
+    "indigo-dark",
+    "indigo-light",
+    "purple-dark",
+    "purple-light",
+    "pink-dark",
+    "pink-light",
+    "brown-dark",
+    "brown-light",
+    "olive-dark",
+    "olive-light",
 ];
 
 function themePreview(theme) {
@@ -66,7 +77,7 @@ export default {
                         <div slot="header"><strong>Card in theme</strong></div>
                         <p>This content inherits the theme's CSS variables.</p>
                         <div slot="footer">
-                            <y-badge color="primary">Active</y-badge>
+                            <y-badge color="primary" value="Active"></y-badge>
                         </div>
                     </y-card>
                 </div>
@@ -75,28 +86,28 @@ export default {
     `,
 };
 
-export const BlueDark    = { args: { theme: "blue-dark" } };
-export const BlueLight   = { args: { theme: "blue-light" } };
-export const OrangeDark  = { args: { theme: "orange-dark" } };
+export const BlueDark = { args: { theme: "blue-dark" } };
+export const BlueLight = { args: { theme: "blue-light" } };
+export const OrangeDark = { args: { theme: "orange-dark" } };
 export const OrangeLight = { args: { theme: "orange-light" } };
-export const RedDark     = { args: { theme: "red-dark" } };
-export const RedLight    = { args: { theme: "red-light" } };
-export const GreenDark   = { args: { theme: "green-dark" } };
-export const GreenLight  = { args: { theme: "green-light" } };
-export const TealDark    = { args: { theme: "teal-dark" } };
-export const TealLight   = { args: { theme: "teal-light" } };
-export const YellowDark  = { args: { theme: "yellow-dark" } };
+export const RedDark = { args: { theme: "red-dark" } };
+export const RedLight = { args: { theme: "red-light" } };
+export const GreenDark = { args: { theme: "green-dark" } };
+export const GreenLight = { args: { theme: "green-light" } };
+export const TealDark = { args: { theme: "teal-dark" } };
+export const TealLight = { args: { theme: "teal-light" } };
+export const YellowDark = { args: { theme: "yellow-dark" } };
 export const YellowLight = { args: { theme: "yellow-light" } };
-export const IndigoDark  = { args: { theme: "indigo-dark" } };
+export const IndigoDark = { args: { theme: "indigo-dark" } };
 export const IndigoLight = { args: { theme: "indigo-light" } };
-export const PurpleDark  = { args: { theme: "purple-dark" } };
+export const PurpleDark = { args: { theme: "purple-dark" } };
 export const PurpleLight = { args: { theme: "purple-light" } };
-export const PinkDark    = { args: { theme: "pink-dark" } };
-export const PinkLight   = { args: { theme: "pink-light" } };
-export const BrownDark   = { args: { theme: "brown-dark" } };
-export const BrownLight  = { args: { theme: "brown-light" } };
-export const OliveDark   = { args: { theme: "olive-dark" } };
-export const OliveLight  = { args: { theme: "olive-light" } };
+export const PinkDark = { args: { theme: "pink-dark" } };
+export const PinkLight = { args: { theme: "pink-light" } };
+export const BrownDark = { args: { theme: "brown-dark" } };
+export const BrownLight = { args: { theme: "brown-light" } };
+export const OliveDark = { args: { theme: "olive-dark" } };
+export const OliveLight = { args: { theme: "olive-light" } };
 
 export const AllThemes = {
     name: "All Themes",

@@ -292,13 +292,15 @@ declare module "react" {
                 orientation?: "horizontal" | "vertical";
             }>;
             "y-stack": El<{
-                direction?: "row" | "column";
-                mode?: "flex" | "grid" | "masonry";
-                columns?: string | number;
+                direction?: "row" | "row-reverse" | "column" | "column-reverse";
+                wrap?: boolean | "nowrap" | "wrap" | "wrap-reverse";
                 gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                wrap?: boolean | string;
+                "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
                 align?: "start" | "center" | "end" | "stretch" | "baseline";
                 justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
+                "align-content"?: "start" | "center" | "end" | "stretch" | "between" | "around" | "evenly";
+                inline?: boolean | string;
                 responsive?: boolean | string;
             }>;
             "y-stepper": El<{
