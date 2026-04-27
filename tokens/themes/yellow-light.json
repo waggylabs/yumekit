@@ -599,6 +599,10 @@
         }
       },
       "accent": {
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
         "contrast": {
           "$type": "color",
           "$value": "{base.background.component}"

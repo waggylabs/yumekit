@@ -613,6 +613,10 @@
         "$type": "borderRadius",
         "$value": "{radii.small}"
       },
+      "border-radius-outer": {
+        "$type": "borderRadius",
+        "$value": "{radii.medium}"
+      },
       "border-width": {
         "$type": "borderWidth",
         "$value": "{border.thin}"
