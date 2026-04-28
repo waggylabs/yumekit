@@ -666,6 +666,28 @@
         "$value": "{radii.x-small}"
       }
     },
+    "splitter": {
+      "handle-size": {
+        "$type": "dimension",
+        "$value": "10px"
+      },
+      "handle-border-width": {
+        "$type": "borderWidth",
+        "$value": "{border.x-thin}"
+      },
+      "grip-size": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "keyboard-step": {
+        "$type": "number",
+        "$value": 0.01
+      },
+      "keyboard-step-large": {
+        "$type": "number",
+        "$value": 0.1
+      }
+    },
     "switch": {
       "border-radius": {
         "$type": "borderRadius",

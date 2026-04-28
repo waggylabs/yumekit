@@ -103,6 +103,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Rating       | `<y-rating>`       | Star / icon rating input                            |
 | Select       | `<y-select>`       | Select / dropdown input                             |
 | Slider       | `<y-slider>`       | Range slider input                                  |
+| Splitter     | `<y-splitter>`     | Two-pane container with a draggable resize handle   |
 | Stack        | `<y-stack>`        | Flexbox layout container (row or column)            |
 | Stepper      | `<y-stepper>`      | Multi-step wizard with sequential flow              |
 | Switch       | `<y-switch>`       | Toggle switch                                       |

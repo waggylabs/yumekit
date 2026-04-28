@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 41 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 42 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -451,6 +451,51 @@ Attributes:
 - `orientation` — `"horizontal"` (default) | `"vertical"`
 
 Events: `change`, `input`
+
+---
+
+### y-splitter
+Two-pane container with a draggable resize handle. The first child becomes the resizable pane; the second fills the remainder. Auto-assigns `slot="pane-1"` and `slot="pane-2"` to the first two non-handle children — additional children are ignored with a console warning.
+
+Tag: `<y-splitter>`
+Attributes:
+- `orientation` — `"horizontal"` (default, splits left/right) | `"vertical"` (splits top/bottom)
+- `split` — number `0.0`–`1.0`, ratio of the first pane (default `0.5`). Reflects the current value while the user drags.
+- `min-ratio` — minimum ratio for the first pane (default `0.1`)
+- `max-ratio` — maximum ratio for the first pane (default `0.9`)
+- `disabled` — boolean, disables drag and keyboard resizing
+- `handle-size` — width (horizontal) or height (vertical) of the drag handle in pixels (default `10`)
+- `handle-position` — `"center"` (default) | `"start"` | `"end"` — visual position of the visible line/grip within the handle's allocated space
+- `aria-label` — overrides the handle's default `"Resizable splitter"` label
+
+Events (bubble + composed, not cancelable):
+- `split-changed` — `{ split, orientation, source }` (`source` is `"pointer"` or `"keyboard"` when user-driven; absent for programmatic attribute writes)
+- `split-start` — `{ x, y }` — pointer drag begins
+- `split-end` — `{ x, y }` — pointer drag releases
+
+Slots: default — first two non-handle children become `pane-1` / `pane-2` (the slot attribute is auto-assigned on connect and as children change). `handle` — custom drag-handle content; defaults to a centered ellipsis grip icon.
+
+CSS Parts: `container`, `pane-1`, `pane-2`, `handle`, `grip`.
+
+CSS Custom Properties: `--component-splitter-handle-size`, `--component-splitter-handle-background`, `--component-splitter-handle-hover-background`, `--component-splitter-handle-active-background`, `--component-splitter-handle-border-color`, `--component-splitter-handle-border-width`, `--component-splitter-handle-grip-color`, `--component-splitter-handle-active-grip-color`, `--component-splitter-grip-size`, `--component-splitter-cursor`.
+
+Accessibility: the handle has `role="slider"` with `aria-valuemin="0"`, `aria-valuemax="100"`, `aria-valuenow` reflecting the percentage, `aria-valuetext` (e.g. `"40%"`), `aria-orientation`, and `tabindex="0"` (or `-1` when disabled). Keyboard: Arrow Left / Down decreases by 1%, Arrow Right / Up increases by 1%, PageDown / PageUp adjust by 10%, Home / End jump to `min-ratio` / `max-ratio`. Pointer events handle both mouse and touch; updates are throttled with `requestAnimationFrame`. The host needs a sized container (e.g. an explicit width/height on a parent) — it stretches to fill that container.
+
+```html
+<div style="width:600px;height:300px">
+    <y-splitter split="0.3" min-ratio="0.2" max-ratio="0.8">
+        <nav>Sidebar</nav>
+        <main>Content</main>
+    </y-splitter>
+</div>
+
+<!-- Vertical split with a custom handle -->
+<y-splitter orientation="vertical" handle-size="14">
+    <section>Editor</section>
+    <section>Console</section>
+    <span slot="handle"><y-icon name="ellipsis-h"></y-icon></span>
+</y-splitter>
+```
 
 ---
 

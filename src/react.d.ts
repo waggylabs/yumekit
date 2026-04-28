@@ -306,6 +306,15 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 orientation?: "horizontal" | "vertical";
             }>;
+            "y-splitter": El<{
+                orientation?: "horizontal" | "vertical";
+                split?: string | number;
+                "min-ratio"?: string | number;
+                "max-ratio"?: string | number;
+                disabled?: boolean | string;
+                "handle-size"?: string | number;
+                "handle-position"?: "center" | "start" | "end";
+            }>;
             "y-stack": El<{
                 direction?: "row" | "row-reverse" | "column" | "column-reverse";
                 wrap?: boolean | "nowrap" | "wrap" | "wrap-reverse";
