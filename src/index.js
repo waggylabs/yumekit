@@ -11,6 +11,7 @@ if (
     document.head.appendChild(style);
 }
 
+export * from "./components/y-animate/y-animate.js";
 export * from "./components/y-appbar/y-appbar.js";
 export * from "./components/y-avatar/y-avatar.js";
 export * from "./components/y-banner/y-banner.js";
