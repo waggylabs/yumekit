@@ -768,6 +768,34 @@
         "$type": "color",
         "$value": "{primary.content.DEFAULT}"
       }
+    },
+    "splitter": {
+      "handle": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        },
+        "hover-background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        },
+        "active-background": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        },
+        "grip-color": {
+          "$type": "color",
+          "$value": "{base.content.lighter}"
+        },
+        "active-grip-color": {
+          "$type": "color",
+          "$value": "{primary.content.inverse}"
+        }
+      }
     }
   }
 }

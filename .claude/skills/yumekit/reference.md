@@ -378,6 +378,49 @@ Events: `change`, `input`
 
 ---
 
+## y-splitter
+
+Two-pane container with a draggable resize handle. The first child becomes the resizable pane (`pane-1`); the second flexes to fill the remainder (`pane-2`). The component auto-assigns `slot="pane-1"` / `slot="pane-2"` to the first two non-handle children — extra children are ignored with a console warning. Host needs a sized container (it stretches to fill 100% width × 100% height).
+
+| Attribute         | Values / Notes                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `orientation`     | `horizontal` (default, splits left/right) \| `vertical` (splits top/bottom)                     |
+| `split`           | number `0.0`–`1.0`, ratio of the first pane (default `0.5`); reflects current value during drag |
+| `min-ratio`       | minimum ratio for pane 1 (default `0.1`)                                                        |
+| `max-ratio`       | maximum ratio for pane 1 (default `0.9`)                                                        |
+| `disabled`        | boolean — disables drag and keyboard resizing                                                   |
+| `handle-size`     | width (horizontal) / height (vertical) of the drag handle in pixels (default `10`)              |
+| `handle-position` | `center` (default) \| `start` \| `end` — where the visible line/grip sits within the handle     |
+| `aria-label`      | overrides the handle's default `"Resizable splitter"` label                                     |
+
+**Events:** `split-changed` (`{ split, orientation, source }`), `split-start` (`{ x, y }`), `split-end` (`{ x, y }`)
+
+**Slots:** default — first two non-handle children become pane 1 / pane 2 (slot attribute auto-assigned). `handle` — custom drag-handle content; defaults to a centered ellipsis grip icon.
+
+**CSS Parts:** `container`, `pane-1`, `pane-2`, `handle`, `grip`
+
+**CSS Custom Properties:** `--component-splitter-handle-size`, `--component-splitter-handle-background`, `--component-splitter-handle-hover-background`, `--component-splitter-handle-active-background`, `--component-splitter-handle-border-color`, `--component-splitter-handle-border-width`, `--component-splitter-handle-grip-color`, `--component-splitter-handle-active-grip-color`, `--component-splitter-grip-size`, `--component-splitter-cursor`
+
+**Keyboard (handle focused):** Arrow Left / Down decreases by 1%, Arrow Right / Up increases by 1%, PageDown / PageUp adjust by 10%, Home / End jump to `min-ratio` / `max-ratio`. The handle has `role="slider"` with `aria-valuemin/max/now/text/orientation`. Pointer events cover both mouse and touch; updates are throttled with `requestAnimationFrame`.
+
+```html
+<div style="width:600px;height:300px">
+    <y-splitter split="0.3" min-ratio="0.2" max-ratio="0.8">
+        <nav>Sidebar</nav>
+        <main>Content</main>
+    </y-splitter>
+</div>
+
+<!-- Vertical split with a custom handle -->
+<y-splitter orientation="vertical" handle-size="14">
+    <section>Editor</section>
+    <section>Console</section>
+    <span slot="handle"><y-icon name="ellipsis-h"></y-icon></span>
+</y-splitter>
+```
+
+---
+
 ## y-grid
 
 CSS-Grid layout container. Pure CSS — no observer, no event. Use `y-masonry` for shortest-column packing, or `y-stack` for flex layouts.

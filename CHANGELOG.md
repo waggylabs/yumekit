@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- New `y-splitter` component — a two-pane container with a draggable handle that resizes the first pane (the second flexes to fill the remainder). Supports `orientation` (`horizontal` | `vertical`), `split` ratio (0–1), `min-ratio` / `max-ratio` constraints, `handle-size`, `handle-position` (`center` | `start` | `end`), and `disabled`. The handle is a `role="slider"` with full keyboard support (arrows for fine steps, PageUp/Down for 10% jumps, Home/End for the configured limits) and emits `split-start` / `split-changed` / `split-end` events. Pointer events cover mouse and touch with `requestAnimationFrame`-throttled updates.
+
 - New `y-droplist` component — a drag-and-drop reorderable list. Slot in children with `data-id` attributes and they become draggable items; consumers listen for `reorder` / `update` events to persist the new order. Supports `disabled`, `vertical` (vertical or horizontal axis), `animation` (settle duration), and `ghost-class` / `drag-class` styling hooks, plus keyboard reorder via Arrow keys with `aria-live` announcements.
 
 - New `y-break` component — a decorative divider that draws a horizontal or vertical line, optionally broken by centered content. Supports `orientation`, `align`, `variant` (`solid` | `dashed` | `dotted`), `inset` for outer-end padding, and convenience `label` / `icon` attributes. The default slot accepts arbitrary content (badges, buttons, etc.) and takes precedence over the convenience attributes.
