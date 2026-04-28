@@ -1160,6 +1160,69 @@ Sorting: clicking a sortable column header shows an up arrow (asc) or down arrow
 
 ---
 
+### y-animate
+Lightweight wrapper that applies a preset CSS-based entrance/exit animation to its children using the Web Animations API. Useful for adding visual polish to list items, modals, cards, or anything that enters / leaves the DOM.
+
+Tag: `<y-animate>`
+Attributes:
+- `animation` — preset name: `"fade"` (default) | `"slide"` | `"zoom-in"` | `"zoom-out"` | `"flip-horizontal"` | `"flip-vertical"` | `"rotate-in"` | `"bounce"` | `"shake"` | `"scale"`
+- `direction` — `"up"` (default) | `"down"` | `"left"` | `"right"`. Used by `slide`, `bounce`, and `shake`; ignored by `flip-*`, `zoom-*`, and `rotate-in`.
+- `duration` — animation duration in ms (default `300`)
+- `delay` — delay before the animation starts in ms (default `0`)
+- `easing` — CSS easing keyword, `cubic-bezier(...)`, or `steps(...)` (default `"ease-out"`)
+- `trigger` — `"load"` (default, plays on connect) | `"visible"` (plays when scrolled into view via `IntersectionObserver`) | `"manual"` (only via `play()`)
+- `once` — `"true"` (default) | `"false"`. When false, visibility-based triggers re-fire on each entry.
+- `reverse` — boolean, plays the animation in reverse
+- `stagger` — boolean, animates each direct child individually with a per-index delay
+- `stagger-delay` — per-child delay in ms when `stagger` is set (default `50`)
+- `disabled` — boolean, blocks playback entirely
+- `hidden` — standard HTML attribute; cancels any in-flight animation and hides the host
+
+Events (bubble + composed, not cancelable):
+- `animation-start` — `{ animation, element }` — fired when each animation begins
+- `animation-end` — `{ animation, element }` — fired when each animation completes
+- `animation-cancel` — `{ animation, element }` — fired when `abort()` is called or the host is hidden / disabled mid-flight
+
+Methods:
+- `play()` — manually triggers the animation. Returns `Promise<void>` that resolves once all animations finish.
+- `reset()` — clears `hasPlayed` state and inline styles applied by stagger targets
+- `abort()` — cancels any currently running animations and emits `animation-cancel`
+- `setAnimation(name, duration?, easing?)` — convenience setter that updates the matching attributes
+
+Slots: default — children to animate.
+CSS Parts: `content` — the wrapper around the children.
+
+Accessibility: respects `prefers-reduced-motion: reduce` — animations are skipped, but `animation-start` / `animation-end` still fire so consumers can sequence dependent UI.
+
+CSS Custom Properties:
+`--component-animate-duration` (default `300`), `--component-animate-stagger-delay` (default `50`), `--component-animate-fade-opacity-start` (default `0`), `--component-animate-fade-opacity-end` (default `1`), `--component-animate-slide-distance` (default `16px`), `--component-animate-zoom-in-scale-start` (default `0.8`), `--component-animate-zoom-out-scale-start` (default `1.2`), `--component-animate-rotate-angle` (default `90`), `--component-animate-bounce-height` (default `16px`), `--component-animate-shake-amplitude` (default `8px`), `--component-animate-scale-start` (default `0.5`), `--component-animate-scale-end` (default `1`).
+
+```html
+<!-- Fade in on mount -->
+<y-animate animation="fade" duration="400">
+  <y-card>Hello</y-card>
+</y-animate>
+
+<!-- Stagger a list when it scrolls into view -->
+<y-animate trigger="visible" animation="slide" direction="up" stagger stagger-delay="80">
+  <y-card>One</y-card>
+  <y-card>Two</y-card>
+  <y-card>Three</y-card>
+</y-animate>
+
+<!-- Manual play -->
+<y-animate id="bump" trigger="manual" animation="bounce" once="false">
+  <y-button>Bump me</y-button>
+</y-animate>
+<script>
+  document.querySelector("#bump y-button").addEventListener("click", () =>
+    document.getElementById("bump").play()
+  );
+</script>
+```
+
+---
+
 ## Design Token System (CSS Custom Properties)
 
 Applied by y-theme or by manually including a theme CSS file. Variables follow this naming pattern:

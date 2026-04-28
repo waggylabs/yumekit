@@ -9,6 +9,29 @@ type El<T = object> = DetailedHTMLProps<
 declare module "react" {
     namespace JSX {
         interface IntrinsicElements {
+            "y-animate": El<{
+                animation?:
+                    | "fade"
+                    | "slide"
+                    | "zoom-in"
+                    | "zoom-out"
+                    | "flip-horizontal"
+                    | "flip-vertical"
+                    | "rotate-in"
+                    | "bounce"
+                    | "shake"
+                    | "scale";
+                direction?: "up" | "down" | "left" | "right";
+                duration?: string | number;
+                delay?: string | number;
+                easing?: string;
+                trigger?: "load" | "visible" | "manual";
+                once?: "true" | "false" | string;
+                reverse?: boolean | string;
+                stagger?: boolean | string;
+                "stagger-delay"?: string | number;
+                disabled?: boolean | string;
+            }>;
             "y-appbar": El<{
                 orientation?: "vertical" | "horizontal";
                 collapsed?: boolean | string;
