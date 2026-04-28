@@ -70,12 +70,13 @@ export class YumeAnimate extends HTMLElement {
             return;
         }
         // Stop any in-flight animation when the host is hidden or disabled
-        // mid-flight; the component is meant to skip playback in either state.
+        // mid-flight, and emit `animation-cancel` so consumers can react to
+        // the abort the same way they would for an explicit abort() call.
         if (
             (name === "hidden" || name === "disabled") &&
             newValue !== null
         ) {
-            this._cancelAll(false);
+            this._cancelAll(true);
         }
     }
 
@@ -119,10 +120,18 @@ export class YumeAnimate extends HTMLElement {
         else this.removeAttribute("disabled");
     }
 
-    /** Duration of the animation in milliseconds. */
+    /**
+     * Duration of the animation in milliseconds. Falls back to the
+     * `--component-animate-duration` token, then to `DEFAULT_DURATION`,
+     * so themes can shift the default without a per-instance attribute.
+     */
     get duration() {
         const n = parseFloat(this.getAttribute("duration"));
-        return Number.isFinite(n) && n > 0 ? n : DEFAULT_DURATION;
+        if (Number.isFinite(n) && n > 0) return n;
+        return this._readNumberToken(
+            "--component-animate-duration",
+            DEFAULT_DURATION,
+        );
     }
     set duration(val) {
         this.setAttribute("duration", String(val));
@@ -163,10 +172,17 @@ export class YumeAnimate extends HTMLElement {
         else this.removeAttribute("stagger");
     }
 
-    /** Per-child delay (ms) when `stagger` is true. */
+    /**
+     * Per-child delay (ms) when `stagger` is true. Falls back to the
+     * `--component-animate-stagger-delay` token, then `DEFAULT_STAGGER_DELAY`.
+     */
     get staggerDelay() {
         const n = parseFloat(this.getAttribute("stagger-delay"));
-        return Number.isFinite(n) && n >= 0 ? n : DEFAULT_STAGGER_DELAY;
+        if (Number.isFinite(n) && n >= 0) return n;
+        return this._readNumberToken(
+            "--component-animate-stagger-delay",
+            DEFAULT_STAGGER_DELAY,
+        );
     }
     set staggerDelay(val) {
         this.setAttribute("stagger-delay", String(val));
@@ -386,9 +402,11 @@ export class YumeAnimate extends HTMLElement {
         const duration = this.duration;
         const easing = this.easing;
         const reverse = this.reverse;
+        // Keyframes are identical for every target on this play() call —
+        // resolving them once avoids N × getComputedStyle reads in stagger.
+        const keyframes = this._buildKeyframes(animation, direction);
 
         const promises = targets.map((target, index) => {
-            const keyframes = this._buildKeyframes(animation, direction);
             const options = {
                 duration,
                 easing,

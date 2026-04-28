@@ -63,6 +63,26 @@ describe("YumeAnimate", () => {
         expect(el.delay).to.equal(0);
     });
 
+    it("duration reads --component-animate-duration when the attribute is unset", async () => {
+        const el = await fixture(html`
+            <div style="--component-animate-duration: 750">
+                <y-animate trigger="manual"></y-animate>
+            </div>
+        `);
+        const animate = el.querySelector("y-animate");
+        expect(animate.duration).to.equal(750);
+    });
+
+    it("staggerDelay reads --component-animate-stagger-delay when the attribute is unset", async () => {
+        const el = await fixture(html`
+            <div style="--component-animate-stagger-delay: 120">
+                <y-animate trigger="manual"></y-animate>
+            </div>
+        `);
+        const animate = el.querySelector("y-animate");
+        expect(animate.staggerDelay).to.equal(120);
+    });
+
     it("once defaults to true and is opt-out via once='false'", async () => {
         const a = await fixture(
             html`<y-animate trigger="manual"></y-animate>`,
@@ -100,12 +120,16 @@ describe("YumeAnimate", () => {
 
     // ── Trigger=load ──────────────────────────────────────────
     it("trigger=load auto-plays without a manual play() call", async () => {
-        const el = await fixture(html`<y-animate duration="10"></y-animate>`);
-        // Auto-play is queued via requestAnimationFrame in connectedCallback;
-        // wait one frame to let it fire, then assert it ran.
-        await flushFrame();
-        await flushFrame();
-        expect(el._hasPlayed).to.equal(true);
+        // Auto-play schedules a WAAPI animation via requestAnimationFrame in
+        // connectedCallback. A sufficiently long duration keeps it running
+        // past fixture()'s frame wait, so we can still observe its lifecycle
+        // events through the public API.
+        const el = await fixture(
+            html`<y-animate duration="500"></y-animate>`,
+        );
+        const evt = await oneEvent(el, "animation-end");
+        expect(evt.detail.animation).to.equal("fade");
+        expect(evt.detail.element).to.equal(el);
     });
 
     // ── Trigger=manual ────────────────────────────────────────
@@ -320,15 +344,32 @@ describe("YumeAnimate", () => {
         expect(el.getAnimations()).to.have.lengthOf(0);
     });
 
-    // ── Hidden mid-flight ────────────────────────────────────
-    it("setting hidden mid-animation cancels the running animation", async () => {
+    // ── Hidden / disabled mid-flight ─────────────────────────
+    it("setting hidden mid-animation cancels and emits animation-cancel", async () => {
         const el = await fixture(
             html`<y-animate trigger="manual" duration="2000"></y-animate>`,
         );
         el.play();
         expect(el.getAnimations()).to.have.lengthOf(1);
+        const cancelSpy = sandbox.spy();
+        el.addEventListener("animation-cancel", cancelSpy);
         el.setAttribute("hidden", "");
         expect(el.getAnimations()).to.have.lengthOf(0);
+        expect(cancelSpy).to.have.been.calledOnce;
+        expect(cancelSpy.firstCall.args[0].detail.animation).to.equal("fade");
+    });
+
+    it("setting disabled mid-animation cancels and emits animation-cancel", async () => {
+        const el = await fixture(
+            html`<y-animate trigger="manual" duration="2000"></y-animate>`,
+        );
+        el.play();
+        expect(el.getAnimations()).to.have.lengthOf(1);
+        const cancelSpy = sandbox.spy();
+        el.addEventListener("animation-cancel", cancelSpy);
+        el.setAttribute("disabled", "");
+        expect(el.getAnimations()).to.have.lengthOf(0);
+        expect(cancelSpy).to.have.been.calledOnce;
     });
 
     // ── Setters round-trip ───────────────────────────────────
