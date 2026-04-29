@@ -192,7 +192,7 @@ function enabledSetKeys(theme) {
     return new Set(
         Object.entries(theme.selectedTokenSets)
             .filter(([, s]) => s === "enabled")
-            .map(([set]) => `tokens/${set}.json`),
+            .map(([set]) => join(TOKENS_DIR, `${set}.json`)),
     );
 }
 
