@@ -214,18 +214,19 @@ export class YumeIcon extends HTMLElement {
         const wrapper = _el("span", { class: "icon-wrapper", part: "icon" });
         wrapper.innerHTML = svg;
 
-        const style = _el("style");
-        style.textContent = this._buildStyleCSS(sizeVal, colorVal, weightVal);
-
-        this.shadowRoot.replaceChildren(style, wrapper);
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(sizeVal, colorVal, weightVal),
+        ];
+        this.shadowRoot.replaceChildren(wrapper);
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
-    _buildStyleCSS(sizeVal, colorVal, weightVal) {
-        return `
+    _buildStyleSheet(sizeVal, colorVal, weightVal) {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: inline-flex;
                 align-items: center;
@@ -240,7 +241,8 @@ export class YumeIcon extends HTMLElement {
                 height: 100%;
             }
             ${this._getWeightCSS(weightVal)}
-        `;
+        `);
+        return sheet;
     }
 
     _getColor(color) {

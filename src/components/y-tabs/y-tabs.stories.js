@@ -127,7 +127,7 @@ export const WithIcons = {
                     id: "settings",
                     label: "Settings",
                     slot: "settings",
-                    leftIcon: "settings",
+                    leftIcon: "gear",
                 },
             ])}'
             style="width:400px"
