@@ -7,12 +7,14 @@ export default {
         mode: {
             control: "select",
             options: ["bar", "ring", "pie"],
-            description: "Presentation: horizontal bar, circular ring, or filled pie sector.",
+            description:
+                "Presentation: horizontal bar, circular ring, or filled pie sector.",
             table: { defaultValue: { summary: "bar" } },
         },
         value: {
             control: { type: "range", min: 0, max: 100, step: 1 },
-            description: "Current progress value (single-value API; ignored when `values` is set).",
+            description:
+                "Current progress value (single-value API; ignored when `values` is set).",
         },
         min: {
             control: "number",
@@ -26,7 +28,15 @@ export default {
         },
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+                "help",
+            ],
             description: "Default color scheme.",
             table: { defaultValue: { summary: "primary" } },
         },
@@ -63,6 +73,18 @@ export default {
             description: "Reduces opacity and disables interaction.",
             table: { defaultValue: { summary: false } },
         },
+        startAngle: {
+            control: { type: "number", min: -360, max: 360, step: 1 },
+            description:
+                "Starting angle in degrees for ring/pie (also where the sweep ends, since it's a full circle). Clock convention: `0` = 12 o'clock, `90` = 3 o'clock. Ignored in bar.",
+            table: { defaultValue: { summary: 0 } },
+        },
+        direction: {
+            control: "select",
+            options: ["clockwise", "counterclockwise"],
+            description: "Sweep direction for ring/pie. Ignored in bar.",
+            table: { defaultValue: { summary: "clockwise" } },
+        },
     },
     args: {
         mode: "bar",
@@ -76,6 +98,8 @@ export default {
         labelDisplay: true,
         indeterminate: false,
         disabled: false,
+        startAngle: 0,
+        direction: "clockwise",
     },
     render: ({
         mode,
@@ -89,6 +113,8 @@ export default {
         labelDisplay,
         indeterminate,
         disabled,
+        startAngle,
+        direction,
     }) => `
         <y-progress
             mode="${mode}"
@@ -100,6 +126,8 @@ export default {
             thickness="${thickness}"
             label-format="${labelFormat}"
             label-display="${labelDisplay}"
+            start-angle="${startAngle}"
+            direction="${direction}"
             ${indeterminate ? "indeterminate" : ""}
             ${disabled ? "disabled" : ""}
         ></y-progress>
@@ -159,14 +187,14 @@ export const Disabled = {
 export const StackedBar = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:8px;width:480px">
-            <span>Disk usage</span>
+            <span>Daily goals</span>
             <y-progress
                 values='[
-                    {"value":35,"color":"primary","label":"Photos"},
-                    {"value":22,"color":"success","label":"Apps"},
-                    {"value":18,"color":"warning","label":"Other"}
+                    {"value":80,"color":"primary","label":"Steps"},
+                    {"value":55,"color":"success","label":"Exercise"},
+                    {"value":30,"color":"warning","label":"Stand"}
                 ]'
-                size="large"
+                size="medium"
                 label-display="false"
             ></y-progress>
         </div>
@@ -174,8 +202,7 @@ export const StackedBar = {
     parameters: {
         docs: {
             description: {
-                story:
-                    "Pass a `values` array with 2+ entries and the bar stacks each segment side by side. Each entry can override the host `color` per segment.",
+                story: "Pass a `values` array with 2+ entries and the bar stacks each entry as its own full-width row, separated by `segment-gap`. Outer rounding only applies to the top and bottom rows so the group reads as a single bordered group.",
             },
         },
     },
@@ -185,9 +212,9 @@ export const StackedBar = {
 export const SegmentedBar = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:12px;width:480px">
-            <y-progress value="40" segmented="5" size="large" label-display="false"></y-progress>
-            <y-progress value="73" segmented="10" color="success" size="large" label-display="false"></y-progress>
-            <y-progress value="40" step="20" segmented size="large" label-display="false"></y-progress>
+            <y-progress value="40" segmented="30" label-display="false"></y-progress>
+            <y-progress value="73" segmented="10" color="success" label-display="false"></y-progress>
+            <y-progress value="40" step="20" segmented label-display="false"></y-progress>
         </div>
     `,
 };
@@ -223,8 +250,7 @@ export const ConcentricRings = {
     parameters: {
         docs: {
             description: {
-                story:
-                    "When `mode=\"ring\"` has 2+ values, each entry renders as a concentric arc — outermost first.",
+                story: 'When `mode="ring"` has 2+ values, each entry renders as a concentric arc — outermost first.',
             },
         },
     },
@@ -274,8 +300,7 @@ export const PieMultiSlice = {
     parameters: {
         docs: {
             description: {
-                story:
-                    "Multi-value `pie` renders each entry as a slice swept back-to-back from `start-angle`.",
+                story: "Multi-value `pie` renders each entry as a slice swept back-to-back from `start-angle`.",
             },
         },
     },

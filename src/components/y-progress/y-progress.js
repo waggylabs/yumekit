@@ -237,10 +237,14 @@ export class YumeProgress extends HTMLElement {
         this.setAttribute("size", val);
     }
 
-    /** Starting angle in degrees for `ring`/`pie` (default `-90` = 12 o'clock). */
+    /**
+     * Starting angle in degrees for `ring`/`pie` (clock convention:
+     * `0` = 12 o'clock, `90` = 3 o'clock). Defaults to `0`. For a full sweep,
+     * this is also where the ring/pie ends.
+     */
     get startAngle() {
         const n = parseFloat(this.getAttribute("start-angle"));
-        return Number.isFinite(n) ? n : -90;
+        return Number.isFinite(n) ? n : 0;
     }
     set startAngle(val) {
         this.setAttribute("start-angle", String(val));
@@ -298,9 +302,7 @@ export class YumeProgress extends HTMLElement {
             if (!Array.isArray(parsed)) return null;
             return parsed
                 .map((e) => (typeof e === "number" ? { value: e } : e))
-                .filter(
-                    (e) => e && Number.isFinite(parseFloat(e.value)),
-                );
+                .filter((e) => e && Number.isFinite(parseFloat(e.value)));
         } catch {
             return null;
         }
@@ -332,7 +334,8 @@ export class YumeProgress extends HTMLElement {
 
         // Allow the `track-color` attribute to flow through to nested SVG /
         // segment styles via a single CSS variable on the host.
-        if (this.trackColor) this.style.setProperty("--track-color", this.trackColor);
+        if (this.trackColor)
+            this.style.setProperty("--track-color", this.trackColor);
         else this.style.removeProperty("--track-color");
 
         const wrapper = _el("div", { class: "wrapper" }, [
@@ -355,17 +358,15 @@ export class YumeProgress extends HTMLElement {
         if (entries.length === 1) return entries[0].value;
         // Multi-value: sum capped at max so screen readers report a sensible
         // "how full overall" number.
-        const sum = entries.reduce(
-            (s, e) => s + (parseFloat(e.value) || 0),
-            0,
-        );
+        const sum = entries.reduce((s, e) => s + (parseFloat(e.value) || 0), 0);
         return Math.min(this.max, sum);
     }
 
     _buildBar() {
         const entries = this._entries();
         const isMulti = entries.length > 1;
-        const segments = !isMulti && !this.indeterminate ? this.segmented : null;
+        const segments =
+            !isMulti && !this.indeterminate ? this.segmented : null;
 
         const track = _el("div", {
             class: "track",
@@ -391,9 +392,18 @@ export class YumeProgress extends HTMLElement {
         }
 
         if (isMulti) {
+            track.classList.add("track--stacked");
+            track.style.setProperty(
+                "--_segment-gap",
+                this._resolveSegmentGap(),
+            );
             for (const entry of entries) {
                 const pct = this._entryPercentage(entry.value);
-                track.appendChild(
+                const row = _el("div", {
+                    class: "stack-row",
+                    part: "stack-row",
+                });
+                row.appendChild(
                     _el("div", {
                         class: "bar bar--stacked",
                         part: "bar",
@@ -401,6 +411,7 @@ export class YumeProgress extends HTMLElement {
                         style: `width: ${pct}%; ${this._barColorStyle(entry)}`,
                     }),
                 );
+                track.appendChild(row);
             }
             return track;
         }
@@ -421,8 +432,7 @@ export class YumeProgress extends HTMLElement {
                 const seg = _el("div", {
                     class: "segment" + (filled > 0 ? " segment--filled" : ""),
                     part: "segment",
-                    style:
-                        `--_fill: ${filled}; ` + this._barColorStyle(entry),
+                    style: `--_fill: ${filled}; ` + this._barColorStyle(entry),
                 });
                 track.appendChild(seg);
             }
@@ -478,7 +488,7 @@ export class YumeProgress extends HTMLElement {
         const cx = diameter / 2;
         const cy = diameter / 2;
         const r = diameter / 2;
-        const startAngle = this.startAngle;
+        const startAngle = this.startAngle - 90;
         const sweep = this.direction === "counterclockwise" ? -1 : 1;
 
         const svgChildren = [];
@@ -573,7 +583,7 @@ export class YumeProgress extends HTMLElement {
         const isMulti = entries.length > 1;
         const diameter = this._resolveDiameter();
         const baseThickness = this._resolveThicknessPx();
-        const startAngle = this.startAngle;
+        const startAngle = this.startAngle - 90;
         const sweep = this.direction === "counterclockwise" ? -1 : 1;
 
         const segments =
@@ -604,11 +614,7 @@ export class YumeProgress extends HTMLElement {
                 const entry = entries[i];
                 const pct = this._entryPercentage(entry.value);
                 svgChildren.push(
-                    this._ringTrackArcAtRadius(
-                        diameter,
-                        outerR,
-                        baseThickness,
-                    ),
+                    this._ringTrackArcAtRadius(diameter, outerR, baseThickness),
                 );
                 if (pct > 0) {
                     svgChildren.push(
@@ -642,8 +648,7 @@ export class YumeProgress extends HTMLElement {
             for (let i = 0; i < segments; i++) {
                 const filled = clamp(fillUpTo - i, 0, 1);
                 if (filled <= 0) continue;
-                const start =
-                    startAngle + sweep * (i * segArcDeg + gapDeg / 2);
+                const start = startAngle + sweep * (i * segArcDeg + gapDeg / 2);
                 const end =
                     startAngle +
                     sweep * (i * segArcDeg + segArcDeg * filled - gapDeg / 2);
@@ -758,17 +763,20 @@ export class YumeProgress extends HTMLElement {
             .track--segmented {
                 display: flex;
                 gap: var(--_segment-gap, var(--component-progress-segment-gap, var(--spacing-x-small)));
-                padding: 0;
-                border: none;
-                background: transparent;
             }
 
             .segment {
                 position: relative;
                 flex: 1;
-                background: var(--component-progress-track-color, var(--track-color, var(--base-background-component)));
-                border-radius: var(--component-progress-border-radius-inner);
                 overflow: hidden;
+            }
+            .segment:first-child {
+                border-top-left-radius: var(--component-progress-border-radius-inner);
+                border-bottom-left-radius: var(--component-progress-border-radius-inner);
+            }
+            .segment:last-child {
+                border-top-right-radius: var(--component-progress-border-radius-inner);
+                border-bottom-right-radius: var(--component-progress-border-radius-inner);
             }
             .segment--filled::after {
                 content: "";
@@ -787,17 +795,32 @@ export class YumeProgress extends HTMLElement {
                 overflow: hidden;
                 transition: width 0.3s ease;
             }
+
+            .track--stacked {
+                display: flex;
+                flex-direction: column;
+                gap: var(--_segment-gap, var(--component-progress-segment-gap, var(--spacing-x-small)));
+                height: auto;
+            }
+
+            .stack-row {
+                position: relative;
+                height: var(--_size, var(--component-progress-size-medium));
+                overflow: hidden;
+            }
+            .stack-row:first-child {
+                border-top-left-radius: var(--component-progress-border-radius-inner);
+                border-top-right-radius: var(--component-progress-border-radius-inner);
+            }
+            .stack-row:last-child {
+                border-bottom-left-radius: var(--component-progress-border-radius-inner);
+                border-bottom-right-radius: var(--component-progress-border-radius-inner);
+            }
+
             .bar--stacked {
+                height: 100%;
                 border-radius: 0;
                 transition: width 0.3s ease;
-            }
-            .bar--stacked:first-child {
-                border-top-left-radius: var(--component-progress-border-radius-inner);
-                border-bottom-left-radius: var(--component-progress-border-radius-inner);
-            }
-            .bar--stacked:last-child {
-                border-top-right-radius: var(--component-progress-border-radius-inner);
-                border-bottom-right-radius: var(--component-progress-border-radius-inner);
             }
             .bar--indeterminate {
                 width: 30%;
@@ -904,13 +927,9 @@ export class YumeProgress extends HTMLElement {
                 const parsed = JSON.parse(valuesAttr);
                 if (Array.isArray(parsed)) {
                     return parsed
-                        .map((e) =>
-                            typeof e === "number" ? { value: e } : e,
-                        )
+                        .map((e) => (typeof e === "number" ? { value: e } : e))
                         .filter(
-                            (e) =>
-                                e &&
-                                Number.isFinite(parseFloat(e.value)),
+                            (e) => e && Number.isFinite(parseFloat(e.value)),
                         )
                         .map((e) => ({
                             ...e,
@@ -926,7 +945,10 @@ export class YumeProgress extends HTMLElement {
     }
 
     _entryFill(entry) {
-        const [bg] = getColorVarPair((entry && entry.color) || this.color, null);
+        const [bg] = getColorVarPair(
+            (entry && entry.color) || this.color,
+            null,
+        );
         return bg;
     }
 
@@ -1021,7 +1043,15 @@ export class YumeProgress extends HTMLElement {
         return Number.isFinite(parsed) && parsed > 0 ? parsed : 8;
     }
 
-    _ringFillArcAtRadius(diameter, r, thickness, entry, fraction, startAngle, sweep) {
+    _ringFillArcAtRadius(
+        diameter,
+        r,
+        thickness,
+        entry,
+        fraction,
+        startAngle,
+        sweep,
+    ) {
         const cx = diameter / 2;
         const cy = diameter / 2;
         const arcDeg = clamp(fraction, 0, 1) * 360;
@@ -1033,18 +1063,26 @@ export class YumeProgress extends HTMLElement {
             fill: "none",
             stroke: this._entryFill(entry),
             "stroke-width": thickness,
-            "stroke-linecap": "butt",
+            "stroke-linecap": "round",
             "aria-hidden": "true",
         });
     }
 
-    _ringFillCircle(diameter, thickness, entry, fraction, startAngle, sweep, className) {
+    _ringFillCircle(
+        diameter,
+        thickness,
+        entry,
+        fraction,
+        startAngle,
+        sweep,
+        className,
+    ) {
         const r = diameter / 2 - thickness / 2;
         const cx = diameter / 2;
         const cy = diameter / 2;
         const circumference = 2 * Math.PI * r;
         const dash = clamp(fraction, 0, 1) * circumference;
-        const baseRotation = startAngle + 90; // dasharray starts at 3 o'clock
+        const baseRotation = startAngle;
         const rotation =
             sweep === 1
                 ? `rotate(${baseRotation} ${cx} ${cy})`
@@ -1058,7 +1096,7 @@ export class YumeProgress extends HTMLElement {
             fill: "none",
             stroke: this._entryFill(entry),
             "stroke-width": thickness,
-            "stroke-linecap": "butt",
+            "stroke-linecap": "round",
             "stroke-dasharray": `${dash} ${circumference}`,
             transform: rotation,
             "aria-hidden": "true",

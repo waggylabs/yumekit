@@ -462,13 +462,13 @@ describe("YumeProgress", () => {
         expect(el.direction).to.equal("clockwise");
     });
 
-    it("startAngle defaults to -90 (12 o'clock) and accepts overrides", async () => {
+    it("startAngle defaults to 0 (12 o'clock) and accepts overrides", async () => {
         const el = await fixture(
             html`<y-progress mode="ring" value="50"></y-progress>`,
         );
-        expect(el.startAngle).to.equal(-90);
-        el.setAttribute("start-angle", "0");
         expect(el.startAngle).to.equal(0);
+        el.setAttribute("start-angle", "90");
+        expect(el.startAngle).to.equal(90);
     });
 
     it("values setter serializes JSON onto the attribute", async () => {
