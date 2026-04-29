@@ -2,7 +2,7 @@ import { getColorVarPair } from "../../modules/helpers.js";
 
 export class YumeTooltip extends HTMLElement {
     static get observedAttributes() {
-        return ["text", "position", "delay", "color"];
+        return ["text", "position", "delay", "color", "open"];
     }
 
     // -------------------------------------------------------------------------
@@ -66,6 +66,15 @@ export class YumeTooltip extends HTMLElement {
         this.setAttribute("delay", String(val));
     }
 
+    /** When true, the tooltip is forced visible and ignores hover/focus events. */
+    get open() {
+        return this.hasAttribute("open");
+    }
+    set open(val) {
+        if (val) this.setAttribute("open", "");
+        else this.removeAttribute("open");
+    }
+
     /** Placement relative to the trigger: "top" | "bottom" | "left" | "right". */
     get position() {
         return this.getAttribute("position") || "top";
@@ -86,8 +95,9 @@ export class YumeTooltip extends HTMLElement {
     // Public
     // -------------------------------------------------------------------------
 
-    /** Immediately hides the tooltip. */
+    /** Immediately hides the tooltip. No-op while `open` is set. */
     hide() {
+        if (this.open) return;
         clearTimeout(this._showTimeout);
         this._visible = false;
         const tip = this.shadowRoot.querySelector(".tooltip");
@@ -96,15 +106,17 @@ export class YumeTooltip extends HTMLElement {
 
     render() {
         const [bg, fg] = getColorVarPair(this.color);
+        const visibleClass = this.open ? " visible" : "";
         this.shadowRoot.innerHTML = `
             <style>${this._buildStyles(bg, fg)}</style>
             <slot class="trigger"></slot>
-            <div class="tooltip ${this.position}" role="tooltip" part="tooltip">${this.text}</div>
+            <div class="tooltip ${this.position}${visibleClass}" role="tooltip" part="tooltip">${this.text}</div>
         `;
     }
 
-    /** Programmatically shows the tooltip after the configured delay. */
+    /** Programmatically shows the tooltip after the configured delay. No-op while `open` is set. */
     show() {
+        if (this.open) return;
         clearTimeout(this._hideTimeout);
         this._showTimeout = setTimeout(() => {
             this._visible = true;

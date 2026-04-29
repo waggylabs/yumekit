@@ -715,25 +715,53 @@
       }
     },
     "slider": {
-      "border-radius-inner": {
-        "$type": "borderRadius",
-        "$value": "{radii.small}"
+      "track-thickness-small": {
+        "$type": "dimension",
+        "$value": "3px"
       },
-      "border-radius-outer": {
-        "$type": "borderRadius",
-        "$value": "{radii.medium}"
+      "track-thickness-medium": {
+        "$type": "dimension",
+        "$value": "4px"
       },
-      "border-width": {
+      "track-thickness-large": {
+        "$type": "dimension",
+        "$value": "6px"
+      },
+      "thumb-size-small": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "thumb-size-medium": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "thumb-size-large": {
+        "$type": "dimension",
+        "$value": "24px"
+      },
+      "thumb-border-width": {
         "$type": "borderWidth",
         "$value": "{border.thin}"
       },
+      "border-width": {
+        "$type": "borderWidth",
+        "$value": "{border.x-thin}"
+      },
       "padding": {
         "$type": "spacing",
-        "$value": "{spacing.x-small}"
+        "$value": "{spacing.2x-small}"
       },
-      "thumb-border-radius": {
-        "$type": "borderRadius",
-        "$value": "{radii.x-small}"
+      "tick-size": {
+        "$type": "dimension",
+        "$value": "4px"
+      },
+      "tick-label-size": {
+        "$type": "fontSizes",
+        "$value": "{font-size.label}"
+      },
+      "tick-label-gap": {
+        "$type": "spacing",
+        "$value": "{spacing.2x-small}"
       }
     },
     "splitter": {
