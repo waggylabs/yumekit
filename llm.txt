@@ -598,15 +598,72 @@ Icons up to `value` render in the specified color; icons above `value` render mu
 ---
 
 ### y-progress
-Progress bar.
+Progress indicator. Renders as a horizontal bar (default), a circular ring, or a filled pie sector. Supports single-value or multi-value rendering — when a `values` array of 2+ entries is supplied, the bar stacks, the ring shows concentric arcs, and the pie renders multiple slices.
 
 Tag: `<y-progress>`
 Attributes:
-- `value` — numeric 0–100
-- `max` — numeric (default: 100)
-- `indeterminate` — boolean, animated spinner-style bar
-- `color` — color scheme name
-- `size` — `"small"` | `"medium"` | `"large"`
+- `mode` — `"bar"` (default) | `"ring"` | `"pie"`
+- `value` — single numeric value. Deprecated when using multi-value rendering — use `values` instead. Falls back when `values` is unset or invalid.
+- `values` — JSON array of `{ value, color?, label? }` entries. With ≥2 entries: `bar` stacks segments side by side, `ring` renders concentric arcs (outer to inner), `pie` renders back-to-back slices from `start-angle`. Each entry's `color` overrides the host `color`; `label` is exposed via `title` (bar) or as a hover tooltip target.
+- `min` — numeric (default `0`)
+- `max` — numeric (default `100`)
+- `step` — numeric, snaps `percentage` to step boundaries
+- `size` — `"small"` | `"medium"` (default) | `"large"` or a raw length (e.g. `"160px"`). Bar thickness in `bar`, diameter in `ring`/`pie`.
+- `thickness` — `"small"` | `"medium"` (default) | `"large"` or a raw length. Ring stroke width; ignored in `bar`/`pie`.
+- `color` — predefined scheme (default `"primary"`) or any CSS color
+- `track-color` — overrides the unfilled track / ring background; falls back to `--base-background-component`
+- `label-display` — `"true"` (default) | `"false"`. In `ring`/`pie`, the label centers inside the shape.
+- `label-format` — `"percent"` (default) | `"value"` | `"fraction"`
+- `indeterminate` — boolean. `bar`: sliding strip. `ring`/`pie`: rotating partial arc.
+- `disabled` — boolean. Reduces opacity, disables pointer events, sets `aria-disabled`.
+- `segmented` — boolean (presence: auto count from `step` or default 10) or integer (explicit count, capped at 50). Splits the fill into discrete segments. Supported in `bar` and `ring`; ignored in `pie` and when multi-value.
+- `segment-gap` — `"none"` | `"x-small"` (default) | `"small"` | `"medium"` or a raw length. Gap between segments.
+- `start-angle` — degrees (default `-90` = 12 o'clock). Ignored in `bar`.
+- `direction` — `"clockwise"` (default) | `"counterclockwise"`. Ignored in `bar`.
+
+Slots:
+- _(default)_ — header label rendered above the shape; hidden when empty.
+- `center` — content rendered inside the ring/pie center, replacing the built-in value label. Ignored in `bar`.
+
+Methods: `increment()`, `decrement()` — single-value only; mutate `value` by `step` (or 1) within `[min, max]`.
+
+CSS Parts: `track`, `bar`, `value-label`, `segment`, `ring`, `ring-track`, `ring-fill`, `pie`, `pie-track`, `pie-fill`, `center`.
+
+CSS Custom Properties: `--component-progress-border-width`, `--component-progress-border-radius-outer`, `--component-progress-border-radius-inner`, `--component-progress-padding`, `--component-progress-size-small/medium/large`, `--component-progress-thickness-small/medium/large`, `--component-progress-segment-gap`, `--component-progress-track-color`, `--component-progress-label-size`.
+
+Accessibility: each shape carries `role="progressbar"` with `aria-valuemin`/`aria-valuemax` and `aria-valuenow` (sum of `values` capped at `max` when multi-value). `aria-busy="true"` while `indeterminate`. The default-slot header is the implicit label; otherwise consumers should provide `aria-label` on the host.
+
+```html
+<!-- Single-value bar (back-compat) -->
+<y-progress value="60" color="primary">Uploading…</y-progress>
+
+<!-- Stacked bar -->
+<y-progress
+    values='[{"value":35,"color":"primary","label":"Photos"},{"value":22,"color":"success","label":"Apps"},{"value":18,"color":"warning","label":"Other"}]'
+    label-display="false"
+></y-progress>
+
+<!-- Ring with custom center content -->
+<y-progress mode="ring" value="78" size="140px">
+    <span slot="center"><strong>78</strong> / 100</span>
+</y-progress>
+
+<!-- Concentric activity rings -->
+<y-progress
+    mode="ring" size="160px"
+    values='[{"value":80,"color":"primary"},{"value":55,"color":"success"},{"value":30,"color":"warning"}]'
+></y-progress>
+
+<!-- Multi-slice pie -->
+<y-progress
+    mode="pie" size="140px"
+    values='[{"value":40,"color":"primary"},{"value":25,"color":"success"},{"value":15,"color":"warning"}]'
+    label-display="false"
+></y-progress>
+
+<!-- Segmented bar (5 chunks) -->
+<y-progress value="40" segmented="5" size="large" label-display="false"></y-progress>
+```
 
 ---
 
