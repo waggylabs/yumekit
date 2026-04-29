@@ -227,4 +227,60 @@ describe("YumeTooltip", () => {
         const tip = el.shadowRoot.querySelector(".tooltip");
         expect(tip.textContent).to.equal("Updated");
     });
+
+    describe("open attribute", () => {
+        it("renders the tooltip with .visible when open is set", async () => {
+            const el = await fixture(
+                html`<y-tooltip open text="Pinned"
+                    ><button>P</button></y-tooltip
+                >`,
+            );
+            const tip = el.shadowRoot.querySelector(".tooltip");
+            expect(tip.classList.contains("visible")).to.be.true;
+        });
+
+        it("hide() is a no-op while open is set", async () => {
+            const el = await fixture(
+                html`<y-tooltip open text="Pinned"
+                    ><button>P</button></y-tooltip
+                >`,
+            );
+            el.hide();
+            const tip = el.shadowRoot.querySelector(".tooltip");
+            expect(tip.classList.contains("visible")).to.be.true;
+        });
+
+        it("show() is a no-op while open is set (no setTimeout queued)", async () => {
+            const el = await fixture(
+                html`<y-tooltip open delay="1000" text="Pinned"
+                    ><button>P</button></y-tooltip
+                >`,
+            );
+            el.show();
+            // Synchronously already visible — no need to wait for the delay.
+            const tip = el.shadowRoot.querySelector(".tooltip");
+            expect(tip.classList.contains("visible")).to.be.true;
+        });
+
+        it("toggling open off restores hover-driven visibility", async () => {
+            const el = await fixture(
+                html`<y-tooltip open text="Pinned"
+                    ><button>P</button></y-tooltip
+                >`,
+            );
+            el.open = false;
+            const tip = el.shadowRoot.querySelector(".tooltip");
+            expect(tip.classList.contains("visible")).to.be.false;
+            expect(el.hasAttribute("open")).to.be.false;
+        });
+
+        it("open getter reflects the attribute", async () => {
+            const el = await fixture(
+                html`<y-tooltip text="T"><button>B</button></y-tooltip>`,
+            );
+            expect(el.open).to.be.false;
+            el.setAttribute("open", "");
+            expect(el.open).to.be.true;
+        });
+    });
 });
