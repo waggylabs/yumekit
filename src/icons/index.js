@@ -29,9 +29,9 @@ export { default as minus } from "./minus.svg";
 
 export { default as menu } from "./menu.svg";
 
-/* ── Close / remove ───────────────────────────────────────────────── */
+/* ── X / remove ───────────────────────────────────────────────────── */
 
-export { default as close } from "./close.svg";
+export { default as x } from "./x.svg";
 
 /* ── Ellipsis (grip handles) ──────────────────────────────────────── */
 

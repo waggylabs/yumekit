@@ -42,7 +42,8 @@ export default {
         },
         collapsed: {
             control: "boolean",
-            description: "Whether the vertical sidebar is collapsed to icon-only mode.",
+            description:
+                "Whether the vertical sidebar is collapsed to icon-only mode.",
             table: { defaultValue: { summary: false } },
         },
     },
@@ -112,11 +113,13 @@ export const NavigateEvent = {
     name: "Navigate Event (SPA)",
     render: () => {
         const container = document.createElement("div");
-        container.style.cssText = "height:400px;display:flex;gap:16px;align-items:flex-start";
+        container.style.cssText =
+            "height:400px;display:flex;gap:16px;align-items:flex-start";
 
         const log = document.createElement("div");
         log.id = "nav-log";
-        log.style.cssText = "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px;min-width:220px;flex-shrink:0";
+        log.style.cssText =
+            "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px;min-width:220px;flex-shrink:0";
         log.textContent = "Click a nav item…";
 
         container.innerHTML = `
@@ -131,10 +134,12 @@ export const NavigateEvent = {
         `;
         container.appendChild(log);
 
-        container.querySelector("#spa-appbar").addEventListener("navigate", (e) => {
-            e.preventDefault();
-            log.innerHTML = `<b>navigate</b> intercepted<br>href: ${e.detail.href}<br><br><em>Navigation was cancelled via e.preventDefault()</em>`;
-        });
+        container
+            .querySelector("#spa-appbar")
+            .addEventListener("navigate", (e) => {
+                e.preventDefault();
+                log.innerHTML = `<b>navigate</b> intercepted<br>href: ${e.detail.href}<br><br><em>Navigation was cancelled via e.preventDefault()</em>`;
+            });
 
         return container;
     },
@@ -156,7 +161,7 @@ export const CustomNavChildren = {
                     Projects
                 </a>
                 <a href="/reports" style="display:flex;align-items:center;gap:8px;padding:8px 12px;color:inherit;text-decoration:none">
-                    <y-icon name="chart" size="medium"></y-icon>
+                    <y-icon name="waveform" size="medium"></y-icon>
                     Reports
                 </a>
             </y-appbar>

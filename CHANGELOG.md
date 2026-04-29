@@ -47,6 +47,89 @@ Delete any empty sections before publishing.
 
 ### Changed
 
+- **Icon rename — `comp-*` prefix dropped.** All 26 component-illustrating icons renamed. Two resolved collisions: `comp-menu` → `droplist` and `comp-tag` → `chip`.
+
+    | Old name        | New name   |
+    | --------------- | ---------- |
+    | `comp-appbar`   | `appbar`   |
+    | `comp-avatar`   | `avatar`   |
+    | `comp-badge`    | `badge`    |
+    | `comp-button`   | `button`   |
+    | `comp-card`     | `card`     |
+    | `comp-checkbox` | `checkbox` |
+    | `comp-date`     | `date`     |
+    | `comp-dialog`   | `dialog`   |
+    | `comp-drawer`   | `drawer`   |
+    | `comp-icon`     | `icon`     |
+    | `comp-input`    | `input`    |
+    | `comp-menu`     | `droplist` |
+    | `comp-panelbar` | `panelbar` |
+    | `comp-progress` | `progress` |
+    | `comp-radio`    | `radio`    |
+    | `comp-rating`   | `rating`   |
+    | `comp-select`   | `select`   |
+    | `comp-slider`   | `slider`   |
+    | `comp-switch`   | `switch`   |
+    | `comp-table`    | `table`    |
+    | `comp-tabs`     | `tabs`     |
+    | `comp-tag`      | `chip`     |
+    | `comp-textarea` | `textarea` |
+    | `comp-theme`    | `theme`    |
+    | `comp-toast`    | `toast`    |
+    | `comp-tooltip`  | `tooltip`  |
+
+- **Icon rename — usage names replaced with glyph-descriptive names.** 12 general-purpose icons renamed so the name describes what the icon depicts rather than how it is used.
+
+    | Old name   | New name               | Glyph                      |
+    | ---------- | ---------------------- | -------------------------- |
+    | `ai`       | `robot`                | Microchip / CPU            |
+    | `ban`      | `circle-slash`         | Circle with diagonal slash |
+    | `chart`    | `waveform`             | ECG / pulse waveform       |
+    | `close`    | `x`                    | × mark                     |
+    | `comments` | `speech-bubble`        | Chat / speech bubble       |
+    | `filter`   | `funnel`               | Funnel shape               |
+    | `paste`    | `clipboard`            | Clipboard                  |
+    | `save`     | `floppy-disk`          | Floppy disk                |
+    | `search`   | `magnifying-glass`     | Magnifying glass           |
+    | `settings` | `gear`                 | Gear / cog                 |
+    | `tools`    | `wrench`               | Single wrench              |
+    | `warning`  | `triangle-exclamation` | Triangle with !            |
+
+- **`y-icon` refactor.** Shadow DOM now uses `_el` for the wrapper span, `adoptedStyleSheets` for dynamic per-render styles, and `shadowRoot.replaceChildren()` instead of `innerHTML`.
+
+- **Icon rename — `comp-*` prefix dropped.** All 26 component-illustrating icons have been renamed for consistency. Two additional renames resolve collisions with existing general-purpose icons: `comp-menu` → `droplist` (distinct from the hamburger `menu` icon) and `comp-tag` → `chip` (distinct from the price-tag `tag` icon).
+
+    Migration table (old `<y-icon name="">` value → new value):
+
+    | Old name        | New name   |
+    | --------------- | ---------- |
+    | `comp-appbar`   | `appbar`   |
+    | `comp-avatar`   | `avatar`   |
+    | `comp-badge`    | `badge`    |
+    | `comp-button`   | `button`   |
+    | `comp-card`     | `card`     |
+    | `comp-checkbox` | `checkbox` |
+    | `comp-date`     | `date`     |
+    | `comp-dialog`   | `dialog`   |
+    | `comp-drawer`   | `drawer`   |
+    | `comp-icon`     | `icon`     |
+    | `comp-input`    | `input`    |
+    | `comp-menu`     | `droplist` |
+    | `comp-panelbar` | `panelbar` |
+    | `comp-progress` | `progress` |
+    | `comp-radio`    | `radio`    |
+    | `comp-rating`   | `rating`   |
+    | `comp-select`   | `select`   |
+    | `comp-slider`   | `slider`   |
+    | `comp-switch`   | `switch`   |
+    | `comp-table`    | `table`    |
+    | `comp-tabs`     | `tabs`     |
+    | `comp-tag`      | `chip`     |
+    | `comp-textarea` | `textarea` |
+    | `comp-theme`    | `theme`    |
+    | `comp-toast`    | `toast`    |
+    | `comp-tooltip`  | `tooltip`  |
+
 - **Breaking** `y-slider`: visual redesign, range mode, and refactor to current standards. Track is now a thin horizontal (or vertical) line; the thumb is a circle that sits on top of the track. Vertical orientation is fully supported (pointer math, keyboard, layout).
     - **Added** `range` boolean attribute. When set, the slider exposes two thumbs and the new `value-min` / `value-max` attributes (defaulting to `min` / `max`). Each thumb is independently focusable with its own `role="slider"` and clamped `aria-valuemin` / `aria-valuemax`; the track itself becomes `role="group"` with `aria-label` (overridable) describing the pair. Thumb-specific labels are configurable via `aria-label-min` / `aria-label-max`. The form value serializes as `"lower,upper"`.
     - **Added** `min-gap` attribute — minimum distance enforced between thumbs in range mode. Defaults to `step` when set, otherwise `1`. Drag and keyboard movement clamp against the other thumb minus this gap.

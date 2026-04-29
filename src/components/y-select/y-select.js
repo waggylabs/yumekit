@@ -663,7 +663,7 @@ export class YumeSelect extends HTMLElement {
         const showClearButton = (isSearchable || isClearable) && !isMulti;
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
         const placeholder = this.getAttribute("placeholder") || "Select...";
-        const clearButtonHTML = `<button class="clear-button" style="display:none" tabindex="-1" type="button"><y-icon name="close" size="medium"></y-icon></button>`;
+        const clearButtonHTML = `<button class="clear-button" style="display:none" tabindex="-1" type="button"><y-icon name="x" size="medium"></y-icon></button>`;
 
         let containerInner;
         if (isSearchable && !isMulti) {
@@ -691,7 +691,7 @@ export class YumeSelect extends HTMLElement {
             containerInner = `
                 <div class="value-display">${this._getDisplayText()}</div>
                 <button class="clear-button" style="display:none" tabindex="-1" type="button">
-                    <y-icon name="close" size="medium"></y-icon>
+                    <y-icon name="x" size="medium"></y-icon>
                 </button>
             `;
         } else {

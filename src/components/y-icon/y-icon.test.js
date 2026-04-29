@@ -143,9 +143,9 @@ describe("YumeIcon", () => {
     it("renders different icons correctly", async () => {
         const names = [
             "home",
-            "search",
+            "magnifying-glass",
             "star",
-            "settings",
+            "gear",
             "mail",
             "user",
             "arrow-right",
@@ -249,7 +249,9 @@ describe("YumeIcon", () => {
     });
 
     it("color setter removes attribute when falsy", async () => {
-        const el = await fixture(html`<y-icon name="home" color="primary"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" color="primary"></y-icon>`,
+        );
         el.color = "";
         expect(el.hasAttribute("color")).to.be.false;
     });
@@ -261,19 +263,25 @@ describe("YumeIcon", () => {
     });
 
     it("label setter removes attribute when falsy", async () => {
-        const el = await fixture(html`<y-icon name="home" label="Home icon"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" label="Home icon"></y-icon>`,
+        );
         el.label = "";
         expect(el.hasAttribute("label")).to.be.false;
     });
 
     it("weight setter removes attribute when falsy", async () => {
-        const el = await fixture(html`<y-icon name="home" weight="thin"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" weight="thin"></y-icon>`,
+        );
         el.weight = "";
         expect(el.hasAttribute("weight")).to.be.false;
     });
 
     it("label sets role=img and aria-label and removes aria-hidden", async () => {
-        const el = await fixture(html`<y-icon name="home" label="Go home"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" label="Go home"></y-icon>`,
+        );
         expect(el.getAttribute("role")).to.equal("img");
         expect(el.getAttribute("aria-label")).to.equal("Go home");
         expect(el.hasAttribute("aria-hidden")).to.be.false;
@@ -287,43 +295,57 @@ describe("YumeIcon", () => {
     });
 
     it("accepts raw hex color values", async () => {
-        const el = await fixture(html`<y-icon name="home" color="#ff0000"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" color="#ff0000"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("#ff0000");
     });
 
     it("accepts raw rgb color values", async () => {
-        const el = await fixture(html`<y-icon name="home" color="rgb(255,0,0)"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" color="rgb(255,0,0)"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("rgb(255,0,0)");
     });
 
     it("accepts raw hsl color values", async () => {
-        const el = await fixture(html`<y-icon name="home" color="hsl(0,100%,50%)"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" color="hsl(0,100%,50%)"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("hsl(0,100%,50%)");
     });
 
     it("applies x-thin weight", async () => {
-        const el = await fixture(html`<y-icon name="home" weight="x-thin"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" weight="x-thin"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("stroke-width: 1 !important");
     });
 
     it("applies x-thick weight", async () => {
-        const el = await fixture(html`<y-icon name="home" weight="x-thick"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" weight="x-thick"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("stroke-width: 3 !important");
     });
 
     it("applies x-small size", async () => {
-        const el = await fixture(html`<y-icon name="home" size="x-small"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" size="x-small"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--component-icon-size-x-small");
     });
 
     it("applies x-large size", async () => {
-        const el = await fixture(html`<y-icon name="home" size="x-large"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" size="x-large"></y-icon>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--component-icon-size-x-large");
     });

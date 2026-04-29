@@ -141,7 +141,7 @@ export const InputAndButton = {
             <y-button-group>
                 <y-input placeholder="Search…"></y-input>
                 <y-button color="primary" style-type="filled">
-                    <y-icon slot="left-icon" name="search" size="small"></y-icon>
+                    <y-icon slot="left-icon" name="magnifying-glass" size="small"></y-icon>
                     Search
                 </y-button>
             </y-button-group>
@@ -175,7 +175,7 @@ export const MixedContent = {
                     style="width:200px"
                 ></y-select>
                 <y-button style-type="filled" color="primary">
-                    <y-icon slot="left-icon" name="filter" size="small"></y-icon>
+                    <y-icon slot="left-icon" name="funnel" size="small"></y-icon>
                     Apply
                 </y-button>
             </y-button-group>

@@ -140,7 +140,7 @@ export class YumeBanner extends HTMLElement {
                 <span class="action-wrapper" part="action">
                     <slot name="action"></slot>
                 </span>
-                ${this.dismissable ? `<y-button class="close-btn" part="close-btn" aria-label="Dismiss banner" color="${color}" style-type="filled" size="${size}"><y-icon name="close" size="${this._getIconSize(size)}"></y-icon></y-button>` : ""}
+                ${this.dismissable ? `<y-button class="close-btn" part="close-btn" aria-label="Dismiss banner" color="${color}" style-type="filled" size="${size}"><y-icon name="x" size="${this._getIconSize(size)}"></y-icon></y-button>` : ""}
             </div>
         `;
 
