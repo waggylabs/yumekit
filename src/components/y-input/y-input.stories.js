@@ -108,7 +108,7 @@ export const WithIcons = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:16px;width:300px">
             <y-input>
-                <y-icon slot="left-icon" name="search" size="small"></y-icon>
+                <y-icon slot="left-icon" name="magnifying-glass" size="small"></y-icon>
                 <span slot="label">Search</span>
             </y-input>
             <y-input>

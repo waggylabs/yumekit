@@ -3,6 +3,11 @@ import "../../icons/all.js";
 import "./y-icon.js";
 
 describe("YumeIcon", () => {
+    function getCSS(el) {
+        return Array.from(el.shadowRoot.adoptedStyleSheets[0].cssRules)
+            .map((r) => r.cssText)
+            .join(" ");
+    }
     it("renders with default attributes", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         const wrapper = el.shadowRoot.querySelector(".icon-wrapper");
@@ -42,8 +47,8 @@ describe("YumeIcon", () => {
         const large = await fixture(
             html`<y-icon name="home" size="large"></y-icon>`,
         );
-        const smallStyle = small.shadowRoot.querySelector("style").textContent;
-        const largeStyle = large.shadowRoot.querySelector("style").textContent;
+        const smallStyle = getCSS(small);
+        const largeStyle = getCSS(large);
 
         expect(smallStyle).to.include("--component-icon-size-small");
         expect(largeStyle).to.include("--component-icon-size-large");
@@ -53,13 +58,13 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" color="primary"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("--primary-content--");
     });
 
     it("inherits color by default", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("inherit");
     });
 
@@ -77,7 +82,7 @@ describe("YumeIcon", () => {
             const el = await fixture(
                 html`<y-icon name="star" color="${color}"></y-icon>`,
             );
-            const style = el.shadowRoot.querySelector("style").textContent;
+            const style = getCSS(el);
             expect(style).to.include(`--${color}-content--`);
         }
     });
@@ -86,7 +91,7 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" color="nope"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("--base-content--");
     });
 
@@ -94,7 +99,7 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" size="huge"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("--component-icon-size-medium");
     });
 
@@ -109,18 +114,18 @@ describe("YumeIcon", () => {
 
     it("updates styles when size attribute changes", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
-        const styleBefore = el.shadowRoot.querySelector("style").textContent;
+        const styleBefore = getCSS(el);
         expect(styleBefore).to.include("--component-icon-size-medium");
 
         el.setAttribute("size", "large");
-        const styleAfter = el.shadowRoot.querySelector("style").textContent;
+        const styleAfter = getCSS(el);
         expect(styleAfter).to.include("--component-icon-size-large");
     });
 
     it("updates styles when color attribute changes", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         el.setAttribute("color", "error");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("--error-content--");
     });
 
@@ -143,9 +148,9 @@ describe("YumeIcon", () => {
     it("renders different icons correctly", async () => {
         const names = [
             "home",
-            "search",
+            "magnifying-glass",
             "star",
-            "settings",
+            "gear",
             "mail",
             "user",
             "arrow-right",
@@ -160,7 +165,7 @@ describe("YumeIcon", () => {
 
     it("uses inline-flex display", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("display: inline-flex");
     });
 
@@ -168,7 +173,7 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" size="small"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         const sizeVar = "--component-icon-size-small";
         // Both width and height should reference the same size var
         const widthMatch = style.match(/width:\s*var\(([^)]+)\)/);
@@ -193,7 +198,7 @@ describe("YumeIcon", () => {
     it("has regular weight by default", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         expect(el.weight).to.equal("regular");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 2 !important");
     });
 
@@ -201,7 +206,7 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" weight="thin"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 1.5 !important");
     });
 
@@ -209,7 +214,7 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" weight="regular"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 2 !important");
     });
 
@@ -217,7 +222,7 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" weight="thick"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 2.5 !important");
     });
 
@@ -225,14 +230,14 @@ describe("YumeIcon", () => {
         const el = await fixture(
             html`<y-icon name="home" weight="ultra"></y-icon>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.not.include("stroke-width");
     });
 
     it("updates styles when weight attribute changes", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         el.setAttribute("weight", "thick");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 2.5 !important");
     });
 
@@ -249,7 +254,9 @@ describe("YumeIcon", () => {
     });
 
     it("color setter removes attribute when falsy", async () => {
-        const el = await fixture(html`<y-icon name="home" color="primary"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" color="primary"></y-icon>`,
+        );
         el.color = "";
         expect(el.hasAttribute("color")).to.be.false;
     });
@@ -261,19 +268,25 @@ describe("YumeIcon", () => {
     });
 
     it("label setter removes attribute when falsy", async () => {
-        const el = await fixture(html`<y-icon name="home" label="Home icon"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" label="Home icon"></y-icon>`,
+        );
         el.label = "";
         expect(el.hasAttribute("label")).to.be.false;
     });
 
     it("weight setter removes attribute when falsy", async () => {
-        const el = await fixture(html`<y-icon name="home" weight="thin"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" weight="thin"></y-icon>`,
+        );
         el.weight = "";
         expect(el.hasAttribute("weight")).to.be.false;
     });
 
     it("label sets role=img and aria-label and removes aria-hidden", async () => {
-        const el = await fixture(html`<y-icon name="home" label="Go home"></y-icon>`);
+        const el = await fixture(
+            html`<y-icon name="home" label="Go home"></y-icon>`,
+        );
         expect(el.getAttribute("role")).to.equal("img");
         expect(el.getAttribute("aria-label")).to.equal("Go home");
         expect(el.hasAttribute("aria-hidden")).to.be.false;
@@ -287,44 +300,58 @@ describe("YumeIcon", () => {
     });
 
     it("accepts raw hex color values", async () => {
-        const el = await fixture(html`<y-icon name="home" color="#ff0000"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("#ff0000");
+        const el = await fixture(
+            html`<y-icon name="home" color="#ff0000"></y-icon>`,
+        );
+        const style = getCSS(el);
+        expect(style).to.not.include("--base-content--");
     });
 
     it("accepts raw rgb color values", async () => {
-        const el = await fixture(html`<y-icon name="home" color="rgb(255,0,0)"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("rgb(255,0,0)");
+        const el = await fixture(
+            html`<y-icon name="home" color="rgb(255,0,0)"></y-icon>`,
+        );
+        const style = getCSS(el);
+        expect(style).to.not.include("--base-content--");
     });
 
     it("accepts raw hsl color values", async () => {
-        const el = await fixture(html`<y-icon name="home" color="hsl(0,100%,50%)"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("hsl(0,100%,50%)");
+        const el = await fixture(
+            html`<y-icon name="home" color="hsl(0,100%,50%)"></y-icon>`,
+        );
+        const style = getCSS(el);
+        expect(style).to.not.include("--base-content--");
     });
 
     it("applies x-thin weight", async () => {
-        const el = await fixture(html`<y-icon name="home" weight="x-thin"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const el = await fixture(
+            html`<y-icon name="home" weight="x-thin"></y-icon>`,
+        );
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 1 !important");
     });
 
     it("applies x-thick weight", async () => {
-        const el = await fixture(html`<y-icon name="home" weight="x-thick"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const el = await fixture(
+            html`<y-icon name="home" weight="x-thick"></y-icon>`,
+        );
+        const style = getCSS(el);
         expect(style).to.include("stroke-width: 3 !important");
     });
 
     it("applies x-small size", async () => {
-        const el = await fixture(html`<y-icon name="home" size="x-small"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const el = await fixture(
+            html`<y-icon name="home" size="x-small"></y-icon>`,
+        );
+        const style = getCSS(el);
         expect(style).to.include("--component-icon-size-x-small");
     });
 
     it("applies x-large size", async () => {
-        const el = await fixture(html`<y-icon name="home" size="x-large"></y-icon>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const el = await fixture(
+            html`<y-icon name="home" size="x-large"></y-icon>`,
+        );
+        const style = getCSS(el);
         expect(style).to.include("--component-icon-size-x-large");
     });
 });

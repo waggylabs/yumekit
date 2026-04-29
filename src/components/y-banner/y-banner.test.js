@@ -54,28 +54,36 @@ describe("YumeBanner", () => {
     // ── Colors ────────────────────────────────────────────────
 
     it("applies primary color", async () => {
-        const el = await fixture(html`<y-banner color="primary">Info</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="primary">Info</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--primary-content--");
         expect(style).to.include("--primary-content-inverse");
     });
 
     it("applies success color", async () => {
-        const el = await fixture(html`<y-banner color="success">Done</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="success">Done</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--success-content--");
         expect(style).to.include("--success-content-inverse");
     });
 
     it("applies error color", async () => {
-        const el = await fixture(html`<y-banner color="error">Error</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="error">Error</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--error-content--");
         expect(style).to.include("--error-content-inverse");
     });
 
     it("applies warning color", async () => {
-        const el = await fixture(html`<y-banner color="warning">Warn</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="warning">Warn</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--warning-content--");
         expect(style).to.include("--warning-content-inverse");
@@ -89,14 +97,18 @@ describe("YumeBanner", () => {
     });
 
     it("applies secondary color", async () => {
-        const el = await fixture(html`<y-banner color="secondary">Sec</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="secondary">Sec</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--secondary-content--");
         expect(style).to.include("--secondary-content-inverse");
     });
 
     it("falls back to base color for unknown values", async () => {
-        const el = await fixture(html`<y-banner color="unknown">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="unknown">Msg</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("--base-content--");
     });
@@ -133,8 +145,12 @@ describe("YumeBanner", () => {
     // ── Icon attribute ────────────────────────────────────────
 
     it("renders a y-icon when icon attribute is set", async () => {
-        const el = await fixture(html`<y-banner icon="warning">Msg</y-banner>`);
-        const icon = el.shadowRoot.querySelector("y-icon[name='warning']");
+        const el = await fixture(
+            html`<y-banner icon="triangle-exclamation">Msg</y-banner>`,
+        );
+        const icon = el.shadowRoot.querySelector(
+            "y-icon[name='triangle-exclamation']",
+        );
         expect(icon).to.exist;
     });
 
@@ -148,20 +164,26 @@ describe("YumeBanner", () => {
     // ── Position ──────────────────────────────────────────────
 
     it("uses block display for push position", async () => {
-        const el = await fixture(html`<y-banner position="push">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner position="push">Msg</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.not.include("position: fixed");
         expect(style).to.not.include("position: absolute");
     });
 
     it("uses absolute positioning for overlap without sticky", async () => {
-        const el = await fixture(html`<y-banner position="overlap">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner position="overlap">Msg</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("position: absolute");
     });
 
     it("uses fixed positioning for overlap with sticky", async () => {
-        const el = await fixture(html`<y-banner position="overlap" sticky>Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner position="overlap" sticky>Msg</y-banner>`,
+        );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("position: fixed");
     });
@@ -179,16 +201,18 @@ describe("YumeBanner", () => {
     });
 
     it("close button uses the same color as the banner", async () => {
-        const el = await fixture(html`<y-banner color="error" dismissable>Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="error" dismissable>Msg</y-banner>`,
+        );
         const btn = el.shadowRoot.querySelector(".close-btn");
         expect(btn.getAttribute("color")).to.equal("error");
     });
 
-    it("close button contains a y-icon with name close", async () => {
+    it("close button contains a y-icon with name x", async () => {
         const el = await fixture(html`<y-banner dismissable>Msg</y-banner>`);
         const icon = el.shadowRoot.querySelector(".close-btn y-icon");
         expect(icon).to.exist;
-        expect(icon.getAttribute("name")).to.equal("close");
+        expect(icon.getAttribute("name")).to.equal("x");
     });
 
     it("dispatches a cancelable dismiss event when close button is clicked", async () => {
@@ -270,13 +294,17 @@ describe("YumeBanner", () => {
     });
 
     it("sets aria-label based on color", async () => {
-        const el = await fixture(html`<y-banner color="warning">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="warning">Msg</y-banner>`,
+        );
         const banner = el.shadowRoot.querySelector(".banner");
         expect(banner.getAttribute("aria-label")).to.equal("Warning banner");
     });
 
     it("sets aria-label for success color", async () => {
-        const el = await fixture(html`<y-banner color="success">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="success">Msg</y-banner>`,
+        );
         const banner = el.shadowRoot.querySelector(".banner");
         expect(banner.getAttribute("aria-label")).to.equal("Success banner");
     });
@@ -337,7 +365,9 @@ describe("YumeBanner", () => {
     // ── Attribute changes ─────────────────────────────────────
 
     it("re-renders when color attribute changes", async () => {
-        const el = await fixture(html`<y-banner color="primary">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner color="primary">Msg</y-banner>`,
+        );
         el.setAttribute("color", "error");
         await new Promise((r) => setTimeout(r, 0));
 
@@ -355,7 +385,9 @@ describe("YumeBanner", () => {
     });
 
     it("re-renders when position changes to overlap", async () => {
-        const el = await fixture(html`<y-banner position="push">Msg</y-banner>`);
+        const el = await fixture(
+            html`<y-banner position="push">Msg</y-banner>`,
+        );
         el.setAttribute("position", "overlap");
         await new Promise((r) => setTimeout(r, 0));
 

@@ -14,7 +14,8 @@ export default {
     argTypes: {
         options: {
             control: "text",
-            description: 'JSON array of `{ id, label, slot, disabled? }` objects.',
+            description:
+                "JSON array of `{ id, label, slot, disabled? }` objects.",
         },
         size: {
             control: "select",
@@ -116,8 +117,18 @@ export const WithIcons = {
         <y-tabs
             options='${JSON.stringify([
                 { id: "home", label: "Home", slot: "home", leftIcon: "home" },
-                { id: "user", label: "Profile", slot: "user", leftIcon: "user" },
-                { id: "settings", label: "Settings", slot: "settings", leftIcon: "settings" },
+                {
+                    id: "user",
+                    label: "Profile",
+                    slot: "user",
+                    leftIcon: "user",
+                },
+                {
+                    id: "settings",
+                    label: "Settings",
+                    slot: "settings",
+                    leftIcon: "gear",
+                },
             ])}'
             style="width:400px"
         >
@@ -145,7 +156,7 @@ export const WithTabContentSlot = {
                 <y-icon name="user" size="small"></y-icon> Profile
             </span>
             <span slot="tab-content-settings" style="display:inline-flex;align-items:center;gap:4px">
-                <y-icon name="settings" size="small"></y-icon> Settings
+                <y-icon name="gear" size="small"></y-icon> Settings
             </span>
             <div slot="home"><p>Home content.</p></div>
             <div slot="user"><p>Profile content.</p></div>

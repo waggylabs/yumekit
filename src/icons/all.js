@@ -9,14 +9,14 @@
 import { registerIcons } from "./registry.js";
 
 import accessibility from "./accessibility.svg";
-import ai from "./ai.svg";
+import robot from "./robot.svg";
 import archive from "./archive.svg";
 import arrowDown from "./arrow-down.svg";
 import arrowLeft from "./arrow-left.svg";
 import arrowRight from "./arrow-right.svg";
 import arrowUp from "./arrow-up.svg";
 import bug from "./bug.svg";
-import ban from "./ban.svg";
+import circleSlash from "./circle-slash.svg";
 import bell from "./bell.svg";
 import bluetooth from "./bluetooth.svg";
 import briefcase from "./briefcase.svg";
@@ -24,7 +24,7 @@ import bolt from "./bolt.svg";
 import bookmark from "./bookmark.svg";
 import calendar from "./calendar.svg";
 import campfire from "./campfire.svg";
-import chart from "./chart.svg";
+import waveform from "./waveform.svg";
 import check from "./check.svg";
 import chevronDown from "./chevron-down.svg";
 import chevronLeft from "./chevron-left.svg";
@@ -34,36 +34,36 @@ import circleExclamation from "./circle-exclamation.svg";
 import circleInfo from "./circle-info.svg";
 import circleQuestion from "./circle-question.svg";
 import clock from "./clock.svg";
-import close from "./close.svg";
+import xIcon from "./x.svg";
 import cloud from "./cloud.svg";
 import code from "./code.svg";
-import comments from "./comments.svg";
-import compAppbar from "./comp-appbar.svg";
-import compAvatar from "./comp-avatar.svg";
-import compBadge from "./comp-badge.svg";
-import compButton from "./comp-button.svg";
-import compCard from "./comp-card.svg";
-import compCheckbox from "./comp-checkbox.svg";
-import compDate from "./comp-date.svg";
-import compDialog from "./comp-dialog.svg";
-import compDrawer from "./comp-drawer.svg";
-import compIcon from "./comp-icon.svg";
-import compInput from "./comp-input.svg";
-import compMenu from "./comp-menu.svg";
-import compPanelbar from "./comp-panelbar.svg";
-import compProgress from "./comp-progress.svg";
-import compRadio from "./comp-radio.svg";
-import compSelect from "./comp-select.svg";
-import compSlider from "./comp-slider.svg";
-import compSwitch from "./comp-switch.svg";
-import compTable from "./comp-table.svg";
-import compTabs from "./comp-tabs.svg";
-import compTag from "./comp-tag.svg";
-import compTheme from "./comp-theme.svg";
-import compToast from "./comp-toast.svg";
-import compTooltip from "./comp-tooltip.svg";
-import compTextarea from "./comp-textarea.svg";
-import compRating from "./comp-rating.svg";
+import speechBubble from "./speech-bubble.svg";
+import appbar from "./appbar.svg";
+import avatar from "./avatar.svg";
+import badge from "./badge.svg";
+import button from "./button.svg";
+import card from "./card.svg";
+import checkbox from "./checkbox.svg";
+import date from "./date.svg";
+import dialog from "./dialog.svg";
+import drawer from "./drawer.svg";
+import icon from "./icon.svg";
+import input from "./input.svg";
+import droplist from "./droplist.svg";
+import panelbar from "./panelbar.svg";
+import progress from "./progress.svg";
+import radio from "./radio.svg";
+import select from "./select.svg";
+import slider from "./slider.svg";
+import switchIcon from "./switch.svg";
+import tableIcon from "./table.svg";
+import tabs from "./tabs.svg";
+import chip from "./chip.svg";
+import theme from "./theme.svg";
+import toast from "./toast.svg";
+import tooltip from "./tooltip.svg";
+import textarea from "./textarea.svg";
+import rating from "./rating.svg";
 import compass from "./compass.svg";
 import copy from "./copy.svg";
 import diagram from "./diagram.svg";
@@ -85,7 +85,7 @@ import fastBack from "./fast-back.svg";
 import fastForward from "./fast-forward.svg";
 import flower from "./flower.svg";
 import figma from "./figma.svg";
-import filter from "./filter.svg";
+import funnel from "./funnel.svg";
 import flask from "./flask.svg";
 import gasoline from "./gasoline.svg";
 import folder from "./folder.svg";
@@ -104,12 +104,12 @@ import listCheck from "./list-check.svg";
 import lock from "./lock.svg";
 import mail from "./mail.svg";
 import mapMarker from "./map-marker.svg";
-import menu from "./menu.svg";
+import menuIcon from "./menu.svg";
 import minus from "./minus.svg";
 import monitor from "./monitor.svg";
 import moon from "./moon.svg";
 import palette from "./palette.svg";
-import paste from "./paste.svg";
+import clipboard from "./clipboard.svg";
 import pause from "./pause.svg";
 import pencil from "./pencil.svg";
 import paperAirplane from "./paper-airplane.svg";
@@ -120,10 +120,10 @@ import puzzle from "./puzzle.svg";
 import redo from "./redo.svg";
 import rightFromBracket from "./right-from-bracket.svg";
 import rightToBracket from "./right-to-bracket.svg";
-import save from "./save.svg";
+import floppyDisk from "./floppy-disk.svg";
 import scissors from "./scissors.svg";
-import search from "./search.svg";
-import settings from "./settings.svg";
+import magnifyingGlass from "./magnifying-glass.svg";
+import gear from "./gear.svg";
 import share from "./share.svg";
 import shield from "./shield.svg";
 import skipBack from "./skip-back.svg";
@@ -141,7 +141,7 @@ import tablet from "./tablet.svg";
 import tag from "./tag.svg";
 import thermometerHigh from "./thermometer-high.svg";
 import thermometerLow from "./thermometer-low.svg";
-import tools from "./tools.svg";
+import wrench from "./wrench.svg";
 import trash from "./trash.svg";
 import undo from "./undo.svg";
 import unlock from "./unlock.svg";
@@ -149,18 +149,18 @@ import upFromBracket from "./up-from-bracket.svg";
 import upToBracket from "./up-to-bracket.svg";
 import user from "./user.svg";
 import users from "./users.svg";
-import warning from "./warning.svg";
+import triangleExclamation from "./triangle-exclamation.svg";
 
 registerIcons({
     accessibility,
-    ai,
+    robot,
     archive,
     "arrow-down": arrowDown,
     "arrow-left": arrowLeft,
     "arrow-right": arrowRight,
     "arrow-up": arrowUp,
     bug,
-    ban,
+    "circle-slash": circleSlash,
     bell,
     bluetooth,
     bolt,
@@ -168,7 +168,7 @@ registerIcons({
     bookmark,
     calendar,
     campfire,
-    chart,
+    waveform,
     check,
     "circle-exclamation": circleExclamation,
     "circle-info": circleInfo,
@@ -178,36 +178,36 @@ registerIcons({
     "chevron-right": chevronRight,
     "chevron-up": chevronUp,
     clock,
-    close,
+    x: xIcon,
     cloud,
     code,
-    comments,
-    "comp-appbar": compAppbar,
-    "comp-avatar": compAvatar,
-    "comp-badge": compBadge,
-    "comp-button": compButton,
-    "comp-card": compCard,
-    "comp-checkbox": compCheckbox,
-    "comp-date": compDate,
-    "comp-dialog": compDialog,
-    "comp-drawer": compDrawer,
-    "comp-icon": compIcon,
-    "comp-input": compInput,
-    "comp-menu": compMenu,
-    "comp-panelbar": compPanelbar,
-    "comp-progress": compProgress,
-    "comp-radio": compRadio,
-    "comp-select": compSelect,
-    "comp-slider": compSlider,
-    "comp-switch": compSwitch,
-    "comp-table": compTable,
-    "comp-tabs": compTabs,
-    "comp-tag": compTag,
-    "comp-theme": compTheme,
-    "comp-toast": compToast,
-    "comp-tooltip": compTooltip,
-    "comp-textarea": compTextarea,
-    "comp-rating": compRating,
+    "speech-bubble": speechBubble,
+    appbar,
+    avatar,
+    badge,
+    button,
+    card,
+    checkbox,
+    date,
+    dialog,
+    drawer,
+    icon,
+    input,
+    droplist,
+    panelbar,
+    progress,
+    radio,
+    rating,
+    select,
+    slider,
+    switch: switchIcon,
+    table: tableIcon,
+    tabs,
+    chip,
+    theme,
+    toast,
+    tooltip,
+    textarea,
     compass,
     copy,
     diagram,
@@ -229,7 +229,7 @@ registerIcons({
     "fast-forward": fastForward,
     flower,
     figma,
-    filter,
+    funnel,
     flask,
     folder,
     gasoline,
@@ -249,12 +249,12 @@ registerIcons({
     lock,
     mail,
     "map-marker": mapMarker,
-    menu,
+    menu: menuIcon,
     minus,
     monitor,
     moon,
     palette,
-    paste,
+    clipboard,
     pause,
     "paper-airplane": paperAirplane,
     pencil,
@@ -265,10 +265,10 @@ registerIcons({
     redo,
     "right-from-bracket": rightFromBracket,
     "right-to-bracket": rightToBracket,
-    save,
+    "floppy-disk": floppyDisk,
     scissors,
-    search,
-    settings,
+    "magnifying-glass": magnifyingGlass,
+    gear,
     share,
     shield,
     "skip-back": skipBack,
@@ -286,7 +286,7 @@ registerIcons({
     tag,
     "thermometer-high": thermometerHigh,
     "thermometer-low": thermometerLow,
-    tools,
+    wrench,
     trash,
     undo,
     unlock,
@@ -294,5 +294,5 @@ registerIcons({
     "up-to-bracket": upToBracket,
     user,
     users,
-    warning,
+    "triangle-exclamation": triangleExclamation,
 });
