@@ -2,6 +2,7 @@ import {
     createElement as _el,
     getColorVarPair,
     GAP_TOKEN_MAP,
+    measureCSSLength,
     clamp,
 } from "../../modules/helpers.js";
 
@@ -157,7 +158,8 @@ export class YumeProgress extends HTMLElement {
 
     /** Maximum value (default 100). */
     get max() {
-        return parseFloat(this.getAttribute("max")) || DEFAULT_MAX;
+        const n = parseFloat(this.getAttribute("max"));
+        return Number.isFinite(n) ? n : DEFAULT_MAX;
     }
     set max(val) {
         this.setAttribute("max", String(val));
@@ -165,7 +167,8 @@ export class YumeProgress extends HTMLElement {
 
     /** Minimum value (default 0). */
     get min() {
-        return parseFloat(this.getAttribute("min")) || DEFAULT_MIN;
+        const n = parseFloat(this.getAttribute("min"));
+        return Number.isFinite(n) ? n : DEFAULT_MIN;
     }
     set min(val) {
         this.setAttribute("min", String(val));
@@ -221,12 +224,18 @@ export class YumeProgress extends HTMLElement {
         }
     }
 
-    /** Gap between segments — token key (`none`/`x-small`/...) or raw length. */
+    /**
+     * Gap between segments — token key (`none`/`x-small`/...) or raw length.
+     * Returns `null` when the attribute is absent so consumers can fall back
+     * to the `--component-progress-segment-gap` theme token instead of
+     * shadowing it with an inline default.
+     */
     get segmentGap() {
-        return this.getAttribute("segment-gap") || "x-small";
+        return this.getAttribute("segment-gap") || null;
     }
     set segmentGap(val) {
-        this.setAttribute("segment-gap", val);
+        if (val === null || val === undefined) this.removeAttribute("segment-gap");
+        else this.setAttribute("segment-gap", val);
     }
 
     /** Bar thickness or ring/pie diameter — token key or raw length. */
@@ -302,7 +311,8 @@ export class YumeProgress extends HTMLElement {
             if (!Array.isArray(parsed)) return null;
             return parsed
                 .map((e) => (typeof e === "number" ? { value: e } : e))
-                .filter((e) => e && Number.isFinite(parseFloat(e.value)));
+                .filter((e) => e && Number.isFinite(parseFloat(e.value)))
+                .map((e) => ({ ...e, value: parseFloat(e.value) }));
         } catch {
             return null;
         }
@@ -330,7 +340,7 @@ export class YumeProgress extends HTMLElement {
 
     render() {
         if (!this.shadowRoot) return;
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.adoptedStyleSheets = [this._stylesheet()];
 
         // Allow the `track-color` attribute to flow through to nested SVG /
         // segment styles via a single CSS variable on the host.
@@ -393,10 +403,10 @@ export class YumeProgress extends HTMLElement {
 
         if (isMulti) {
             track.classList.add("track--stacked");
-            track.style.setProperty(
-                "--_segment-gap",
-                this._resolveSegmentGap(),
-            );
+            const stackedGap = this._resolveSegmentGap();
+            if (stackedGap !== null) {
+                track.style.setProperty("--_segment-gap", stackedGap);
+            }
             for (const entry of entries) {
                 const pct = this._entryPercentage(entry.value);
                 const row = _el("div", {
@@ -418,10 +428,10 @@ export class YumeProgress extends HTMLElement {
 
         if (segments) {
             track.classList.add("track--segmented");
-            track.style.setProperty(
-                "--_segment-gap",
-                this._resolveSegmentGap(),
-            );
+            const segmentedGap = this._resolveSegmentGap();
+            if (segmentedGap !== null) {
+                track.style.setProperty("--_segment-gap", segmentedGap);
+            }
             const totalPct = entries[0]
                 ? this._entryPercentage(entries[0].value)
                 : 0;
@@ -643,7 +653,15 @@ export class YumeProgress extends HTMLElement {
                 : 0;
             const fillUpTo = (totalPct / 100) * segments;
             const segArcDeg = fullArcDeg / segments;
-            const gapDeg = segArcDeg * 0.12;
+            // Convert the segment-gap CSS length to an angular gap so ring
+            // segments honor the same token/value as bar segments. Cap at 80%
+            // of the segment arc to keep at least a sliver of fill visible.
+            const gapCSS =
+                this._resolveSegmentGap() ??
+                "var(--component-progress-segment-gap, var(--spacing-x-small))";
+            const gapPx = measureCSSLength(this, gapCSS);
+            const gapDegRaw = (gapPx / r) * (180 / Math.PI);
+            const gapDeg = clamp(gapDegRaw, 0, segArcDeg * 0.8);
             const entry = entries[0] || this._defaultEntry();
             for (let i = 0; i < segments; i++) {
                 const filled = clamp(fillUpTo - i, 0, 1);
@@ -718,7 +736,9 @@ export class YumeProgress extends HTMLElement {
         }
     }
 
-    _buildStyleSheet() {
+    _stylesheet() {
+        const ctor = this.constructor;
+        if (ctor._sheet) return ctor._sheet;
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
@@ -893,6 +913,7 @@ export class YumeProgress extends HTMLElement {
                 to   { transform: rotate(360deg); }
             }
         `);
+        ctor._sheet = sheet;
         return sheet;
     }
 
@@ -921,25 +942,8 @@ export class YumeProgress extends HTMLElement {
     }
 
     _entries() {
-        const valuesAttr = this.getAttribute("values");
-        if (valuesAttr != null) {
-            try {
-                const parsed = JSON.parse(valuesAttr);
-                if (Array.isArray(parsed)) {
-                    return parsed
-                        .map((e) => (typeof e === "number" ? { value: e } : e))
-                        .filter(
-                            (e) => e && Number.isFinite(parseFloat(e.value)),
-                        )
-                        .map((e) => ({
-                            ...e,
-                            value: parseFloat(e.value),
-                        }));
-                }
-            } catch {
-                // fall through to legacy `value` attribute
-            }
-        }
+        const parsed = this.values;
+        if (parsed !== null) return parsed;
         const v = this.value;
         return v === null ? [] : [{ value: v }];
     }
@@ -1016,6 +1020,7 @@ export class YumeProgress extends HTMLElement {
 
     _resolveSegmentGap() {
         const raw = this.segmentGap;
+        if (raw == null) return null;
         if (GAP_TOKEN_MAP[raw]) return GAP_TOKEN_MAP[raw];
         return raw;
     }
