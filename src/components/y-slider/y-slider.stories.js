@@ -35,16 +35,26 @@ export default {
         },
         range: {
             control: "boolean",
-            description: "Enable two thumbs for selecting a [valueMin, valueMax] range.",
+            description:
+                "Enable two thumbs for selecting a [valueMin, valueMax] range.",
             table: { defaultValue: { summary: false } },
         },
         minGap: {
             control: "number",
-            description: "Minimum distance between thumbs in range mode. Defaults to step ?? 1.",
+            description:
+                "Minimum distance between thumbs in range mode. Defaults to step if set, 1 otherwise.",
         },
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+                "help",
+            ],
             description: "Color theme for the track fill and thumb.",
             table: { defaultValue: { summary: "primary" } },
         },
@@ -93,9 +103,7 @@ export default {
         disabled,
     }) => {
         const wrapStyle =
-            orientation === "vertical"
-                ? "height:400px"
-                : "width:300px";
+            orientation === "vertical" ? "height:400px" : "width:300px";
         const valueAttrs = range
             ? `value-min="${valueMin}" value-max="${valueMax}"`
             : `value="${value}"`;

@@ -147,7 +147,7 @@ describe("YumeSlider", () => {
             inputFired = true;
         });
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "ArrowRight", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
         );
         expect(inputFired).to.be.true;
         expect(el.value).to.equal(60);
@@ -159,7 +159,7 @@ describe("YumeSlider", () => {
         );
         const track = el.shadowRoot.querySelector(".track");
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "ArrowRight", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
         );
         expect(el.value).to.equal(100);
     });
@@ -170,7 +170,7 @@ describe("YumeSlider", () => {
         );
         const track = el.shadowRoot.querySelector(".track");
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "ArrowLeft", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
         );
         expect(el.value).to.equal(0);
     });
@@ -181,7 +181,7 @@ describe("YumeSlider", () => {
         );
         const track = el.shadowRoot.querySelector(".track");
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "Home", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
         );
         expect(el.value).to.equal(10);
     });
@@ -192,7 +192,7 @@ describe("YumeSlider", () => {
         );
         const track = el.shadowRoot.querySelector(".track");
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "End", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "End", bubbles: true }),
         );
         expect(el.value).to.equal(90);
     });
@@ -240,7 +240,7 @@ describe("YumeSlider", () => {
             inputFired = true;
         });
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "ArrowRight", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
         );
         expect(inputFired).to.be.false;
         expect(el.value).to.equal(50);
@@ -256,7 +256,7 @@ describe("YumeSlider", () => {
             changeFired = true;
         });
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "ArrowLeft", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
         );
         expect(changeFired).to.be.true;
         expect(el.value).to.equal(40);
@@ -270,7 +270,7 @@ describe("YumeSlider", () => {
             inputFired = true;
         });
         track.dispatchEvent(
-            new KeyboardEvent("keydown", { key: "Tab", tooltips: true }),
+            new KeyboardEvent("keydown", { key: "Tab", bubbles: true }),
         );
         expect(inputFired).to.be.false;
     });
@@ -299,7 +299,11 @@ describe("YumeSlider", () => {
         );
         const track = el.shadowRoot.querySelector(".track");
         track.dispatchEvent(
-            new PointerEvent("pointerdown", { tooltips: true, clientX: 0 }),
+            new PointerEvent("pointerdown", {
+                bubbles: true,
+                cancelable: true,
+                clientX: 0,
+            }),
         );
         expect(el._dragging).to.be.false;
     });
@@ -358,14 +362,14 @@ describe("YumeSlider", () => {
             const track = el.shadowRoot.querySelector(".track");
 
             track.dispatchEvent(
-                new KeyboardEvent("keydown", { key: "ArrowUp", tooltips: true }),
+                new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }),
             );
             expect(el.value).to.equal(60);
 
             track.dispatchEvent(
                 new KeyboardEvent("keydown", {
                     key: "ArrowDown",
-                    tooltips: true,
+                    bubbles: true,
                 }),
             );
             expect(el.value).to.equal(50);
@@ -508,7 +512,7 @@ describe("YumeSlider", () => {
             thumbMin.dispatchEvent(
                 new KeyboardEvent("keydown", {
                     key: "ArrowRight",
-                    tooltips: true,
+                    bubbles: true,
                 }),
             );
             expect(el.valueMin).to.equal(25);
@@ -529,7 +533,7 @@ describe("YumeSlider", () => {
             thumbMax.dispatchEvent(
                 new KeyboardEvent("keydown", {
                     key: "ArrowLeft",
-                    tooltips: true,
+                    bubbles: true,
                 }),
             );
             expect(el.valueMax).to.equal(75);
@@ -548,7 +552,7 @@ describe("YumeSlider", () => {
             const thumbMax = el.shadowRoot.querySelector(".thumb-max");
 
             thumbMax.dispatchEvent(
-                new KeyboardEvent("keydown", { key: "Home", tooltips: true }),
+                new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
             );
             expect(el.valueMax).to.equal(25);
         });
@@ -568,7 +572,7 @@ describe("YumeSlider", () => {
             thumbMin.dispatchEvent(
                 new KeyboardEvent("keydown", {
                     key: "ArrowRight",
-                    tooltips: true,
+                    bubbles: true,
                 }),
             );
             expect(el.valueMin).to.equal(40);
@@ -591,7 +595,7 @@ describe("YumeSlider", () => {
             thumbMin.dispatchEvent(
                 new KeyboardEvent("keydown", {
                     key: "ArrowRight",
-                    tooltips: true,
+                    bubbles: true,
                 }),
             );
 
@@ -615,7 +619,8 @@ describe("YumeSlider", () => {
             // Click at x=70 → closer to value-max (80) than value-min (20).
             track.dispatchEvent(
                 new PointerEvent("pointerdown", {
-                    tooltips: true,
+                    bubbles: true,
+                    cancelable: true,
                     clientX: 70,
                     clientY: 5,
                 }),
@@ -640,7 +645,8 @@ describe("YumeSlider", () => {
             // Click at x=50 → equidistant between value-min (20) and value-max (80).
             track.dispatchEvent(
                 new PointerEvent("pointerdown", {
-                    tooltips: true,
+                    bubbles: true,
+                    cancelable: true,
                     clientX: 50,
                     clientY: 5,
                 }),
@@ -920,7 +926,7 @@ describe("YumeSlider", () => {
             );
             const track = el.shadowRoot.querySelector(".track");
             track.dispatchEvent(
-                new KeyboardEvent("keydown", { key: "ArrowRight", tooltips: true }),
+                new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
             );
             // ArrowRight moves +1 (no step), 25→26, then snap to nearest tick = 25.
             // To actually advance, we need step to push past the tick boundary.
@@ -942,7 +948,7 @@ describe("YumeSlider", () => {
             const track = el.shadowRoot.querySelector(".track");
             // 0 + 20 = 20 → snap to nearest tick = 25.
             track.dispatchEvent(
-                new KeyboardEvent("keydown", { key: "ArrowRight", tooltips: true }),
+                new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
             );
             expect(el.value).to.equal(25);
         });
@@ -1240,6 +1246,7 @@ describe("YumeSlider", () => {
             track.dispatchEvent(
                 new PointerEvent("pointerdown", {
                     bubbles: true,
+                    cancelable: true,
                     clientX: 50,
                     clientY: 5,
                 }),
@@ -1291,6 +1298,7 @@ describe("YumeSlider", () => {
             track.dispatchEvent(
                 new PointerEvent("pointerdown", {
                     bubbles: true,
+                    cancelable: true,
                     clientX: 70,
                     clientY: 5,
                 }),
@@ -1314,6 +1322,7 @@ describe("YumeSlider", () => {
             track.dispatchEvent(
                 new PointerEvent("pointerdown", {
                     bubbles: true,
+                    cancelable: true,
                     clientX: 50,
                     clientY: 5,
                 }),

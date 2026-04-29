@@ -597,7 +597,7 @@ export class YumeSlider extends HTMLElement {
     /** Clamp into [lo, hi] then snap to either ticks or step. */
     _finalize(val, lo, hi) {
         const n = Number(val);
-        if (!Number.isFinite(n)) return clamp(0, lo, hi);
+        if (!Number.isFinite(n)) return lo;
 
         const clamped = clamp(n, lo, hi);
         if (this.snapToTicks) return this._snapToTicks(clamped, lo, hi);
