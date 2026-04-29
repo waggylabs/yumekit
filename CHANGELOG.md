@@ -47,6 +47,8 @@ Delete any empty sections before publishing.
 
 ### Changed
 
+- `y-progress`: expanded to a multi-mode progress indicator with `bar` (default), `ring`, and `pie` shapes. Adds `values` for multi-value rendering (stacked bars, concentric rings, multi-slice pies), plus `thickness`, `segmented`, `segment-gap`, `start-angle`, `direction`, `track-color`, and `label-format`. Ring fills use rounded stroke caps; segmented bars share the parent track's border and only round the outermost corners.
+
 - **Breaking** `y-stack`: refocused as a flexbox-only primitive now that `y-grid` and `y-masonry` own their layout algorithms.
     - **Removed**: `mode` attribute (and the `flex` / `grid` / `masonry` branches), the `columns` attribute, and the masonry observer/positioning machinery. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `--component-stack-columns`, `--component-stack-min-item-width`, and `--component-stack-tablet-breakpoint` CSS variables are gone with them.
     - **Changed**: `direction` now also accepts `row-reverse` and `column-reverse`. `wrap` is now an enum (`nowrap` | `wrap` | `wrap-reverse`); presence without a value still resolves to `wrap` for back-compat. `responsive` on row directions now also collapses the stack to `column` below the mobile breakpoint via a CSS container query (in addition to the existing auto-wrap behavior).

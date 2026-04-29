@@ -598,6 +598,26 @@
       "size-small": {
         "$type": "sizing",
         "$value": "{sizing.small}"
+      },
+      "thickness-small": {
+        "$type": "dimension",
+        "$value": "4px"
+      },
+      "thickness-medium": {
+        "$type": "dimension",
+        "$value": "8px"
+      },
+      "thickness-large": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "segment-gap": {
+        "$type": "spacing",
+        "$value": "{spacing.x-small}"
+      },
+      "label-size": {
+        "$type": "fontSizes",
+        "$value": "{font-size.label}"
       }
     },
     "radio": {

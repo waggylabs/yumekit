@@ -274,16 +274,31 @@ declare module "react" {
                 exclusive?: boolean | string;
             }>;
             "y-progress": El<{
+                mode?: "bar" | "ring" | "pie";
                 value?: string | number;
+                values?:
+                    | Array<{ value: number; color?: string; label?: string }>
+                    | string;
                 min?: string | number;
                 max?: string | number;
                 step?: string | number;
                 color?: string;
-                size?: "small" | "medium" | "large";
+                "track-color"?: string;
+                size?: "small" | "medium" | "large" | string;
+                thickness?: "small" | "medium" | "large" | string;
                 "label-display"?: boolean | string;
                 "label-format"?: "percent" | "value" | "fraction";
                 indeterminate?: boolean | string;
                 disabled?: boolean | string;
+                segmented?: boolean | string | number;
+                "segment-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | string;
+                "start-angle"?: string | number;
+                direction?: "clockwise" | "counterclockwise";
             }>;
             "y-rating": El<{
                 name?: string;
