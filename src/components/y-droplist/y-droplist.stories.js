@@ -409,3 +409,30 @@ export const ForceFloat = {
         </div>
     `,
 };
+
+export const TouchDelay = {
+    name: "Touch / Delay",
+    parameters: {
+        docs: {
+            description: {
+                story: "A drag delay of 300 ms gives the user time to scroll before a drag begins. The `touch-start-threshold` ensures small taps do not accidentally start a drag. Try on a touch device or DevTools touch simulation.",
+            },
+        },
+    },
+    render: () => /* html */ `
+        <style>
+            .touch-demo y-droplist { display: block; max-width: 320px; }
+            .touch-demo .hint { font-size: 0.85rem; color: var(--y-color-text-secondary, #666); margin-bottom: 0.5rem; }
+        </style>
+        <div class="touch-demo">
+            <p class="hint">delay="300" delay-on-touch-only touch-start-threshold="8"</p>
+            <y-droplist delay="300" delay-on-touch-only touch-start-threshold="8" animation="200">
+                <div>Item 1</div>
+                <div>Item 2</div>
+                <div>Item 3</div>
+                <div>Item 4</div>
+                <div>Item 5</div>
+            </y-droplist>
+        </div>
+    `,
+};

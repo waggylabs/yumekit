@@ -2248,3 +2248,274 @@ describe("YumeDroplist", () => {
         wrapper.remove();
     });
 });
+
+// ─── Touch / pointer pipeline ──────────────────────────────────────────────
+
+describe("y-droplist — touch getters", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("delay defaults to 0", async () => {
+        const el = await fixture(html`<y-droplist><div>A</div></y-droplist>`);
+        expect(el.delay).to.equal(0);
+    });
+
+    it("delay returns numeric attribute value", async () => {
+        const el = await fixture(
+            html`<y-droplist delay="300"><div>A</div></y-droplist>`,
+        );
+        expect(el.delay).to.equal(300);
+    });
+
+    it("delay setter persists as attribute", async () => {
+        const el = await fixture(html`<y-droplist><div>A</div></y-droplist>`);
+        el.delay = 200;
+        expect(el.getAttribute("delay")).to.equal("200");
+    });
+
+    it("delayOnTouchOnly defaults to false", async () => {
+        const el = await fixture(html`<y-droplist><div>A</div></y-droplist>`);
+        expect(el.delayOnTouchOnly).to.be.false;
+    });
+
+    it("delayOnTouchOnly true when attribute present", async () => {
+        const el = await fixture(
+            html`<y-droplist delay-on-touch-only><div>A</div></y-droplist>`,
+        );
+        expect(el.delayOnTouchOnly).to.be.true;
+    });
+
+    it("touchStartThreshold defaults to 0", async () => {
+        const el = await fixture(html`<y-droplist><div>A</div></y-droplist>`);
+        expect(el.touchStartThreshold).to.equal(0);
+    });
+
+    it("touchStartThreshold returns attribute value", async () => {
+        const el = await fixture(
+            html`<y-droplist touch-start-threshold="10"
+                ><div>A</div></y-droplist
+            >`,
+        );
+        expect(el.touchStartThreshold).to.equal(10);
+    });
+});
+
+describe("y-droplist — touch reorder (pointerType=touch)", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    const fire = (el, type, extra = {}) =>
+        el.dispatchEvent(
+            new PointerEvent(type, {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                pointerType: "touch",
+                pointerId: 1,
+                ...extra,
+            }),
+        );
+
+    it("touch drag fires drag:end on pointerup at same position", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0" style="display:block;height:120px">
+                <div style="height:40px">A</div>
+                <div style="height:40px">B</div>
+                <div style="height:40px">C</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+
+        // pointerdown on item A.
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+
+        // Wait a tick (no delay set so drag starts immediately).
+        await aTimeout(0);
+
+        const endPromise = oneEvent(el, "drag:end");
+        fire(a, "pointerup", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+
+        const ev = await endPromise;
+        expect(ev.detail.list).to.equal(el);
+    });
+
+    it("touch drag:start fires immediately when delay=0", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+
+        const startPromise = oneEvent(el, "drag:start");
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        await aTimeout(0);
+        const ev = await startPromise;
+        expect(ev.detail.item).to.equal(a);
+    });
+
+    it("pointerup before delay fires does not start drag", async () => {
+        const el = await fixture(html`
+            <y-droplist delay="200" animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+        let started = false;
+        el.addEventListener("drag:start", () => {
+            started = true;
+        });
+
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        fire(a, "pointerup", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+
+        await aTimeout(250);
+        expect(started).to.be.false;
+    });
+
+    it("movement beyond touchStartThreshold during delay cancels pending drag", async () => {
+        const el = await fixture(html`
+            <y-droplist delay="200" touch-start-threshold="5" animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+        let started = false;
+        el.addEventListener("drag:start", () => {
+            started = true;
+        });
+
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        // Move beyond threshold before delay expires.
+        fire(a, "pointermove", {
+            clientX: elRect.left + 5 + 20,
+            clientY: elRect.top + 5,
+        });
+
+        await aTimeout(250);
+        expect(started).to.be.false;
+    });
+
+    it("pointercancel during active drag fires drag:end", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        await aTimeout(0); // let _touchDragStart run
+
+        const endPromise = oneEvent(el, "drag:end");
+        fire(a, "pointercancel", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        const ev = await endPromise;
+        expect(ev.detail.list).to.equal(el);
+    });
+
+    it("touch-action reset to empty string after drag ends", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        await aTimeout(0);
+        fire(a, "pointercancel", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        await aTimeout(0);
+        expect(a.style.touchAction).to.equal("");
+    });
+
+    it("delay timer fires and starts drag after delay ms", async () => {
+        const el = await fixture(html`
+            <y-droplist delay="50" animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+
+        const startPromise = oneEvent(el, "drag:start");
+        fire(a, "pointerdown", {
+            clientX: elRect.left + 5,
+            clientY: elRect.top + 5,
+        });
+        const ev = await startPromise;
+        expect(ev.detail.item).to.equal(a);
+    });
+
+    it("mouse press with delay-on-touch-only defers to native DnD (no drag:start)", async () => {
+        const el = await fixture(html`
+            <y-droplist delay="50" delay-on-touch-only animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const elRect = el.getBoundingClientRect();
+        let started = false;
+        el.addEventListener("drag:start", () => {
+            started = true;
+        });
+
+        a.dispatchEvent(
+            new PointerEvent("pointerdown", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                pointerType: "mouse",
+                pointerId: 1,
+                clientX: elRect.left + 5,
+                clientY: elRect.top + 5,
+            }),
+        );
+        await aTimeout(100);
+        // The touch pipeline should not have started since delay-on-touch-only
+        // means mouse presses skip the pointer pipeline.
+        expect(started).to.be.false;
+    });
+});

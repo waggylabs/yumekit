@@ -114,6 +114,15 @@ export class YumeDroplist extends HTMLElement {
         this._swapTarget = null;
         this._scrollContainer = null;
         this._lastGhostRef = null;
+
+        // Touch / pointer-drag state
+        this._touchActive = false;
+        this._touchItem = null;
+        this._touchPointerId = null;
+        this._touchDelayTimer = null;
+        this._touchStartX = 0;
+        this._touchStartY = 0;
+        this._touchPointerAbort = null;
         this.render();
     }
 
@@ -179,6 +188,30 @@ export class YumeDroplist extends HTMLElement {
     set clone(val) {
         if (val) this.setAttribute("clone", "");
         else this.removeAttribute("clone");
+    }
+
+    /**
+     * Delay (ms) before a press becomes a drag. `0` (default) means immediate.
+     * Does not gate keyboard reordering.
+     */
+    get delay() {
+        const n = parseInt(this.getAttribute("delay") ?? "0", 10);
+        return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+    set delay(val) {
+        this.setAttribute("delay", String(val));
+    }
+
+    /**
+     * When present, `delay` only applies to touch/pointer input — mouse drags
+     * start immediately regardless of `delay`.
+     */
+    get delayOnTouchOnly() {
+        return this.hasAttribute("delay-on-touch-only");
+    }
+    set delayOnTouchOnly(val) {
+        if (val) this.setAttribute("delay-on-touch-only", "");
+        else this.removeAttribute("delay-on-touch-only");
     }
 
     /** Whether drag-and-drop is disabled. */
@@ -364,6 +397,23 @@ export class YumeDroplist extends HTMLElement {
     }
     set swapClass(val) {
         this.setAttribute("swap-class", val);
+    }
+
+    /**
+     * Movement distance (px) required before a touch/pointer press becomes a
+     * drag. Cancels any pending `delay` timer when exceeded before the timer
+     * fires. `0` (default) means any movement starts the drag immediately after
+     * `delay` (or instantly when `delay` is 0).
+     */
+    get touchStartThreshold() {
+        const n = parseInt(
+            this.getAttribute("touch-start-threshold") ?? "0",
+            10,
+        );
+        return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+    set touchStartThreshold(val) {
+        this.setAttribute("touch-start-threshold", String(val));
     }
 
     /** Whether items reorder along the vertical axis. Default true; set "false" to flip. */
@@ -1017,37 +1067,489 @@ export class YumeDroplist extends HTMLElement {
     }
 
     _onPointerDown(e) {
+        // ── Handle-gate (mouse + touch) ────────────────────────────────────────
+        // When a drag-handle selector is configured, only presses on matching
+        // descendants start a drag. Non-handle presses temporarily set
+        // draggable="false" so the native DnD path is also blocked.
         const handle = this.handle;
-        if (!handle || this.disabled) return;
+        if (handle && !this.disabled) {
+            const item = this._eventItem(e);
+            if (item) {
+                const path = e.composedPath ? e.composedPath() : [e.target];
+                const start = path[0];
+                let isHandle = false;
+                let cur = start;
+                while (cur && cur !== item) {
+                    if (cur.matches?.(handle)) {
+                        isHandle = true;
+                        break;
+                    }
+                    cur = cur.parentNode;
+                }
+                if (!isHandle) {
+                    item.setAttribute("draggable", "false");
+                    if (this.preventOnFilter) e.preventDefault();
+                    const restore = () => {
+                        if (item.isConnected && !this.disabled) {
+                            item.setAttribute("draggable", "true");
+                        }
+                    };
+                    const signal = this._abort?.signal;
+                    const opts = signal
+                        ? { once: true, signal }
+                        : { once: true };
+                    window.addEventListener("pointerup", restore, opts);
+                    window.addEventListener("pointercancel", restore, opts);
+                    // Not a valid handle press — do not start touch pipeline.
+                    return;
+                }
+            }
+        }
+
+        // ── Touch / pointer drag pipeline ──────────────────────────────────────
+        // Only engage for touch/pen pointer types, or for mouse when we have a
+        // non-zero delay that should also apply to mouse (i.e. delayOnTouchOnly
+        // is false). For plain mouse with no delay or delay-on-touch-only, let
+        // the native HTML5 DnD path handle everything.
+        if (this.disabled) return;
+
+        const isTouch = e.pointerType === "touch" || e.pointerType === "pen";
+        const effectiveDelay =
+            isTouch || !this.delayOnTouchOnly ? this.delay : 0;
+
+        // Mouse with no effective delay: defer entirely to native DnD events.
+        if (!isTouch && effectiveDelay === 0) return;
 
         const item = this._eventItem(e);
         if (!item) return;
 
-        const path = e.composedPath ? e.composedPath() : [e.target];
-        const start = path[0];
-        let isHandle = false;
-        let cur = start;
-        while (cur && cur !== item) {
-            if (cur.matches?.(handle)) {
-                isHandle = true;
-                break;
-            }
-            cur = cur.parentNode;
+        // Prevent the browser from taking over the touch scroll / text selection.
+        e.preventDefault();
+
+        this._touchItem = item;
+        this._touchPointerId = e.pointerId;
+        this._touchStartX = e.clientX;
+        this._touchStartY = e.clientY;
+
+        // Capture pointer so pointermove fires even if the finger drifts off the element.
+        try {
+            item.setPointerCapture(e.pointerId);
+        } catch {
+            /* optional */
         }
-        if (isHandle) return;
 
-        item.setAttribute("draggable", "false");
-        if (this.preventOnFilter) e.preventDefault();
+        // Set touch-action:none to block native scrolling during potential drag.
+        item.style.touchAction = "none";
 
-        const restore = () => {
-            if (item.isConnected && !this.disabled) {
-                item.setAttribute("draggable", "true");
+        // Set up per-gesture pointer listeners on the item.
+        this._touchPointerAbort = new AbortController();
+        const sig = this._touchPointerAbort.signal;
+
+        item.addEventListener("pointermove", (ev) => this._onPointerMove(ev), {
+            signal: sig,
+        });
+        item.addEventListener("pointerup", (ev) => this._onPointerUp(ev), {
+            signal: sig,
+        });
+        item.addEventListener(
+            "pointercancel",
+            (ev) => this._onPointerCancel(ev),
+            { signal: sig },
+        );
+
+        if (effectiveDelay > 0) {
+            // Arm the delay timer. The move handler will cancel it if the
+            // pointer moves beyond touchStartThreshold before the timer fires.
+            this._touchDelayTimer = setTimeout(() => {
+                this._touchDelayTimer = null;
+                if (this._touchItem === item) this._touchDragStart(e, item);
+            }, effectiveDelay);
+        } else {
+            // No delay — start the drag immediately.
+            this._touchDragStart(e, item);
+        }
+    }
+
+    _onPointerMove(e) {
+        if (!this._touchItem) return;
+
+        const dx = e.clientX - this._touchStartX;
+        const dy = e.clientY - this._touchStartY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const threshold = this.touchStartThreshold;
+
+        if (this._touchDelayTimer !== null) {
+            // Still in the delay window — cancel if movement exceeds threshold.
+            if (threshold > 0 && dist > threshold) {
+                this._cancelTouchPending();
             }
-        };
-        const signal = this._abort?.signal;
-        const opts = signal ? { once: true, signal } : { once: true };
-        window.addEventListener("pointerup", restore, opts);
-        window.addEventListener("pointercancel", restore, opts);
+            return;
+        }
+
+        // Drag is active.
+        if (!this._touchActive) return;
+
+        // Build a synthetic event-like object that has the coordinates we need.
+        // This object is passed to _onDragOver-equivalent logic.
+        const synthetic = { clientX: e.clientX, clientY: e.clientY };
+
+        // Auto-scroll.
+        if (this.scroll) {
+            if (!this._scrollContainer) {
+                this._scrollContainer = _findScrollContainer(this);
+            }
+            this._updateScroll(synthetic, this);
+        }
+
+        // Hit-test to find which list (could be a cross-list group member) the
+        // pointer is currently over.
+        const targetList = this._touchHitList(e.clientX, e.clientY);
+
+        if (!targetList) {
+            // Cursor is outside all lists — remove ghost if it's in one.
+            if (_ghostList) {
+                _ghostList._removeGhost();
+                _ghostList = null;
+            }
+            _stopScroll();
+            return;
+        }
+
+        // Cross-list compatibility check.
+        const isCrossList = targetList !== this;
+        if (isCrossList && !targetList._canAcceptFrom(this)) {
+            if (_ghostList) {
+                _ghostList._removeGhost();
+                _ghostList = null;
+            }
+            return;
+        }
+
+        // Move ghost to the target list if needed.
+        if (_ghostList && _ghostList !== targetList) {
+            _ghostList._removeGhost();
+        }
+        if (!targetList._ghost) {
+            targetList._ghost = targetList._createGhost(this._dragItem);
+        }
+        _ghostList = targetList;
+
+        const reference = targetList._projectInsertionPoint(synthetic);
+        targetList._placeGhost(reference);
+    }
+
+    _onPointerUp(e) {
+        if (!this._touchItem) return;
+
+        if (this._touchDelayTimer !== null) {
+            // Pointer released before the delay fired — cancel without dragging.
+            this._cancelTouchPending();
+            return;
+        }
+
+        if (!this._touchActive) {
+            this._cancelTouchPending();
+            return;
+        }
+
+        // Commit the drop.
+        const targetList = this._touchHitList(e.clientX, e.clientY);
+        if (targetList) {
+            const isCrossList = targetList !== this;
+            if (!isCrossList || targetList._canAcceptFrom(this)) {
+                // Synthesize a drop on the target list.
+                this._touchCommitDrop(targetList, e);
+                return;
+            }
+        }
+
+        // Dropped outside any valid target.
+        this._touchDragEnd(e);
+    }
+
+    _onPointerCancel(e) {
+        if (!this._touchItem) return;
+        if (this._touchDelayTimer !== null) {
+            this._cancelTouchPending();
+            return;
+        }
+        this._touchDragEnd(e);
+    }
+
+    /**
+     * Called when delay timer fires or when delay===0 and a touch press begins.
+     * Marks the drag as active and emits drag:start.
+     */
+    _touchDragStart(originalPointerEvent, item) {
+        if (this.disabled || _activeSource) return;
+
+        this._touchActive = true;
+        this._dragItem = item;
+        this._oldIndex = this._index(item);
+
+        item.classList.add(this.dragClass);
+        item.setAttribute("aria-grabbed", "true");
+        item.style.touchAction = "none";
+
+        _activeSource = this;
+
+        // Place the initial ghost.
+        if (!this._ghost) this._ghost = this._createGhost(item);
+        _ghostList = this;
+        this._placeGhost(null);
+
+        this._emit("drag:start", {
+            originalEvent: originalPointerEvent,
+            item,
+            list: this,
+        });
+    }
+
+    /**
+     * Commits a touch drop onto `targetList` then cleans up.
+     */
+    _touchCommitDrop(targetList, pointerEvent) {
+        const source = this;
+        const item = source._dragItem;
+        const oldIndex = source._oldIndex;
+
+        const isClone = source.clone || source.pull === "clone";
+        const isCrossList = targetList !== source;
+        const isSwap =
+            targetList.swap &&
+            !isCrossList &&
+            !isClone &&
+            targetList._swapTarget;
+
+        _stopScroll();
+        source._scrollContainer = null;
+
+        if (isSwap) {
+            targetList._dropSwap(source);
+        } else {
+            const ghost = targetList._ghost;
+            if (ghost) {
+                const insertee = isClone ? item.cloneNode(true) : item;
+                const snapshot = targetList._snapshot();
+                const insertionRef = targetList.forceFloat
+                    ? targetList._lastGhostRef
+                    : ghost;
+                targetList.insertBefore(insertee, insertionRef || null);
+                targetList._removeGhost();
+                targetList._lastGhostRef = null;
+                _ghostList = null;
+
+                const newIndex = targetList._index(insertee);
+                targetList._flip(snapshot);
+                if (isClone) targetList._initializeChildren();
+
+                const destLabel = targetList.getAttribute("aria-label") || "";
+                if (!isCrossList) {
+                    if (isClone) {
+                        source._emit("reorder", {
+                            oldIndex: -1,
+                            newIndex,
+                            item: insertee,
+                            list: source,
+                        });
+                        source._emit("update", {
+                            item: insertee,
+                            oldIndex: -1,
+                            newIndex,
+                            list: source,
+                        });
+                        source._announce(
+                            `Item copied to position ${newIndex + 1}.`,
+                        );
+                    } else if (newIndex !== oldIndex) {
+                        source._emit("reorder", {
+                            oldIndex,
+                            newIndex,
+                            item,
+                            list: source,
+                        });
+                        source._emit("update", {
+                            item,
+                            oldIndex,
+                            newIndex,
+                            list: source,
+                        });
+                        source._announce(
+                            `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
+                        );
+                    }
+                } else {
+                    source._emit("update", {
+                        item,
+                        oldIndex,
+                        newIndex: -1,
+                        list: source,
+                    });
+                    targetList._emit("reorder", {
+                        oldIndex: -1,
+                        newIndex,
+                        item: insertee,
+                        list: targetList,
+                        from: source,
+                    });
+                    targetList._emit("update", {
+                        item: insertee,
+                        oldIndex: -1,
+                        newIndex,
+                        list: targetList,
+                        from: source,
+                    });
+                    const verb = isClone ? "copied" : "moved";
+                    targetList._announce(
+                        destLabel
+                            ? `Item ${verb} to list ${destLabel} at position ${newIndex + 1}.`
+                            : `Item ${verb} to another list at position ${newIndex + 1}.`,
+                    );
+                }
+            }
+        }
+
+        this._touchCleanup(item, pointerEvent, /* cancelled */ false);
+        this._emit("drag:end", {
+            originalEvent: pointerEvent,
+            item,
+            list: this,
+        });
+    }
+
+    /**
+     * Ends an active touch drag without a valid drop (cancel / drop outside).
+     */
+    _touchDragEnd(pointerEvent) {
+        const item = this._dragItem;
+        _stopScroll();
+        this._scrollContainer = null;
+
+        const isCancelled = _ghostList !== null;
+
+        if (_ghostList) {
+            if (isCancelled && this.revert) {
+                const ghostListRef = _ghostList;
+                const snapshot = ghostListRef._snapshot();
+                ghostListRef._removeGhost();
+                _ghostList = null;
+                this._clearSwapTarget();
+                ghostListRef._flip(snapshot);
+                const delay =
+                    ghostListRef.animation === 0 ||
+                    ghostListRef._prefersReducedMotion()
+                        ? 0
+                        : ghostListRef.animation;
+                this._touchCleanup(item, pointerEvent, /* cancelled */ true);
+                if (delay > 0) {
+                    setTimeout(
+                        () =>
+                            this._emit("drag:end", {
+                                originalEvent: pointerEvent,
+                                item,
+                                list: this,
+                            }),
+                        delay,
+                    );
+                } else {
+                    this._emit("drag:end", {
+                        originalEvent: pointerEvent,
+                        item,
+                        list: this,
+                    });
+                }
+                return;
+            }
+            _ghostList._removeGhost();
+            _ghostList = null;
+        }
+
+        this._touchCleanup(item, pointerEvent, /* cancelled */ false);
+        this._emit("drag:end", {
+            originalEvent: pointerEvent,
+            item,
+            list: this,
+        });
+    }
+
+    /**
+     * Resets all touch drag state after a committed drop or cancel.
+     * `skipEmit` is true when the caller will emit drag:end itself (revert path).
+     */
+    _touchCleanup(item, _pointerEvent, skipEndEmit) {
+        if (item) {
+            item.classList.remove(this.dragClass);
+            item.setAttribute("aria-grabbed", "false");
+            item.style.touchAction = "";
+        }
+        this._touchActive = false;
+        this._touchItem = null;
+        this._touchPointerId = null;
+        this._touchStartX = 0;
+        this._touchStartY = 0;
+        this._clearSwapTarget();
+        this._dragItem = null;
+        this._oldIndex = -1;
+        _activeSource = null;
+        this._touchPointerAbort?.abort();
+        this._touchPointerAbort = null;
+        if (!skipEndEmit) {
+            // Callers that set skipEndEmit=false but want to fire drag:end themselves
+            // will call _emit separately — this path is for committed drops.
+        }
+    }
+
+    /** Cancel a pending delay without starting the drag. */
+    _cancelTouchPending() {
+        if (this._touchDelayTimer !== null) {
+            clearTimeout(this._touchDelayTimer);
+            this._touchDelayTimer = null;
+        }
+        if (this._touchItem) {
+            this._touchItem.style.touchAction = "";
+        }
+        this._touchItem = null;
+        this._touchPointerId = null;
+        this._touchPointerAbort?.abort();
+        this._touchPointerAbort = null;
+    }
+
+    /**
+     * Hit-test `(x, y)` against all known droplists that could accept the
+     * current drag (this list for same-list, group members for cross-list).
+     * Returns the deepest matching list, or `this` if the point is anywhere
+     * inside this list's bounding box (fallback for within-list reorder).
+     */
+    _touchHitList(x, y) {
+        // Check this list first.
+        const myRect = this.getBoundingClientRect();
+        const inSelf =
+            x >= myRect.left &&
+            x <= myRect.right &&
+            y >= myRect.top &&
+            y <= myRect.bottom;
+
+        // Check group peers.
+        const myGroup = this.group;
+        if (myGroup) {
+            const members = _groups.get(myGroup);
+            if (members) {
+                for (const list of members) {
+                    if (list === this) continue;
+                    const r = list.getBoundingClientRect();
+                    if (
+                        x >= r.left &&
+                        x <= r.right &&
+                        y >= r.top &&
+                        y <= r.bottom
+                    ) {
+                        return list;
+                    }
+                }
+            }
+        }
+
+        return inSelf ? this : null;
     }
 
     _placeGhost(reference) {
@@ -1177,6 +1679,20 @@ export class YumeDroplist extends HTMLElement {
         this._observer = null;
         this._removeGhost();
         this._clearSwapTarget();
+
+        // Cancel any in-progress touch gesture.
+        if (this._touchDelayTimer !== null) {
+            clearTimeout(this._touchDelayTimer);
+            this._touchDelayTimer = null;
+        }
+        if (this._touchItem) {
+            this._touchItem.style.touchAction = "";
+            this._touchItem = null;
+        }
+        this._touchActive = false;
+        this._touchPointerId = null;
+        this._touchPointerAbort?.abort();
+        this._touchPointerAbort = null;
 
         if (this._dragItem) {
             this._dragItem.classList.remove(this.dragClass);
