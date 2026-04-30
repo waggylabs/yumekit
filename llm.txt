@@ -748,33 +748,64 @@ Slots: default (drawer content)
 ---
 
 ### y-droplist
-Drag-and-drop reorderable list. MVP scope: within-list reordering only — cross-list groups, handles, swap/clone, touch polyfill, and auto-scroll are tracked as follow-ups.
+Drag-and-drop reorderable list with optional cross-list group support, drag handles, swap mode, and clone mode.
 
 Tag: `<y-droplist>`
 Attributes:
 - `disabled` — boolean. Removes `draggable` from all items, sets `aria-disabled` on the host, and ignores keyboard reorder shortcuts.
 - `vertical` — default reorders along the vertical axis. Set `vertical="false"` to reorder horizontally.
 - `animation` — settle-animation duration in ms (default `150`). `0` disables. Honors `prefers-reduced-motion: reduce` regardless of value.
+- `scroll` — boolean (default `true`). Auto-scrolls the nearest scrollable ancestor (or `window`) when the cursor is within `scroll-sensitivity` pixels of its edge during a drag. Set `scroll="false"` to disable.
+- `scroll-sensitivity` — number (px, default `30`). Distance from the scroll-container edge at which auto-scroll engages. Invalid values fall back to `30`.
+- `scroll-speed` — number (px/frame, default `10`). Per-frame scroll delta; clamped internally to `30`. Halved automatically when `prefers-reduced-motion: reduce` is active. Invalid values fall back to `10`.
+- `revert` — boolean (default `false`). When present, items dropped outside any valid drop target animate back to their original positions using FLIP. `drag:end` fires after the animation completes. Without `revert`, a cancel is silent (item stays put, `drag:end` fires immediately).
+- `force-float` — boolean (default `false`). When present, the ghost placeholder is appended to `document.body` with `position: fixed` so it floats above `overflow: hidden` containers and all stacking contexts. Ghost remains `aria-hidden`.
+- `delay` — number (ms, default `0`). Delay before a press becomes a drag. The drag starts only if the pointer remains within `touch-start-threshold` pixels for the duration. `0` means the drag starts immediately on `pointerdown` (for touch/pen) or `dragstart` (for mouse with no effective delay).
+- `delay-on-touch-only` — boolean (default `false`). When present, `delay` applies only to touch/pen pointer types; mouse presses bypass the delay and fall through to native HTML5 DnD.
+- `touch-start-threshold` — number (px, default `0`). Maximum pointer movement allowed during the `delay` window. If the pointer moves further than this before the timer fires, the pending drag is cancelled. `0` disables threshold checking.
 - `ghost-class` — CSS class applied to the placeholder shown at the projected drop position. Default `"y-droplist__ghost"`.
 - `drag-class` — CSS class applied to the dragged item. Default `"y-droplist__dragging"`.
+- `swap-class` — CSS class applied to the active swap target while dragging in swap mode. Default `"y-droplist__swap-target"`.
+- `group` — string. Lists with the same `group` name can exchange items via drag-and-drop. Empty / unset means within-list only.
+- `pull` — `"true"` (default) | `"clone"` | `"false"`. Controls whether items leave this list. `"true"` moves the item; `"clone"` leaves the original in place and inserts a copy in the destination; `"false"` blocks dragging out.
+- `put` — `"true"` (default) | `"false"` | comma-separated group-name list. Controls whether items can be dropped into this list. `"true"` accepts any same-group item; `"false"` rejects all incoming; a group-name list restricts accepted sources to those whose `group` appears in the list.
+- `handle` — CSS selector. When set, drags only initiate from elements within each item that match this selector. Empty (default) keeps the whole item draggable. Invalid selectors `console.warn` and fall back to whole-item.
+- `prevent-on-filter` — boolean (default `true`). When `handle` is set, calls `preventDefault()` on `pointerdown` events outside the handle to suppress text selection. No-op when `handle` is empty.
+- `swap` — boolean. When present, dropping over an item swaps the two items in place rather than inserting between items. Same-list only; cross-list drops fall through to insert mode. Disabled when `clone` is also set (clone wins).
+- `invert-swap-element` — boolean (default `true`). In `swap` mode, controls swap-target selection: `true` picks the item the cursor is currently over; `false` picks the item whose midpoint the cursor has crossed.
+- `clone` — boolean. When present, drops insert a `cloneNode(true)` copy at the drop position; the original stays at its source index. Composes with `pull="clone"` (which is the cross-list-source equivalent).
 
 Events (bubble + composed, not cancelable):
 - `drag:start` — `{ originalEvent, item, list }`
 - `drag:end` — `{ originalEvent, item, list }` (always fires; `originalEvent` is the native dragend)
-- `reorder` — `{ oldIndex, newIndex, item, list }` (fires only when index changes)
-- `update` — `{ item, oldIndex, newIndex, list }` (fires immediately after `reorder`)
+- `drag:enter` — `{ originalEvent, item, list, from }` — fired on the **destination** list when a foreign item first enters its hit area. `from` is the source list. Only fires when the two lists are compatible (same group, pull/put allow).
+- `drag:leave` — `{ originalEvent, item, list, to }` — fired on the **source** list when the dragged item leaves its bounds. `to` is the destination list, or `null` if the cursor left all droplists.
+- `drag:move` — `{ originalEvent, item, list, x, y }` — throttled to one event per `requestAnimationFrame`. Fires on every `dragover` / `pointermove` while a drag is active. `x` and `y` are the current viewport cursor coordinates.
+- `drag:over` — `{ originalEvent, item, list, target }` — fires only when the cursor transitions to hover a **different** slotted child (`target`) than on the previous tick. Does not re-fire when the cursor stays over the same item.
+- `drag:drop` — `{ originalEvent, item, list, index }` — fires **before** the DOM mutation on a successful drop. `index` is the projected insertion index (0-based).
+- `reorder` — `{ oldIndex, newIndex, item, list[, from] }` — fires only when index changes. On a cross-list drop `oldIndex` is `-1` and `from` is the source list. On a `swap` drop, `oldIndex` and `newIndex` describe the two swapped items. On a same-list `clone` drop, `oldIndex` is `-1` and `item` is the inserted clone.
+- `update` — `{ item, oldIndex, newIndex, list[, from] }` — fires immediately after `reorder`. On a cross-list drop the **source** fires first with `newIndex: -1`; the destination fires next with the insert position. On a same-list `clone` drop only the destination event fires (source is suppressed).
 
 Methods:
 - `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
-- `hasItem(item)` — true when `item` is a direct slotted child of the droplist. Use this for strict same-list membership checks; native `contains()` retains its standard ancestry semantics.
-- `destroy()` — removes all listeners and the mutation observer. The component re-initializes on disconnect/reconnect.
+- `hasItem(item)` — true when `item` is a direct slotted child of the droplist.
+- `destroy()` — removes all listeners, the mutation observer, and unregisters from the cross-list group registry. The component re-initializes on disconnect/reconnect.
+- `sort(compareFn?)` — sorts all slotted children in place. The default comparator compares each child's `data-id` using `<` / `>` semantics (plain lexicographic/ASCII-style ordering, not `localeCompare`). Fires a single `update` event with `{ oldIndex: -1, newIndex: -1 }`. Pass a custom `(a, b) => number` comparator for custom order.
+- `option(name, value?)` — get or set the component property corresponding to a kebab-case option name (mapped to camelCase). One argument returns the current property value; two arguments assigns that property. Depending on the property, this may return non-string values and may reflect to, update, or remove the underlying attribute.
+- `closest(evt)` — returns the direct slotted child whose bounding rect contains `evt.clientX`/`evt.clientY`, or `null` if none match.
 
 Behavior:
 - Items get `role="listitem"`, `tabindex="0"`, `draggable="true"`, and `aria-grabbed="false"` automatically; new children added at runtime are auto-initialized via `MutationObserver`.
-- Keyboard reorder: focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when `vertical="false"`). Focus stays on the moved item; `reorder` and `update` fire identically to a mouse drop.
-- A polite `aria-live` region inside the shadow root announces moves: _"Item moved from position X to position Y."_
-- Settle animation uses FLIP. Skipped when `animation="0"` or `prefers-reduced-motion: reduce`.
-- **Touch is not supported in the MVP** — track the touch follow-up before shipping to mobile.
+- Keyboard reorder: focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when `vertical="false"`). Focus stays on the moved item; `reorder` and `update` fire identically to a mouse drop. When `handle` is set, focus may be on the handle element; keydown still works via bubbling and focus stays on the handle.
+- A polite `aria-live` region inside the shadow root announces moves. Within-list: _"Item moved from position X to position Y."_ Cross-list: _"Item moved to list `<aria-label>` at position N."_, falling back to _"another list"_ when the destination has no accessible name. Swap mode: _"Item swapped with position N."_ Clone: _"Item copied to position N."_ (or _"Item copied to list `<label>` at position N."_ for cross-list).
+- Settle animation uses FLIP. Skipped when `animation="0"` or `prefers-reduced-motion: reduce`. Swap mode skips FLIP since the two affected items jump directly.
+- Cross-list compatibility is checked on every `dragover`. Incompatible combinations do not call `preventDefault()`, so the OS shows the "not allowed" cursor and no ghost appears.
+- `handle` mode: items get `tabindex="-1"` and the first matching descendant element gets `tabindex="0"` (only when the descendant doesn't already have a tabindex). On `pointerdown` outside the handle, `draggable` is flipped to `false` until `pointerup` / `pointercancel`, blocking the native drag from starting.
+- `clone` overrides `swap` when both are set on the same list — the drop performs a clone insert and the swap indicator never appears.
+- **Touch / pointer pipeline**: Touch and pen input uses `pointerdown` / `pointermove` / `pointerup` with `setPointerCapture`. `touch-action: none` is applied to the pressed item for the duration of the gesture. Mouse presses with no effective delay defer to native HTML5 DnD. Cross-list touch drops use bounding-box hit-testing via `getBoundingClientRect`. `originalEvent` in `drag:start` / `drag:end` is the originating `PointerEvent` for touch drags. Supported: iOS Safari 14+, Chrome Android 90+, desktop Chromium / Firefox / Safari latest two majors.
+- Auto-scroll uses a shared `requestAnimationFrame` loop (one loop across all `<y-droplist>` instances). The scroll container is found by walking up from the hovered list via `getComputedStyle(...).overflow` and is cached per-drag on the source list. Scrolling stops on `dragend`.
+- `revert` shares `--component-droplist-transition-duration` / `--component-droplist-transition-easing` with the settle animation. With `prefers-reduced-motion: reduce`, the items snap back without easing and `drag:end` fires immediately.
+- `force-float` ghost inlines its own styles (background/border/opacity via CSS custom properties that cascade from `:root`). The `::slotted([data-y-droplist-ghost])` shadow rule does not apply to it. The insertion position is tracked internally per-drop so the item is inserted at the correct index on drop.
 
 CSS Parts: `list` (the shadow-DOM wrapper around the slot).
 
@@ -782,18 +813,53 @@ Styling items: list items are slotted light-DOM children, so style them with reg
 
 Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attribute selector, the class set by the `ghost-class` attribute (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties below.
 
-CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`.
+CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`, `--component-droplist-swap-indicator-background` (background applied to the active swap target), `--component-droplist-handle-color` and `--component-droplist-handle-size` (convenience tokens consumers can use to style their own handle elements; not used internally).
 
 ```html
+<!-- Within-list reorder -->
 <y-droplist>
     <div data-id="alpha">Alpha</div>
     <div data-id="bravo">Bravo</div>
     <div data-id="charlie">Charlie</div>
 </y-droplist>
 
+<!-- Cross-list Kanban columns -->
+<y-droplist id="todo" group="kanban" aria-label="To Do">
+    <div data-id="task-1">Task 1</div>
+</y-droplist>
+<y-droplist id="done" group="kanban" aria-label="Done">
+    <div data-id="task-2">Task 2</div>
+</y-droplist>
+
+<!-- Clone-only template list (items can be cloned out but nothing comes in) -->
+<y-droplist id="templates" group="kanban" pull="clone" put="false">
+    <div data-id="tpl-bug">Bug report</div>
+</y-droplist>
+
+<!-- Drag handle -->
+<y-droplist handle=".grip">
+    <div data-id="row-1">
+        <span class="grip" aria-label="Reorder">⋮⋮</span>
+        <span>Row 1</span>
+    </div>
+</y-droplist>
+
+<!-- Swap mode -->
+<y-droplist swap>
+    <div data-id="t1">Tile 1</div>
+    <div data-id="t2">Tile 2</div>
+</y-droplist>
+
+<!-- Same-list clone palette -->
+<y-droplist clone>
+    <div data-id="snippet">Snippet</div>
+</y-droplist>
+
 <script type="module">
-    document.querySelector("y-droplist").addEventListener("update", (e) => {
-        console.log("new order:", e.target.toArray());
+    document.querySelectorAll("[group='kanban']").forEach((list) => {
+        list.addEventListener("update", (e) => {
+            console.log("update", e.detail);
+        });
     });
 </script>
 ```

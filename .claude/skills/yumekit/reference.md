@@ -58,14 +58,14 @@ Injects design tokens as CSS custom properties. Wraps entire app.
 
 A divider that draws a line, optionally broken by centered content (text, icon, or any slotted element).
 
-| Attribute     | Values / Notes                                                                                |
-| ------------- | --------------------------------------------------------------------------------------------- |
-| `orientation` | `horizontal` (default) \| `vertical` (host needs a height from its container when vertical)   |
-| `align`       | `start` \| `center` (default) \| `end` — position of centered content along the line          |
-| `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                        |
-| `label`       | Convenience text rendered in the center                                                       |
-| `icon`        | Convenience icon name rendered in the center (icon then label when both are set)              |
-| `inset`       | `none` (default) \| `sm` \| `md` \| `lg` — outer end padding                                  |
+| Attribute     | Values / Notes                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| `orientation` | `horizontal` (default) \| `vertical` (host needs a height from its container when vertical) |
+| `align`       | `start` \| `center` (default) \| `end` — position of centered content along the line        |
+| `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                      |
+| `label`       | Convenience text rendered in the center                                                     |
+| `icon`        | Convenience icon name rendered in the center (icon then label when both are set)            |
+| `inset`       | `none` (default) \| `sm` \| `md` \| `lg` — outer end padding                                |
 
 **Slots:** default — content rendered in the center; takes precedence over `label` / `icon`.
 
@@ -830,42 +830,90 @@ Slot: default (drawer content)
 
 ## y-droplist
 
-Drag-and-drop reorderable list. MVP — within-list reordering only.
+Drag-and-drop reorderable list. Supports within-list reordering, cross-list groups, clone/pull/put policies, drag handles, and swap mode.
 
-| Attribute     | Values / Notes                                                                          |
-| ------------- | --------------------------------------------------------------------------------------- |
-| `disabled`    | boolean — disables drag and keyboard reorder                                            |
-| `vertical`    | default vertical; set `vertical="false"` to reorder horizontally                        |
-| `animation`   | settle-animation duration in ms (default `150`); `0` disables                           |
-| `ghost-class` | CSS class on the drop placeholder (default `y-droplist__ghost`)                         |
-| `drag-class`  | CSS class on the dragged item (default `y-droplist__dragging`)                          |
+| Attribute             | Values / Notes                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `disabled`            | boolean — disables drag and keyboard reorder                                                                                                |
+| `vertical`            | default vertical; set `vertical="false"` to reorder horizontally                                                                            |
+| `animation`           | settle-animation duration in ms (default `150`); `0` disables                                                                               |
+| `group`               | string — name of the cross-list drag group; lists sharing a name can exchange items                                                         |
+| `clone`               | boolean — drops insert a copy at the destination; the original stays at its source index                                                    |
+| `pull`                | `"true"` (default) \| `"clone"` \| `"false"` — controls whether items can be dragged out; `"clone"` leaves a copy, `"false"` blocks pulling |
+| `put`                 | `"true"` (default) \| `"false"` \| comma-separated group names — controls which sources this list accepts; `"false"` rejects all incoming   |
+| `handle`              | CSS selector — restricts drag initiation to matching child elements; invalid selectors warn and fall back to whole-item drag                |
+| `prevent-on-filter`   | boolean (default `true`) — when `handle` is set, calls `preventDefault()` on non-handle `pointerdown` to suppress text selection            |
+| `swap`                | boolean — dropping over an item swaps the two in place instead of inserting between them; same-list only                                    |
+| `swap-class`          | CSS class on the active swap target (default `y-droplist__swap-target`)                                                                     |
+| `invert-swap-element` | boolean (default `true`) — `true`: swap target is the item under the cursor; `false`: item whose midpoint the cursor has crossed            |
+| `ghost-class`         | CSS class on the drop placeholder (default `y-droplist__ghost`)                                                                             |
+| `drag-class`          | CSS class on the dragged item (default `y-droplist__dragging`)                                                                              |
 
-**Events:** `drag:start`, `drag:end`, `reorder` (`{ oldIndex, newIndex, item, list }`), `update` (`{ item, oldIndex, newIndex, list }`)
+**Events:**
 
-**Methods:** `toArray()`, `hasItem(item)` (strict direct-child check; native `contains()` is unchanged), `destroy()`
+| Event        | Detail                                      | Notes                                                                         |
+| ------------ | ------------------------------------------- | ----------------------------------------------------------------------------- |
+| `drag:start` | `{ originalEvent, item, list }`             | Fired on the source list when a drag begins                                   |
+| `drag:end`   | `{ originalEvent, item, list }`             | Fired on the source list when a drag ends (drop or cancel)                    |
+| `drag:enter` | `{ originalEvent, item, list, from }`       | Fired on a target list when the drag enters it (cross-list only)              |
+| `drag:leave` | `{ originalEvent, item, list, to }`         | Fired on a list when the drag leaves it (cross-list only)                     |
+| `reorder`    | `{ oldIndex, newIndex, item, list, from? }` | Fired on the destination list after a successful drop or keyboard move        |
+| `update`     | `{ item, oldIndex, newIndex, list, from? }` | Fired on both source (cross-list) and destination after every successful drop |
 
-**Slots:** default — give each item a unique `data-id` so consumers can read order via `toArray()`.
+For cross-list drops: the source `update` fires first with `newIndex: -1`; the destination `reorder` and `update` fire second with `from` set to the source list. For clone drops `oldIndex` is `-1`.
 
-**Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). Focus stays on the moved item; a polite `aria-live` region announces _"Item moved from position X to position Y."_
+**Methods:** `toArray()` — returns each direct child's `data-id` in current DOM order. `hasItem(item)` — strict direct-child check (excludes ghost). `destroy()` — removes all listeners and observers.
 
-**CSS Parts:** `list` (shadow-DOM wrapper around the slot).
+**Slots:** default — give each item a unique `data-id` so `toArray()` is meaningful.
 
-**Styling items:** items are slotted light-DOM children, so style them with regular descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.) — `::part()` doesn't reach light DOM.
+**Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). When `handle` is set, focus lands on the handle element. A polite `aria-live` region announces moves and swaps.
 
-**Styling the ghost:** target it via `[data-y-droplist-ghost]`, the class from `ghost-class` (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties.
+**CSS Parts:** `list` (shadow-DOM flex wrapper around the slot).
+
+**Styling items:** items are slotted light-DOM children — use descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.). `::part()` does not reach light DOM.
+
+**Styling the ghost:** target `[data-y-droplist-ghost]`, the `ghost-class` value (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties.
 
 **CSS Custom Properties:**
+
 - `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`
+- `--component-droplist-swap-indicator-background`
 - `--component-droplist-item-padding`, `--component-droplist-item-margin`
 - `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
 
-> Touch dragging is not supported in the MVP. Cross-list groups, handles, swap/clone, and auto-scroll are tracked as follow-ups.
+> Supports pointer/touch dragging and auto-scroll during drag interactions.
 
 ```html
+<!-- Basic reorderable list -->
 <y-droplist>
     <div data-id="alpha">Alpha</div>
     <div data-id="bravo">Bravo</div>
     <div data-id="charlie">Charlie</div>
+</y-droplist>
+
+<!-- Cross-list Kanban (move between columns) -->
+<y-droplist id="todo" group="board" style="display:block"></y-droplist>
+<y-droplist id="doing" group="board" style="display:block"></y-droplist>
+
+<!-- Clone from palette into lane (original stays) -->
+<y-droplist id="palette" group="board" clone put="false" style="display:block">
+    <div data-id="bug">Bug report</div>
+</y-droplist>
+<y-droplist
+    id="lane"
+    group="board"
+    style="display:block;min-height:64px"
+></y-droplist>
+
+<!-- Drag handle -->
+<y-droplist handle=".grip" style="display:block">
+    <div data-id="a"><span class="grip">⋮⋮</span> Alpha</div>
+</y-droplist>
+
+<!-- Swap mode -->
+<y-droplist swap style="display:block">
+    <div data-id="x">X</div>
+    <div data-id="y">Y</div>
 </y-droplist>
 ```
 
