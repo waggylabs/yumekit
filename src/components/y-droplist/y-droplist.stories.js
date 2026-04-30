@@ -306,3 +306,106 @@ export const CloneToBucket = {
         </div>
     `,
 };
+
+export const AutoScroll = {
+    render: () => `
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Drag an item and move toward the top or bottom edge of the container — it scrolls automatically.
+            Uses the default <code>scroll-sensitivity="30"</code> and <code>scroll-speed="10"</code>.
+        </p>
+        <div
+            id="scroll-container"
+            style="height:260px;overflow:auto;border:1px solid var(--base-border);border-radius:4px;padding:4px;${listWidth}"
+        >
+            <y-droplist id="auto-scroll-list" style="display:block;${noItemPadding}">
+                <y-card data-id="i1" raised>Item 1</y-card>
+                <y-card data-id="i2" raised>Item 2</y-card>
+                <y-card data-id="i3" raised>Item 3</y-card>
+                <y-card data-id="i4" raised>Item 4</y-card>
+                <y-card data-id="i5" raised>Item 5</y-card>
+                <y-card data-id="i6" raised>Item 6</y-card>
+                <y-card data-id="i7" raised>Item 7</y-card>
+                <y-card data-id="i8" raised>Item 8</y-card>
+                <y-card data-id="i9" raised>Item 9</y-card>
+                <y-card data-id="i10" raised>Item 10</y-card>
+            </y-droplist>
+        </div>
+    `,
+};
+
+export const AutoScrollDisabled = {
+    render: () => `
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Auto-scroll is disabled with <code>scroll="false"</code> — the container does not scroll when
+            the cursor reaches the edge.
+        </p>
+        <div
+            style="height:260px;overflow:auto;border:1px solid var(--base-border);border-radius:4px;padding:4px;${listWidth}"
+        >
+            <y-droplist scroll="false" style="display:block;${noItemPadding}">
+                <y-card data-id="i1" raised>Item 1</y-card>
+                <y-card data-id="i2" raised>Item 2</y-card>
+                <y-card data-id="i3" raised>Item 3</y-card>
+                <y-card data-id="i4" raised>Item 4</y-card>
+                <y-card data-id="i5" raised>Item 5</y-card>
+                <y-card data-id="i6" raised>Item 6</y-card>
+                <y-card data-id="i7" raised>Item 7</y-card>
+                <y-card data-id="i8" raised>Item 8</y-card>
+            </y-droplist>
+        </div>
+    `,
+};
+
+export const RevertOnCancel = {
+    render: () => `
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Drag an item and drop it outside the list (e.g., onto this paragraph) — the displaced items
+            animate back to their original positions. Uses <code>revert</code>.
+        </p>
+        <y-droplist revert style="display:block;${listWidth};${noItemPadding}">
+            <y-card data-id="alpha" raised>Alpha</y-card>
+            <y-card data-id="bravo" raised>Bravo</y-card>
+            <y-card data-id="charlie" raised>Charlie</y-card>
+            <y-card data-id="delta" raised>Delta</y-card>
+        </y-droplist>
+    `,
+};
+
+export const ForceFloat = {
+    render: () => `
+        <style>
+            .ff-modal-backdrop {
+                position: fixed; inset: 0;
+                background: rgba(0,0,0,0.4);
+                display: flex; align-items: center; justify-content: center;
+                z-index: 100;
+            }
+            .ff-modal {
+                background: var(--base-background-component);
+                border: 1px solid var(--base-border);
+                border-radius: 8px;
+                padding: 24px;
+                width: 380px;
+                /* overflow:hidden clips a normal ghost but force-float escapes it */
+                overflow: hidden;
+            }
+            .ff-modal h3 { margin: 0 0 12px; font-size: 1rem; }
+        </style>
+        <p style="margin:0 0 12px;font-size:0.85em">
+            The droplist is inside an <code>overflow:hidden</code> modal. With <code>force-float</code>, the
+            ghost placeholder is appended to <code>document.body</code> with <code>position:fixed</code> and
+            remains visible above the clipping boundary.
+        </p>
+        <div class="ff-modal-backdrop">
+            <div class="ff-modal">
+                <h3>Reorder tasks</h3>
+                <y-droplist force-float style="display:block;${noItemPadding}">
+                    <y-card data-id="task-a" raised>Design</y-card>
+                    <y-card data-id="task-b" raised>Implement</y-card>
+                    <y-card data-id="task-c" raised>Review</y-card>
+                    <y-card data-id="task-d" raised>Deploy</y-card>
+                </y-droplist>
+            </div>
+        </div>
+    `,
+};

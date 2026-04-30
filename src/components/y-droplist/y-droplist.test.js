@@ -1736,4 +1736,515 @@ describe("YumeDroplist", () => {
         el.clone = false;
         expect(el.hasAttribute("clone")).to.be.false;
     });
+
+    // ── scroll / scrollSensitivity / scrollSpeed getters ─────
+
+    it("scroll getter: true by default, false when scroll='false'", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.scroll).to.be.true;
+        el.setAttribute("scroll", "false");
+        expect(el.scroll).to.be.false;
+        el.removeAttribute("scroll");
+        expect(el.scroll).to.be.true;
+    });
+
+    it("scroll setter round-trips correctly", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        el.scroll = false;
+        expect(el.getAttribute("scroll")).to.equal("false");
+        el.scroll = true;
+        expect(el.hasAttribute("scroll")).to.be.false;
+    });
+
+    it("scrollSensitivity getter: default 30, accepts custom, falls back on invalid", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.scrollSensitivity).to.equal(30);
+        el.setAttribute("scroll-sensitivity", "50");
+        expect(el.scrollSensitivity).to.equal(50);
+        el.setAttribute("scroll-sensitivity", "not-a-number");
+        expect(el.scrollSensitivity).to.equal(30);
+        el.setAttribute("scroll-sensitivity", "0");
+        expect(el.scrollSensitivity).to.equal(30); // 0 is not > 0
+    });
+
+    it("scrollSpeed getter: default 10, accepts custom, falls back on invalid", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.scrollSpeed).to.equal(10);
+        el.setAttribute("scroll-speed", "20");
+        expect(el.scrollSpeed).to.equal(20);
+        el.setAttribute("scroll-speed", "bad");
+        expect(el.scrollSpeed).to.equal(10);
+    });
+
+    // ── revert getter ─────────────────────────────────────────
+
+    it("revert getter: false by default, true when attribute present", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.revert).to.be.false;
+        el.setAttribute("revert", "");
+        expect(el.revert).to.be.true;
+        el.removeAttribute("revert");
+        expect(el.revert).to.be.false;
+    });
+
+    it("revert setter round-trips correctly", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        el.revert = true;
+        expect(el.hasAttribute("revert")).to.be.true;
+        el.revert = false;
+        expect(el.hasAttribute("revert")).to.be.false;
+    });
+
+    // ── forceFloat getter ─────────────────────────────────────
+
+    it("forceFloat getter: false by default, true when force-float present", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.forceFloat).to.be.false;
+        el.setAttribute("force-float", "");
+        expect(el.forceFloat).to.be.true;
+        el.removeAttribute("force-float");
+        expect(el.forceFloat).to.be.false;
+    });
+
+    it("forceFloat setter round-trips correctly", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        el.forceFloat = true;
+        expect(el.hasAttribute("force-float")).to.be.true;
+        el.forceFloat = false;
+        expect(el.hasAttribute("force-float")).to.be.false;
+    });
+
+    // ── revert behavior ───────────────────────────────────────
+
+    it("revert: drag:end fires after animation delay when drag is cancelled without drop", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="100" revert>
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const endSpy = sandbox.spy();
+        el.addEventListener("drag:end", endSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+
+        // dragend without a preceding drop — revert should delay drag:end
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Not yet (revert animation in progress)
+        expect(endSpy).to.not.have.been.called;
+
+        // After the animation delay fires
+        await aTimeout(200);
+        expect(endSpy).to.have.been.calledOnce;
+    });
+
+    it("revert: ghost is removed immediately and drag state is cleared before animation", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="100" revert>
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(el.querySelector("[data-y-droplist-ghost]")).to.exist;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Ghost is gone immediately even though drag:end is deferred
+        expect(el.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+        // aria-grabbed is reset
+        expect(a.getAttribute("aria-grabbed")).to.equal("false");
+
+        await aTimeout(200);
+    });
+
+    it("revert=false (default): drag:end fires immediately on cancelled drag", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="100">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const endSpy = sandbox.spy();
+        el.addEventListener("drag:end", endSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Fires synchronously when revert is absent
+        expect(endSpy).to.have.been.calledOnce;
+    });
+
+    it("revert: successful drop does NOT delay drag:end", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0" revert>
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const endSpy = sandbox.spy();
+        el.addEventListener("drag:end", endSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Fires synchronously after a valid drop
+        expect(endSpy).to.have.been.calledOnce;
+    });
+
+    // ── force-float ghost ─────────────────────────────────────
+
+    it("force-float: ghost is appended to document.body with position:fixed", async () => {
+        const el = await fixture(html`
+            <y-droplist force-float animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+
+        const ghost = document.body.querySelector("[data-y-droplist-ghost]");
+        expect(ghost).to.exist;
+        expect(ghost.style.position).to.equal("fixed");
+        // Ghost is NOT a child of the droplist
+        expect(el.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Ghost removed from body on drag end
+        expect(document.body.querySelector("[data-y-droplist-ghost]")).to.not
+            .exist;
+    });
+
+    it("force-float: ghost has pointer-events:none and high z-index", async () => {
+        const el = await fixture(html`
+            <y-droplist force-float animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+
+        const ghost = document.body.querySelector("[data-y-droplist-ghost]");
+        expect(ghost.style.pointerEvents).to.equal("none");
+        expect(Number(ghost.style.zIndex)).to.be.greaterThan(0);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("force-float: ghost stays in body across multiple dragovers (position updated)", async () => {
+        const el = await fixture(html`
+            <y-droplist force-float animation="0">
+                <div data-id="a" style="height:40px;display:block">A</div>
+                <div data-id="b" style="height:40px;display:block">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientY: 5,
+            }),
+        );
+        const ghost = document.body.querySelector("[data-y-droplist-ghost]");
+        expect(ghost).to.exist;
+
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientY: 60,
+            }),
+        );
+        // Still exactly one ghost in body (not duplicated)
+        const allGhosts = document.body.querySelectorAll(
+            "[data-y-droplist-ghost]",
+        );
+        expect(allGhosts.length).to.equal(1);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("force-float: normal list drops still work (ghost removed from body on drop)", async () => {
+        const el = await fixture(html`
+            <y-droplist force-float animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(document.body.querySelector("[data-y-droplist-ghost]")).to.not
+            .exist;
+    });
+
+    // ── auto-scroll engagement ────────────────────────────────
+
+    it("auto-scroll: scrolls container when cursor is within sensitivity of bottom edge", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            height: "80px",
+            width: "200px",
+            overflow: "auto",
+            position: "fixed",
+            top: "100px",
+            left: "0px",
+        });
+        document.body.appendChild(wrapper);
+
+        // Populate wrapper with a tall droplist so it actually overflows.
+        wrapper.innerHTML = `
+            <y-droplist animation="0" style="display:block">
+                <div data-id="a" style="height:40px;display:block">A</div>
+                <div data-id="b" style="height:40px;display:block">B</div>
+                <div data-id="c" style="height:40px;display:block">C</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0); // let connectedCallback run
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        // wrapper: top=100, height=80 → bottom=180.
+        // sensitivity=30 → engage when clientY > 180-30=150.
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientY: 170, // 180-170=10 < 30 → engage scroll down
+                clientX: 50,
+            }),
+        );
+
+        await flushFrame();
+        await flushFrame();
+
+        expect(wrapper.scrollTop).to.be.greaterThan(0);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("auto-scroll: scroll='false' prevents engagement", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            height: "80px",
+            width: "200px",
+            overflow: "auto",
+            position: "fixed",
+            top: "100px",
+            left: "0px",
+        });
+        document.body.appendChild(wrapper);
+
+        wrapper.innerHTML = `
+            <y-droplist scroll="false" animation="0" style="display:block">
+                <div data-id="a" style="height:40px;display:block">A</div>
+                <div data-id="b" style="height:40px;display:block">B</div>
+                <div data-id="c" style="height:40px;display:block">C</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientY: 170,
+                clientX: 50,
+            }),
+        );
+
+        await flushFrame();
+        await flushFrame();
+
+        expect(wrapper.scrollTop).to.equal(0);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("auto-scroll: stops scrolling after drag ends", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            height: "80px",
+            width: "200px",
+            overflow: "auto",
+            position: "fixed",
+            top: "100px",
+            left: "0px",
+        });
+        document.body.appendChild(wrapper);
+
+        wrapper.innerHTML = `
+            <y-droplist animation="0" style="display:block">
+                <div data-id="a" style="height:40px;display:block">A</div>
+                <div data-id="b" style="height:40px;display:block">B</div>
+                <div data-id="c" style="height:40px;display:block">C</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientY: 170,
+                clientX: 50,
+            }),
+        );
+        await flushFrame();
+        await flushFrame();
+        const scrollAfterDrag = wrapper.scrollTop;
+        expect(scrollAfterDrag).to.be.greaterThan(0);
+
+        // End the drag; scroll should stop.
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+        await flushFrame();
+        // scrollTop does not continue to grow after drag ends.
+        expect(wrapper.scrollTop).to.equal(scrollAfterDrag);
+
+        wrapper.remove();
+    });
 });

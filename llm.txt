@@ -755,6 +755,11 @@ Attributes:
 - `disabled` — boolean. Removes `draggable` from all items, sets `aria-disabled` on the host, and ignores keyboard reorder shortcuts.
 - `vertical` — default reorders along the vertical axis. Set `vertical="false"` to reorder horizontally.
 - `animation` — settle-animation duration in ms (default `150`). `0` disables. Honors `prefers-reduced-motion: reduce` regardless of value.
+- `scroll` — boolean (default `true`). Auto-scrolls the nearest scrollable ancestor (or `window`) when the cursor is within `scroll-sensitivity` pixels of its edge during a drag. Set `scroll="false"` to disable.
+- `scroll-sensitivity` — number (px, default `30`). Distance from the scroll-container edge at which auto-scroll engages. Invalid values fall back to `30`.
+- `scroll-speed` — number (px/frame, default `10`). Per-frame scroll delta; clamped internally to `30`. Halved automatically when `prefers-reduced-motion: reduce` is active. Invalid values fall back to `10`.
+- `revert` — boolean (default `false`). When present, items dropped outside any valid drop target animate back to their original positions using FLIP. `drag:end` fires after the animation completes. Without `revert`, a cancel is silent (item stays put, `drag:end` fires immediately).
+- `force-float` — boolean (default `false`). When present, the ghost placeholder is appended to `document.body` with `position: fixed` so it floats above `overflow: hidden` containers and all stacking contexts. Ghost remains `aria-hidden`.
 - `ghost-class` — CSS class applied to the placeholder shown at the projected drop position. Default `"y-droplist__ghost"`.
 - `drag-class` — CSS class applied to the dragged item. Default `"y-droplist__dragging"`.
 - `swap-class` — CSS class applied to the active swap target while dragging in swap mode. Default `"y-droplist__swap-target"`.
@@ -789,6 +794,9 @@ Behavior:
 - `handle` mode: items get `tabindex="-1"` and the first matching descendant element gets `tabindex="0"` (only when the descendant doesn't already have a tabindex). On `pointerdown` outside the handle, `draggable` is flipped to `false` until `pointerup` / `pointercancel`, blocking the native drag from starting.
 - `clone` overrides `swap` when both are set on the same list — the drop performs a clone insert and the swap indicator never appears.
 - **Touch is not supported** — track the touch follow-up before shipping to mobile.
+- Auto-scroll uses a shared `requestAnimationFrame` loop (one loop across all `<y-droplist>` instances). The scroll container is found by walking up from the hovered list via `getComputedStyle(...).overflow` and is cached per-drag on the source list. Scrolling stops on `dragend`.
+- `revert` shares `--component-droplist-transition-duration` / `--component-droplist-transition-easing` with the settle animation. With `prefers-reduced-motion: reduce`, the items snap back without easing and `drag:end` fires immediately.
+- `force-float` ghost inlines its own styles (background/border/opacity via CSS custom properties that cascade from `:root`). The `::slotted([data-y-droplist-ghost])` shadow rule does not apply to it. The insertion position is tracked internally per-drop so the item is inserted at the correct index on drop.
 
 CSS Parts: `list` (the shadow-DOM wrapper around the slot).
 

@@ -13,6 +13,62 @@ let _activeSource = null;
 /** The list that currently holds the drag ghost element. */
 let _ghostList = null;
 
+// ---------------------------------------------------------------------------
+// Shared auto-scroll scheduler — only one RAF loop runs across all instances
+// ---------------------------------------------------------------------------
+
+let _scrollRafId = null;
+let _scrollTarget = null; // Element | Window
+let _scrollDx = 0;
+let _scrollDy = 0;
+
+/** Walk up from `list` to find the nearest scrollable ancestor, or window. */
+function _findScrollContainer(list) {
+    let el = list.parentElement;
+    while (el) {
+        const { overflowX, overflowY } = window.getComputedStyle(el);
+        if (
+            overflowX === "auto" ||
+            overflowX === "scroll" ||
+            overflowY === "auto" ||
+            overflowY === "scroll"
+        ) {
+            return el;
+        }
+        el = el.parentElement;
+    }
+    return window;
+}
+
+function _scrollTick() {
+    if (_scrollTarget === null) {
+        _scrollRafId = null;
+        return;
+    }
+    if (_scrollTarget === window) {
+        window.scrollBy(_scrollDx, _scrollDy);
+    } else {
+        _scrollTarget.scrollLeft += _scrollDx;
+        _scrollTarget.scrollTop += _scrollDy;
+    }
+    _scrollRafId = requestAnimationFrame(_scrollTick);
+}
+
+function _startScroll() {
+    if (_scrollRafId !== null) return;
+    _scrollRafId = requestAnimationFrame(_scrollTick);
+}
+
+function _stopScroll() {
+    if (_scrollRafId !== null) {
+        cancelAnimationFrame(_scrollRafId);
+        _scrollRafId = null;
+    }
+    _scrollTarget = null;
+    _scrollDx = 0;
+    _scrollDy = 0;
+}
+
 function _registerInGroup(list) {
     const g = list.group;
     if (!g) return;
@@ -56,6 +112,8 @@ export class YumeDroplist extends HTMLElement {
         this._observer = null;
         this._handleSelectorInvalid = false;
         this._swapTarget = null;
+        this._scrollContainer = null;
+        this._lastGhostRef = null;
         this.render();
     }
 
@@ -148,6 +206,19 @@ export class YumeDroplist extends HTMLElement {
         this.setAttribute("ghost-class", val);
     }
 
+    /**
+     * When present, the ghost element is appended to `document.body` with
+     * `position: fixed` so it floats above all stacking contexts and
+     * overflow-clipped containers. Default false.
+     */
+    get forceFloat() {
+        return this.hasAttribute("force-float");
+    }
+    set forceFloat(val) {
+        if (val) this.setAttribute("force-float", "");
+        else this.removeAttribute("force-float");
+    }
+
     /** Group name for drag-and-drop interactions. */
     get group() {
         return this.getAttribute("group") || "";
@@ -212,6 +283,49 @@ export class YumeDroplist extends HTMLElement {
         if (s === "false") this.setAttribute("pull", "false");
         else if (s === "clone") this.setAttribute("pull", "clone");
         else this.setAttribute("pull", "true");
+    }
+
+    /**
+     * When present, items dropped outside any valid target animate back to
+     * their original index using FLIP. Default false (silent cancel).
+     */
+    get revert() {
+        return this.hasAttribute("revert");
+    }
+    set revert(val) {
+        if (val) this.setAttribute("revert", "");
+        else this.removeAttribute("revert");
+    }
+
+    /**
+     * Auto-scroll the nearest scrollable ancestor when the cursor is near its
+     * edge. Enabled by default; set `scroll="false"` to disable.
+     */
+    get scroll() {
+        return this.getAttribute("scroll") !== "false";
+    }
+    set scroll(val) {
+        if (val === false || val === "false")
+            this.setAttribute("scroll", "false");
+        else this.removeAttribute("scroll");
+    }
+
+    /** Distance (px) from the scroll-container edge that engages auto-scroll. Default 30. */
+    get scrollSensitivity() {
+        const n = parseInt(this.getAttribute("scroll-sensitivity") ?? "30", 10);
+        return Number.isFinite(n) && n > 0 ? n : 30;
+    }
+    set scrollSensitivity(val) {
+        this.setAttribute("scroll-sensitivity", String(val));
+    }
+
+    /** Per-frame scroll delta (px). Default 10. Clamped internally to 30. */
+    get scrollSpeed() {
+        const n = parseInt(this.getAttribute("scroll-speed") ?? "10", 10);
+        return Number.isFinite(n) && n > 0 ? n : 10;
+    }
+    set scrollSpeed(val) {
+        this.setAttribute("scroll-speed", String(val));
     }
 
     /**
@@ -433,8 +547,25 @@ export class YumeDroplist extends HTMLElement {
         ghost.setAttribute("data-y-droplist-ghost", "");
         ghost.setAttribute("aria-hidden", "true");
         ghost.classList.add(this.ghostClass);
-        if (this.vertical) ghost.style.height = `${rect.height}px`;
-        else ghost.style.width = `${rect.width}px`;
+        if (this.forceFloat) {
+            // Ghost lives in document.body — inline styles are needed since the
+            // shadow-root ::slotted() rule won't reach it. CSS custom properties
+            // still resolve if they are defined on :root.
+            ghost.style.cssText = [
+                "position:fixed",
+                "pointer-events:none",
+                "z-index:9999",
+                `width:${rect.width}px`,
+                `height:${rect.height}px`,
+                "box-sizing:border-box",
+                "background:var(--component-droplist-ghost-background,rgba(0,0,0,0.05))",
+                "border:1px dashed var(--component-droplist-ghost-border-color,currentColor)",
+                "opacity:var(--component-droplist-ghost-opacity,0.5)",
+            ].join(";");
+        } else {
+            if (this.vertical) ghost.style.height = `${rect.height}px`;
+            else ghost.style.width = `${rect.width}px`;
+        }
         return ghost;
     }
 
@@ -614,12 +745,56 @@ export class YumeDroplist extends HTMLElement {
         if (!source) return;
         const item = source._dragItem;
         if (!item) return;
+
+        _stopScroll();
+        source._scrollContainer = null;
+
         item.classList.remove(source.dragClass);
         item.setAttribute("aria-grabbed", "false");
+
+        // If the ghost still exists, the drag was cancelled (no valid drop).
+        const isCancelled = _ghostList !== null;
+
         if (_ghostList) {
+            if (isCancelled && source.revert) {
+                // Animate displaced items back to their pre-ghost positions (FLIP).
+                const ghostListRef = _ghostList;
+                const snapshot = ghostListRef._snapshot();
+                ghostListRef._removeGhost();
+                _ghostList = null;
+                source._clearSwapTarget();
+                source._dragItem = null;
+                source._oldIndex = -1;
+                _activeSource = null;
+                ghostListRef._flip(snapshot);
+                const delay =
+                    ghostListRef.animation === 0 ||
+                    ghostListRef._prefersReducedMotion()
+                        ? 0
+                        : ghostListRef.animation;
+                if (delay > 0) {
+                    setTimeout(
+                        () =>
+                            source._emit("drag:end", {
+                                originalEvent: e,
+                                item,
+                                list: source,
+                            }),
+                        delay,
+                    );
+                } else {
+                    source._emit("drag:end", {
+                        originalEvent: e,
+                        item,
+                        list: source,
+                    });
+                }
+                return;
+            }
             _ghostList._removeGhost();
             _ghostList = null;
         }
+
         source._clearSwapTarget();
         source._dragItem = null;
         source._oldIndex = -1;
@@ -661,6 +836,14 @@ export class YumeDroplist extends HTMLElement {
 
         const isCrossList = source !== this;
         if (isCrossList && !this._canAcceptFrom(source)) return;
+
+        // Auto-scroll runs in all modes (swap and insert) as long as source has it enabled.
+        if (source.scroll) {
+            if (!source._scrollContainer) {
+                source._scrollContainer = _findScrollContainer(this);
+            }
+            this._updateScroll(e, source);
+        }
 
         const isClone = source.clone || source.pull === "clone";
 
@@ -736,8 +919,12 @@ export class YumeDroplist extends HTMLElement {
 
         const insertee = isClone ? item.cloneNode(true) : item;
         const snapshot = this._snapshot();
-        this.insertBefore(insertee, ghost);
+        // When force-float, the ghost lives in document.body, so it cannot be
+        // used as an insertBefore marker. Use the tracked _lastGhostRef instead.
+        const insertionRef = this.forceFloat ? this._lastGhostRef : ghost;
+        this.insertBefore(insertee, insertionRef || null);
         this._removeGhost();
+        this._lastGhostRef = null;
         _ghostList = null;
 
         const newIndex = this._index(insertee);
@@ -865,11 +1052,52 @@ export class YumeDroplist extends HTMLElement {
 
     _placeGhost(reference) {
         if (!this._ghost) this._ghost = this._createGhost(this._dragItem);
-        if (
-            this._ghost.parentNode !== this ||
-            this._ghost.nextSibling !== reference
-        ) {
-            this.insertBefore(this._ghost, reference || null);
+        if (this.forceFloat) {
+            // Track the last insertion reference for use in _onDrop, since the
+            // ghost lives in body and can't serve as a DOM insertBefore marker.
+            this._lastGhostRef = reference;
+            this._positionFloatGhost(reference);
+            if (!this._ghost.parentNode) {
+                document.body.appendChild(this._ghost);
+            }
+        } else {
+            if (
+                this._ghost.parentNode !== this ||
+                this._ghost.nextSibling !== reference
+            ) {
+                this.insertBefore(this._ghost, reference || null);
+            }
+        }
+    }
+
+    /**
+     * Update the `top`/`left` of a force-float ghost to match the current
+     * projected insertion point in viewport coordinates.
+     */
+    _positionFloatGhost(reference) {
+        const ghost = this._ghost;
+        if (!ghost) return;
+        if (reference) {
+            const r = reference.getBoundingClientRect();
+            ghost.style.top = `${r.top}px`;
+            ghost.style.left = `${r.left}px`;
+        } else {
+            const items = this._items();
+            if (items.length > 0) {
+                const last = items[items.length - 1];
+                const r = last.getBoundingClientRect();
+                if (this.vertical) {
+                    ghost.style.top = `${r.bottom}px`;
+                    ghost.style.left = `${r.left}px`;
+                } else {
+                    ghost.style.top = `${r.top}px`;
+                    ghost.style.left = `${r.right}px`;
+                }
+            } else {
+                const r = this.getBoundingClientRect();
+                ghost.style.top = `${r.top}px`;
+                ghost.style.left = `${r.left}px`;
+            }
         }
     }
 
@@ -899,6 +1127,7 @@ export class YumeDroplist extends HTMLElement {
     _removeGhost() {
         if (this._ghost && this._ghost.parentNode) this._ghost.remove();
         this._ghost = null;
+        this._lastGhostRef = null;
     }
 
     _snapshot() {
@@ -934,6 +1163,11 @@ export class YumeDroplist extends HTMLElement {
     _teardown() {
         _unregisterFromGroup(this);
 
+        if (_activeSource === this) {
+            _stopScroll();
+        }
+        this._scrollContainer = null;
+
         if (_activeSource === this) _activeSource = null;
         if (_ghostList === this) _ghostList = null;
 
@@ -951,6 +1185,52 @@ export class YumeDroplist extends HTMLElement {
         }
 
         this._oldIndex = -1;
+    }
+
+    /**
+     * Compute and apply auto-scroll state based on the current cursor position
+     * relative to the cached scroll container.
+     *
+     * @param {DragEvent} e
+     * @param {YumeDroplist} source  The source list (owns sensitivity/speed attrs).
+     */
+    _updateScroll(e, source) {
+        const container = source._scrollContainer;
+        if (!container) return;
+
+        const sensitivity = source.scrollSensitivity;
+        const rawSpeed = source.scrollSpeed;
+        const speed = this._prefersReducedMotion()
+            ? Math.ceil(rawSpeed / 2)
+            : rawSpeed;
+        const clampedSpeed = Math.min(speed, 30);
+
+        let dx = 0;
+        let dy = 0;
+
+        if (container === window) {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            if (e.clientX < sensitivity) dx = -clampedSpeed;
+            else if (e.clientX > vw - sensitivity) dx = clampedSpeed;
+            if (e.clientY < sensitivity) dy = -clampedSpeed;
+            else if (e.clientY > vh - sensitivity) dy = clampedSpeed;
+        } else {
+            const r = container.getBoundingClientRect();
+            if (e.clientX - r.left < sensitivity) dx = -clampedSpeed;
+            else if (r.right - e.clientX < sensitivity) dx = clampedSpeed;
+            if (e.clientY - r.top < sensitivity) dy = -clampedSpeed;
+            else if (r.bottom - e.clientY < sensitivity) dy = clampedSpeed;
+        }
+
+        _scrollDx = dx;
+        _scrollDy = dy;
+        _scrollTarget = dx !== 0 || dy !== 0 ? container : null;
+
+        // When near the edge, ensure the RAF loop is running.
+        // When not near the edge, set _scrollTarget = null so _scrollTick
+        // winds down naturally on its next invocation.
+        if (_scrollTarget) _startScroll();
     }
 
     _wireEvents() {
