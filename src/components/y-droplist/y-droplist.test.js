@@ -1262,4 +1262,478 @@ describe("YumeDroplist", () => {
             new DragEvent("dragend", { bubbles: true, composed: true }),
         );
     });
+
+    // ── Handle (drag initiator) ────────────────────────────────
+
+    it("handle: items get tabindex=-1 and the matching child gets tabindex=0", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                    <span>Alpha</span>
+                </div>
+            </y-droplist>
+        `);
+        const item = el.firstElementChild;
+        const grip = item.querySelector(".grip");
+        expect(item.getAttribute("tabindex")).to.equal("-1");
+        expect(grip.getAttribute("tabindex")).to.equal("0");
+    });
+
+    it("handle: pointerdown outside the handle disables draggable on the item", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                    <span class="body">Alpha</span>
+                </div>
+            </y-droplist>
+        `);
+        const item = el.firstElementChild;
+        const body = item.querySelector(".body");
+        body.dispatchEvent(
+            new PointerEvent("pointerdown", { bubbles: true, composed: true }),
+        );
+        expect(item.getAttribute("draggable")).to.equal("false");
+    });
+
+    it("handle: pointerdown on the handle leaves draggable enabled", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                    <span class="body">Alpha</span>
+                </div>
+            </y-droplist>
+        `);
+        const item = el.firstElementChild;
+        const grip = item.querySelector(".grip");
+        grip.dispatchEvent(
+            new PointerEvent("pointerdown", { bubbles: true, composed: true }),
+        );
+        expect(item.getAttribute("draggable")).to.equal("true");
+    });
+
+    it("handle: pointerup restores draggable=true", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                    <span class="body">Alpha</span>
+                </div>
+            </y-droplist>
+        `);
+        const item = el.firstElementChild;
+        const body = item.querySelector(".body");
+        body.dispatchEvent(
+            new PointerEvent("pointerdown", { bubbles: true, composed: true }),
+        );
+        expect(item.getAttribute("draggable")).to.equal("false");
+        window.dispatchEvent(new PointerEvent("pointerup"));
+        expect(item.getAttribute("draggable")).to.equal("true");
+    });
+
+    it("handle: prevent-on-filter=false skips preventDefault on non-handle pointerdown", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip" prevent-on-filter="false">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                    <span class="body">Alpha</span>
+                </div>
+            </y-droplist>
+        `);
+        const item = el.firstElementChild;
+        const body = item.querySelector(".body");
+        const evt = new PointerEvent("pointerdown", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        body.dispatchEvent(evt);
+        expect(evt.defaultPrevented).to.be.false;
+        expect(item.getAttribute("draggable")).to.equal("false");
+    });
+
+    it("handle: prevent-on-filter (default true) prevents the pointerdown default", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                    <span class="body">Alpha</span>
+                </div>
+            </y-droplist>
+        `);
+        const body = el.firstElementChild.querySelector(".body");
+        const evt = new PointerEvent("pointerdown", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        body.dispatchEvent(evt);
+        expect(evt.defaultPrevented).to.be.true;
+    });
+
+    it("handle: invalid selector warns and falls back to whole-item drag", async () => {
+        const warn = sandbox.stub(console, "warn");
+        const el = await fixture(html`
+            <y-droplist handle=":::not-a-selector">
+                <div data-id="a">
+                    <span class="grip">⋮</span>
+                </div>
+            </y-droplist>
+        `);
+        expect(warn).to.have.been.calledOnce;
+        expect(el.handle).to.equal("");
+        expect(el.firstElementChild.getAttribute("tabindex")).to.equal("0");
+    });
+
+    it("handle: keyboard reorder works when focus is on the handle", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip" animation="0">
+                <div data-id="a"><span class="grip">⋮</span></div>
+                <div data-id="b"><span class="grip">⋮</span></div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const aGrip = a.querySelector(".grip");
+        aGrip.focus();
+        aGrip.dispatchEvent(
+            new KeyboardEvent("keydown", {
+                key: "ArrowDown",
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(el.toArray()).to.deep.equal(["b", "a"]);
+        // Focus stays on the handle the user was holding.
+        expect(document.activeElement).to.equal(aGrip);
+    });
+
+    it("handle: clearing the attribute restores tabindex=0 on items", async () => {
+        const el = await fixture(html`
+            <y-droplist handle=".grip">
+                <div data-id="a"><span class="grip">⋮</span></div>
+            </y-droplist>
+        `);
+        const item = el.firstElementChild;
+        const grip = item.querySelector(".grip");
+        expect(item.getAttribute("tabindex")).to.equal("-1");
+        expect(grip.getAttribute("tabindex")).to.equal("0");
+
+        el.removeAttribute("handle");
+        expect(item.getAttribute("tabindex")).to.equal("0");
+        expect(grip.hasAttribute("tabindex")).to.be.false;
+    });
+
+    // ── Swap mode ──────────────────────────────────────────────
+
+    it("swap: dragover marks the cursor target with the swap class and does not place a ghost", async () => {
+        const el = await fixture(html`
+            <y-droplist swap animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+                <div data-id="c">C</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const c = el.children[2];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        const cRect = c.getBoundingClientRect();
+        c.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: cRect.left + cRect.width / 2,
+                clientY: cRect.top + cRect.height / 2,
+            }),
+        );
+
+        expect(c.classList.contains("y-droplist__swap-target")).to.be.true;
+        expect(el.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("swap: drop swaps the source item with the marked target", async () => {
+        const el = await fixture(html`
+            <y-droplist swap animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+                <div data-id="c">C</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const c = el.children[2];
+
+        const reorderSpy = sandbox.spy();
+        const updateSpy = sandbox.spy();
+        el.addEventListener("reorder", reorderSpy);
+        el.addEventListener("update", updateSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const cRect = c.getBoundingClientRect();
+        c.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: cRect.left + cRect.width / 2,
+                clientY: cRect.top + cRect.height / 2,
+            }),
+        );
+        c.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(el.toArray()).to.deep.equal(["c", "b", "a"]);
+        expect(reorderSpy).to.have.been.calledOnce;
+        expect(updateSpy).to.have.been.calledOnce;
+        expect(reorderSpy.firstCall.args[0].detail.oldIndex).to.equal(0);
+        expect(reorderSpy.firstCall.args[0].detail.newIndex).to.equal(2);
+        expect(c.classList.contains("y-droplist__swap-target")).to.be.false;
+    });
+
+    it("swap: clone overrides swap (clone wins per spec)", async () => {
+        const el = await fixture(html`
+            <y-droplist swap clone animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const b = el.children[1];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const bRect = b.getBoundingClientRect();
+        b.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: bRect.left + bRect.width / 2,
+                clientY: bRect.top + bRect.height / 2,
+            }),
+        );
+        // Clone path uses the ghost, no swap class.
+        expect(b.classList.contains("y-droplist__swap-target")).to.be.false;
+        expect(el.querySelector("[data-y-droplist-ghost]")).to.exist;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("swap: cross-list drop falls through to insert (swap is same-list only)", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="g" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="g" swap animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        // Insert mode is in effect: ghost present, no swap mark.
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.exist;
+
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(dest.hasItem(a)).to.be.true;
+    });
+
+    // ── Clone mode ─────────────────────────────────────────────
+
+    it("clone: same-list drop inserts a copy and leaves the original in place", async () => {
+        const el = await fixture(html`
+            <y-droplist clone animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+                <div data-id="c">C</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const c = el.children[2];
+
+        const reorderSpy = sandbox.spy();
+        const updateSpy = sandbox.spy();
+        el.addEventListener("reorder", reorderSpy);
+        el.addEventListener("update", updateSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const cRect = c.getBoundingClientRect();
+        c.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: cRect.right + 5,
+                clientY: cRect.top + cRect.height / 2,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Original "a" is still at index 0; clone is appended.
+        expect(el.children[0]).to.equal(a);
+        expect(el.toArray()).to.deep.equal(["a", "b", "c", "a"]);
+        // Source update is skipped on same-list clone — exactly one update fires.
+        expect(updateSpy).to.have.been.calledOnce;
+        expect(reorderSpy.firstCall.args[0].detail.oldIndex).to.equal(-1);
+        expect(reorderSpy.firstCall.args[0].detail.newIndex).to.equal(3);
+    });
+
+    it("clone: same-list announcement says 'copied'", async () => {
+        const el = await fixture(html`
+            <y-droplist clone animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const b = el.children[1];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const bRect = b.getBoundingClientRect();
+        b.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: bRect.right + 5,
+                clientY: bRect.top + bRect.height / 2,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        await flushFrame();
+        const live = el.shadowRoot.querySelector(".sr-live");
+        expect(live.textContent).to.contain("copied");
+    });
+
+    it("clone: cross-list announcement says 'copied to list <label>'", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="g" clone animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist
+                    id="dest"
+                    group="g"
+                    aria-label="Inbox"
+                    animation="0"
+                >
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Original stays in source; clone lands in dest.
+        expect(src.hasItem(a)).to.be.true;
+        expect(dest.querySelector('[data-id="a"]')).to.exist;
+
+        await flushFrame();
+        const live = dest.shadowRoot.querySelector(".sr-live");
+        expect(live.textContent).to.contain("copied");
+        expect(live.textContent).to.contain("Inbox");
+    });
+
+    it("clone attribute composes with cross-list groups (no group required for in-list)", async () => {
+        const el = await fixture(html`
+            <y-droplist clone animation="0">
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        // Sanity: clone attribute exposed as boolean property.
+        expect(el.clone).to.be.true;
+        el.clone = false;
+        expect(el.hasAttribute("clone")).to.be.false;
+    });
 });

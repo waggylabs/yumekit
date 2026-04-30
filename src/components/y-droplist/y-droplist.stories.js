@@ -83,7 +83,7 @@ export const ReadCurrentOrder = {
                 <y-card data-id="task-2" raised>Task 2</y-card>
                 <y-card data-id="task-3" raised>Task 3</y-card>
             </y-droplist>
-            <pre id="readme-out" style="margin:0;padding:8px;background:#f5f5f5;border-radius:4px;font-size:0.85em"></pre>
+            <pre id="readme-out" style="margin:0;padding:8px;background:var(--base-background-component);border-radius:4px;font-size:0.85em"></pre>
         </div>
         <script type="module">
             const list = document.getElementById("readme-list");
@@ -147,7 +147,7 @@ export const Kanban = {
                 </y-droplist>
             </div>
         </div>
-        <pre id="kanban-log" style="margin-top:16px;padding:8px;background:#f5f5f5;border-radius:4px;font-size:0.8em;min-height:2.5em"></pre>
+        <pre id="kanban-log" style="margin-top:16px;padding:8px;background:var(--base-background-component);border-radius:4px;font-size:0.8em;min-height:2.5em"></pre>
         <script type="module">
             const log = document.getElementById("kanban-log");
             document.querySelectorAll("[group='kanban']").forEach((list) => {
@@ -194,6 +194,113 @@ export const KanbanDropDisabled = {
             <div class="kanban-column">
                 <h3>In Progress</h3>
                 <y-droplist id="doing" group="kanban" aria-label="In Progress" style="display:block;${noItemPadding}">
+                </y-droplist>
+            </div>
+        </div>
+    `,
+};
+
+export const DragHandle = {
+    render: () => `
+        <style>
+            .handle-row {
+                display: flex; align-items: center; gap: 8px;
+                padding: 8px 12px; background: var(--base-background-component);
+                border: 1px solid var(--base-border); border-radius: 4px;
+            }
+            .handle-row .grip {
+                cursor: grab;
+                color: #888;
+                font-size: 1.1em;
+                user-select: none;
+                padding: 2px 4px;
+            }
+            .handle-row .grip:active { cursor: grabbing; }
+            .handle-row .grip:focus { outline: 2px solid #4c8bf5; outline-offset: 2px; border-radius: 2px; }
+            .handle-row .body { flex: 1; }
+        </style>
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Drag is gated to the <strong>⋮⋮</strong> handle. Clicking elsewhere on the row does not start a drag.
+        </p>
+        <y-droplist handle=".grip" style="display:block;${listWidth};${noItemPadding}">
+            <div data-id="alpha" class="handle-row">
+                <span class="grip" aria-label="Reorder Alpha">⋮⋮</span>
+                <span class="body">Alpha</span>
+            </div>
+            <div data-id="bravo" class="handle-row">
+                <span class="grip" aria-label="Reorder Bravo">⋮⋮</span>
+                <span class="body">Bravo</span>
+            </div>
+            <div data-id="charlie" class="handle-row">
+                <span class="grip" aria-label="Reorder Charlie">⋮⋮</span>
+                <span class="body">Charlie</span>
+            </div>
+        </y-droplist>
+    `,
+};
+
+export const Swap = {
+    render: () => `
+        <style>
+            .swap-tile {
+                padding: 24px; text-align: center;
+                background: var(--base-background-component); border: 1px solid var(--base-border); border-radius: 4px;
+                font-weight: 600;
+            }
+            .y-droplist__swap-target {
+                outline: 2px dashed #4c8bf5;
+                outline-offset: -2px;
+            }
+        </style>
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Drop one tile onto another — they swap positions instead of inserting between.
+        </p>
+        <y-droplist swap style="display:block;${listWidth};${noItemPadding}">
+            <div data-id="one" class="swap-tile">One</div>
+            <div data-id="two" class="swap-tile">Two</div>
+            <div data-id="three" class="swap-tile">Three</div>
+            <div data-id="four" class="swap-tile">Four</div>
+        </y-droplist>
+    `,
+};
+
+export const CloneToBucket = {
+    render: () => `
+        <style>
+            .clone-board { display: flex; gap: 24px; align-items: flex-start; }
+            .clone-board > div { display: flex; flex-direction: column; gap: 8px; width: 240px; }
+            .clone-board h3 {
+                margin: 0 0 4px; font-size: 0.85rem;
+                text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.65;
+            }
+        </style>
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Drag a template into the bucket — the original stays in the palette (<code>clone</code>).
+        </p>
+        <div class="clone-board">
+            <div>
+                <h3>Templates</h3>
+                <y-droplist
+                    id="palette"
+                    group="bucket"
+                    clone
+                    put="false"
+                    aria-label="Templates"
+                    style="display:block;${noItemPadding}"
+                >
+                    <y-card data-id="bug" raised>Bug report</y-card>
+                    <y-card data-id="feat" raised>Feature</y-card>
+                    <y-card data-id="chore" raised>Chore</y-card>
+                </y-droplist>
+            </div>
+            <div>
+                <h3>Bucket</h3>
+                <y-droplist
+                    id="bucket"
+                    group="bucket"
+                    aria-label="Bucket"
+                    style="display:block;min-height:64px;${noItemPadding}"
+                >
                 </y-droplist>
             </div>
         </div>

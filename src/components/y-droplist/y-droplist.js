@@ -2,6 +2,7 @@ import { createElement as _el } from "../../modules/helpers.js";
 
 const DEFAULT_GHOST_CLASS = "y-droplist__ghost";
 const DEFAULT_DRAG_CLASS = "y-droplist__dragging";
+const DEFAULT_SWAP_CLASS = "y-droplist__swap-target";
 
 /** Cross-list drag group registry: group name → Set<YumeDroplist>. */
 const _groups = new Map();
@@ -37,6 +38,7 @@ export class YumeDroplist extends HTMLElement {
             "animation",
             "ghost-class",
             "drag-class",
+            "handle",
         ];
     }
 
@@ -52,6 +54,8 @@ export class YumeDroplist extends HTMLElement {
         this._oldIndex = -1;
         this._abort = null;
         this._observer = null;
+        this._handleSelectorInvalid = false;
+        this._swapTarget = null;
         this.render();
     }
 
@@ -81,6 +85,19 @@ export class YumeDroplist extends HTMLElement {
                 if (members && members.size === 0) _groups.delete(oldValue);
             }
             _registerInGroup(this);
+        } else if (name === "handle") {
+            this._handleSelectorInvalid = false;
+            if (newValue) {
+                try {
+                    document.createElement("div").matches(newValue);
+                } catch {
+                    console.warn(
+                        `y-droplist: invalid handle selector "${newValue}" — falling back to whole-item drag.`,
+                    );
+                    this._handleSelectorInvalid = true;
+                }
+            }
+            if (this._abort) this._initializeChildren();
         }
     }
 
@@ -95,6 +112,15 @@ export class YumeDroplist extends HTMLElement {
     }
     set animation(val) {
         this.setAttribute("animation", String(val));
+    }
+
+    /** When true, drops insert a copy at the drop position; the original stays at its source index. */
+    get clone() {
+        return this.hasAttribute("clone");
+    }
+    set clone(val) {
+        if (val) this.setAttribute("clone", "");
+        else this.removeAttribute("clone");
     }
 
     /** Whether drag-and-drop is disabled. */
@@ -131,6 +157,47 @@ export class YumeDroplist extends HTMLElement {
     }
 
     /**
+     * CSS selector for the drag handle within each item. When set, drags only
+     * initiate from elements matching this selector. Empty (default) keeps the
+     * whole item draggable. Invalid selectors warn and fall back to whole-item.
+     */
+    get handle() {
+        if (this._handleSelectorInvalid) return "";
+        return this.getAttribute("handle") || "";
+    }
+    set handle(val) {
+        if (val) this.setAttribute("handle", val);
+        else this.removeAttribute("handle");
+    }
+
+    /**
+     * In swap mode, controls which item is the active swap target.
+     * `true` (default): item the cursor is currently over.
+     * `false`: item whose midpoint the cursor has crossed.
+     */
+    get invertSwapElement() {
+        return this.getAttribute("invert-swap-element") !== "false";
+    }
+    set invertSwapElement(val) {
+        if (val === false || val === "false")
+            this.setAttribute("invert-swap-element", "false");
+        else this.setAttribute("invert-swap-element", "");
+    }
+
+    /**
+     * When `handle` is set, calls `preventDefault()` on `pointerdown` events that
+     * don't match the handle selector to suppress text selection. Default true.
+     */
+    get preventOnFilter() {
+        return this.getAttribute("prevent-on-filter") !== "false";
+    }
+    set preventOnFilter(val) {
+        if (val === false || val === "false")
+            this.setAttribute("prevent-on-filter", "false");
+        else this.setAttribute("prevent-on-filter", "");
+    }
+
+    /**
      * Whether this list allows items to be dragged out.
      * `"true"` (default) moves the item; `"clone"` leaves a copy; `"false"` blocks pulling.
      */
@@ -163,6 +230,26 @@ export class YumeDroplist extends HTMLElement {
         if (s === "false") this.setAttribute("put", "false");
         else if (s === "true" || s === "") this.setAttribute("put", "true");
         else this.setAttribute("put", s);
+    }
+
+    /**
+     * When true, dropping over an item swaps the two items in place rather than
+     * inserting between items. Same-list only.
+     */
+    get swap() {
+        return this.hasAttribute("swap");
+    }
+    set swap(val) {
+        if (val) this.setAttribute("swap", "");
+        else this.removeAttribute("swap");
+    }
+
+    /** CSS class applied to the active swap target while dragging in swap mode. */
+    get swapClass() {
+        return this.getAttribute("swap-class") || DEFAULT_SWAP_CLASS;
+    }
+    set swapClass(val) {
+        this.setAttribute("swap-class", val);
     }
 
     /** Whether items reorder along the vertical axis. Default true; set "false" to flip. */
@@ -227,6 +314,41 @@ export class YumeDroplist extends HTMLElement {
         });
     }
 
+    _applyHandleA11y(item, handle) {
+        // Strip any tabindex we previously placed on a descendant (the prior handle).
+        for (const el of item.querySelectorAll(
+            "[data-y-droplist-handle-tab]",
+        )) {
+            el.removeAttribute("tabindex");
+            el.removeAttribute("data-y-droplist-handle-tab");
+        }
+
+        if (!handle) {
+            // If we previously forced tabindex=-1 on the item, restore it to 0.
+            if (item.getAttribute("data-y-droplist-handle-tab") === "item") {
+                item.setAttribute("tabindex", "0");
+                item.removeAttribute("data-y-droplist-handle-tab");
+            } else if (!item.hasAttribute("tabindex")) {
+                item.setAttribute("tabindex", "0");
+            }
+            return;
+        }
+
+        item.setAttribute("tabindex", "-1");
+        item.setAttribute("data-y-droplist-handle-tab", "item");
+        let handleEl = null;
+        try {
+            handleEl = item.querySelector(handle);
+        } catch {
+            // Selector validity is checked on attribute change; this catch is
+            // belt-and-suspenders for the in-loop call.
+        }
+        if (handleEl && !handleEl.hasAttribute("tabindex")) {
+            handleEl.setAttribute("tabindex", "0");
+            handleEl.setAttribute("data-y-droplist-handle-tab", "");
+        }
+    }
+
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -261,6 +383,10 @@ export class YumeDroplist extends HTMLElement {
                 pointer-events: none;
             }
 
+            ::slotted(.${DEFAULT_SWAP_CLASS}) {
+                background: var(--component-droplist-swap-indicator-background);
+            }
+
             .sr-live {
                 position: absolute;
                 width: 1px;
@@ -289,6 +415,14 @@ export class YumeDroplist extends HTMLElement {
         }
         return true;
     }
+
+    _clearSwapTarget() {
+        if (this._swapTarget) {
+            this._swapTarget.classList.remove(this.swapClass);
+            this._swapTarget = null;
+        }
+    }
+
     _createGhost(refItem) {
         const rect = refItem.getBoundingClientRect();
         const ghost = document.createElement("div");
@@ -302,6 +436,23 @@ export class YumeDroplist extends HTMLElement {
         if (this.vertical) ghost.style.height = `${rect.height}px`;
         else ghost.style.width = `${rect.width}px`;
         return ghost;
+    }
+
+    _dropSwap(source) {
+        const target = this._swapTarget;
+        const item = source._dragItem;
+        if (!target || !item || item === target) {
+            this._clearSwapTarget();
+            return;
+        }
+        const oldIndex = this._index(item);
+        this._swapItems(item, target);
+        this._clearSwapTarget();
+        const newIndex = this._index(item);
+        if (newIndex === oldIndex) return;
+        this._emit("reorder", { oldIndex, newIndex, item, list: this });
+        this._emit("update", { item, oldIndex, newIndex, list: this });
+        this._announce(`Item swapped with position ${newIndex + 1}.`);
     }
 
     _emit(name, detail) {
@@ -337,6 +488,34 @@ export class YumeDroplist extends HTMLElement {
         return null;
     }
 
+    _findSwapTarget(e) {
+        const items = this._items().filter((i) => i !== this._dragItem);
+        if (items.length === 0) return null;
+
+        const coord = this.vertical ? e.clientY : e.clientX;
+        if (this.invertSwapElement) {
+            // Item under cursor.
+            for (const item of items) {
+                const r = item.getBoundingClientRect();
+                const start = this.vertical ? r.top : r.left;
+                const end = this.vertical ? r.bottom : r.right;
+                if (coord >= start && coord <= end) return item;
+            }
+            return null;
+        }
+
+        // Item whose midpoint the cursor has crossed.
+        let target = null;
+        for (const item of items) {
+            const r = item.getBoundingClientRect();
+            const mid = this.vertical
+                ? r.top + r.height / 2
+                : r.left + r.width / 2;
+            if (coord >= mid) target = item;
+        }
+        return target;
+    }
+
     _flip(snapshot) {
         if (this.animation === 0 || this._prefersReducedMotion()) return;
 
@@ -369,11 +548,11 @@ export class YumeDroplist extends HTMLElement {
     }
 
     _initializeChildren() {
+        const handle = this.handle;
         for (const child of Array.from(this.children)) {
             if (this._isInternal(child)) continue;
             child.setAttribute("role", "listitem");
-            if (!child.hasAttribute("tabindex"))
-                child.setAttribute("tabindex", "0");
+            this._applyHandleA11y(child, handle);
             // Don't overwrite the active drag item's aria-grabbed="true" —
             // ghost insertion and other mid-drag mutations re-trigger this method.
             if (child !== this._dragItem) {
@@ -397,7 +576,15 @@ export class YumeDroplist extends HTMLElement {
         return Array.from(this.children).filter((c) => !this._isInternal(c));
     }
 
-    _moveByKeyboard(item, direction) {
+    _markSwapTarget(target) {
+        if (this._swapTarget === target) return;
+        const cls = this.swapClass;
+        if (this._swapTarget) this._swapTarget.classList.remove(cls);
+        if (target) target.classList.add(cls);
+        this._swapTarget = target;
+    }
+
+    _moveByKeyboard(item, direction, focusEl) {
         if (this.disabled) return;
         const items = this._items();
         const oldIndex = items.indexOf(item);
@@ -409,7 +596,7 @@ export class YumeDroplist extends HTMLElement {
             direction > 0 ? items[newIndex].nextSibling : items[newIndex];
         this.insertBefore(item, reference);
         this._flip(snapshot);
-        item.focus();
+        (focusEl || item).focus();
         this._emit("reorder", { oldIndex, newIndex, item, list: this });
         this._emit("update", { item, oldIndex, newIndex, list: this });
         this._announce(
@@ -433,6 +620,7 @@ export class YumeDroplist extends HTMLElement {
             _ghostList._removeGhost();
             _ghostList = null;
         }
+        source._clearSwapTarget();
         source._dragItem = null;
         source._oldIndex = -1;
         _activeSource = null;
@@ -470,10 +658,23 @@ export class YumeDroplist extends HTMLElement {
     _onDragOver(e) {
         const source = _activeSource;
         if (!source) return;
-        if (source !== this) {
-            // Cross-list: check pull/put/group compatibility before accepting the drop.
-            if (!this._canAcceptFrom(source)) return;
+
+        const isCrossList = source !== this;
+        if (isCrossList && !this._canAcceptFrom(source)) return;
+
+        const isClone = source.clone || source.pull === "clone";
+
+        // Swap mode is same-list only and disabled when cloning.
+        if (this.swap && !isCrossList && !isClone) {
+            const target = this._findSwapTarget(e);
+            this._markSwapTarget(target);
+            if (target) e.preventDefault();
+            return;
         }
+
+        // Falling through to insert mode — clear any stale swap indicator.
+        if (this._swapTarget) this._clearSwapTarget();
+
         // Move the ghost to this list if it currently lives elsewhere.
         if (_ghostList && _ghostList !== this) {
             _ghostList._removeGhost();
@@ -481,7 +682,7 @@ export class YumeDroplist extends HTMLElement {
         // Always accept the event — this allows dropping over the ghost,
         // flex gaps, and the drag item itself without the OS showing "no-drop".
         e.preventDefault();
-        if (source !== this && !this._ghost) {
+        if (isCrossList && !this._ghost) {
             this._ghost = this._createGhost(source._dragItem);
         }
         _ghostList = this;
@@ -517,21 +718,52 @@ export class YumeDroplist extends HTMLElement {
         const source = _activeSource;
         if (!source) return;
         e.preventDefault();
-        if (source === this) {
-            // Within-list drop.
-            const item = source._dragItem;
-            const oldIndex = source._oldIndex;
-            const ghost = this._ghost;
-            if (!ghost) return;
 
-            const snapshot = this._snapshot();
-            this.insertBefore(item, ghost);
-            this._removeGhost();
-            _ghostList = null;
+        const isCrossList = source !== this;
+        if (isCrossList && !this._canAcceptFrom(source)) return;
 
-            const newIndex = this._index(item);
-            this._flip(snapshot);
+        const isClone = source.clone || source.pull === "clone";
 
+        // Swap mode: same-list, non-clone.
+        if (this.swap && !isCrossList && !isClone && this._swapTarget) {
+            return this._dropSwap(source);
+        }
+
+        const item = source._dragItem;
+        const oldIndex = source._oldIndex;
+        const ghost = this._ghost;
+        if (!ghost) return;
+
+        const insertee = isClone ? item.cloneNode(true) : item;
+        const snapshot = this._snapshot();
+        this.insertBefore(insertee, ghost);
+        this._removeGhost();
+        _ghostList = null;
+
+        const newIndex = this._index(insertee);
+        this._flip(snapshot);
+
+        if (isClone) this._initializeChildren();
+        const destLabel = this.getAttribute("aria-label") || "";
+
+        if (!isCrossList) {
+            // Same-list drop.
+            if (isClone) {
+                this._emit("reorder", {
+                    oldIndex: -1,
+                    newIndex,
+                    item: insertee,
+                    list: this,
+                });
+                this._emit("update", {
+                    item: insertee,
+                    oldIndex: -1,
+                    newIndex,
+                    list: this,
+                });
+                this._announce(`Item copied to position ${newIndex + 1}.`);
+                return;
+            }
             if (newIndex !== oldIndex) {
                 this._emit("reorder", { oldIndex, newIndex, item, list: this });
                 this._emit("update", { item, oldIndex, newIndex, list: this });
@@ -539,63 +771,48 @@ export class YumeDroplist extends HTMLElement {
                     `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
                 );
             }
-        } else {
-            // Cross-list drop.
-            if (!this._canAcceptFrom(source)) return;
-
-            const ghost = this._ghost;
-            if (!ghost) return;
-
-            const item = source._dragItem;
-            const oldIndex = source._oldIndex;
-            const isClone = source.pull === "clone";
-            const insertee = isClone ? item.cloneNode(true) : item;
-
-            const snapshot = this._snapshot();
-            this.insertBefore(insertee, ghost);
-            this._removeGhost();
-            _ghostList = null;
-
-            const newIndex = this._index(insertee);
-            this._flip(snapshot);
-
-            if (isClone) this._initializeChildren();
-
-            // Source-then-destination order per spec.
-            source._emit("update", {
-                item,
-                oldIndex,
-                newIndex: -1,
-                list: source,
-            });
-            this._emit("reorder", {
-                oldIndex: -1,
-                newIndex,
-                item: insertee,
-                list: this,
-                from: source,
-            });
-            this._emit("update", {
-                item: insertee,
-                oldIndex: -1,
-                newIndex,
-                list: this,
-                from: source,
-            });
-
-            const destLabel = this.getAttribute("aria-label") || "";
-            this._announce(
-                destLabel
-                    ? `Item moved to list ${destLabel} at position ${newIndex + 1}.`
-                    : `Item moved to another list at position ${newIndex + 1}.`,
-            );
+            return;
         }
+
+        // Cross-list drop. Source-then-destination order per spec.
+        source._emit("update", {
+            item,
+            oldIndex,
+            newIndex: -1,
+            list: source,
+        });
+        this._emit("reorder", {
+            oldIndex: -1,
+            newIndex,
+            item: insertee,
+            list: this,
+            from: source,
+        });
+        this._emit("update", {
+            item: insertee,
+            oldIndex: -1,
+            newIndex,
+            list: this,
+            from: source,
+        });
+
+        const verb = isClone ? "copied" : "moved";
+        this._announce(
+            destLabel
+                ? `Item ${verb} to list ${destLabel} at position ${newIndex + 1}.`
+                : `Item ${verb} to another list at position ${newIndex + 1}.`,
+        );
     }
 
     _onKeyDown(e) {
         const target = e.target;
-        if (!target || target.parentNode !== this || this._isInternal(target))
-            return;
+        if (!target) return;
+
+        // Walk up from the focused element to find the containing item — this
+        // lets keydown work when focus is on a handle nested inside the item.
+        let item = target;
+        while (item && item.parentNode !== this) item = item.parentNode;
+        if (!item || this._isInternal(item)) return;
 
         let direction = 0;
         if (this.vertical) {
@@ -609,7 +826,41 @@ export class YumeDroplist extends HTMLElement {
         if (direction === 0) return;
 
         e.preventDefault();
-        this._moveByKeyboard(target, direction);
+        this._moveByKeyboard(item, direction, target);
+    }
+
+    _onPointerDown(e) {
+        const handle = this.handle;
+        if (!handle || this.disabled) return;
+
+        const item = this._eventItem(e);
+        if (!item) return;
+
+        const path = e.composedPath ? e.composedPath() : [e.target];
+        const start = path[0];
+        let isHandle = false;
+        let cur = start;
+        while (cur && cur !== item) {
+            if (cur.matches?.(handle)) {
+                isHandle = true;
+                break;
+            }
+            cur = cur.parentNode;
+        }
+        if (isHandle) return;
+
+        item.setAttribute("draggable", "false");
+        if (this.preventOnFilter) e.preventDefault();
+
+        const restore = () => {
+            if (item.isConnected && !this.disabled) {
+                item.setAttribute("draggable", "true");
+            }
+        };
+        const signal = this._abort?.signal;
+        const opts = signal ? { once: true, signal } : { once: true };
+        window.addEventListener("pointerup", restore, opts);
+        window.addEventListener("pointercancel", restore, opts);
     }
 
     _placeGhost(reference) {
@@ -658,6 +909,23 @@ export class YumeDroplist extends HTMLElement {
         return map;
     }
 
+    _swapItems(a, b) {
+        if (a === b || !a.parentNode || a.parentNode !== b.parentNode) return;
+        if (a.nextSibling === b) {
+            this.insertBefore(b, a);
+            return;
+        }
+        if (b.nextSibling === a) {
+            this.insertBefore(a, b);
+            return;
+        }
+        const placeholder = document.createComment("");
+        this.insertBefore(placeholder, a);
+        this.insertBefore(a, b);
+        this.insertBefore(b, placeholder);
+        placeholder.remove();
+    }
+
     _syncDisabledAria() {
         if (this.disabled) this.setAttribute("aria-disabled", "true");
         else this.removeAttribute("aria-disabled");
@@ -674,6 +942,7 @@ export class YumeDroplist extends HTMLElement {
         this._observer?.disconnect();
         this._observer = null;
         this._removeGhost();
+        this._clearSwapTarget();
 
         if (this._dragItem) {
             this._dragItem.classList.remove(this.dragClass);
@@ -686,6 +955,9 @@ export class YumeDroplist extends HTMLElement {
 
     _wireEvents() {
         const signal = this._abort.signal;
+        this.addEventListener("pointerdown", (e) => this._onPointerDown(e), {
+            signal,
+        });
         this.addEventListener("dragstart", (e) => this._onDragStart(e), {
             signal,
         });
