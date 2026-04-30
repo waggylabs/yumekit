@@ -5,10 +5,7 @@ import "./y-droplist.js";
 const flushFrame = () => new Promise((r) => requestAnimationFrame(r));
 
 describe("YumeDroplist", () => {
-    let sandbox;
-    beforeEach(() => {
-        sandbox = sinon.createSandbox();
-    });
+    const sandbox = sinon.createSandbox();
     afterEach(() => sandbox.restore());
 
     // ── Initialization ────────────────────────────────────────

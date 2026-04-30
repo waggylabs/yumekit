@@ -237,14 +237,6 @@ export class YumeDroplist extends HTMLElement {
         this.setAttribute("drag-class", val);
     }
 
-    /** CSS class applied to the ghost placeholder. */
-    get ghostClass() {
-        return this.getAttribute("ghost-class") || DEFAULT_GHOST_CLASS;
-    }
-    set ghostClass(val) {
-        this.setAttribute("ghost-class", val);
-    }
-
     /**
      * When present, the ghost element is appended to `document.body` with
      * `position: fixed` so it floats above all stacking contexts and
@@ -256,6 +248,14 @@ export class YumeDroplist extends HTMLElement {
     set forceFloat(val) {
         if (val) this.setAttribute("force-float", "");
         else this.removeAttribute("force-float");
+    }
+
+    /** CSS class applied to the ghost placeholder. */
+    get ghostClass() {
+        return this.getAttribute("ghost-class") || DEFAULT_GHOST_CLASS;
+    }
+    set ghostClass(val) {
+        this.setAttribute("ghost-class", val);
     }
 
     /** Group name for drag-and-drop interactions. */
@@ -325,6 +325,24 @@ export class YumeDroplist extends HTMLElement {
     }
 
     /**
+     * Whether this list accepts incoming items.
+     * `"true"` (default) accepts any same-group item; `"false"` rejects all;
+     * or a comma-separated list of group names whose items are accepted.
+     */
+    get put() {
+        const val = this.getAttribute("put");
+        if (val === "false") return "false";
+        if (val && val !== "true") return val;
+        return "true";
+    }
+    set put(val) {
+        const s = String(val);
+        if (s === "false") this.setAttribute("put", "false");
+        else if (s === "true" || s === "") this.setAttribute("put", "true");
+        else this.setAttribute("put", s);
+    }
+
+    /**
      * When present, items dropped outside any valid target animate back to
      * their original index using FLIP. Default false (silent cancel).
      */
@@ -365,24 +383,6 @@ export class YumeDroplist extends HTMLElement {
     }
     set scrollSpeed(val) {
         this.setAttribute("scroll-speed", String(val));
-    }
-
-    /**
-     * Whether this list accepts incoming items.
-     * `"true"` (default) accepts any same-group item; `"false"` rejects all;
-     * or a comma-separated list of group names whose items are accepted.
-     */
-    get put() {
-        const val = this.getAttribute("put");
-        if (val === "false") return "false";
-        if (val && val !== "true") return val;
-        return "true";
-    }
-    set put(val) {
-        const s = String(val);
-        if (s === "false") this.setAttribute("put", "false");
-        else if (s === "true" || s === "") this.setAttribute("put", "true");
-        else this.setAttribute("put", s);
     }
 
     /**
@@ -641,6 +641,21 @@ export class YumeDroplist extends HTMLElement {
         return true;
     }
 
+    /** Cancel a pending delay without starting the drag. */
+    _cancelTouchPending() {
+        if (this._touchDelayTimer !== null) {
+            clearTimeout(this._touchDelayTimer);
+            this._touchDelayTimer = null;
+        }
+        if (this._touchItem) {
+            this._touchItem.style.touchAction = "";
+        }
+        this._touchItem = null;
+        this._touchPointerId = null;
+        this._touchPointerAbort?.abort();
+        this._touchPointerAbort = null;
+    }
+
     /**
      * Emit `drag:over` on `targetList` when the item under the pointer changes.
      * Tracking is stored on the source instance (`source._lastDragOverTarget`).
@@ -667,14 +682,15 @@ export class YumeDroplist extends HTMLElement {
 
     _createGhost(refItem) {
         const rect = refItem.getBoundingClientRect();
-        const ghost = document.createElement("div");
+        const ghost = _el("div", {
+            "data-y-droplist-ghost": "",
+            "aria-hidden": "true",
+            class: this.ghostClass,
+        });
         // The ghost lives in light DOM (sibling of slotted items, so it participates
         // in the host's flex flow), which means ::part() can't reach it. Style it
         // via the [data-y-droplist-ghost] attribute selector, the ghost-class
         // attribute, or the --component-droplist-ghost-* custom properties instead.
-        ghost.setAttribute("data-y-droplist-ghost", "");
-        ghost.setAttribute("aria-hidden", "true");
-        ghost.classList.add(this.ghostClass);
         if (this.forceFloat) {
             // Ghost lives in document.body — inline styles are needed since the
             // shadow-root ::slotted() rule won't reach it. CSS custom properties
@@ -704,11 +720,14 @@ export class YumeDroplist extends HTMLElement {
             this._clearSwapTarget();
             return;
         }
+
         const oldIndex = this._index(item);
         this._swapItems(item, target);
         this._clearSwapTarget();
+
         const newIndex = this._index(item);
         if (newIndex === oldIndex) return;
+
         this._emit("reorder", { oldIndex, newIndex, item, list: this });
         this._emit("update", { item, oldIndex, newIndex, list: this });
         this._announce(`Item swapped with position ${newIndex + 1}.`);
@@ -726,21 +745,26 @@ export class YumeDroplist extends HTMLElement {
 
     _eventItem(e) {
         const path = e.composedPath ? e.composedPath() : [e.target];
+
         for (const node of path) {
             if (node === this) return null;
             if (node && node.parentNode === this && !this._isInternal(node)) {
                 return node;
             }
         }
+
         return null;
     }
 
     _findListForElement(el) {
         if (!el) return null;
+
         const myGroup = this.group;
         if (!myGroup) return null;
+
         const members = _groups.get(myGroup);
         if (!members) return null;
+
         for (const list of members) {
             if (list !== this && list.contains(el)) return list;
         }
@@ -808,10 +832,12 @@ export class YumeDroplist extends HTMLElement {
      */
     _ghostIndex(ghost) {
         let index = 0;
+
         for (const child of this.children) {
             if (child === ghost) return index;
             if (!this._isInternal(child)) index++;
         }
+
         return index;
     }
 
@@ -823,6 +849,7 @@ export class YumeDroplist extends HTMLElement {
         const handle = this.handle;
         for (const child of Array.from(this.children)) {
             if (this._isInternal(child)) continue;
+
             child.setAttribute("role", "listitem");
             this._applyHandleA11y(child, handle);
             // Don't overwrite the active drag item's aria-grabbed="true" —
@@ -861,6 +888,7 @@ export class YumeDroplist extends HTMLElement {
 
     _markSwapTarget(target) {
         if (this._swapTarget === target) return;
+
         const cls = this.swapClass;
         if (this._swapTarget) this._swapTarget.classList.remove(cls);
         if (target) target.classList.add(cls);
@@ -869,6 +897,7 @@ export class YumeDroplist extends HTMLElement {
 
     _moveByKeyboard(item, direction, focusEl) {
         if (this.disabled) return;
+
         const items = this._items();
         const oldIndex = items.indexOf(item);
         const newIndex = oldIndex + direction;
@@ -877,6 +906,7 @@ export class YumeDroplist extends HTMLElement {
         const snapshot = this._snapshot();
         const reference =
             direction > 0 ? items[newIndex].nextSibling : items[newIndex];
+
         this.insertBefore(item, reference);
         this._flip(snapshot);
         (focusEl || item).focus();
@@ -895,6 +925,7 @@ export class YumeDroplist extends HTMLElement {
     _onDragEnd(e) {
         const source = _activeSource;
         if (!source) return;
+
         const item = source._dragItem;
         if (!item) return;
 
@@ -920,11 +951,13 @@ export class YumeDroplist extends HTMLElement {
                 source._lastDragOverTarget = null;
                 _activeSource = null;
                 ghostListRef._flip(snapshot);
+
                 const delay =
                     ghostListRef.animation === 0 ||
                     ghostListRef._prefersReducedMotion()
                         ? 0
                         : ghostListRef.animation;
+
                 if (delay > 0) {
                     setTimeout(
                         () =>
@@ -960,8 +993,10 @@ export class YumeDroplist extends HTMLElement {
         const source = _activeSource;
         if (!source || source === this) return;
         if (!this._canAcceptFrom(source)) return;
+
         const from = e.relatedTarget;
         if (from && this.contains(from)) return;
+
         this._emit("drag:enter", {
             originalEvent: e,
             item: source._dragItem,
@@ -973,8 +1008,10 @@ export class YumeDroplist extends HTMLElement {
     _onDragLeave(e) {
         const source = _activeSource;
         if (!source || source !== this) return;
+
         const to = e.relatedTarget;
         if (to && this.contains(to)) return;
+
         const toList = this._findListForElement(to);
         this._emit("drag:leave", {
             originalEvent: e,
@@ -1022,12 +1059,14 @@ export class YumeDroplist extends HTMLElement {
         if (_ghostList && _ghostList !== this) {
             _ghostList._removeGhost();
         }
+
         // Always accept the event — this allows dropping over the ghost,
         // flex gaps, and the drag item itself without the OS showing "no-drop".
         e.preventDefault();
         if (isCrossList && !this._ghost) {
             this._ghost = this._createGhost(source._dragItem);
         }
+
         _ghostList = this;
         this._checkDragOver(source, e, this);
         const reference = this._projectInsertionPoint(e);
@@ -1039,12 +1078,15 @@ export class YumeDroplist extends HTMLElement {
             e.preventDefault();
             return;
         }
+
         const item = this._eventItem(e);
         if (!item) return;
+
         this._dragItem = item;
         this._oldIndex = this._index(item);
         item.classList.add(this.dragClass);
         item.setAttribute("aria-grabbed", "true");
+
         // Firefox refuses to start a drag without dataTransfer payload.
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = "move";
@@ -1091,6 +1133,7 @@ export class YumeDroplist extends HTMLElement {
         // used as an insertBefore marker. Use the tracked _lastGhostRef instead.
         const insertionRef = this.forceFloat ? this._lastGhostRef : ghost;
         const dropIndex = this._ghostIndex(ghost);
+
         this._emit("drag:drop", {
             originalEvent: e,
             item: insertee,
@@ -1189,6 +1232,15 @@ export class YumeDroplist extends HTMLElement {
 
         e.preventDefault();
         this._moveByKeyboard(item, direction, target);
+    }
+
+    _onPointerCancel(e) {
+        if (!this._touchItem) return;
+        if (this._touchDelayTimer !== null) {
+            this._cancelTouchPending();
+            return;
+        }
+        this._touchDragEnd(e);
     }
 
     _onPointerDown(e) {
@@ -1396,42 +1448,85 @@ export class YumeDroplist extends HTMLElement {
         this._touchDragEnd(e);
     }
 
-    _onPointerCancel(e) {
-        if (!this._touchItem) return;
-        if (this._touchDelayTimer !== null) {
-            this._cancelTouchPending();
-            return;
+    _placeGhost(reference) {
+        if (!this._ghost) this._ghost = this._createGhost(this._dragItem);
+
+        if (this.forceFloat) {
+            // Track the last insertion reference for use in _onDrop, since the
+            // ghost lives in body and can't serve as a DOM insertBefore marker.
+            this._lastGhostRef = reference;
+            this._positionFloatGhost(reference);
+
+            if (!this._ghost.parentNode) {
+                document.body.appendChild(this._ghost);
+            }
+        } else {
+            if (
+                this._ghost.parentNode !== this ||
+                this._ghost.nextSibling !== reference
+            ) {
+                this.insertBefore(this._ghost, reference || null);
+            }
         }
-        this._touchDragEnd(e);
     }
 
     /**
-     * Called when delay timer fires or when delay===0 and a touch press begins.
-     * Marks the drag as active and emits drag:start.
+     * Update the `top`/`left` of a force-float ghost to match the current
+     * projected insertion point in viewport coordinates.
      */
-    _touchDragStart(originalPointerEvent, item) {
-        if (this.disabled || _activeSource) return;
+    _positionFloatGhost(reference) {
+        const ghost = this._ghost;
+        if (!ghost) return;
+        if (reference) {
+            const r = reference.getBoundingClientRect();
+            ghost.style.top = `${r.top}px`;
+            ghost.style.left = `${r.left}px`;
+        } else {
+            const items = this._items();
+            if (items.length > 0) {
+                const last = items[items.length - 1];
+                const r = last.getBoundingClientRect();
+                if (this.vertical) {
+                    ghost.style.top = `${r.bottom}px`;
+                    ghost.style.left = `${r.left}px`;
+                } else {
+                    ghost.style.top = `${r.top}px`;
+                    ghost.style.left = `${r.right}px`;
+                }
+            } else {
+                const r = this.getBoundingClientRect();
+                ghost.style.top = `${r.top}px`;
+                ghost.style.left = `${r.left}px`;
+            }
+        }
+    }
 
-        this._touchActive = true;
-        this._dragItem = item;
-        this._oldIndex = this._index(item);
-
-        item.classList.add(this.dragClass);
-        item.setAttribute("aria-grabbed", "true");
-        item.style.touchAction = "none";
-
-        _activeSource = this;
-
-        // Place the initial ghost.
-        if (!this._ghost) this._ghost = this._createGhost(item);
-        _ghostList = this;
-        this._placeGhost(null);
-
-        this._emit("drag:start", {
-            originalEvent: originalPointerEvent,
-            item,
-            list: this,
-        });
+    /**
+     * Resets all touch drag state after a committed drop or cancel.
+     * `skipEmit` is true when the caller will emit drag:end itself (revert path).
+     */
+    _touchCleanup(item, _pointerEvent, skipEndEmit) {
+        if (item) {
+            item.classList.remove(this.dragClass);
+            item.setAttribute("aria-grabbed", "false");
+            item.style.touchAction = "";
+        }
+        this._touchActive = false;
+        this._touchItem = null;
+        this._touchPointerId = null;
+        this._touchStartX = 0;
+        this._touchStartY = 0;
+        this._clearSwapTarget();
+        this._dragItem = null;
+        this._oldIndex = -1;
+        this._lastDragOverTarget = null;
+        _activeSource = null;
+        this._touchPointerAbort?.abort();
+        this._touchPointerAbort = null;
+        if (!skipEndEmit) {
+            // Callers that set skipEndEmit=false but want to fire drag:end themselves
+            // will call _emit separately — this path is for committed drops.
+        }
     }
 
     /**
@@ -1471,6 +1566,7 @@ export class YumeDroplist extends HTMLElement {
                     ? targetList._lastGhostRef
                     : ghost;
                 const dropIndex = targetList._ghostIndex(ghost);
+
                 targetList._emit("drag:drop", {
                     originalEvent: pointerEvent,
                     item: insertee,
@@ -1616,46 +1712,32 @@ export class YumeDroplist extends HTMLElement {
     }
 
     /**
-     * Resets all touch drag state after a committed drop or cancel.
-     * `skipEmit` is true when the caller will emit drag:end itself (revert path).
+     * Called when delay timer fires or when delay===0 and a touch press begins.
+     * Marks the drag as active and emits drag:start.
      */
-    _touchCleanup(item, _pointerEvent, skipEndEmit) {
-        if (item) {
-            item.classList.remove(this.dragClass);
-            item.setAttribute("aria-grabbed", "false");
-            item.style.touchAction = "";
-        }
-        this._touchActive = false;
-        this._touchItem = null;
-        this._touchPointerId = null;
-        this._touchStartX = 0;
-        this._touchStartY = 0;
-        this._clearSwapTarget();
-        this._dragItem = null;
-        this._oldIndex = -1;
-        this._lastDragOverTarget = null;
-        _activeSource = null;
-        this._touchPointerAbort?.abort();
-        this._touchPointerAbort = null;
-        if (!skipEndEmit) {
-            // Callers that set skipEndEmit=false but want to fire drag:end themselves
-            // will call _emit separately — this path is for committed drops.
-        }
-    }
+    _touchDragStart(originalPointerEvent, item) {
+        if (this.disabled || _activeSource) return;
 
-    /** Cancel a pending delay without starting the drag. */
-    _cancelTouchPending() {
-        if (this._touchDelayTimer !== null) {
-            clearTimeout(this._touchDelayTimer);
-            this._touchDelayTimer = null;
-        }
-        if (this._touchItem) {
-            this._touchItem.style.touchAction = "";
-        }
-        this._touchItem = null;
-        this._touchPointerId = null;
-        this._touchPointerAbort?.abort();
-        this._touchPointerAbort = null;
+        this._touchActive = true;
+        this._dragItem = item;
+        this._oldIndex = this._index(item);
+
+        item.classList.add(this.dragClass);
+        item.setAttribute("aria-grabbed", "true");
+        item.style.touchAction = "none";
+
+        _activeSource = this;
+
+        // Place the initial ghost.
+        if (!this._ghost) this._ghost = this._createGhost(item);
+        _ghostList = this;
+        this._placeGhost(null);
+
+        this._emit("drag:start", {
+            originalEvent: originalPointerEvent,
+            item,
+            list: this,
+        });
     }
 
     /**
@@ -1694,57 +1776,6 @@ export class YumeDroplist extends HTMLElement {
         }
 
         return inSelf ? this : null;
-    }
-
-    _placeGhost(reference) {
-        if (!this._ghost) this._ghost = this._createGhost(this._dragItem);
-        if (this.forceFloat) {
-            // Track the last insertion reference for use in _onDrop, since the
-            // ghost lives in body and can't serve as a DOM insertBefore marker.
-            this._lastGhostRef = reference;
-            this._positionFloatGhost(reference);
-            if (!this._ghost.parentNode) {
-                document.body.appendChild(this._ghost);
-            }
-        } else {
-            if (
-                this._ghost.parentNode !== this ||
-                this._ghost.nextSibling !== reference
-            ) {
-                this.insertBefore(this._ghost, reference || null);
-            }
-        }
-    }
-
-    /**
-     * Update the `top`/`left` of a force-float ghost to match the current
-     * projected insertion point in viewport coordinates.
-     */
-    _positionFloatGhost(reference) {
-        const ghost = this._ghost;
-        if (!ghost) return;
-        if (reference) {
-            const r = reference.getBoundingClientRect();
-            ghost.style.top = `${r.top}px`;
-            ghost.style.left = `${r.left}px`;
-        } else {
-            const items = this._items();
-            if (items.length > 0) {
-                const last = items[items.length - 1];
-                const r = last.getBoundingClientRect();
-                if (this.vertical) {
-                    ghost.style.top = `${r.bottom}px`;
-                    ghost.style.left = `${r.left}px`;
-                } else {
-                    ghost.style.top = `${r.top}px`;
-                    ghost.style.left = `${r.right}px`;
-                }
-            } else {
-                const r = this.getBoundingClientRect();
-                ghost.style.top = `${r.top}px`;
-                ghost.style.left = `${r.left}px`;
-            }
-        }
     }
 
     _prefersReducedMotion() {
