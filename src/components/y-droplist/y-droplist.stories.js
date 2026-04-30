@@ -436,3 +436,50 @@ export const TouchDelay = {
         </div>
     `,
 };
+
+export const ProgrammaticSort = {
+    name: "Programmatic sort()",
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:300px">
+            <div style="display:flex;gap:8px">
+                <button onclick="document.getElementById('sort-list').sort()">
+                    Sort A→Z (data-id)
+                </button>
+                <button onclick="document.getElementById('sort-list').sort((a,b)=>b.dataset.id.localeCompare(a.dataset.id))">
+                    Sort Z→A
+                </button>
+            </div>
+            <y-droplist id="sort-list" animation="200">
+                <div data-id="delta">Delta</div>
+                <div data-id="alpha">Alpha</div>
+                <div data-id="gamma">Gamma</div>
+                <div data-id="beta">Beta</div>
+            </y-droplist>
+        </div>
+    `,
+};
+
+export const DragDropEvent = {
+    name: "drag:drop pre-mutation hook",
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:300px">
+            <p style="margin:0;font-size:0.85rem;color:var(--y-color-on-surface-variant)">
+                The <code>drag:drop</code> event fires <em>before</em> the DOM is mutated.
+                The log below captures the projected drop index.
+            </p>
+            <y-droplist id="event-list" animation="200">
+                <div data-id="one">One</div>
+                <div data-id="two">Two</div>
+                <div data-id="three">Three</div>
+                <div data-id="four">Four</div>
+            </y-droplist>
+            <pre id="event-log" style="margin:0;padding:8px;background:var(--y-color-surface-variant);border-radius:4px;font-size:0.8rem;min-height:40px"></pre>
+            <script>
+                document.getElementById('event-list').addEventListener('drag:drop', (e) => {
+                    const log = document.getElementById('event-log');
+                    log.textContent = 'drag:drop — item: ' + e.detail.item.dataset.id + ', index: ' + e.detail.index;
+                });
+            <\/script>
+        </div>
+    `,
+};

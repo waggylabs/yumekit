@@ -780,6 +780,9 @@ Events (bubble + composed, not cancelable):
 - `drag:end` — `{ originalEvent, item, list }` (always fires; `originalEvent` is the native dragend)
 - `drag:enter` — `{ originalEvent, item, list, from }` — fired on the **destination** list when a foreign item first enters its hit area. `from` is the source list. Only fires when the two lists are compatible (same group, pull/put allow).
 - `drag:leave` — `{ originalEvent, item, list, to }` — fired on the **source** list when the dragged item leaves its bounds. `to` is the destination list, or `null` if the cursor left all droplists.
+- `drag:move` — `{ originalEvent, item, list, x, y }` — throttled to one event per `requestAnimationFrame`. Fires on every `dragover` / `pointermove` while a drag is active. `x` and `y` are the current viewport cursor coordinates.
+- `drag:over` — `{ originalEvent, item, list, target }` — fires only when the cursor transitions to hover a **different** slotted child (`target`) than on the previous tick. Does not re-fire when the cursor stays over the same item.
+- `drag:drop` — `{ originalEvent, item, list, index }` — fires **before** the DOM mutation on a successful drop. `index` is the projected insertion index (0-based).
 - `reorder` — `{ oldIndex, newIndex, item, list[, from] }` — fires only when index changes. On a cross-list drop `oldIndex` is `-1` and `from` is the source list. On a `swap` drop, `oldIndex` and `newIndex` describe the two swapped items. On a same-list `clone` drop, `oldIndex` is `-1` and `item` is the inserted clone.
 - `update` — `{ item, oldIndex, newIndex, list[, from] }` — fires immediately after `reorder`. On a cross-list drop the **source** fires first with `newIndex: -1`; the destination fires next with the insert position. On a same-list `clone` drop only the destination event fires (source is suppressed).
 
@@ -787,6 +790,9 @@ Methods:
 - `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
 - `hasItem(item)` — true when `item` is a direct slotted child of the droplist.
 - `destroy()` — removes all listeners, the mutation observer, and unregisters from the cross-list group registry. The component re-initializes on disconnect/reconnect.
+- `sort(compareFn?)` — sorts all slotted children in place. Default comparator uses `data-id` with `localeCompare`. Fires a single `update` event with `{ oldIndex: -1, newIndex: -1 }`. Pass a custom `(a, b) => number` comparator for custom order.
+- `option(name, value?)` — get or set any attribute by kebab-case name. One argument returns the current value string (or `null`); two arguments calls `setAttribute`.
+- `closest(evt)` — returns the direct slotted child whose bounding rect contains `evt.clientX`/`evt.clientY`, or `null` if none match.
 
 Behavior:
 - Items get `role="listitem"`, `tabindex="0"`, `draggable="true"`, and `aria-grabbed="false"` automatically; new children added at runtime are auto-initialized via `MutationObserver`.

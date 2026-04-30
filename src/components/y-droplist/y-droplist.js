@@ -123,6 +123,12 @@ export class YumeDroplist extends HTMLElement {
         this._touchStartX = 0;
         this._touchStartY = 0;
         this._touchPointerAbort = null;
+
+        // Granular drag event state
+        this._moveRafId = null;
+        this._movePending = null;
+        this._lastDragOverTarget = null;
+
         this.render();
     }
 
@@ -430,6 +436,22 @@ export class YumeDroplist extends HTMLElement {
     // Public
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns the slotted item directly under the event's viewport coordinates,
+     * or `null` if the event misses every item. Useful for building custom drop
+     * indicators without polling `drag:move`.
+     */
+    closest(evt) {
+        const el = document.elementFromPoint(evt.clientX, evt.clientY);
+        if (!el) return null;
+        let cur = el;
+        while (cur) {
+            if (cur.parentNode === this && !this._isInternal(cur)) return cur;
+            cur = cur.parentNode;
+        }
+        return null;
+    }
+
     /** Removes all listeners and observers. The component re-initializes if reconnected to the DOM. */
     destroy() {
         this._teardown();
@@ -447,6 +469,17 @@ export class YumeDroplist extends HTMLElement {
         );
     }
 
+    /**
+     * Get or set a configuration option by attribute name (kebab-case).
+     * Omit `value` to read; provide `value` to write (mirrors to the attribute).
+     * Recognised names match the documented attribute names.
+     */
+    option(name, value) {
+        const camel = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        if (arguments.length < 2) return this[camel];
+        this[camel] = value;
+    }
+
     render() {
         this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
         this.shadowRoot.replaceChildren(
@@ -457,6 +490,34 @@ export class YumeDroplist extends HTMLElement {
                 "aria-atomic": "true",
             }),
         );
+    }
+
+    /**
+     * Sorts slotted children using `compareFn`. When omitted, sorts by
+     * `data-id` in ASCII order. Fires a single `update` event with
+     * `{ oldIndex: -1, newIndex: -1 }` to signal a bulk change. The settle
+     * animation runs once across the whole list.
+     */
+    sort(compareFn) {
+        const items = this._items();
+        if (items.length < 2) return;
+        const snapshot = this._snapshot();
+        const sorted = [...items].sort(
+            compareFn ??
+                ((a, b) => {
+                    const aId = a.getAttribute("data-id") ?? "";
+                    const bId = b.getAttribute("data-id") ?? "";
+                    return aId < bId ? -1 : aId > bId ? 1 : 0;
+                }),
+        );
+        for (const item of sorted) this.appendChild(item);
+        this._flip(snapshot);
+        this._emit("update", {
+            item: null,
+            oldIndex: -1,
+            newIndex: -1,
+            list: this,
+        });
     }
 
     /** Returns each direct child's `data-id` in current DOM order ("" when missing). */
@@ -578,6 +639,23 @@ export class YumeDroplist extends HTMLElement {
             if (!allowed.includes(theirGroup)) return false;
         }
         return true;
+    }
+
+    /**
+     * Emit `drag:over` on `targetList` when the item under the pointer changes.
+     * Tracking is stored on the source instance (`source._lastDragOverTarget`).
+     */
+    _checkDragOver(source, e, targetList) {
+        const hovered = targetList._itemAtPoint(e.clientX, e.clientY);
+        if (!hovered || hovered === source._dragItem) return;
+        if (hovered === source._lastDragOverTarget) return;
+        source._lastDragOverTarget = hovered;
+        targetList._emit("drag:over", {
+            originalEvent: e,
+            item: source._dragItem,
+            list: targetList,
+            target: hovered,
+        });
     }
 
     _clearSwapTarget() {
@@ -724,6 +802,19 @@ export class YumeDroplist extends HTMLElement {
         }
     }
 
+    /**
+     * Returns the zero-based index at which the ghost is currently projected
+     * to be inserted (counting only non-ghost children before the ghost).
+     */
+    _ghostIndex(ghost) {
+        let index = 0;
+        for (const child of this.children) {
+            if (child === ghost) return index;
+            if (!this._isInternal(child)) index++;
+        }
+        return index;
+    }
+
     _index(item) {
         return this._items().indexOf(item);
     }
@@ -751,6 +842,17 @@ export class YumeDroplist extends HTMLElement {
             node.hasAttribute &&
             node.hasAttribute("data-y-droplist-ghost"),
         );
+    }
+
+    /** Returns the first item whose bounding rect contains `(x, y)`, or null. */
+    _itemAtPoint(x, y) {
+        for (const item of this._items()) {
+            const r = item.getBoundingClientRect();
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                return item;
+            }
+        }
+        return null;
     }
 
     _items() {
@@ -815,6 +917,7 @@ export class YumeDroplist extends HTMLElement {
                 source._clearSwapTarget();
                 source._dragItem = null;
                 source._oldIndex = -1;
+                source._lastDragOverTarget = null;
                 _activeSource = null;
                 ghostListRef._flip(snapshot);
                 const delay =
@@ -848,6 +951,7 @@ export class YumeDroplist extends HTMLElement {
         source._clearSwapTarget();
         source._dragItem = null;
         source._oldIndex = -1;
+        source._lastDragOverTarget = null;
         _activeSource = null;
         source._emit("drag:end", { originalEvent: e, item, list: source });
     }
@@ -897,11 +1001,17 @@ export class YumeDroplist extends HTMLElement {
 
         const isClone = source.clone || source.pull === "clone";
 
+        // Throttled drag:move (fires regardless of swap/insert mode).
+        this._scheduleMoveEmit(source, e);
+
         // Swap mode is same-list only and disabled when cloning.
         if (this.swap && !isCrossList && !isClone) {
             const target = this._findSwapTarget(e);
             this._markSwapTarget(target);
-            if (target) e.preventDefault();
+            if (target) {
+                e.preventDefault();
+                this._checkDragOver(source, e, this);
+            }
             return;
         }
 
@@ -919,6 +1029,7 @@ export class YumeDroplist extends HTMLElement {
             this._ghost = this._createGhost(source._dragItem);
         }
         _ghostList = this;
+        this._checkDragOver(source, e, this);
         const reference = this._projectInsertionPoint(e);
         this._placeGhost(reference);
     }
@@ -959,6 +1070,13 @@ export class YumeDroplist extends HTMLElement {
 
         // Swap mode: same-list, non-clone.
         if (this.swap && !isCrossList && !isClone && this._swapTarget) {
+            const swapDropIndex = this._index(this._swapTarget);
+            this._emit("drag:drop", {
+                originalEvent: e,
+                item: source._dragItem,
+                list: this,
+                index: swapDropIndex,
+            });
             return this._dropSwap(source);
         }
 
@@ -972,6 +1090,13 @@ export class YumeDroplist extends HTMLElement {
         // When force-float, the ghost lives in document.body, so it cannot be
         // used as an insertBefore marker. Use the tracked _lastGhostRef instead.
         const insertionRef = this.forceFloat ? this._lastGhostRef : ghost;
+        const dropIndex = this._ghostIndex(ghost);
+        this._emit("drag:drop", {
+            originalEvent: e,
+            item: insertee,
+            list: this,
+            index: dropIndex,
+        });
         this.insertBefore(insertee, insertionRef || null);
         this._removeGhost();
         this._lastGhostRef = null;
@@ -1234,6 +1359,10 @@ export class YumeDroplist extends HTMLElement {
         }
         _ghostList = targetList;
 
+        // Throttled move + transition-based over events.
+        this._scheduleMoveEmit(this, e);
+        this._checkDragOver(this, e, targetList);
+
         const reference = targetList._projectInsertionPoint(synthetic);
         targetList._placeGhost(reference);
     }
@@ -1325,6 +1454,13 @@ export class YumeDroplist extends HTMLElement {
         source._scrollContainer = null;
 
         if (isSwap) {
+            const swapDropIndex = targetList._index(targetList._swapTarget);
+            targetList._emit("drag:drop", {
+                originalEvent: pointerEvent,
+                item,
+                list: targetList,
+                index: swapDropIndex,
+            });
             targetList._dropSwap(source);
         } else {
             const ghost = targetList._ghost;
@@ -1334,6 +1470,13 @@ export class YumeDroplist extends HTMLElement {
                 const insertionRef = targetList.forceFloat
                     ? targetList._lastGhostRef
                     : ghost;
+                const dropIndex = targetList._ghostIndex(ghost);
+                targetList._emit("drag:drop", {
+                    originalEvent: pointerEvent,
+                    item: insertee,
+                    list: targetList,
+                    index: dropIndex,
+                });
                 targetList.insertBefore(insertee, insertionRef || null);
                 targetList._removeGhost();
                 targetList._lastGhostRef = null;
@@ -1490,6 +1633,7 @@ export class YumeDroplist extends HTMLElement {
         this._clearSwapTarget();
         this._dragItem = null;
         this._oldIndex = -1;
+        this._lastDragOverTarget = null;
         _activeSource = null;
         this._touchPointerAbort?.abort();
         this._touchPointerAbort = null;
@@ -1632,6 +1776,28 @@ export class YumeDroplist extends HTMLElement {
         this._lastGhostRef = null;
     }
 
+    /**
+     * Schedule a `drag:move` emission on `source` for the next animation frame,
+     * coalescing rapid pointer events so at most one fires per frame.
+     */
+    _scheduleMoveEmit(source, e) {
+        source._movePending = e;
+        if (source._moveRafId !== null) return;
+        source._moveRafId = requestAnimationFrame(() => {
+            source._moveRafId = null;
+            const ev = source._movePending;
+            source._movePending = null;
+            if (!ev || !source._dragItem) return;
+            source._emit("drag:move", {
+                originalEvent: ev,
+                item: source._dragItem,
+                list: source,
+                x: ev.clientX,
+                y: ev.clientY,
+            });
+        });
+    }
+
     _snapshot() {
         const map = new Map();
         for (const item of this._items()) {
@@ -1693,6 +1859,13 @@ export class YumeDroplist extends HTMLElement {
         this._touchPointerId = null;
         this._touchPointerAbort?.abort();
         this._touchPointerAbort = null;
+
+        if (this._moveRafId !== null) {
+            cancelAnimationFrame(this._moveRafId);
+            this._moveRafId = null;
+        }
+        this._movePending = null;
+        this._lastDragOverTarget = null;
 
         if (this._dragItem) {
             this._dragItem.classList.remove(this.dragClass);

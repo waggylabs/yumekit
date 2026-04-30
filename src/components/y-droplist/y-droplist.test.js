@@ -2519,3 +2519,364 @@ describe("y-droplist — touch reorder (pointerType=touch)", () => {
         expect(started).to.be.false;
     });
 });
+
+// ─── sort() ───────────────────────────────────────────────────────────────
+
+describe("y-droplist — sort()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("sort() without comparator sorts by data-id ASCII order", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="c">C</div>
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        el.sort();
+        const ids = Array.from(el.children)
+            .filter((c) => !c.hasAttribute("data-y-droplist-ghost"))
+            .map((c) => c.getAttribute("data-id"));
+        expect(ids).to.deep.equal(["a", "b", "c"]);
+    });
+
+    it("sort() with custom comparator uses it", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="a" data-val="3">A</div>
+                <div data-id="b" data-val="1">B</div>
+                <div data-id="c" data-val="2">C</div>
+            </y-droplist>
+        `);
+        el.sort((a, b) => Number(a.dataset.val) - Number(b.dataset.val));
+        const ids = Array.from(el.children)
+            .filter((c) => !c.hasAttribute("data-y-droplist-ghost"))
+            .map((c) => c.getAttribute("data-id"));
+        expect(ids).to.deep.equal(["b", "c", "a"]);
+    });
+
+    it("sort() fires a single update event with oldIndex=-1, newIndex=-1", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="b">B</div>
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        const events = [];
+        el.addEventListener("update", (e) => events.push(e.detail));
+        el.sort();
+        expect(events).to.have.length(1);
+        expect(events[0].oldIndex).to.equal(-1);
+        expect(events[0].newIndex).to.equal(-1);
+        expect(events[0].list).to.equal(el);
+    });
+
+    it("sort() does not fire reorder", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="b">B</div>
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        let fired = false;
+        el.addEventListener("reorder", () => {
+            fired = true;
+        });
+        el.sort();
+        expect(fired).to.be.false;
+    });
+
+    it("sort() with already-sorted list still fires update", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const events = [];
+        el.addEventListener("update", (e) => events.push(e));
+        el.sort();
+        expect(events).to.have.length(1);
+    });
+});
+
+// ─── option() ─────────────────────────────────────────────────────────────
+
+describe("y-droplist — option()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("option() reads a boolean attribute", async () => {
+        const el = await fixture(
+            html`<y-droplist disabled><div>A</div></y-droplist>`,
+        );
+        expect(el.option("disabled")).to.be.true;
+    });
+
+    it("option() reads a numeric attribute", async () => {
+        const el = await fixture(
+            html`<y-droplist animation="300"><div>A</div></y-droplist>`,
+        );
+        expect(el.option("animation")).to.equal(300);
+    });
+
+    it("option() reads a camelCase-mapped attribute (ghost-class)", async () => {
+        const el = await fixture(
+            html`<y-droplist ghost-class="my-ghost"><div>A</div></y-droplist>`,
+        );
+        expect(el.option("ghost-class")).to.equal("my-ghost");
+    });
+
+    it("option() sets a value by writing to the property", async () => {
+        const el = await fixture(html`<y-droplist><div>A</div></y-droplist>`);
+        el.option("animation", 500);
+        expect(el.animation).to.equal(500);
+        expect(el.getAttribute("animation")).to.equal("500");
+    });
+
+    it("option() round-trip: set then get returns same value", async () => {
+        const el = await fixture(html`<y-droplist><div>A</div></y-droplist>`);
+        el.option("scroll-speed", 20);
+        expect(el.option("scroll-speed")).to.equal(20);
+    });
+});
+
+// ─── closest() ────────────────────────────────────────────────────────────
+
+describe("y-droplist — closest()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("closest() returns the item at the event coordinates", async () => {
+        const el = await fixture(html`
+            <y-droplist style="display:block;height:120px">
+                <div style="height:40px">A</div>
+                <div style="height:40px">B</div>
+                <div style="height:40px">C</div>
+            </y-droplist>
+        `);
+        const b = el.children[1];
+        const r = b.getBoundingClientRect();
+        const fakeEvt = { clientX: r.left + 5, clientY: r.top + 5 };
+        const result = el.closest(fakeEvt);
+        expect(result).to.equal(b);
+    });
+
+    it("closest() returns null when coordinates miss every item", async () => {
+        const el = await fixture(html`
+            <y-droplist style="display:block;height:40px">
+                <div style="height:40px">A</div>
+            </y-droplist>
+        `);
+        // Use coordinates far off the element.
+        const fakeEvt = { clientX: -9999, clientY: -9999 };
+        expect(el.closest(fakeEvt)).to.be.null;
+    });
+});
+
+// ─── drag:drop event ──────────────────────────────────────────────────────
+
+describe("y-droplist — drag:drop event", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("drag:drop fires on drop and carries numeric index, item, and list", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        const dropped = [];
+        el.addEventListener("drag:drop", (e) => dropped.push(e.detail));
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        el.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(dropped).to.have.length(1);
+        expect(typeof dropped[0].index).to.equal("number");
+        expect(dropped[0].item).to.equal(a);
+        expect(dropped[0].list).to.equal(el);
+    });
+});
+
+// ─── drag:move event ──────────────────────────────────────────────────────
+
+describe("y-droplist — drag:move event", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("drag:move fires during dragover with x/y coordinates", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        const movePromise = oneEvent(el, "drag:move");
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: 50,
+                clientY: 80,
+            }),
+        );
+        const ev = await movePromise;
+        expect(typeof ev.detail.x).to.equal("number");
+        expect(typeof ev.detail.y).to.equal("number");
+        expect(ev.detail.list).to.equal(el);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("drag:move detail includes item and list", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div>A</div>
+                <div>B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        const movePromise = oneEvent(el, "drag:move");
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        const ev = await movePromise;
+        expect(ev.detail.item).to.equal(a);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+});
+
+// ─── drag:over event ──────────────────────────────────────────────────────
+
+describe("y-droplist — drag:over event", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
+    it("drag:over fires when pointer moves over a different item", async () => {
+        // Pin to document.body so getBoundingClientRect returns non-zero values.
+        const wrapper = document.createElement("div");
+        wrapper.style.cssText = "position:fixed;top:0;left:0;width:200px";
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist animation="0" style="display:block">
+                <div style="display:block;height:40px">A</div>
+                <div style="display:block;height:40px">B</div>
+                <div style="display:block;height:40px">C</div>
+            </y-droplist>`;
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        const b = el.children[1];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        const bRect = b.getBoundingClientRect();
+        const overPromise = oneEvent(el, "drag:over");
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: bRect.left + 5,
+                clientY: bRect.top + 5,
+            }),
+        );
+        const ev = await overPromise;
+        expect(ev.detail.target).to.equal(b);
+        expect(ev.detail.list).to.equal(el);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("drag:over does not fire twice for the same target item", async () => {
+        const wrapper = document.createElement("div");
+        wrapper.style.cssText = "position:fixed;top:0;left:0;width:200px";
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist animation="0" style="display:block">
+                <div style="display:block;height:40px">A</div>
+                <div style="display:block;height:40px">B</div>
+            </y-droplist>`;
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        const b = el.children[1];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        let count = 0;
+        el.addEventListener("drag:over", () => count++);
+
+        const bRect = b.getBoundingClientRect();
+        for (let i = 0; i < 3; i++) {
+            el.dispatchEvent(
+                new DragEvent("dragover", {
+                    bubbles: true,
+                    composed: true,
+                    cancelable: true,
+                    clientX: bRect.left + 5,
+                    clientY: bRect.top + 5,
+                }),
+            );
+        }
+        expect(count).to.equal(1);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+});
