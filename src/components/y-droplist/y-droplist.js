@@ -1270,7 +1270,9 @@ export class YumeDroplist extends HTMLElement {
         // When force-float, the ghost lives in document.body, so it cannot be
         // used as an insertBefore marker. Use the tracked _lastGhostRef instead.
         const insertionRef = this.forceFloat ? this._lastGhostRef : ghost;
-        const dropIndex = this._ghostIndex(ghost);
+        const dropIndex = this.forceFloat
+            ? (insertionRef ? Array.prototype.indexOf.call(this.children, insertionRef) : this.children.length)
+            : this._ghostIndex(ghost);
 
         this._emit("drag:drop", {
             originalEvent: e,
@@ -1556,9 +1558,9 @@ export class YumeDroplist extends HTMLElement {
 
     /**
      * Resets all touch drag state after a committed drop or cancel.
-     * `skipEmit` is true when the caller will emit drag:end itself (revert path).
+     * The caller is always responsible for emitting `drag:end`.
      */
-    _touchCleanup(item, _pointerEvent, skipEndEmit) {
+    _touchCleanup(item, _pointerEvent) {
         if (item) {
             item.classList.remove(this.dragClass);
             item.setAttribute("aria-grabbed", "false");
@@ -1576,10 +1578,6 @@ export class YumeDroplist extends HTMLElement {
         _activeSource = null;
         this._touchPointerAbort?.abort();
         this._touchPointerAbort = null;
-        if (!skipEndEmit) {
-            // Callers that set skipEndEmit=false but want to fire drag:end themselves
-            // will call _emit separately — this path is for committed drops.
-        }
     }
 
     /**
@@ -1618,7 +1616,9 @@ export class YumeDroplist extends HTMLElement {
                 const insertionRef = targetList.forceFloat
                     ? targetList._lastGhostRef
                     : ghost;
-                const dropIndex = targetList._ghostIndex(ghost);
+                const dropIndex = targetList.forceFloat
+                    ? (insertionRef ? Array.prototype.indexOf.call(targetList.children, insertionRef) : targetList.children.length)
+                    : targetList._ghostIndex(ghost);
 
                 targetList._emit("drag:drop", {
                     originalEvent: pointerEvent,
@@ -1647,7 +1647,7 @@ export class YumeDroplist extends HTMLElement {
             }
         }
 
-        this._touchCleanup(item, pointerEvent, /* cancelled */ false);
+        this._touchCleanup(item, pointerEvent);
         this._emit("drag:end", {
             originalEvent: pointerEvent,
             item,
@@ -1680,7 +1680,7 @@ export class YumeDroplist extends HTMLElement {
                     ghostListRef._prefersReducedMotion()
                         ? 0
                         : ghostListRef.animation;
-                this._touchCleanup(item, pointerEvent, /* cancelled */ true);
+                this._touchCleanup(item, pointerEvent);
 
                 if (delay > 0) {
                     setTimeout(
@@ -1705,7 +1705,7 @@ export class YumeDroplist extends HTMLElement {
             _ghostList = null;
         }
 
-        this._touchCleanup(item, pointerEvent, /* cancelled */ false);
+        this._touchCleanup(item, pointerEvent);
         this._emit("drag:end", {
             originalEvent: pointerEvent,
             item,
@@ -1866,11 +1866,14 @@ export class YumeDroplist extends HTMLElement {
 
         if (_activeSource === this) {
             _stopScroll();
+            if (_ghostList && _ghostList !== this) {
+                _ghostList._removeGhost();
+            }
+            _ghostList = null;
+            _activeSource = null;
         }
-        this._scrollContainer = null;
-
-        if (_activeSource === this) _activeSource = null;
         if (_ghostList === this) _ghostList = null;
+        this._scrollContainer = null;
 
         this._abort?.abort();
         this._abort = null;

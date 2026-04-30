@@ -790,8 +790,8 @@ Methods:
 - `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
 - `hasItem(item)` — true when `item` is a direct slotted child of the droplist.
 - `destroy()` — removes all listeners, the mutation observer, and unregisters from the cross-list group registry. The component re-initializes on disconnect/reconnect.
-- `sort(compareFn?)` — sorts all slotted children in place. Default comparator uses `data-id` with `localeCompare`. Fires a single `update` event with `{ oldIndex: -1, newIndex: -1 }`. Pass a custom `(a, b) => number` comparator for custom order.
-- `option(name, value?)` — get or set any attribute by kebab-case name. One argument returns the current value string (or `null`); two arguments calls `setAttribute`.
+- `sort(compareFn?)` — sorts all slotted children in place. The default comparator compares each child's `data-id` using `<` / `>` semantics (plain lexicographic/ASCII-style ordering, not `localeCompare`). Fires a single `update` event with `{ oldIndex: -1, newIndex: -1 }`. Pass a custom `(a, b) => number` comparator for custom order.
+- `option(name, value?)` — get or set the component property corresponding to a kebab-case option name (mapped to camelCase). One argument returns the current property value; two arguments assigns that property. Depending on the property, this may return non-string values and may reflect to, update, or remove the underlying attribute.
 - `closest(evt)` — returns the direct slotted child whose bounding rect contains `evt.clientX`/`evt.clientY`, or `null` if none match.
 
 Behavior:

@@ -881,7 +881,7 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 - `--component-droplist-item-padding`, `--component-droplist-item-margin`
 - `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
 
-> Touch dragging is not supported. Auto-scroll is not implemented.
+> Supports pointer/touch dragging and auto-scroll during drag interactions.
 
 ```html
 <!-- Basic reorderable list -->
