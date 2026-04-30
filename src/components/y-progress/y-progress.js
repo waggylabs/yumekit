@@ -659,7 +659,7 @@ export class YumeProgress extends HTMLElement {
             const gapCSS =
                 this._resolveSegmentGap() ??
                 "var(--component-progress-segment-gap, var(--spacing-x-small))";
-            const gapPx = measureCSSLength(this, gapCSS);
+            const gapPx = measureCSSLength(this.shadowRoot, gapCSS);
             const gapDegRaw = (gapPx / r) * (180 / Math.PI);
             const gapDeg = clamp(gapDegRaw, 0, segArcDeg * 0.8);
             const entry = entries[0] || this._defaultEntry();
