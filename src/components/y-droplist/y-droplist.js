@@ -574,6 +574,46 @@ export class YumeDroplist extends HTMLElement {
         }
     }
 
+    /**
+     * Returns `true` and applies side-effects (draggable reset, optional
+     * `preventDefault`) when a pointerdown lands outside the configured drag
+     * handle. Returns `false` when no handle is configured or the press is on
+     * the handle — meaning the caller should continue with the drag pipeline.
+     */
+    _blockNonHandlePress(e) {
+        const handle = this.handle;
+        if (!handle || this.disabled) return false;
+
+        const item = this._eventItem(e);
+        if (!item) return false;
+
+        const path = e.composedPath ? e.composedPath() : [e.target];
+        const start = path[0];
+        let isHandle = false;
+        let cur = start;
+        while (cur && cur !== item) {
+            if (cur.matches?.(handle)) {
+                isHandle = true;
+                break;
+            }
+            cur = cur.parentNode;
+        }
+        if (isHandle) return false;
+
+        item.setAttribute("draggable", "false");
+        if (this.preventOnFilter) e.preventDefault();
+        const restore = () => {
+            if (item.isConnected && !this.disabled) {
+                item.setAttribute("draggable", "true");
+            }
+        };
+        const signal = this._abort?.signal;
+        const opts = signal ? { once: true, signal } : { once: true };
+        window.addEventListener("pointerup", restore, opts);
+        window.addEventListener("pointercancel", restore, opts);
+        return true;
+    }
+
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -680,6 +720,31 @@ export class YumeDroplist extends HTMLElement {
         }
     }
 
+    /**
+     * Compute the per-frame scroll deltas (dx, dy) based on cursor proximity
+     * to the edges of `container`. Returns `{ dx: 0, dy: 0 }` when the cursor
+     * is not near any edge.
+     */
+    _computeScrollDeltas(e, container, sensitivity, speed) {
+        let dx = 0;
+        let dy = 0;
+        if (container === window) {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            if (e.clientX < sensitivity) dx = -speed;
+            else if (e.clientX > vw - sensitivity) dx = speed;
+            if (e.clientY < sensitivity) dy = -speed;
+            else if (e.clientY > vh - sensitivity) dy = speed;
+        } else {
+            const r = container.getBoundingClientRect();
+            if (e.clientX - r.left < sensitivity) dx = -speed;
+            else if (r.right - e.clientX < sensitivity) dx = speed;
+            if (e.clientY - r.top < sensitivity) dy = -speed;
+            else if (r.bottom - e.clientY < sensitivity) dy = speed;
+        }
+        return { dx, dy };
+    }
+
     _createGhost(refItem) {
         const rect = refItem.getBoundingClientRect();
         const ghost = _el("div", {
@@ -740,6 +805,79 @@ export class YumeDroplist extends HTMLElement {
                 composed: true,
                 detail,
             }),
+        );
+    }
+
+    /**
+     * Emit reorder/update events and announce the result after a completed
+     * insert-mode drop. Handles same-list, clone, and cross-list cases.
+     */
+    _emitInsertComplete(
+        source,
+        targetList,
+        item,
+        insertee,
+        oldIndex,
+        newIndex,
+        isClone,
+        isCrossList,
+    ) {
+        const destLabel = targetList.getAttribute("aria-label") || "";
+        if (!isCrossList) {
+            if (isClone) {
+                source._emit("reorder", {
+                    oldIndex: -1,
+                    newIndex,
+                    item: insertee,
+                    list: source,
+                });
+                source._emit("update", {
+                    item: insertee,
+                    oldIndex: -1,
+                    newIndex,
+                    list: source,
+                });
+                source._announce(`Item copied to position ${newIndex + 1}.`);
+            } else if (newIndex !== oldIndex) {
+                source._emit("reorder", {
+                    oldIndex,
+                    newIndex,
+                    item,
+                    list: source,
+                });
+                source._emit("update", {
+                    item,
+                    oldIndex,
+                    newIndex,
+                    list: source,
+                });
+                source._announce(
+                    `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
+                );
+            }
+            return;
+        }
+        // Cross-list drop. Source-then-destination order per spec.
+        source._emit("update", { item, oldIndex, newIndex: -1, list: source });
+        targetList._emit("reorder", {
+            oldIndex: -1,
+            newIndex,
+            item: insertee,
+            list: targetList,
+            from: source,
+        });
+        targetList._emit("update", {
+            item: insertee,
+            oldIndex: -1,
+            newIndex,
+            list: targetList,
+            from: source,
+        });
+        const verb = isClone ? "copied" : "moved";
+        targetList._announce(
+            destLabel
+                ? `Item ${verb} to list ${destLabel} at position ${newIndex + 1}.`
+                : `Item ${verb} to another list at position ${newIndex + 1}.`,
         );
     }
 
@@ -1149,63 +1287,15 @@ export class YumeDroplist extends HTMLElement {
         this._flip(snapshot);
 
         if (isClone) this._initializeChildren();
-        const destLabel = this.getAttribute("aria-label") || "";
-
-        if (!isCrossList) {
-            // Same-list drop.
-            if (isClone) {
-                this._emit("reorder", {
-                    oldIndex: -1,
-                    newIndex,
-                    item: insertee,
-                    list: this,
-                });
-                this._emit("update", {
-                    item: insertee,
-                    oldIndex: -1,
-                    newIndex,
-                    list: this,
-                });
-                this._announce(`Item copied to position ${newIndex + 1}.`);
-                return;
-            }
-            if (newIndex !== oldIndex) {
-                this._emit("reorder", { oldIndex, newIndex, item, list: this });
-                this._emit("update", { item, oldIndex, newIndex, list: this });
-                this._announce(
-                    `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
-                );
-            }
-            return;
-        }
-
-        // Cross-list drop. Source-then-destination order per spec.
-        source._emit("update", {
+        this._emitInsertComplete(
+            source,
+            this,
             item,
+            insertee,
             oldIndex,
-            newIndex: -1,
-            list: source,
-        });
-        this._emit("reorder", {
-            oldIndex: -1,
             newIndex,
-            item: insertee,
-            list: this,
-            from: source,
-        });
-        this._emit("update", {
-            item: insertee,
-            oldIndex: -1,
-            newIndex,
-            list: this,
-            from: source,
-        });
-
-        const verb = isClone ? "copied" : "moved";
-        this._announce(
-            destLabel
-                ? `Item ${verb} to list ${destLabel} at position ${newIndex + 1}.`
-                : `Item ${verb} to another list at position ${newIndex + 1}.`,
+            isClone,
+            isCrossList,
         );
     }
 
@@ -1244,44 +1334,7 @@ export class YumeDroplist extends HTMLElement {
     }
 
     _onPointerDown(e) {
-        // ── Handle-gate (mouse + touch) ────────────────────────────────────────
-        // When a drag-handle selector is configured, only presses on matching
-        // descendants start a drag. Non-handle presses temporarily set
-        // draggable="false" so the native DnD path is also blocked.
-        const handle = this.handle;
-        if (handle && !this.disabled) {
-            const item = this._eventItem(e);
-            if (item) {
-                const path = e.composedPath ? e.composedPath() : [e.target];
-                const start = path[0];
-                let isHandle = false;
-                let cur = start;
-                while (cur && cur !== item) {
-                    if (cur.matches?.(handle)) {
-                        isHandle = true;
-                        break;
-                    }
-                    cur = cur.parentNode;
-                }
-                if (!isHandle) {
-                    item.setAttribute("draggable", "false");
-                    if (this.preventOnFilter) e.preventDefault();
-                    const restore = () => {
-                        if (item.isConnected && !this.disabled) {
-                            item.setAttribute("draggable", "true");
-                        }
-                    };
-                    const signal = this._abort?.signal;
-                    const opts = signal
-                        ? { once: true, signal }
-                        : { once: true };
-                    window.addEventListener("pointerup", restore, opts);
-                    window.addEventListener("pointercancel", restore, opts);
-                    // Not a valid handle press — do not start touch pipeline.
-                    return;
-                }
-            }
-        }
+        if (this._blockNonHandlePress(e)) return;
 
         // ── Touch / pointer drag pipeline ──────────────────────────────────────
         // Only engage for touch/pen pointer types, or for mouse when we have a
@@ -1581,70 +1634,16 @@ export class YumeDroplist extends HTMLElement {
                 const newIndex = targetList._index(insertee);
                 targetList._flip(snapshot);
                 if (isClone) targetList._initializeChildren();
-
-                const destLabel = targetList.getAttribute("aria-label") || "";
-                if (!isCrossList) {
-                    if (isClone) {
-                        source._emit("reorder", {
-                            oldIndex: -1,
-                            newIndex,
-                            item: insertee,
-                            list: source,
-                        });
-                        source._emit("update", {
-                            item: insertee,
-                            oldIndex: -1,
-                            newIndex,
-                            list: source,
-                        });
-                        source._announce(
-                            `Item copied to position ${newIndex + 1}.`,
-                        );
-                    } else if (newIndex !== oldIndex) {
-                        source._emit("reorder", {
-                            oldIndex,
-                            newIndex,
-                            item,
-                            list: source,
-                        });
-                        source._emit("update", {
-                            item,
-                            oldIndex,
-                            newIndex,
-                            list: source,
-                        });
-                        source._announce(
-                            `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
-                        );
-                    }
-                } else {
-                    source._emit("update", {
-                        item,
-                        oldIndex,
-                        newIndex: -1,
-                        list: source,
-                    });
-                    targetList._emit("reorder", {
-                        oldIndex: -1,
-                        newIndex,
-                        item: insertee,
-                        list: targetList,
-                        from: source,
-                    });
-                    targetList._emit("update", {
-                        item: insertee,
-                        oldIndex: -1,
-                        newIndex,
-                        list: targetList,
-                        from: source,
-                    });
-                    const verb = isClone ? "copied" : "moved";
-                    targetList._announce(
-                        destLabel
-                            ? `Item ${verb} to list ${destLabel} at position ${newIndex + 1}.`
-                            : `Item ${verb} to another list at position ${newIndex + 1}.`,
-                    );
-                }
+                source._emitInsertComplete(
+                    source,
+                    targetList,
+                    item,
+                    insertee,
+                    oldIndex,
+                    newIndex,
+                    isClone,
+                    isCrossList,
+                );
             }
         }
 
@@ -1670,16 +1669,19 @@ export class YumeDroplist extends HTMLElement {
             if (isCancelled && this.revert) {
                 const ghostListRef = _ghostList;
                 const snapshot = ghostListRef._snapshot();
+
                 ghostListRef._removeGhost();
                 _ghostList = null;
                 this._clearSwapTarget();
                 ghostListRef._flip(snapshot);
+
                 const delay =
                     ghostListRef.animation === 0 ||
                     ghostListRef._prefersReducedMotion()
                         ? 0
                         : ghostListRef.animation;
                 this._touchCleanup(item, pointerEvent, /* cancelled */ true);
+
                 if (delay > 0) {
                     setTimeout(
                         () =>
@@ -1925,23 +1927,12 @@ export class YumeDroplist extends HTMLElement {
             : rawSpeed;
         const clampedSpeed = Math.min(speed, 30);
 
-        let dx = 0;
-        let dy = 0;
-
-        if (container === window) {
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-            if (e.clientX < sensitivity) dx = -clampedSpeed;
-            else if (e.clientX > vw - sensitivity) dx = clampedSpeed;
-            if (e.clientY < sensitivity) dy = -clampedSpeed;
-            else if (e.clientY > vh - sensitivity) dy = clampedSpeed;
-        } else {
-            const r = container.getBoundingClientRect();
-            if (e.clientX - r.left < sensitivity) dx = -clampedSpeed;
-            else if (r.right - e.clientX < sensitivity) dx = clampedSpeed;
-            if (e.clientY - r.top < sensitivity) dy = -clampedSpeed;
-            else if (r.bottom - e.clientY < sensitivity) dy = clampedSpeed;
-        }
+        const { dx, dy } = this._computeScrollDeltas(
+            e,
+            container,
+            sensitivity,
+            clampedSpeed,
+        );
 
         _scrollDx = dx;
         _scrollDy = dy;
