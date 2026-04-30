@@ -330,7 +330,8 @@ describe("YumeDroplist", () => {
         const startSpy = sandbox.spy();
         el.addEventListener("drag:start", startSpy);
 
-        const dt = typeof DataTransfer === "function" ? new DataTransfer() : null;
+        const dt =
+            typeof DataTransfer === "function" ? new DataTransfer() : null;
         const evt = new DragEvent("dragstart", {
             bubbles: true,
             composed: true,
@@ -352,11 +353,15 @@ describe("YumeDroplist", () => {
             </y-droplist>
         `);
         const a = el.children[0];
-        a.dispatchEvent(new DragEvent("dragstart", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
 
         const endSpy = sandbox.spy();
         el.addEventListener("drag:end", endSpy);
-        a.dispatchEvent(new DragEvent("dragend", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
 
         expect(a.classList.contains(el.dragClass)).to.be.false;
         expect(a.getAttribute("aria-grabbed")).to.equal("false");
@@ -372,7 +377,11 @@ describe("YumeDroplist", () => {
         const a = el.children[0];
         const startSpy = sandbox.spy();
         el.addEventListener("drag:start", startSpy);
-        const evt = new DragEvent("dragstart", { bubbles: true, composed: true, cancelable: true });
+        const evt = new DragEvent("dragstart", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
         a.dispatchEvent(evt);
         expect(startSpy).to.not.have.been.called;
         expect(evt.defaultPrevented).to.be.true;
@@ -388,7 +397,9 @@ describe("YumeDroplist", () => {
             </y-droplist>
         `);
         const a = el.children[0];
-        a.dispatchEvent(new DragEvent("dragstart", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
 
         // Synthetic dragover with no specific item target (e.g., over the gap).
         const evt = new DragEvent("dragover", {
@@ -412,7 +423,9 @@ describe("YumeDroplist", () => {
         ghost.dispatchEvent(evt2);
         expect(evt2.defaultPrevented).to.be.true;
 
-        a.dispatchEvent(new DragEvent("dragend", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
     });
 
     it("drop reorders to the projected insertion point and fires reorder/update", async () => {
@@ -426,7 +439,9 @@ describe("YumeDroplist", () => {
         const a = el.children[0];
         const c = el.children[2];
 
-        a.dispatchEvent(new DragEvent("dragstart", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
 
         // Project past the last item so the ghost lands at the end.
         const cRect = c.getBoundingClientRect();
@@ -444,8 +459,16 @@ describe("YumeDroplist", () => {
         el.addEventListener("reorder", reorderSpy);
         el.addEventListener("update", updateSpy);
 
-        a.dispatchEvent(new DragEvent("drop", { bubbles: true, composed: true, cancelable: true }));
-        a.dispatchEvent(new DragEvent("dragend", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
 
         expect(reorderSpy).to.have.been.calledOnce;
         expect(updateSpy).to.have.been.calledOnce;
@@ -466,10 +489,20 @@ describe("YumeDroplist", () => {
         const reorderSpy = sandbox.spy();
         el.addEventListener("reorder", reorderSpy);
 
-        a.dispatchEvent(new DragEvent("dragstart", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
         // No dragover → no ghost.
-        a.dispatchEvent(new DragEvent("drop", { bubbles: true, composed: true, cancelable: true }));
-        a.dispatchEvent(new DragEvent("dragend", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
 
         expect(reorderSpy).to.not.have.been.called;
         expect(el.toArray()).to.deep.equal(["a"]);
@@ -484,16 +517,20 @@ describe("YumeDroplist", () => {
             </y-droplist>
         `);
         const a = el.children[0];
-        a.dispatchEvent(new DragEvent("dragstart", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
         expect(a.getAttribute("aria-grabbed")).to.equal("true");
 
         // dragover inserts the ghost into the host's light DOM, which is a
         // childList mutation that re-fires _initializeChildren via the observer.
-        el.dispatchEvent(new DragEvent("dragover", {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-        }));
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
         // Let the MutationObserver microtask flush.
         await aTimeout(0);
 
@@ -508,7 +545,9 @@ describe("YumeDroplist", () => {
         expect(a.getAttribute("aria-grabbed")).to.equal("true");
         expect(c.getAttribute("aria-grabbed")).to.equal("false");
 
-        a.dispatchEvent(new DragEvent("dragend", { bubbles: true, composed: true }));
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
         expect(a.getAttribute("aria-grabbed")).to.equal("false");
     });
 
@@ -533,5 +572,694 @@ describe("YumeDroplist", () => {
         el.dragClass = "my-drag";
         expect(el.getAttribute("ghost-class")).to.equal("my-ghost");
         expect(el.getAttribute("drag-class")).to.equal("my-drag");
+    });
+
+    // ── Cross-list groups ─────────────────────────────────────
+
+    it("pull getter returns 'true' | 'clone' | 'false'", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.pull).to.equal("true");
+        el.setAttribute("pull", "clone");
+        expect(el.pull).to.equal("clone");
+        el.setAttribute("pull", "false");
+        expect(el.pull).to.equal("false");
+        el.pull = "true";
+        expect(el.getAttribute("pull")).to.equal("true");
+    });
+
+    it("put getter returns 'true' | 'false' | comma-separated group names", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.put).to.equal("true");
+        el.setAttribute("put", "false");
+        expect(el.put).to.equal("false");
+        el.setAttribute("put", "foo,bar");
+        expect(el.put).to.equal("foo,bar");
+        el.put = "true";
+        expect(el.getAttribute("put")).to.equal("true");
+    });
+
+    it("cross-list drop moves item to destination and fires events source-then-dest", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                    <div data-id="b">B</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="c">C</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        const srcUpdateSpy = sandbox.spy();
+        const destReorderSpy = sandbox.spy();
+        const destUpdateSpy = sandbox.spy();
+        src.addEventListener("update", srcUpdateSpy);
+        dest.addEventListener("reorder", destReorderSpy);
+        dest.addEventListener("update", destUpdateSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(src.hasItem(a)).to.be.false;
+        expect(dest.hasItem(a)).to.be.true;
+        expect(src.toArray()).to.deep.equal(["b"]);
+
+        expect(srcUpdateSpy).to.have.been.calledOnce;
+        expect(srcUpdateSpy.firstCall.args[0].detail.newIndex).to.equal(-1);
+        expect(srcUpdateSpy.firstCall.args[0].detail.oldIndex).to.equal(0);
+
+        expect(destReorderSpy).to.have.been.calledOnce;
+        expect(destUpdateSpy).to.have.been.calledOnce;
+        expect(destReorderSpy.firstCall.args[0].detail.newIndex).to.equal(0);
+
+        expect(srcUpdateSpy.calledBefore(destReorderSpy)).to.be.true;
+
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+        expect(src.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+    });
+
+    it("ghost moves from source to destination on cross-list dragover", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        // First dragover within source creates ghost in source
+        src.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(src.querySelector("[data-y-droplist-ghost]")).to.exist;
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        // Dragover on dest moves ghost there
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.exist;
+        expect(src.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+    });
+
+    it("three-list drag: ghost relocates across lists and item lands in the third", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="a" group="kanban" animation="0">
+                    <div data-id="task">Task</div>
+                </y-droplist>
+                <y-droplist id="b" group="kanban" animation="0">
+                    <div data-id="x">X</div>
+                </y-droplist>
+                <y-droplist id="c" group="kanban" animation="0">
+                    <div data-id="y">Y</div>
+                </y-droplist>
+            </div>
+        `);
+        const listA = container.querySelector("#a");
+        const listB = container.querySelector("#b");
+        const listC = container.querySelector("#c");
+        const task = listA.children[0];
+
+        task.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        listB.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(listB.querySelector("[data-y-droplist-ghost]")).to.exist;
+
+        listC.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(listB.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+        expect(listC.querySelector("[data-y-droplist-ghost]")).to.exist;
+
+        listC.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        task.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(listA.hasItem(task)).to.be.false;
+        expect(listC.hasItem(task)).to.be.true;
+        expect(listB.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+        expect(listC.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+    });
+
+    it("pull='clone' inserts a copy in destination, original remains in source", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" pull="clone" animation="0">
+                    <div data-id="a">A</div>
+                    <div data-id="b">B</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="c">C</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(src.hasItem(a)).to.be.true;
+        expect(src.toArray()).to.deep.equal(["a", "b"]);
+        expect(dest.toArray()).to.include("a");
+
+        const clone = dest.querySelector('[data-id="a"]');
+        expect(clone).to.exist;
+        expect(clone).to.not.equal(a);
+        expect(dest.children.length).to.equal(2);
+    });
+
+    it("pull='false' prevents dragover from showing a ghost in another list", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" pull="false" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        const overEvt = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt);
+
+        expect(overEvt.defaultPrevented).to.be.false;
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(src.hasItem(a)).to.be.true;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("put='false' rejects all incoming items", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" put="false" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+
+        const overEvt = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt);
+
+        expect(overEvt.defaultPrevented).to.be.false;
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(src.hasItem(a)).to.be.true;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("mismatched groups cannot exchange items", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="alpha" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="beta" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const overEvt = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt);
+
+        expect(overEvt.defaultPrevented).to.be.false;
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        expect(src.hasItem(a)).to.be.true;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("put as a comma-separated group list blocks a same-group source not in the list", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist
+                    id="dest"
+                    group="kanban"
+                    put="other-group"
+                    animation="0"
+                >
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const overEvt = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt);
+
+        // "kanban" is not in put list ["other-group"] → rejected
+        expect(overEvt.defaultPrevented).to.be.false;
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("drag:enter fires on the destination when a compatible item enters", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        const enterSpy = sandbox.spy();
+        dest.addEventListener("drag:enter", enterSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragenter", { bubbles: true, composed: true }),
+        );
+
+        expect(enterSpy).to.have.been.calledOnce;
+        const detail = enterSpy.firstCall.args[0].detail;
+        expect(detail.item).to.equal(a);
+        expect(detail.list).to.equal(dest);
+        expect(detail.from).to.equal(src);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("drag:enter does not fire for incompatible sources (pull='false')", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" pull="false" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        const enterSpy = sandbox.spy();
+        dest.addEventListener("drag:enter", enterSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragenter", { bubbles: true, composed: true }),
+        );
+
+        expect(enterSpy).to.not.have.been.called;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("drag:leave fires on the source list when the dragged item leaves its bounds", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        const leaveSpy = sandbox.spy();
+        src.addEventListener("drag:leave", leaveSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        // Dispatch dragleave with no relatedTarget (cursor went outside viewport)
+        src.dispatchEvent(
+            new DragEvent("dragleave", { bubbles: true, composed: true }),
+        );
+
+        expect(leaveSpy).to.have.been.calledOnce;
+        const detail = leaveSpy.firstCall.args[0].detail;
+        expect(detail.item).to.equal(a);
+        expect(detail.list).to.equal(src);
+        expect(detail.to).to.be.null;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("cross-list drop announces destination aria-label in the live region", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist
+                    id="dest"
+                    group="kanban"
+                    aria-label="Done"
+                    animation="0"
+                >
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        await flushFrame();
+        const live = dest.shadowRoot.querySelector(".sr-live");
+        expect(live.textContent).to.contain("Done");
+        expect(live.textContent).to.contain("position");
+    });
+
+    it("falls back to 'another list' when the destination has no aria-label", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        dest.dispatchEvent(
+            new DragEvent("drop", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            }),
+        );
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        await flushFrame();
+        const live = dest.shadowRoot.querySelector(".sr-live");
+        expect(live.textContent).to.contain("another list");
+    });
+
+    it("changing the group attribute moves the list to the new group registry", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        // Initially same group — cross-drag works
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const overEvt1 = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt1);
+        expect(overEvt1.defaultPrevented).to.be.true;
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        // Move dest to a different group
+        dest.setAttribute("group", "other");
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const overEvt2 = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt2);
+        expect(overEvt2.defaultPrevented).to.be.false;
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("destroy() unregisters the list so cross-list drag is blocked afterward", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0">
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+        const a = src.children[0];
+
+        dest.destroy();
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        const overEvt = new DragEvent("dragover", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        dest.dispatchEvent(overEvt);
+        expect(overEvt.defaultPrevented).to.be.false;
+        expect(dest.querySelector("[data-y-droplist-ghost]")).to.not.exist;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
     });
 });

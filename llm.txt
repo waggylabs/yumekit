@@ -748,7 +748,7 @@ Slots: default (drawer content)
 ---
 
 ### y-droplist
-Drag-and-drop reorderable list. MVP scope: within-list reordering only — cross-list groups, handles, swap/clone, touch polyfill, and auto-scroll are tracked as follow-ups.
+Drag-and-drop reorderable list with optional cross-list group support.
 
 Tag: `<y-droplist>`
 Attributes:
@@ -757,24 +757,30 @@ Attributes:
 - `animation` — settle-animation duration in ms (default `150`). `0` disables. Honors `prefers-reduced-motion: reduce` regardless of value.
 - `ghost-class` — CSS class applied to the placeholder shown at the projected drop position. Default `"y-droplist__ghost"`.
 - `drag-class` — CSS class applied to the dragged item. Default `"y-droplist__dragging"`.
+- `group` — string. Lists with the same `group` name can exchange items via drag-and-drop. Empty / unset means within-list only.
+- `pull` — `"true"` (default) | `"clone"` | `"false"`. Controls whether items leave this list. `"true"` moves the item; `"clone"` leaves the original in place and inserts a copy in the destination; `"false"` blocks dragging out.
+- `put` — `"true"` (default) | `"false"` | comma-separated group-name list. Controls whether items can be dropped into this list. `"true"` accepts any same-group item; `"false"` rejects all incoming; a group-name list restricts accepted sources to those whose `group` appears in the list.
 
 Events (bubble + composed, not cancelable):
 - `drag:start` — `{ originalEvent, item, list }`
 - `drag:end` — `{ originalEvent, item, list }` (always fires; `originalEvent` is the native dragend)
-- `reorder` — `{ oldIndex, newIndex, item, list }` (fires only when index changes)
-- `update` — `{ item, oldIndex, newIndex, list }` (fires immediately after `reorder`)
+- `drag:enter` — `{ originalEvent, item, list, from }` — fired on the **destination** list when a foreign item first enters its hit area. `from` is the source list. Only fires when the two lists are compatible (same group, pull/put allow).
+- `drag:leave` — `{ originalEvent, item, list, to }` — fired on the **source** list when the dragged item leaves its bounds. `to` is the destination list, or `null` if the cursor left all droplists.
+- `reorder` — `{ oldIndex, newIndex, item, list[, from] }` — fires only when index changes. On a cross-list drop `oldIndex` is `-1` and `from` is the source list.
+- `update` — `{ item, oldIndex, newIndex, list[, from] }` — fires immediately after `reorder`. On a cross-list drop the **source** fires first with `newIndex: -1`; the destination fires next with the insert position.
 
 Methods:
 - `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
-- `hasItem(item)` — true when `item` is a direct slotted child of the droplist. Use this for strict same-list membership checks; native `contains()` retains its standard ancestry semantics.
-- `destroy()` — removes all listeners and the mutation observer. The component re-initializes on disconnect/reconnect.
+- `hasItem(item)` — true when `item` is a direct slotted child of the droplist.
+- `destroy()` — removes all listeners, the mutation observer, and unregisters from the cross-list group registry. The component re-initializes on disconnect/reconnect.
 
 Behavior:
 - Items get `role="listitem"`, `tabindex="0"`, `draggable="true"`, and `aria-grabbed="false"` automatically; new children added at runtime are auto-initialized via `MutationObserver`.
 - Keyboard reorder: focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when `vertical="false"`). Focus stays on the moved item; `reorder` and `update` fire identically to a mouse drop.
-- A polite `aria-live` region inside the shadow root announces moves: _"Item moved from position X to position Y."_
+- A polite `aria-live` region inside the shadow root announces moves. Within-list: _"Item moved from position X to position Y."_ Cross-list: _"Item moved to list `<aria-label>` at position N."_, falling back to _"another list"_ when the destination has no accessible name.
 - Settle animation uses FLIP. Skipped when `animation="0"` or `prefers-reduced-motion: reduce`.
-- **Touch is not supported in the MVP** — track the touch follow-up before shipping to mobile.
+- Cross-list compatibility is checked on every `dragover`. Incompatible combinations do not call `preventDefault()`, so the OS shows the "not allowed" cursor and no ghost appears.
+- **Touch is not supported** — track the touch follow-up before shipping to mobile.
 
 CSS Parts: `list` (the shadow-DOM wrapper around the slot).
 
@@ -785,15 +791,31 @@ Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attri
 CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`.
 
 ```html
+<!-- Within-list reorder -->
 <y-droplist>
     <div data-id="alpha">Alpha</div>
     <div data-id="bravo">Bravo</div>
     <div data-id="charlie">Charlie</div>
 </y-droplist>
 
+<!-- Cross-list Kanban columns -->
+<y-droplist id="todo" group="kanban" aria-label="To Do">
+    <div data-id="task-1">Task 1</div>
+</y-droplist>
+<y-droplist id="done" group="kanban" aria-label="Done">
+    <div data-id="task-2">Task 2</div>
+</y-droplist>
+
+<!-- Clone-only template list (items can be cloned out but nothing comes in) -->
+<y-droplist id="templates" group="kanban" pull="clone" put="false">
+    <div data-id="tpl-bug">Bug report</div>
+</y-droplist>
+
 <script type="module">
-    document.querySelector("y-droplist").addEventListener("update", (e) => {
-        console.log("new order:", e.target.toArray());
+    document.querySelectorAll("[group='kanban']").forEach((list) => {
+        list.addEventListener("update", (e) => {
+            console.log("update", e.detail);
+        });
     });
 </script>
 ```

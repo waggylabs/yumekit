@@ -3,9 +3,35 @@ import { createElement as _el } from "../../modules/helpers.js";
 const DEFAULT_GHOST_CLASS = "y-droplist__ghost";
 const DEFAULT_DRAG_CLASS = "y-droplist__dragging";
 
+/** Cross-list drag group registry: group name → Set<YumeDroplist>. */
+const _groups = new Map();
+
+/** The list currently owning the active drag session. */
+let _activeSource = null;
+
+/** The list that currently holds the drag ghost element. */
+let _ghostList = null;
+
+function _registerInGroup(list) {
+    const g = list.group;
+    if (!g) return;
+    if (!_groups.has(g)) _groups.set(g, new Set());
+    _groups.get(g).add(list);
+}
+
+function _unregisterFromGroup(list) {
+    const g = list.group;
+    if (!g) return;
+    const members = _groups.get(g);
+    if (!members) return;
+    members.delete(list);
+    if (members.size === 0) _groups.delete(g);
+}
+
 export class YumeDroplist extends HTMLElement {
     static get observedAttributes() {
         return [
+            "group",
             "disabled",
             "vertical",
             "animation",
@@ -36,6 +62,7 @@ export class YumeDroplist extends HTMLElement {
         this._observeChildren();
         this._initializeChildren();
         this._syncDisabledAria();
+        _registerInGroup(this);
     }
 
     disconnectedCallback() {
@@ -47,6 +74,13 @@ export class YumeDroplist extends HTMLElement {
         if (name === "disabled") {
             this._syncDisabledAria();
             this._initializeChildren();
+        } else if (name === "group" && this._abort) {
+            if (oldValue) {
+                const members = _groups.get(oldValue);
+                members?.delete(this);
+                if (members && members.size === 0) _groups.delete(oldValue);
+            }
+            _registerInGroup(this);
         }
     }
 
@@ -86,6 +120,49 @@ export class YumeDroplist extends HTMLElement {
     }
     set ghostClass(val) {
         this.setAttribute("ghost-class", val);
+    }
+
+    /** Group name for drag-and-drop interactions. */
+    get group() {
+        return this.getAttribute("group") || "";
+    }
+    set group(val) {
+        this.setAttribute("group", val);
+    }
+
+    /**
+     * Whether this list allows items to be dragged out.
+     * `"true"` (default) moves the item; `"clone"` leaves a copy; `"false"` blocks pulling.
+     */
+    get pull() {
+        const val = this.getAttribute("pull");
+        if (val === "false") return "false";
+        if (val === "clone") return "clone";
+        return "true";
+    }
+    set pull(val) {
+        const s = String(val);
+        if (s === "false") this.setAttribute("pull", "false");
+        else if (s === "clone") this.setAttribute("pull", "clone");
+        else this.setAttribute("pull", "true");
+    }
+
+    /**
+     * Whether this list accepts incoming items.
+     * `"true"` (default) accepts any same-group item; `"false"` rejects all;
+     * or a comma-separated list of group names whose items are accepted.
+     */
+    get put() {
+        const val = this.getAttribute("put");
+        if (val === "false") return "false";
+        if (val && val !== "true") return val;
+        return "true";
+    }
+    set put(val) {
+        const s = String(val);
+        if (s === "false") this.setAttribute("put", "false");
+        else if (s === "true" || s === "") this.setAttribute("put", "true");
+        else this.setAttribute("put", s);
     }
 
     /** Whether items reorder along the vertical axis. Default true; set "false" to flip. */
@@ -199,6 +276,19 @@ export class YumeDroplist extends HTMLElement {
         return sheet;
     }
 
+    _canAcceptFrom(source) {
+        const myGroup = this.group;
+        const theirGroup = source.group;
+        if (!myGroup || !theirGroup || myGroup !== theirGroup) return false;
+        if (source.pull === "false") return false;
+        const put = this.put;
+        if (put === "false") return false;
+        if (put !== "true") {
+            const allowed = put.split(",").map((s) => s.trim());
+            if (!allowed.includes(theirGroup)) return false;
+        }
+        return true;
+    }
     _createGhost(refItem) {
         const rect = refItem.getBoundingClientRect();
         const ghost = document.createElement("div");
@@ -235,10 +325,24 @@ export class YumeDroplist extends HTMLElement {
         return null;
     }
 
+    _findListForElement(el) {
+        if (!el) return null;
+        const myGroup = this.group;
+        if (!myGroup) return null;
+        const members = _groups.get(myGroup);
+        if (!members) return null;
+        for (const list of members) {
+            if (list !== this && list.contains(el)) return list;
+        }
+        return null;
+    }
+
     _flip(snapshot) {
         if (this.animation === 0 || this._prefersReducedMotion()) return;
+
         const duration = `var(--component-droplist-transition-duration, ${this.animation}ms)`;
         const easing = "var(--component-droplist-transition-easing, ease)";
+
         for (const item of this._items()) {
             const before = snapshot.get(item);
             if (!before) continue;
@@ -319,21 +423,68 @@ export class YumeDroplist extends HTMLElement {
     }
 
     _onDragEnd(e) {
-        if (!this._dragItem) return;
-        const item = this._dragItem;
-        item.classList.remove(this.dragClass);
+        const source = _activeSource;
+        if (!source) return;
+        const item = source._dragItem;
+        if (!item) return;
+        item.classList.remove(source.dragClass);
         item.setAttribute("aria-grabbed", "false");
-        this._removeGhost();
-        this._dragItem = null;
-        this._oldIndex = -1;
-        this._emit("drag:end", { originalEvent: e, item, list: this });
+        if (_ghostList) {
+            _ghostList._removeGhost();
+            _ghostList = null;
+        }
+        source._dragItem = null;
+        source._oldIndex = -1;
+        _activeSource = null;
+        source._emit("drag:end", { originalEvent: e, item, list: source });
+    }
+
+    _onDragEnter(e) {
+        const source = _activeSource;
+        if (!source || source === this) return;
+        if (!this._canAcceptFrom(source)) return;
+        const from = e.relatedTarget;
+        if (from && this.contains(from)) return;
+        this._emit("drag:enter", {
+            originalEvent: e,
+            item: source._dragItem,
+            list: this,
+            from: source,
+        });
+    }
+
+    _onDragLeave(e) {
+        const source = _activeSource;
+        if (!source || source !== this) return;
+        const to = e.relatedTarget;
+        if (to && this.contains(to)) return;
+        const toList = this._findListForElement(to);
+        this._emit("drag:leave", {
+            originalEvent: e,
+            item: source._dragItem,
+            list: this,
+            to: toList,
+        });
     }
 
     _onDragOver(e) {
-        if (!this._dragItem) return;
-        // Always allow the drop while a drag is active — dropping over the
-        // ghost, the flex gap, or the drag item itself otherwise refuses.
+        const source = _activeSource;
+        if (!source) return;
+        if (source !== this) {
+            // Cross-list: check pull/put/group compatibility before accepting the drop.
+            if (!this._canAcceptFrom(source)) return;
+        }
+        // Move the ghost to this list if it currently lives elsewhere.
+        if (_ghostList && _ghostList !== this) {
+            _ghostList._removeGhost();
+        }
+        // Always accept the event — this allows dropping over the ghost,
+        // flex gaps, and the drag item itself without the OS showing "no-drop".
         e.preventDefault();
+        if (source !== this && !this._ghost) {
+            this._ghost = this._createGhost(source._dragItem);
+        }
+        _ghostList = this;
         const reference = this._projectInsertionPoint(e);
         this._placeGhost(reference);
     }
@@ -358,30 +509,85 @@ export class YumeDroplist extends HTMLElement {
                 // Some platforms throw when setData is called outside dragstart.
             }
         }
+        _activeSource = this;
         this._emit("drag:start", { originalEvent: e, item, list: this });
     }
 
     _onDrop(e) {
-        if (!this._dragItem) return;
-
+        const source = _activeSource;
+        if (!source) return;
         e.preventDefault();
-        const item = this._dragItem;
-        const oldIndex = this._oldIndex;
-        const ghost = this._ghost;
-        if (!ghost) return;
+        if (source === this) {
+            // Within-list drop.
+            const item = source._dragItem;
+            const oldIndex = source._oldIndex;
+            const ghost = this._ghost;
+            if (!ghost) return;
 
-        const snapshot = this._snapshot();
-        this.insertBefore(item, ghost);
-        this._removeGhost();
+            const snapshot = this._snapshot();
+            this.insertBefore(item, ghost);
+            this._removeGhost();
+            _ghostList = null;
 
-        const newIndex = this._index(item);
-        this._flip(snapshot);
+            const newIndex = this._index(item);
+            this._flip(snapshot);
 
-        if (newIndex !== oldIndex) {
-            this._emit("reorder", { oldIndex, newIndex, item, list: this });
-            this._emit("update", { item, oldIndex, newIndex, list: this });
+            if (newIndex !== oldIndex) {
+                this._emit("reorder", { oldIndex, newIndex, item, list: this });
+                this._emit("update", { item, oldIndex, newIndex, list: this });
+                this._announce(
+                    `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
+                );
+            }
+        } else {
+            // Cross-list drop.
+            if (!this._canAcceptFrom(source)) return;
+
+            const ghost = this._ghost;
+            if (!ghost) return;
+
+            const item = source._dragItem;
+            const oldIndex = source._oldIndex;
+            const isClone = source.pull === "clone";
+            const insertee = isClone ? item.cloneNode(true) : item;
+
+            const snapshot = this._snapshot();
+            this.insertBefore(insertee, ghost);
+            this._removeGhost();
+            _ghostList = null;
+
+            const newIndex = this._index(insertee);
+            this._flip(snapshot);
+
+            if (isClone) this._initializeChildren();
+
+            // Source-then-destination order per spec.
+            source._emit("update", {
+                item,
+                oldIndex,
+                newIndex: -1,
+                list: source,
+            });
+            this._emit("reorder", {
+                oldIndex: -1,
+                newIndex,
+                item: insertee,
+                list: this,
+                from: source,
+            });
+            this._emit("update", {
+                item: insertee,
+                oldIndex: -1,
+                newIndex,
+                list: this,
+                from: source,
+            });
+
+            const destLabel = this.getAttribute("aria-label") || "";
             this._announce(
-                `Item moved from position ${oldIndex + 1} to position ${newIndex + 1}.`,
+                destLabel
+                    ? `Item moved to list ${destLabel} at position ${newIndex + 1}.`
+                    : `Item moved to another list at position ${newIndex + 1}.`,
             );
         }
     }
@@ -406,22 +612,6 @@ export class YumeDroplist extends HTMLElement {
         this._moveByKeyboard(target, direction);
     }
 
-    _projectInsertionPoint(e) {
-        const items = this._items().filter((i) => i !== this._dragItem);
-        if (items.length === 0) return null;
-
-        const coord = this.vertical ? e.clientY : e.clientX;
-        for (const item of items) {
-            const rect = item.getBoundingClientRect();
-            const mid = this.vertical
-                ? rect.top + rect.height / 2
-                : rect.left + rect.width / 2;
-            if (coord < mid) return item;
-        }
-
-        return null;
-    }
-
     _placeGhost(reference) {
         if (!this._ghost) this._ghost = this._createGhost(this._dragItem);
         if (
@@ -437,6 +627,22 @@ export class YumeDroplist extends HTMLElement {
             window.matchMedia &&
             window.matchMedia("(prefers-reduced-motion: reduce)").matches,
         );
+    }
+
+    _projectInsertionPoint(e) {
+        const items = this._items().filter((i) => i !== this._dragItem);
+        if (items.length === 0) return null;
+
+        const coord = this.vertical ? e.clientY : e.clientX;
+        for (const item of items) {
+            const rect = item.getBoundingClientRect();
+            const mid = this.vertical
+                ? rect.top + rect.height / 2
+                : rect.left + rect.width / 2;
+            if (coord < mid) return item;
+        }
+
+        return null;
     }
 
     _removeGhost() {
@@ -458,22 +664,35 @@ export class YumeDroplist extends HTMLElement {
     }
 
     _teardown() {
+        _unregisterFromGroup(this);
+
+        if (_activeSource === this) _activeSource = null;
+        if (_ghostList === this) _ghostList = null;
+
         this._abort?.abort();
         this._abort = null;
         this._observer?.disconnect();
         this._observer = null;
         this._removeGhost();
+
         if (this._dragItem) {
             this._dragItem.classList.remove(this.dragClass);
             this._dragItem.setAttribute("aria-grabbed", "false");
             this._dragItem = null;
         }
+
         this._oldIndex = -1;
     }
 
     _wireEvents() {
         const signal = this._abort.signal;
         this.addEventListener("dragstart", (e) => this._onDragStart(e), {
+            signal,
+        });
+        this.addEventListener("dragenter", (e) => this._onDragEnter(e), {
+            signal,
+        });
+        this.addEventListener("dragleave", (e) => this._onDragLeave(e), {
             signal,
         });
         this.addEventListener("dragover", (e) => this._onDragOver(e), {
