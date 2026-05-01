@@ -483,3 +483,69 @@ export const DragDropEvent = {
         </div>
     `,
 };
+export const DragPreview = {
+    render: () => `
+        <p style="margin:0 0 12px;font-size:0.85em">
+            Drag an item — a cursor-following clone of the dragged card follows
+            the mouse. The in-list ghost (dashed outline) is unchanged.
+        </p>
+        <y-droplist drag-preview style="display:block;${listWidth};${noItemPadding}">
+            <y-card data-id="alpha" raised>Alpha</y-card>
+            <y-card data-id="bravo" raised>Bravo</y-card>
+            <y-card data-id="charlie" raised>Charlie</y-card>
+            <y-card data-id="delta" raised>Delta</y-card>
+        </y-droplist>
+    `,
+};
+
+export const DragPreviewCustomSlot = {
+    render: () => `
+        <style>
+            .badge-preview {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 8px 16px;
+                background: var(--primary-background-DEFAULT, #4c8bf5);
+                color: var(--primary-content-DEFAULT, #fff);
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+        </style>
+        <p style="margin:0 0 12px;font-size:0.85em">
+            A custom <code>slot="drag-preview"</code> element is used instead of
+            cloning the dragged card. The badge below is the slotted node —
+            it is hidden during the drag and restored on drop.
+        </p>
+        <y-droplist drag-preview style="display:block;${listWidth};${noItemPadding}">
+            <y-card data-id="alpha" raised>Alpha</y-card>
+            <y-card data-id="bravo" raised>Bravo</y-card>
+            <y-card data-id="charlie" raised>Charlie</y-card>
+            <div slot="drag-preview" class="badge-preview">Dragging…</div>
+        </y-droplist>
+    `,
+};
+
+export const DragPreviewTilted = {
+    render: () => `
+        <p style="margin:0 0 12px;font-size:0.85em">
+            The preview is scaled to 92 % and tilted 3° using
+            <code>--component-droplist-drag-preview-rotate</code> and
+            <code>--component-droplist-drag-preview-scale</code> (via
+            <code>drag-preview-scale</code> attribute). Mimics a Trello-style
+            card drag.
+        </p>
+        <y-droplist
+            drag-preview
+            drag-preview-scale="0.92"
+            style="display:block;${listWidth};${noItemPadding};--component-droplist-drag-preview-rotate:3deg"
+        >
+            <y-card data-id="alpha" raised>Alpha</y-card>
+            <y-card data-id="bravo" raised>Bravo</y-card>
+            <y-card data-id="charlie" raised>Charlie</y-card>
+            <y-card data-id="delta" raised>Delta</y-card>
+        </y-droplist>
+    `,
+};

@@ -462,6 +462,10 @@
       }
     },
     "droplist": {
+      "drag-preview-shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      },
       "ghost-background": {
         "$type": "color",
         "$value": "{base.background.hover}"

@@ -13,6 +13,9 @@ let _activeSource = null;
 /** The list that currently holds the drag ghost element. */
 let _ghostList = null;
 
+/** The list that currently owns the cursor-following drag preview. */
+let _previewOwner = null;
+
 // ---------------------------------------------------------------------------
 // Shared auto-scroll scheduler — only one RAF loop runs across all instances
 // ---------------------------------------------------------------------------
@@ -129,6 +132,13 @@ export class YumeDroplist extends HTMLElement {
         this._movePending = null;
         this._lastDragOverTarget = null;
 
+        // Drag preview state
+        this._dragPreview = null;
+        this._grabOffsetX = 0;
+        this._grabOffsetY = 0;
+        this._previewRafId = null;
+        this._previewPending = null;
+
         this.render();
     }
 
@@ -235,6 +245,61 @@ export class YumeDroplist extends HTMLElement {
     }
     set dragClass(val) {
         this.setAttribute("drag-class", val);
+    }
+
+    /**
+     * When present, renders a cursor-following preview element during drag.
+     * When absent, the browser's native drag image is used for mouse, and no
+     * preview is rendered for touch. The existing in-list ghost placeholder is
+     * unaffected.
+     */
+    get dragPreview() {
+        return this.hasAttribute("drag-preview");
+    }
+    set dragPreview(val) {
+        if (val) this.setAttribute("drag-preview", "");
+        else this.removeAttribute("drag-preview");
+    }
+
+    /**
+     * CSS class applied to the cursor-following preview element.
+     * Default `"y-droplist__drag-preview"`.
+     */
+    get dragPreviewClass() {
+        return (
+            this.getAttribute("drag-preview-class") ||
+            "y-droplist__drag-preview"
+        );
+    }
+    set dragPreviewClass(val) {
+        this.setAttribute("drag-preview-class", val);
+    }
+
+    /**
+     * Controls where the preview anchors relative to the cursor.
+     * - `"cursor"` (default) — preserves the grab offset captured at drag start.
+     * - `"center"` — centers the preview on the cursor.
+     * - `"top-left"` — pins the cursor to the preview's top-left corner.
+     */
+    get dragPreviewOffset() {
+        const val = this.getAttribute("drag-preview-offset");
+        if (val === "center" || val === "top-left") return val;
+        return "cursor";
+    }
+    set dragPreviewOffset(val) {
+        this.setAttribute("drag-preview-offset", val);
+    }
+
+    /**
+     * Scale factor applied to the preview via `transform: scale()`.
+     * Use values less than `1` for a shrunken preview. Default `1`.
+     */
+    get dragPreviewScale() {
+        const n = parseFloat(this.getAttribute("drag-preview-scale") ?? "1");
+        return Number.isFinite(n) && n > 0 ? n : 1;
+    }
+    set dragPreviewScale(val) {
+        this.setAttribute("drag-preview-scale", String(val));
     }
 
     /**
@@ -745,6 +810,92 @@ export class YumeDroplist extends HTMLElement {
         return { dx, dy };
     }
 
+    _createDragPreview(item, clientX, clientY) {
+        // Only one preview per drag session.
+        if (_previewOwner) return;
+
+        const itemRect = item.getBoundingClientRect();
+        this._grabOffsetX = clientX - itemRect.left;
+        this._grabOffsetY = clientY - itemRect.top;
+
+        // Determine preview content: custom slot node or deep clone of the item.
+        const slotted = this.querySelector('[slot="drag-preview"]');
+        let content;
+        if (slotted) {
+            slotted.style.display = "none";
+            content = slotted.cloneNode(true);
+            content.removeAttribute("slot");
+            content.style.display = "";
+        } else {
+            content = item.cloneNode(true);
+        }
+
+        // Read CSS custom property values from host so they resolve correctly
+        // against the consumer's theme even though the preview lives in body.
+        const cs = getComputedStyle(this);
+        const opacity =
+            cs
+                .getPropertyValue("--component-droplist-drag-preview-opacity")
+                .trim() || "0.85";
+        const shadow =
+            cs
+                .getPropertyValue("--component-droplist-drag-preview-shadow")
+                .trim() || "0 4px 12px rgba(0,0,0,0.15)";
+        const rotate =
+            cs
+                .getPropertyValue("--component-droplist-drag-preview-rotate")
+                .trim() || "0deg";
+        const zIndex =
+            cs
+                .getPropertyValue("--component-droplist-drag-preview-z-index")
+                .trim() || "9999";
+
+        const scale = this.dragPreviewScale;
+        const reducedMotion = this._prefersReducedMotion();
+        const rotateVal = reducedMotion ? "0deg" : rotate;
+        const scaleVal = reducedMotion ? 1 : scale;
+
+        const preview = document.createElement("div");
+        preview.className = this.dragPreviewClass;
+        preview.setAttribute("aria-hidden", "true");
+        preview.setAttribute("part", "drag-preview");
+        preview.appendChild(content);
+        preview.style.cssText = [
+            "position:fixed",
+            "pointer-events:none",
+            `z-index:${zIndex}`,
+            `width:${itemRect.width}px`,
+            `height:${itemRect.height}px`,
+            "box-sizing:border-box",
+            `opacity:${opacity}`,
+            `box-shadow:${shadow}`,
+            `transform:scale(${scaleVal}) rotate(${rotateVal})`,
+            "transform-origin:top left",
+            "will-change:top,left",
+            "top:0",
+            "left:0",
+        ].join(";");
+
+        const previewEvent = new CustomEvent("drag:preview", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail: { item, preview, list: this },
+        });
+        const notCancelled = this.dispatchEvent(previewEvent);
+        if (!notCancelled) {
+            // Consumer cancelled — restore hidden slot node if any.
+            if (slotted) slotted.style.display = "";
+            return;
+        }
+
+        document.body.appendChild(preview);
+        this._dragPreview = preview;
+        _previewOwner = this;
+
+        this._positionDragPreview(clientX, clientY);
+    }
+
     _createGhost(refItem) {
         const rect = refItem.getBoundingClientRect();
         const ghost = _el("div", {
@@ -1072,6 +1223,7 @@ export class YumeDroplist extends HTMLElement {
 
         item.classList.remove(source.dragClass);
         item.setAttribute("aria-grabbed", "false");
+        source._removeDragPreview();
 
         // If the ghost still exists, the drag was cancelled (no valid drop).
         const isCancelled = _ghostList !== null;
@@ -1186,6 +1338,8 @@ export class YumeDroplist extends HTMLElement {
             if (target) {
                 e.preventDefault();
                 this._checkDragOver(source, e, this);
+                if (source.dragPreview)
+                    source._schedulePreviewPosition(e.clientX, e.clientY);
             }
             return;
         }
@@ -1209,6 +1363,8 @@ export class YumeDroplist extends HTMLElement {
         this._checkDragOver(source, e, this);
         const reference = this._projectInsertionPoint(e);
         this._placeGhost(reference);
+        if (source.dragPreview)
+            source._schedulePreviewPosition(e.clientX, e.clientY);
     }
 
     _onDragStart(e) {
@@ -1236,6 +1392,28 @@ export class YumeDroplist extends HTMLElement {
         }
         _activeSource = this;
         this._emit("drag:start", { originalEvent: e, item, list: this });
+
+        if (this.dragPreview) {
+            // Suppress the browser's native drag image by replacing it with a
+            // 1×1 transparent GIF. Note: Safari historically ignores
+            // setDragImage, so Safari users may see both the native preview and
+            // the custom one — acceptable tradeoff for uniform code paths.
+            if (e.dataTransfer) {
+                const img = new Image(1, 1);
+                img.src =
+                    "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+                img.style.cssText =
+                    "position:fixed;left:-9999px;top:-9999px;opacity:0";
+                document.body.appendChild(img);
+                try {
+                    e.dataTransfer.setDragImage(img, 0, 0);
+                } catch {
+                    // Ignore — browser doesn't support setDragImage.
+                }
+                requestAnimationFrame(() => img.remove());
+            }
+            this._createDragPreview(item, e.clientX, e.clientY);
+        }
     }
 
     _onDrop(e) {
@@ -1271,7 +1449,9 @@ export class YumeDroplist extends HTMLElement {
         // used as an insertBefore marker. Use the tracked _lastGhostRef instead.
         const insertionRef = this.forceFloat ? this._lastGhostRef : ghost;
         const dropIndex = this.forceFloat
-            ? (insertionRef ? Array.prototype.indexOf.call(this.children, insertionRef) : this.children.length)
+            ? insertionRef
+                ? Array.prototype.indexOf.call(this.children, insertionRef)
+                : this.children.length
             : this._ghostIndex(ghost);
 
         this._emit("drag:drop", {
@@ -1421,6 +1601,11 @@ export class YumeDroplist extends HTMLElement {
         // Drag is active.
         if (!this._touchActive) return;
 
+        // Update the cursor-following preview whenever the pointer moves,
+        // regardless of whether the cursor is over a valid list.
+        if (this.dragPreview)
+            this._schedulePreviewPosition(e.clientX, e.clientY);
+
         // Build a synthetic event-like object that has the coordinates we need.
         // This object is passed to _onDragOver-equivalent logic.
         const synthetic = { clientX: e.clientX, clientY: e.clientY };
@@ -1525,6 +1710,49 @@ export class YumeDroplist extends HTMLElement {
         }
     }
 
+    _positionDragPreview(clientX, clientY) {
+        const preview = this._dragPreview;
+        if (!preview) return;
+
+        const cs = getComputedStyle(this);
+        const offX =
+            parseFloat(
+                cs
+                    .getPropertyValue(
+                        "--component-droplist-drag-preview-cursor-offset-x",
+                    )
+                    .trim(),
+            ) || 0;
+        const offY =
+            parseFloat(
+                cs
+                    .getPropertyValue(
+                        "--component-droplist-drag-preview-cursor-offset-y",
+                    )
+                    .trim(),
+            ) || 0;
+
+        const offset = this.dragPreviewOffset;
+        let top, left;
+
+        if (offset === "center") {
+            const w = parseFloat(preview.style.width) || 0;
+            const h = parseFloat(preview.style.height) || 0;
+            left = clientX - w / 2 + offX;
+            top = clientY - h / 2 + offY;
+        } else if (offset === "top-left") {
+            left = clientX + offX;
+            top = clientY + offY;
+        } else {
+            // "cursor" (default) — preserve grab offset.
+            left = clientX - this._grabOffsetX + offX;
+            top = clientY - this._grabOffsetY + offY;
+        }
+
+        preview.style.left = `${left}px`;
+        preview.style.top = `${top}px`;
+    }
+
     /**
      * Update the `top`/`left` of a force-float ghost to match the current
      * projected insertion point in viewport coordinates.
@@ -1534,10 +1762,12 @@ export class YumeDroplist extends HTMLElement {
         if (!ghost) return;
         if (reference) {
             const r = reference.getBoundingClientRect();
+
             ghost.style.top = `${r.top}px`;
             ghost.style.left = `${r.left}px`;
         } else {
             const items = this._items();
+
             if (items.length > 0) {
                 const last = items[items.length - 1];
                 const r = last.getBoundingClientRect();
@@ -1560,7 +1790,7 @@ export class YumeDroplist extends HTMLElement {
      * Resets all touch drag state after a committed drop or cancel.
      * The caller is always responsible for emitting `drag:end`.
      */
-    _touchCleanup(item, _pointerEvent) {
+    _touchCleanup(item) {
         if (item) {
             item.classList.remove(this.dragClass);
             item.setAttribute("aria-grabbed", "false");
@@ -1599,6 +1829,8 @@ export class YumeDroplist extends HTMLElement {
         _stopScroll();
         source._scrollContainer = null;
 
+        this._removeDragPreview();
+
         if (isSwap) {
             const swapDropIndex = targetList._index(targetList._swapTarget);
             targetList._emit("drag:drop", {
@@ -1617,7 +1849,12 @@ export class YumeDroplist extends HTMLElement {
                     ? targetList._lastGhostRef
                     : ghost;
                 const dropIndex = targetList.forceFloat
-                    ? (insertionRef ? Array.prototype.indexOf.call(targetList.children, insertionRef) : targetList.children.length)
+                    ? insertionRef
+                        ? Array.prototype.indexOf.call(
+                              targetList.children,
+                              insertionRef,
+                          )
+                        : targetList.children.length
                     : targetList._ghostIndex(ghost);
 
                 targetList._emit("drag:drop", {
@@ -1662,6 +1899,7 @@ export class YumeDroplist extends HTMLElement {
         const item = this._dragItem;
         _stopScroll();
         this._scrollContainer = null;
+        this._removeDragPreview();
 
         const isCancelled = _ghostList !== null;
 
@@ -1740,6 +1978,14 @@ export class YumeDroplist extends HTMLElement {
             item,
             list: this,
         });
+
+        if (this.dragPreview) {
+            this._createDragPreview(
+                item,
+                originalPointerEvent.clientX,
+                originalPointerEvent.clientY,
+            );
+        }
     }
 
     /**
@@ -1803,6 +2049,24 @@ export class YumeDroplist extends HTMLElement {
         return null;
     }
 
+    _removeDragPreview() {
+        if (this._dragPreview) {
+            this._dragPreview.remove();
+            this._dragPreview = null;
+        }
+        if (_previewOwner === this) _previewOwner = null;
+
+        // Restore any hidden custom-slot content.
+        const slotted = this.querySelector('[slot="drag-preview"]');
+        if (slotted) slotted.style.display = "";
+
+        if (this._previewRafId !== null) {
+            cancelAnimationFrame(this._previewRafId);
+            this._previewRafId = null;
+        }
+        this._previewPending = null;
+    }
+
     _removeGhost() {
         if (this._ghost && this._ghost.parentNode) this._ghost.remove();
         this._ghost = null;
@@ -1828,6 +2092,26 @@ export class YumeDroplist extends HTMLElement {
                 x: ev.clientX,
                 y: ev.clientY,
             });
+        });
+    }
+
+    /**
+     * Schedule a preview position update for the next animation frame,
+     * coalescing rapid pointer/drag events so `style.top/left` is written
+     * at most once per frame.
+     */
+    _schedulePreviewPosition(clientX, clientY) {
+        this._previewPending = { clientX, clientY };
+        if (this._previewRafId !== null) return;
+
+        this._previewRafId = requestAnimationFrame(() => {
+            const pos = this._previewPending;
+
+            this._previewRafId = null;
+            this._previewPending = null;
+
+            if (!pos || !this._dragPreview) return;
+            this._positionDragPreview(pos.clientX, pos.clientY);
         });
     }
 
@@ -1880,6 +2164,7 @@ export class YumeDroplist extends HTMLElement {
         this._observer?.disconnect();
         this._observer = null;
         this._removeGhost();
+        this._removeDragPreview();
         this._clearSwapTarget();
 
         // Cancel any in-progress touch gesture.

@@ -2876,4 +2876,539 @@ describe("y-droplist — drag:over event", () => {
         );
         wrapper.remove();
     });
+
+    // ── drag-preview ──────────────────────────────────────────
+
+    it("dragPreview reflects to attribute", async () => {
+        const el = await fixture(html`<y-droplist drag-preview></y-droplist>`);
+        expect(el.dragPreview).to.be.true;
+        el.dragPreview = false;
+        expect(el.hasAttribute("drag-preview")).to.be.false;
+        el.dragPreview = true;
+        expect(el.hasAttribute("drag-preview")).to.be.true;
+    });
+
+    it("dragPreviewClass defaults to 'y-droplist__drag-preview'", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.dragPreviewClass).to.equal("y-droplist__drag-preview");
+    });
+
+    it("dragPreviewClass reads from attribute", async () => {
+        const el = await fixture(
+            html`<y-droplist drag-preview-class="my-preview"></y-droplist>`,
+        );
+        expect(el.dragPreviewClass).to.equal("my-preview");
+    });
+
+    it("dragPreviewOffset defaults to 'cursor'", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.dragPreviewOffset).to.equal("cursor");
+    });
+
+    it("dragPreviewOffset reads valid values from attribute", async () => {
+        const el = await fixture(
+            html`<y-droplist drag-preview-offset="center"></y-droplist>`,
+        );
+        expect(el.dragPreviewOffset).to.equal("center");
+        el.setAttribute("drag-preview-offset", "top-left");
+        expect(el.dragPreviewOffset).to.equal("top-left");
+        el.setAttribute("drag-preview-offset", "invalid");
+        expect(el.dragPreviewOffset).to.equal("cursor");
+    });
+
+    it("dragPreviewScale defaults to 1", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.dragPreviewScale).to.equal(1);
+    });
+
+    it("dragPreviewScale reads from attribute", async () => {
+        const el = await fixture(
+            html`<y-droplist drag-preview-scale="0.8"></y-droplist>`,
+        );
+        expect(el.dragPreviewScale).to.equal(0.8);
+    });
+
+    it("preview is NOT created when drag-preview attribute is absent", async () => {
+        const el = await fixture(html`
+            <y-droplist animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        expect(el._dragPreview).to.be.null;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("preview is created in document.body on dragstart when drag-preview is set", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        expect(el._dragPreview).to.not.be.null;
+        expect(document.body.contains(el._dragPreview)).to.be.true;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("preview element carries aria-hidden, pointer-events:none, and correct class", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        expect(preview.getAttribute("aria-hidden")).to.equal("true");
+        expect(preview.style.pointerEvents).to.equal("none");
+        expect(preview.classList.contains("y-droplist__drag-preview")).to.be
+            .true;
+        expect(preview.getAttribute("part")).to.equal("drag-preview");
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("preview is removed from the DOM on dragend", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+                <div data-id="b">B</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        expect(document.body.contains(preview)).to.be.true;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+
+        expect(document.body.contains(preview)).to.be.false;
+        expect(el._dragPreview).to.be.null;
+    });
+
+    it("fires cancelable drag:preview event with item, preview, and list", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+
+        const previewSpy = sandbox.spy();
+        el.addEventListener("drag:preview", previewSpy);
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        expect(previewSpy).to.have.been.calledOnce;
+        const detail = previewSpy.firstCall.args[0].detail;
+        expect(detail.item).to.equal(a);
+        expect(detail.list).to.equal(el);
+        expect(detail.preview).to.be.instanceOf(HTMLElement);
+        // Event is cancelable.
+        expect(previewSpy.firstCall.args[0].cancelable).to.be.true;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("canceling drag:preview suppresses preview creation", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        el.addEventListener("drag:preview", (e) => e.preventDefault());
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        expect(el._dragPreview).to.be.null;
+
+        // Position updates should be no-ops when there is no preview.
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: 50,
+                clientY: 50,
+            }),
+        );
+        await flushFrame();
+        expect(el._dragPreview).to.be.null;
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("preview position updates on dragover", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            position: "fixed",
+            top: "0px",
+            left: "0px",
+            width: "200px",
+        });
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist drag-preview animation="0" style="display:block">
+                <div style="display:block;height:40px">A</div>
+                <div style="display:block;height:40px">B</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", {
+                bubbles: true,
+                composed: true,
+                clientX: 10,
+                clientY: 5,
+            }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        expect(preview).to.not.be.null;
+
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: 60,
+                clientY: 55,
+            }),
+        );
+        await flushFrame();
+
+        // Preview should have been repositioned (left/top are non-empty strings).
+        expect(preview.style.left).to.not.equal("");
+        expect(preview.style.top).to.not.equal("");
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("preview position offset modes: 'top-left' pins cursor to top-left corner", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            position: "fixed",
+            top: "0px",
+            left: "0px",
+            width: "200px",
+        });
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist drag-preview drag-preview-offset="top-left" animation="0" style="display:block">
+                <div style="display:block;height:40px">A</div>
+                <div style="display:block;height:40px">B</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", {
+                bubbles: true,
+                composed: true,
+                clientX: 50,
+                clientY: 20,
+            }),
+        );
+        await flushFrame();
+
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: 80,
+                clientY: 60,
+            }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        expect(parseFloat(preview.style.left)).to.be.closeTo(80, 1);
+        expect(parseFloat(preview.style.top)).to.be.closeTo(60, 1);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("preview position offset mode 'center' centers preview on cursor", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            position: "fixed",
+            top: "0px",
+            left: "0px",
+            width: "200px",
+        });
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist drag-preview drag-preview-offset="center" animation="0" style="display:block">
+                <div style="display:block;width:100px;height:40px">A</div>
+                <div style="display:block;width:100px;height:40px">B</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", {
+                bubbles: true,
+                composed: true,
+                clientX: 50,
+                clientY: 20,
+            }),
+        );
+        await flushFrame();
+
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: 80,
+                clientY: 60,
+            }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        const w = parseFloat(preview.style.width);
+        const h = parseFloat(preview.style.height);
+        expect(parseFloat(preview.style.left)).to.be.closeTo(80 - w / 2, 1);
+        expect(parseFloat(preview.style.top)).to.be.closeTo(60 - h / 2, 1);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("custom slot='drag-preview' content is cloned into the preview", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+                <div slot="drag-preview" id="slot-node">Custom Preview</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const slotted = el.querySelector('[slot="drag-preview"]');
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        expect(preview).to.not.be.null;
+        // The cloned content should be inside the preview.
+        expect(preview.querySelector("#slot-node")).to.not.be.null;
+        // The original slotted node is hidden.
+        expect(slotted.style.display).to.equal("none");
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("custom slot node is restored (display reset) after drag ends", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+                <div slot="drag-preview">Custom Preview</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        const slotted = el.querySelector('[slot="drag-preview"]');
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+        expect(slotted.style.display).to.equal("none");
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        expect(slotted.style.display).to.equal("");
+    });
+
+    it("preview is removed when the element disconnects", async () => {
+        const el = await fixture(html`
+            <y-droplist drag-preview animation="0">
+                <div data-id="a">A</div>
+            </y-droplist>
+        `);
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        const preview = el._dragPreview;
+        expect(document.body.contains(preview)).to.be.true;
+
+        el.remove();
+        expect(document.body.contains(preview)).to.be.false;
+    });
+
+    it("force-float ghost and drag-preview coexist independently", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            position: "fixed",
+            top: "0px",
+            left: "0px",
+            width: "200px",
+        });
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist drag-preview force-float animation="0" style="display:block">
+                <div style="display:block;height:40px">A</div>
+                <div style="display:block;height:40px">B</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        el.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+                clientX: 50,
+                clientY: 30,
+            }),
+        );
+        await flushFrame();
+
+        // Both ghost (force-float) and drag-preview should exist in body.
+        const preview = el._dragPreview;
+        const ghost = el._ghost;
+        expect(preview).to.not.be.null;
+        expect(ghost).to.not.be.null;
+        expect(document.body.contains(preview)).to.be.true;
+        expect(document.body.contains(ghost)).to.be.true;
+        // They are distinct elements.
+        expect(preview).to.not.equal(ghost);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+        wrapper.remove();
+    });
+
+    it("touch drag creates and removes preview via pointer pipeline", async () => {
+        const wrapper = document.createElement("div");
+        Object.assign(wrapper.style, {
+            position: "fixed",
+            top: "0px",
+            left: "0px",
+            width: "200px",
+        });
+        document.body.appendChild(wrapper);
+        wrapper.innerHTML = `
+            <y-droplist drag-preview animation="0" style="display:block">
+                <div style="display:block;height:40px">A</div>
+                <div style="display:block;height:40px">B</div>
+            </y-droplist>
+        `;
+        await customElements.whenDefined("y-droplist");
+        const el = wrapper.querySelector("y-droplist");
+        await aTimeout(0);
+
+        const a = el.children[0];
+
+        // Simulate touch pointer sequence.
+        a.dispatchEvent(
+            new PointerEvent("pointerdown", {
+                bubbles: true,
+                composed: true,
+                pointerId: 1,
+                pointerType: "touch",
+                clientX: 20,
+                clientY: 10,
+            }),
+        );
+        await flushFrame();
+
+        // Preview should exist after drag start.
+        expect(el._dragPreview).to.not.be.null;
+        expect(document.body.contains(el._dragPreview)).to.be.true;
+
+        // Simulate pointer up to end the drag.
+        a.dispatchEvent(
+            new PointerEvent("pointerup", {
+                bubbles: true,
+                composed: true,
+                pointerId: 1,
+                pointerType: "touch",
+                clientX: 20,
+                clientY: 10,
+            }),
+        );
+        await flushFrame();
+
+        expect(el._dragPreview).to.be.null;
+        wrapper.remove();
+    });
 });
