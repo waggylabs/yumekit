@@ -757,27 +757,24 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 
 | Attribute           | Values / Notes                                                                                |
 | ------------------- | --------------------------------------------------------------------------------------------- |
-| `orientation`       | `vertical` (default) \| `horizontal`                                                          |
-| `collapsed`         | boolean — collapses vertical sidebar to icon-only mode                                        |
 | `items`             | JSON: `[{"text":"Home","icon":"home","href":"/","children":[...]}]`                           |
 | `size`              | `small` \| `medium` (default) \| `large`                                                      |
-| `menu-direction`    | `right` \| `down` \| `""` (auto: vertical→right, horizontal→down)                             |
-| `sticky`            | `start` \| `end` — sticks to top/left (start) or bottom/right (end)                           |
-| `mobile-breakpoint` | px width below which horizontal bar collapses to a hamburger menu (default: `768`)            |
+| `menu-direction`    | `right` \| `down` (default)                                                                   |
+| `sticky`            | `start` \| `end` — `start` sticks to the top edge; `end` sticks to the bottom edge            |
+| `mobile-breakpoint` | px width below which bar collapses to a hamburger menu (default: `768`)                       |
 | `history`           | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
 Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
 
 Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
-Slots: `logo`, `title`, `header`, `footer`
+Slots: `logo`, `title`, `header`, `footer`, default (router links / custom nav elements shown in bar body and inside mobile hamburger panel)
 
 ```html
-<!-- Basic vertical sidebar -->
+<!-- Basic horizontal appbar -->
 <y-appbar
-    orientation="vertical"
     sticky="start"
-    items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"gear","href":"/settings"}]'
 >
     <y-icon slot="logo" name="bolt" size="medium"></y-icon>
     <span slot="title">MyApp</span>
