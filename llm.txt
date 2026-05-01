@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 42 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 43 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -725,6 +725,40 @@ Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements
   <router-link to="/projects">Projects</router-link>
   <router-link to="/settings">Settings</router-link>
 </y-appbar>
+```
+
+---
+
+### y-sidebar
+Collapsible vertical navigation sidebar. Renders a branded header, a scrollable body of nav items, and a footer with a collapse toggle. Supports framework router links in the default slot.
+
+Tag: `<y-sidebar>`
+Attributes:
+- `collapsed` — boolean, collapses sidebar to icon-only width
+- `items` — JSON array of `{ text, icon?, href?, selected?, slot?, children? }` objects driving the auto-generated nav buttons
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `menu-direction` — `"right"` (default) | `"down"` — direction submenus pop out
+- `sticky` — `"start"` | `"end"` — sticks the sidebar to the named viewport edge
+- `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
+
+Events: `navigate` (cancelable, `detail: { href }`)
+
+Methods: `toggle()` — flip collapsed state
+
+Slots: `logo`, `title`, `header`, `footer`, default (framework router links or custom nav elements — full-width when expanded, clipped to icon-column width when collapsed)
+
+CSS custom properties exposed on host: `--y-sidebar-collapsed` (`0`/`1`), `--y-sidebar-icon-col-width` (icon column width) — slotted items can read these to respond to collapse state.
+
+All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply automatically.
+
+```html
+<y-sidebar
+    items='[{"text":"Dashboard","icon":"home","href":"/","selected":true},{"text":"Projects","icon":"folder","href":"/projects"}]'
+    sticky="start"
+>
+    <img slot="logo" src="/logo.svg" alt="" width="32" height="32" />
+    <span slot="title">MyApp</span>
+</y-sidebar>
 ```
 
 ---

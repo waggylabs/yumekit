@@ -799,6 +799,66 @@ Slots: `logo`, `title`, `header`, `footer`
 
 ---
 
+## y-sidebar
+
+| Attribute        | Values / Notes                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `collapsed`      | boolean — collapses sidebar to icon-only width                                                |
+| `items`          | JSON: `[{"text":"Dashboard","icon":"home","href":"/","selected":true,"children":[...]}]`      |
+| `size`           | `small` \| `medium` (default) \| `large`                                                      |
+| `menu-direction` | `right` (default) \| `down` — direction submenus pop out                                      |
+| `sticky`         | `start` \| `end` — sticks to left (start) or right (end) viewport edge                        |
+| `history`        | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+
+Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+
+Methods: `.toggle()` — flip collapsed state
+
+Slots: `logo`, `title`, `header`, `footer`, default (router links / custom nav elements)
+
+Host-exposed CSS vars: `--y-sidebar-collapsed` (`0`/`1`), `--y-sidebar-icon-col-width` — slotted items can read these.
+
+All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply automatically.
+
+```html
+<!-- Basic sticky sidebar -->
+<y-sidebar
+    sticky="start"
+    items='[{"text":"Dashboard","icon":"home","href":"/","selected":true},{"text":"Projects","icon":"folder","href":"/projects"}]'
+>
+    <img slot="logo" src="/logo.svg" alt="" width="32" />
+    <span slot="title">MyApp</span>
+</y-sidebar>
+
+<!-- With framework router links in default slot -->
+<y-sidebar items='[{"text":"Dashboard","icon":"home","href":"/"}]'>
+    <router-link to="/projects">Projects</router-link>
+    <router-link to="/settings">Settings</router-link>
+</y-sidebar>
+
+<!-- Custom slotted item that responds to collapse state -->
+<style>
+    .my-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .my-link .label {
+        display: calc(1 - var(--y-sidebar-collapsed, 0)) * 1;
+    }
+</style>
+<y-sidebar id="nav">
+    <a class="my-link" href="/reports">
+        <y-icon name="waveform"></y-icon>
+        <span class="label">Reports</span>
+    </a>
+</y-sidebar>
+```
+
+---
+
 ## y-drawer
 
 | Attribute    | Values / Notes                                   |
