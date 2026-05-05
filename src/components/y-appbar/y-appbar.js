@@ -1,7 +1,12 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-menu/y-menu.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    createElement as _el,
+    buildNavItemIcon,
+    isNavItemActive,
+    navigateFrom,
+} from "../../modules/helpers.js";
 
 const SIZE_CONFIG = {
     small: {
@@ -328,22 +333,6 @@ export class YumeAppbar extends HTMLElement {
         ]);
     }
 
-    _buildItemIcon(iconValue, cfg) {
-        // Raw SVG markup is preserved as a public escape hatch; everything else
-        // routes through y-icon for consistent sizing/theming.
-        if (iconValue.trim().startsWith("<")) {
-            const span = _el("span", { slot: "left-icon", part: "icon" });
-            span.innerHTML = iconValue;
-            return span;
-        }
-        return _el("y-icon", {
-            slot: "left-icon",
-            part: "icon",
-            name: iconValue,
-            size: cfg.iconSize,
-        });
-    }
-
     _buildMobileBar(cfg) {
         const bar = _el("div", { class: "appbar", role: "navigation" });
         bar.style.setProperty("--_appbar-padding", cfg.padding);
@@ -368,14 +357,11 @@ export class YumeAppbar extends HTMLElement {
         ]);
     }
 
-    _buildMobileStart(cfg) {
-        const menuBtnId = this._uid("appbar-mobile-menu");
-        const panelId = this._uid("appbar-mobile-panel");
-
-        const menuBtn = _el(
+    _buildMobileMenuButton(id, panelId, cfg) {
+        return _el(
             "y-button",
             {
-                id: menuBtnId,
+                id,
                 color: "base",
                 "style-type": "flat",
                 size: cfg.buttonSize,
@@ -391,31 +377,24 @@ export class YumeAppbar extends HTMLElement {
                 }),
             ],
         );
+    }
 
+    _buildMobilePanel(panelId, cfg) {
         const panel = _el("div", { id: panelId, class: "mobile-panel" });
         this.items.forEach((item) => {
             panel.appendChild(this._buildNavItem(item, cfg, "down"));
         });
         panel.appendChild(_el("slot", {}));
+        return panel;
+    }
 
-        const closePanel = () => {
-            panel.classList.remove("open");
-            menuBtn.setAttribute("aria-expanded", "false");
-        };
+    _buildMobileStart(cfg) {
+        const menuBtnId = this._uid("appbar-mobile-menu");
+        const panelId = this._uid("appbar-mobile-panel");
 
-        menuBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const open = panel.classList.toggle("open");
-            menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-
-        panel.addEventListener("navigate", closePanel);
-
-        this._mobileOutsideClick = (e) => {
-            if (e.composedPath().includes(this)) return;
-            closePanel();
-        };
-        document.addEventListener("pointerdown", this._mobileOutsideClick);
+        const menuBtn = this._buildMobileMenuButton(menuBtnId, panelId, cfg);
+        const panel = this._buildMobilePanel(panelId, cfg);
+        this._wireMobileMenu(menuBtn, panel);
 
         return _el("div", { class: "mobile-start" }, [menuBtn, panel]);
     }
@@ -428,9 +407,7 @@ export class YumeAppbar extends HTMLElement {
                 color: var(--component-appbar-color, #f7f7fa);
             }
 
-            :host([sticky]),
-            :host([sticky="start"]),
-            :host([sticky="end"]) {
+            :host([sticky]) {
                 position: sticky;
                 top: 0;
                 left: 0;
@@ -530,13 +507,13 @@ export class YumeAppbar extends HTMLElement {
 
         const btn = _el("y-button", {
             id: btnId,
-            color: this._isItemActive(item) ? "primary" : "base",
+            color: isNavItemActive(item) ? "primary" : "base",
             "style-type": "flat",
             size: cfg.buttonSize,
         });
 
-        if (item.icon) btn.appendChild(this._buildItemIcon(item.icon, cfg));
-        if (item.text) btn.appendChild(document.createTextNode(item.text));
+        if (item.icon) btn.appendChild(buildNavItemIcon(item.icon, cfg.iconSize));
+        if (item.text) btn.append(item.text);
         if (hasChildren) {
             btn.appendChild(
                 _el("y-icon", {
@@ -548,7 +525,7 @@ export class YumeAppbar extends HTMLElement {
         }
 
         if (item.href && !hasChildren) {
-            btn.addEventListener("click", () => this._navigateTo(item.href));
+            btn.addEventListener("click", () => navigateFrom(this, item.href));
         }
 
         const wrapper = _el("div", { class: "nav-item" });
@@ -595,33 +572,6 @@ export class YumeAppbar extends HTMLElement {
         this._teardownMobileOutsideClick();
         this.shadowRoot.innerHTML = "";
         this._idCounter = 0;
-    }
-
-    _isItemActive(item) {
-        if (item.selected) return true;
-        if (!item.href) return false;
-
-        const loc = window.location;
-        const current = loc.pathname + loc.search + loc.hash;
-
-        return item.href === current || item.href === loc.href;
-    }
-
-    _navigateTo(href) {
-        const event = new CustomEvent("navigate", {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-            detail: { href },
-        });
-        if (!this.dispatchEvent(event)) return;
-
-        if (this.getAttribute("history") === "false") {
-            window.location.href = href;
-        } else {
-            history.pushState({}, "", href);
-            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
-        }
     }
 
     _onMediaChange(e) {
@@ -675,6 +625,27 @@ export class YumeAppbar extends HTMLElement {
 
     _uid(prefix) {
         return `${prefix}-${this._idCounter++}`;
+    }
+
+    _wireMobileMenu(menuBtn, panel) {
+        const closePanel = () => {
+            panel.classList.remove("open");
+            menuBtn.setAttribute("aria-expanded", "false");
+        };
+
+        menuBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const open = panel.classList.toggle("open");
+            menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+
+        panel.addEventListener("navigate", closePanel);
+
+        this._mobileOutsideClick = (e) => {
+            if (e.composedPath().includes(this)) return;
+            closePanel();
+        };
+        document.addEventListener("pointerdown", this._mobileOutsideClick);
     }
 }
 

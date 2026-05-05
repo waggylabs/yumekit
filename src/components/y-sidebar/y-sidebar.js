@@ -1,7 +1,12 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-menu/y-menu.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    createElement as _el,
+    buildNavItemIcon,
+    isNavItemActive,
+    navigateFrom,
+} from "../../modules/helpers.js";
 
 const SIZE_CONFIG = {
     small: {
@@ -258,22 +263,6 @@ export class YumeSidebar extends HTMLElement {
         ]);
     }
 
-    _buildItemIcon(iconValue, cfg) {
-        // Raw SVG markup is preserved as a public escape hatch; all named icons
-        // route through y-icon for consistent sizing/theming.
-        if (iconValue.trim().startsWith("<")) {
-            const span = _el("span", { slot: "left-icon", part: "icon" });
-            span.innerHTML = iconValue;
-            return span;
-        }
-        return _el("y-icon", {
-            slot: "left-icon",
-            part: "icon",
-            name: iconValue,
-            size: cfg.iconSize,
-        });
-    }
-
     _buildNavItem(item, cfg, isCollapsed, menuDir) {
         const hasChildren = item.children?.length > 0;
         const showLabel = item.text && !isCollapsed;
@@ -282,13 +271,13 @@ export class YumeSidebar extends HTMLElement {
 
         const btn = _el("y-button", {
             id: btnId,
-            color: this._isItemActive(item) ? "primary" : "base",
+            color: isNavItemActive(item) ? "primary" : "base",
             "style-type": "flat",
             size: cfg.buttonSize,
         });
 
-        if (item.icon) btn.appendChild(this._buildItemIcon(item.icon, cfg));
-        if (showLabel) btn.appendChild(document.createTextNode(item.text));
+        if (item.icon) btn.appendChild(buildNavItemIcon(item.icon, cfg.iconSize));
+        if (showLabel) btn.append(item.text);
         if (showArrow) {
             btn.appendChild(
                 _el("y-icon", {
@@ -300,7 +289,7 @@ export class YumeSidebar extends HTMLElement {
         }
 
         if (item.href && !hasChildren) {
-            btn.addEventListener("click", () => this._navigateTo(item.href));
+            btn.addEventListener("click", () => navigateFrom(this, item.href));
         }
 
         const wrapper = _el("div", { class: "nav-item" });
@@ -512,33 +501,6 @@ export class YumeSidebar extends HTMLElement {
     _initRender() {
         this.shadowRoot.innerHTML = "";
         this._idCounter = 0;
-    }
-
-    _isItemActive(item) {
-        if (item.selected) return true;
-        if (!item.href) return false;
-
-        const loc = window.location;
-        const current = loc.pathname + loc.search + loc.hash;
-
-        return item.href === current || item.href === loc.href;
-    }
-
-    _navigateTo(href) {
-        const event = new CustomEvent("navigate", {
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-            detail: { href },
-        });
-        if (!this.dispatchEvent(event)) return;
-
-        if (this.getAttribute("history") === "false") {
-            window.location.href = href;
-        } else {
-            history.pushState({}, "", href);
-            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
-        }
     }
 
     _onCollapseClick() {

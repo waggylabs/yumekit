@@ -413,6 +413,72 @@ export function resolveCSSColor(varExpr, el) {
 }
 
 // =============================================================================
+// Nav utilities
+// =============================================================================
+
+/**
+ * Build the icon node for a nav item. Raw SVG markup is preserved as a
+ * public escape hatch (wrapped in a `<span slot="left-icon">`); named icons
+ * route through `<y-icon>` for consistent sizing/theming.
+ * @param {string} iconValue — icon name (e.g. `"home"`) or raw SVG markup
+ * @param {string} iconSize — size variant passed to `<y-icon size>`
+ * @returns {HTMLElement}
+ */
+export function buildNavItemIcon(iconValue, iconSize) {
+    if (iconValue.trim().startsWith("<")) {
+        const span = createElement("span", { slot: "left-icon", part: "icon" });
+        span.innerHTML = iconValue;
+        return span;
+    }
+    return createElement("y-icon", {
+        slot: "left-icon",
+        part: "icon",
+        name: iconValue,
+        size: iconSize,
+    });
+}
+
+/**
+ * Determine whether a nav item should render as active. Items may set
+ * `selected: true` for explicit control; otherwise the `href` is matched
+ * against the current `window.location` (path+search+hash, then full URL).
+ * @param {{selected?: boolean, href?: string}} item
+ * @returns {boolean}
+ */
+export function isNavItemActive(item) {
+    if (item.selected) return true;
+    if (!item.href) return false;
+    const loc = window.location;
+    const current = loc.pathname + loc.search + loc.hash;
+    return item.href === current || item.href === loc.href;
+}
+
+/**
+ * Dispatch a cancelable `navigate` event from `host`, then either
+ * `pushState` (default) or assign `window.location.href` when the host's
+ * `history` attribute is `"false"`. Bails out if a listener calls
+ * `preventDefault()` on the event.
+ * @param {HTMLElement} host
+ * @param {string} href
+ */
+export function navigateFrom(host, href) {
+    const event = new CustomEvent("navigate", {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: { href },
+    });
+    if (!host.dispatchEvent(event)) return;
+
+    if (host.getAttribute("history") === "false") {
+        window.location.href = href;
+    } else {
+        history.pushState({}, "", href);
+        window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+    }
+}
+
+// =============================================================================
 // Slot utilities
 // =============================================================================
 
