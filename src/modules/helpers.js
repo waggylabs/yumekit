@@ -413,6 +413,68 @@ export function resolveCSSColor(varExpr, el) {
 }
 
 // =============================================================================
+// Nav utilities
+// =============================================================================
+
+/**
+ * Build the icon node for a nav item. `iconValue` must be a registered icon
+ * name; custom glyphs should be added via the `<y-icon>` registry rather
+ * than inlined as markup, so this surface is not an XSS sink for callers
+ * passing items as JSON.
+ * @param {string} iconValue — registered icon name (e.g. `"home"`)
+ * @param {string} iconSize — size variant passed to `<y-icon size>`
+ * @returns {HTMLElement}
+ */
+export function buildNavItemIcon(iconValue, iconSize) {
+    return createElement("y-icon", {
+        slot: "left-icon",
+        part: "icon",
+        name: iconValue,
+        size: iconSize,
+    });
+}
+
+/**
+ * Determine whether a nav item should render as active. Items may set
+ * `selected: true` for explicit control; otherwise the `href` is matched
+ * against the current `window.location` (path+search+hash, then full URL).
+ * @param {{selected?: boolean, href?: string}} item
+ * @returns {boolean}
+ */
+export function isNavItemActive(item) {
+    if (item.selected) return true;
+    if (!item.href) return false;
+    const loc = window.location;
+    const current = loc.pathname + loc.search + loc.hash;
+    return item.href === current || item.href === loc.href;
+}
+
+/**
+ * Dispatch a cancelable `navigate` event from `host`, then either
+ * `pushState` (default) or assign `window.location.href` when the host's
+ * `history` attribute is `"false"`. Bails out if a listener calls
+ * `preventDefault()` on the event.
+ * @param {HTMLElement} host
+ * @param {string} href
+ */
+export function navigateFrom(host, href) {
+    const event = new CustomEvent("navigate", {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: { href },
+    });
+    if (!host.dispatchEvent(event)) return;
+
+    if (host.getAttribute("history") === "false") {
+        window.location.href = href;
+    } else {
+        history.pushState({}, "", href);
+        window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+    }
+}
+
+// =============================================================================
 // Slot utilities
 // =============================================================================
 

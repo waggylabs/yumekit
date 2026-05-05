@@ -7,6 +7,7 @@ export class YumeButton extends HTMLElement {
             "disabled", "name", "value", "autofocus", "form", "formaction",
             "formenctype", "formmethod", "formnovalidate", "formtarget",
             "aria-label", "aria-pressed", "aria-hidden",
+            "aria-haspopup", "aria-expanded", "aria-controls",
             "href", "target", "rel",
         ];
     }

@@ -50,6 +50,46 @@ describe("YumeMenu", () => {
         expect(menu.hasAttribute("visible")).to.be.true;
     });
 
+    it("sets aria-haspopup and aria-expanded on the resolved anchor", async () => {
+        const wrapper = await fixture(html`
+            <div>
+                <button id="trigger">Menu</button>
+                <y-menu id="menu" anchor="trigger" .items=${testItems}></y-menu>
+            </div>
+        `);
+        const trigger = wrapper.querySelector("#trigger");
+        const menu = wrapper.querySelector("#menu");
+
+        expect(trigger.getAttribute("aria-haspopup")).to.equal("menu");
+        expect(trigger.getAttribute("aria-expanded")).to.equal("false");
+
+        menu.visible = true;
+        await new Promise((r) => setTimeout(r, 0));
+        expect(trigger.getAttribute("aria-expanded")).to.equal("true");
+
+        menu.visible = false;
+        await new Promise((r) => setTimeout(r, 0));
+        expect(trigger.getAttribute("aria-expanded")).to.equal("false");
+    });
+
+    it("removes aria-haspopup and aria-expanded from the anchor on disconnect", async () => {
+        const wrapper = await fixture(html`
+            <div>
+                <button id="trigger">Menu</button>
+                <y-menu id="menu" anchor="trigger" .items=${testItems}></y-menu>
+            </div>
+        `);
+        const trigger = wrapper.querySelector("#trigger");
+        const menu = wrapper.querySelector("#menu");
+
+        expect(trigger.hasAttribute("aria-haspopup")).to.be.true;
+
+        menu.remove();
+
+        expect(trigger.hasAttribute("aria-haspopup")).to.be.false;
+        expect(trigger.hasAttribute("aria-expanded")).to.be.false;
+    });
+
     it("renders submenu for items with children", async () => {
         const el = await fixture(html`<y-menu .items=${testItems}></y-menu>`);
         const items = el.shadowRoot.querySelectorAll(".menuitem");

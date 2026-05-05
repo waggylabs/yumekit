@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 42 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 44 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -699,32 +699,62 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 ---
 
 ### y-appbar
-Top/side navigation bar with collapsible vertical sidebar mode and a mobile hamburger fallback.
+Horizontal top navigation bar with mobile hamburger fallback.
 
 Tag: `<y-appbar>`
 Attributes:
-- `orientation` — `"vertical"` (default) | `"horizontal"`
-- `collapsed` — boolean, vertical only — collapses sidebar to icon-only width
 - `items` — JSON array of `{ text, icon?, href?, selected?, slot?, children? }` objects driving the auto-generated nav buttons
 - `size` — `"small"` | `"medium"` (default) | `"large"`
-- `menu-direction` — `"right"` | `"down"` — direction submenus pop out (auto: vertical → right, horizontal → down)
-- `sticky` — `"start"` | `"end"` — sticks the appbar to the named edge
-- `mobile-breakpoint` — number (px) — viewport width below which horizontal appbar switches to mobile hamburger mode (default 768)
+- `menu-direction` — `"right"` | `"down"` (default) — direction submenus pop out
+- `sticky` — `"start"` | `"end"` — `"start"` sticks to the top edge; `"end"` sticks to the bottom edge
+- `mobile-breakpoint` — number (px) — viewport width below which the appbar switches to mobile hamburger mode (default 768)
+- `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
+
+Events: `navigate` (cancelable, `detail: { href }`)
+
+Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same unslotted children are rendered inside the hamburger dropdown panel after the items.)
+
+```html
+<!-- Mix items array with framework router links -->
+<y-appbar items='[{"text":"Home","icon":"home","href":"/"}]'>
+  <span slot="title">MyApp</span>
+  <router-link to="/projects">Projects</router-link>
+  <router-link to="/settings">Settings</router-link>
+</y-appbar>
+```
+
+---
+
+### y-sidebar
+Collapsible vertical navigation sidebar. Renders a branded header, a scrollable body of nav items, and a footer with a collapse toggle. Supports framework router links in the default slot.
+
+Tag: `<y-sidebar>`
+Attributes:
+- `collapsed` — boolean, collapses sidebar to icon-only width
+- `items` — JSON array of `{ text, icon?, href?, selected?, slot?, children? }` objects driving the auto-generated nav buttons
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `menu-direction` — `"right"` (default) | `"down"` — direction submenus pop out
+- `sticky` — `"start"` | `"end"` — sticks the sidebar to the named viewport edge
 - `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
 
 Events: `navigate` (cancelable, `detail: { href }`)
 
 Methods: `toggle()` — flip collapsed state
 
-Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same unslotted children are rendered inside the hamburger dropdown panel after the items.)
+Slots: `logo`, `title`, `header`, `footer`, default (framework router links or custom nav elements — full-width when expanded, clipped to icon-column width when collapsed)
+
+CSS custom properties exposed on host: `--y-sidebar-collapsed` (`0`/`1`), `--y-sidebar-icon-col-width` (icon column width) — slotted items can read these to respond to collapse state.
+
+All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply automatically.
 
 ```html
-<!-- Mix items array with framework router links -->
-<y-appbar orientation="vertical" items='[{"text":"Home","icon":"home","href":"/"}]'>
-  <span slot="title">MyApp</span>
-  <router-link to="/projects">Projects</router-link>
-  <router-link to="/settings">Settings</router-link>
-</y-appbar>
+<y-sidebar
+    items='[{"text":"Dashboard","icon":"home","href":"/","selected":true},{"text":"Projects","icon":"folder","href":"/projects"}]'
+    sticky="start"
+>
+    <img slot="logo" src="/logo.svg" alt="" width="32" height="32" />
+    <span slot="title">MyApp</span>
+</y-sidebar>
 ```
 
 ---

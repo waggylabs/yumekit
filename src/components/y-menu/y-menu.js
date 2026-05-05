@@ -61,11 +61,14 @@ export class YumeMenu extends HTMLElement {
             this._updatePosition();
         }
 
-        if (name === "visible" && this._isReady) {
-            this.dispatchEvent(new CustomEvent(this.visible ? "open" : "close", {
-                bubbles: true,
-                composed: true,
-            }));
+        if (name === "visible") {
+            this._syncAnchorExpanded();
+            if (this._isReady) {
+                this.dispatchEvent(new CustomEvent(this.visible ? "open" : "close", {
+                    bubbles: true,
+                    composed: true,
+                }));
+            }
         }
     }
 
@@ -432,9 +435,16 @@ export class YumeMenu extends HTMLElement {
             (el) => {
                 this._anchorEl = el;
                 el.addEventListener("click", this._onAnchorClick);
+                el.setAttribute("aria-haspopup", "menu");
+                this._syncAnchorExpanded();
             },
             root && root.getElementById ? root : document,
         );
+    }
+
+    _syncAnchorExpanded() {
+        if (!this._anchorEl) return;
+        this._anchorEl.setAttribute("aria-expanded", this.visible ? "true" : "false");
     }
 
     _teardownAnchor() {
@@ -444,6 +454,8 @@ export class YumeMenu extends HTMLElement {
         }
         if (this._anchorEl) {
             this._anchorEl.removeEventListener("click", this._onAnchorClick);
+            this._anchorEl.removeAttribute("aria-haspopup");
+            this._anchorEl.removeAttribute("aria-expanded");
             this._anchorEl = null;
         }
     }

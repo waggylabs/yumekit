@@ -757,27 +757,24 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 
 | Attribute           | Values / Notes                                                                                |
 | ------------------- | --------------------------------------------------------------------------------------------- |
-| `orientation`       | `vertical` (default) \| `horizontal`                                                          |
-| `collapsed`         | boolean — collapses vertical sidebar to icon-only mode                                        |
 | `items`             | JSON: `[{"text":"Home","icon":"home","href":"/","children":[...]}]`                           |
 | `size`              | `small` \| `medium` (default) \| `large`                                                      |
-| `menu-direction`    | `right` \| `down` \| `""` (auto: vertical→right, horizontal→down)                             |
-| `sticky`            | `start` \| `end` — sticks to top/left (start) or bottom/right (end)                           |
-| `mobile-breakpoint` | px width below which horizontal bar collapses to a hamburger menu (default: `768`)            |
+| `menu-direction`    | `right` \| `down` (default)                                                                   |
+| `sticky`            | `start` \| `end` — `start` sticks to the top edge; `end` sticks to the bottom edge            |
+| `mobile-breakpoint` | px width below which bar collapses to a hamburger menu (default: `768`)                       |
 | `history`           | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
 Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
 
 Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
-Slots: `logo`, `title`, `header`, `footer`
+Slots: `logo`, `title`, `header`, `footer`, default (router links / custom nav elements shown in bar body and inside mobile hamburger panel)
 
 ```html
-<!-- Basic vertical sidebar -->
+<!-- Basic horizontal appbar -->
 <y-appbar
-    orientation="vertical"
     sticky="start"
-    items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"gear","href":"/settings"}]'
 >
     <y-icon slot="logo" name="bolt" size="medium"></y-icon>
     <span slot="title">MyApp</span>
@@ -795,6 +792,70 @@ Slots: `logo`, `title`, `header`, `footer`
 
 <!-- Full-page navigation (opt out of pushState) -->
 <y-appbar history="false" items='[{"text":"Home","href":"/"}]'></y-appbar>
+```
+
+---
+
+## y-sidebar
+
+| Attribute        | Values / Notes                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `collapsed`      | boolean — collapses sidebar to icon-only width                                                |
+| `items`          | JSON: `[{"text":"Dashboard","icon":"home","href":"/","selected":true,"children":[...]}]`      |
+| `size`           | `small` \| `medium` (default) \| `large`                                                      |
+| `menu-direction` | `right` (default) \| `down` — direction submenus pop out                                      |
+| `sticky`         | `start` \| `end` — sticks to left (start) or right (end) viewport edge                        |
+| `history`        | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+
+Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+
+Methods: `.toggle()` — flip collapsed state
+
+Slots: `logo`, `title`, `header`, `footer`, default (router links / custom nav elements)
+
+Host-exposed CSS vars: `--y-sidebar-collapsed` (`0`/`1`), `--y-sidebar-icon-col-width` — slotted items can read these.
+
+All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply automatically.
+
+```html
+<!-- Basic sticky sidebar -->
+<y-sidebar
+    sticky="start"
+    items='[{"text":"Dashboard","icon":"home","href":"/","selected":true},{"text":"Projects","icon":"folder","href":"/projects"}]'
+>
+    <img slot="logo" src="/logo.svg" alt="" width="32" />
+    <span slot="title">MyApp</span>
+</y-sidebar>
+
+<!-- With framework router links in default slot -->
+<y-sidebar items='[{"text":"Dashboard","icon":"home","href":"/"}]'>
+    <router-link to="/projects">Projects</router-link>
+    <router-link to="/settings">Settings</router-link>
+</y-sidebar>
+
+<!-- Custom slotted item that responds to collapse state -->
+<style>
+    .my-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .my-link .label {
+        opacity: calc(1 - var(--y-sidebar-collapsed, 0));
+        max-width: calc((1 - var(--y-sidebar-collapsed, 0)) * 200px);
+        overflow: hidden;
+        white-space: nowrap;
+        transition: opacity 0.2s ease, max-width 0.2s ease;
+    }
+</style>
+<y-sidebar id="nav">
+    <a class="my-link" href="/reports">
+        <y-icon name="waveform"></y-icon>
+        <span class="label">Reports</span>
+    </a>
+</y-sidebar>
 ```
 
 ---

@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- New `y-sidebar` component — a collapsible vertical navigation sidebar extracted from `y-appbar`'s vertical mode. Accepts nav items via a JSON `items` attribute (`{ text, icon?, href?, selected?, slot?, children? }`). Items with `children` open a `y-menu` flyout. Active item auto-detection matches `window.location.pathname + search + hash` when `href` is set. Supports `collapsed` (icon-only mode), `toggle()` method, `size` (`"small"` | `"medium"` | `"large"`), `menu-direction` (`"right"` | `"down"`), `sticky` (`"start"` | `"end"`), and `history` (`"false"` for full-page navigation). The default slot accepts framework router links and custom nav elements; they render full-width when expanded and clip to the icon column when collapsed. Named slots: `logo`, `title`, `header`, `footer`. Host-exposed CSS custom properties `--y-sidebar-collapsed` (`0`/`1`) and `--y-sidebar-icon-col-width` let slotted items respond to collapse transitions. All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply without migration.
+
 - New `y-splitter` component — a two-pane container with a draggable handle that resizes the first pane (the second flexes to fill the remainder). Supports `orientation` (`horizontal` | `vertical`), `split` ratio (0–1), `min-ratio` / `max-ratio` constraints, `handle-size`, `handle-position` (`center` | `start` | `end`), and `disabled`. The handle is a `role="slider"` with full keyboard support (arrows for fine steps, PageUp/Down for 10% jumps, Home/End for the configured limits) and emits `split-start` / `split-changed` / `split-end` events. Pointer events cover mouse and touch with `requestAnimationFrame`-throttled updates.
 
 - New `y-droplist` component — a drag-and-drop reorderable list. Slot in children with `data-id` attributes and they become draggable items; consumers listen for `reorder` / `update` events to persist the new order. Supports `disabled`, `vertical` (vertical or horizontal axis), `animation` (settle duration), and `ghost-class` / `drag-class` styling hooks, plus keyboard reorder via Arrow keys with `aria-live` announcements.
@@ -118,10 +120,16 @@ Delete any empty sections before publishing.
 
 - `y-progress`: expanded to a multi-mode progress indicator with `bar` (default), `ring`, and `pie` shapes. Adds `values` for multi-value rendering (stacked bars, concentric rings, multi-slice pies), plus `thickness`, `segmented`, `segment-gap`, `start-angle`, `direction`, `track-color`, and `label-format`. Ring fills use rounded stroke caps; segmented bars share the parent track's border and only round the outermost corners.
 
+- **Breaking** `y-appbar`: vertical sidebar mode removed. The `orientation` and `collapsed` attributes and the `toggle()` method have been deleted. `y-appbar` is now exclusively a horizontal top bar with a mobile hamburger fallback. Migrate vertical navigation to `y-sidebar` (new this release). `sticky="start"` now sticks to the **top** edge (was left in vertical mode); `sticky="end"` now sticks to the **bottom** edge (was right). The `menu-direction` default is now `"down"` (was auto-selected based on orientation).
+
 - **Breaking** `y-stack`: refocused as a flexbox-only primitive now that `y-grid` and `y-masonry` own their layout algorithms.
     - **Removed**: `mode` attribute (and the `flex` / `grid` / `masonry` branches), the `columns` attribute, and the masonry observer/positioning machinery. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `--component-stack-columns`, `--component-stack-min-item-width`, and `--component-stack-tablet-breakpoint` CSS variables are gone with them.
     - **Changed**: `direction` now also accepts `row-reverse` and `column-reverse`. `wrap` is now an enum (`nowrap` | `wrap` | `wrap-reverse`); presence without a value still resolves to `wrap` for back-compat. `responsive` on row directions now also collapses the stack to `column` below the mobile breakpoint via a CSS container query (in addition to the existing auto-wrap behavior).
     - **Added**: `align-content`, `row-gap`, `column-gap`, and `inline` (boolean → `display: inline-flex`) attributes. New `--component-stack-row-gap` and `--component-stack-column-gap` CSS variables.
+
+### Security
+
+- **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup. The previous escape hatch wrote any string starting with `<` to `innerHTML`, turning JSON-fed `items` into an XSS sink. `icon` now only resolves registered `<y-icon>` names; custom glyphs must be added through the icon registry (`registerIcon` / `registerIcons`).
 
 ## [0.4.4] - 2026-04-25
 
