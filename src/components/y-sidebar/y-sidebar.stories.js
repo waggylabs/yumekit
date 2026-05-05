@@ -24,9 +24,14 @@ const navItemsWithHrefs = JSON.stringify([
     { text: "Reports", icon: "waveform", href: "/reports" },
 ]);
 
+// Force iframe rendering so y-menu's position:fixed popouts anchor to the
+// story viewport, not the docs page.
+const docsParams = { docs: { story: { inline: false, height: "440px" } } };
+
 export default {
     title: "Components/Sidebar",
     tags: ["autodocs"],
+    parameters: docsParams,
     argTypes: {
         size: {
             control: "select",
