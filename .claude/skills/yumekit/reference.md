@@ -832,47 +832,54 @@ Slot: default (drawer content)
 
 Drag-and-drop reorderable list. Supports within-list reordering, cross-list groups, clone/pull/put policies, drag handles, and swap mode.
 
-| Attribute             | Values / Notes                                                                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `disabled`            | boolean — disables drag and keyboard reorder                                                                                                |
-| `vertical`            | default vertical; set `vertical="false"` to reorder horizontally                                                                            |
-| `animation`           | settle-animation duration in ms (default `150`); `0` disables                                                                               |
-| `group`               | string — name of the cross-list drag group; lists sharing a name can exchange items                                                         |
-| `clone`               | boolean — drops insert a copy at the destination; the original stays at its source index                                                    |
-| `pull`                | `"true"` (default) \| `"clone"` \| `"false"` — controls whether items can be dragged out; `"clone"` leaves a copy, `"false"` blocks pulling |
-| `put`                 | `"true"` (default) \| `"false"` \| comma-separated group names — controls which sources this list accepts; `"false"` rejects all incoming   |
-| `handle`              | CSS selector — restricts drag initiation to matching child elements; invalid selectors warn and fall back to whole-item drag                |
-| `prevent-on-filter`   | boolean (default `true`) — when `handle` is set, calls `preventDefault()` on non-handle `pointerdown` to suppress text selection            |
-| `swap`                | boolean — dropping over an item swaps the two in place instead of inserting between them; same-list only                                    |
-| `swap-class`          | CSS class on the active swap target (default `y-droplist__swap-target`)                                                                     |
-| `invert-swap-element` | boolean (default `true`) — `true`: swap target is the item under the cursor; `false`: item whose midpoint the cursor has crossed            |
-| `ghost-class`         | CSS class on the drop placeholder (default `y-droplist__ghost`)                                                                             |
-| `drag-class`          | CSS class on the dragged item (default `y-droplist__dragging`)                                                                              |
+| Attribute             | Values / Notes                                                                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `disabled`            | boolean — disables drag and keyboard reorder                                                                                                   |
+| `vertical`            | default vertical; set `vertical="false"` to reorder horizontally                                                                               |
+| `animation`           | settle-animation duration in ms (default `150`); `0` disables                                                                                  |
+| `group`               | string — name of the cross-list drag group; lists sharing a name can exchange items                                                            |
+| `clone`               | boolean — drops insert a copy at the destination; the original stays at its source index                                                       |
+| `pull`                | `"true"` (default) \| `"clone"` \| `"false"` — controls whether items can be dragged out; `"clone"` leaves a copy, `"false"` blocks pulling    |
+| `put`                 | `"true"` (default) \| `"false"` \| comma-separated group names — controls which sources this list accepts; `"false"` rejects all incoming      |
+| `handle`              | CSS selector — restricts drag initiation to matching child elements; invalid selectors warn and fall back to whole-item drag                   |
+| `prevent-on-filter`   | boolean (default `true`) — when `handle` is set, calls `preventDefault()` on non-handle `pointerdown` to suppress text selection               |
+| `swap`                | boolean — dropping over an item swaps the two in place instead of inserting between them; same-list only                                       |
+| `swap-class`          | CSS class on the active swap target (default `y-droplist__swap-target`)                                                                        |
+| `invert-swap-element` | boolean (default `true`) — `true`: swap target is the item under the cursor; `false`: item whose midpoint the cursor has crossed               |
+| `ghost-class`         | CSS class on the drop placeholder (default `y-droplist__ghost`)                                                                                |
+| `drag-class`          | CSS class on the dragged item (default `y-droplist__dragging`)                                                                                 |
+| `drag-preview`        | boolean — when present, a cursor-following clone of the dragged item is rendered during the drag (distinct from the in-list ghost placeholder) |
+| `drag-preview-class`  | CSS class applied to the preview element (default `y-droplist__drag-preview`)                                                                  |
+| `drag-preview-offset` | `"cursor"` (default) \| `"center"` \| `"top-left"` — where the preview anchors relative to the cursor; `"cursor"` preserves the grab offset    |
+| `drag-preview-scale`  | number (default `1`) — scale factor applied via `transform: scale()` to the preview; use `< 1` for a shrunken card                             |
 
 **Events:**
 
-| Event        | Detail                                      | Notes                                                                         |
-| ------------ | ------------------------------------------- | ----------------------------------------------------------------------------- |
-| `drag:start` | `{ originalEvent, item, list }`             | Fired on the source list when a drag begins                                   |
-| `drag:end`   | `{ originalEvent, item, list }`             | Fired on the source list when a drag ends (drop or cancel)                    |
-| `drag:enter` | `{ originalEvent, item, list, from }`       | Fired on a target list when the drag enters it (cross-list only)              |
-| `drag:leave` | `{ originalEvent, item, list, to }`         | Fired on a list when the drag leaves it (cross-list only)                     |
-| `reorder`    | `{ oldIndex, newIndex, item, list, from? }` | Fired on the destination list after a successful drop or keyboard move        |
-| `update`     | `{ item, oldIndex, newIndex, list, from? }` | Fired on both source (cross-list) and destination after every successful drop |
+| Event          | Detail                                      | Cancelable | Notes                                                                                                       |
+| -------------- | ------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| `drag:start`   | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag begins                                                                 |
+| `drag:end`     | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag ends (drop or cancel)                                                  |
+| `drag:enter`   | `{ originalEvent, item, list, from }`       | no         | Fired on a target list when the drag enters it (cross-list only)                                            |
+| `drag:leave`   | `{ originalEvent, item, list, to }`         | no         | Fired on a list when the drag leaves it (cross-list only)                                                   |
+| `drag:preview` | `{ item, preview, list }`                   | **yes**    | Fired after the preview element is created but **before** it is appended to `document.body`; `preventDefault()` cancels it (no insertion)   |
+| `reorder`      | `{ oldIndex, newIndex, item, list, from? }` | no         | Fired on the destination list after a successful drop or keyboard move                                      |
+| `update`       | `{ item, oldIndex, newIndex, list, from? }` | no         | Fired on both source (cross-list) and destination after every successful drop                               |
 
 For cross-list drops: the source `update` fires first with `newIndex: -1`; the destination `reorder` and `update` fire second with `from` set to the source list. For clone drops `oldIndex` is `-1`.
 
 **Methods:** `toArray()` — returns each direct child's `data-id` in current DOM order. `hasItem(item)` — strict direct-child check (excludes ghost). `destroy()` — removes all listeners and observers.
 
-**Slots:** default — give each item a unique `data-id` so `toArray()` is meaningful.
+**Slots:** default — give each item a unique `data-id` so `toArray()` is meaningful. `drag-preview` — optional; when present, the slotted element is deep-cloned and used as the preview content instead of cloning the dragged item. The original node is hidden (`display:none`) during the drag and restored on drop.
 
 **Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). When `handle` is set, focus lands on the handle element. A polite `aria-live` region announces moves and swaps.
 
-**CSS Parts:** `list` (shadow-DOM flex wrapper around the slot).
+**CSS Parts:** `list` (shadow-DOM flex wrapper around the slot). The drag preview element carries `part="drag-preview"` but is appended to `document.body` (outside the shadow root), so `::part(drag-preview)` cannot match it — see "Styling the drag preview" below for workable selectors.
 
 **Styling items:** items are slotted light-DOM children — use descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.). `::part()` does not reach light DOM.
 
-**Styling the ghost:** target `[data-y-droplist-ghost]`, the `ghost-class` value (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties.
+**Styling the ghost placeholder:** target `[data-y-droplist-ghost]`, the `ghost-class` value (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties. The ghost is the dashed in-list placeholder — distinct from the drag preview.
+
+**Styling the drag preview:** target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), the `[part="drag-preview"]` attribute selector, or the `--component-droplist-drag-preview-*` custom properties. The preview lives in `document.body` with `position: fixed` and `pointer-events: none`. Note: `::part(drag-preview)` does **not** work — `::part()` only pierces a shadow tree, and the preview is rendered outside any shadow root.
 
 **CSS Custom Properties:**
 
@@ -880,6 +887,14 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 - `--component-droplist-swap-indicator-background`
 - `--component-droplist-item-padding`, `--component-droplist-item-margin`
 - `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
+- `--component-droplist-drag-preview-opacity` (default `0.85`)
+- `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`)
+- `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a Trello-style tilt)
+- `--component-droplist-drag-preview-scale` — applied via `drag-preview-scale` attribute; set directly there rather than as a CSS var
+- `--component-droplist-drag-preview-cursor-offset-x`, `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the anchor point)
+- `--component-droplist-drag-preview-z-index` (default `9999`)
+
+> **Ghost vs. preview:** the ghost (`[data-y-droplist-ghost]`) is the in-list dashed placeholder that tracks where the item will land. The drag preview (`drag-preview` attribute) is the cursor-following visual clone. Both can be active simultaneously. Safari may show both the browser's native drag image and the custom preview because it ignores `setDragImage` — this is a known Safari limitation.
 
 > Supports pointer/touch dragging and auto-scroll during drag interactions.
 
@@ -914,6 +929,22 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 <y-droplist swap style="display:block">
     <div data-id="x">X</div>
     <div data-id="y">Y</div>
+</y-droplist>
+
+<!-- Cursor-following drag preview (default: clone of dragged item) -->
+<y-droplist drag-preview style="display:block"></y-droplist>
+
+<!-- Tilted preview using CSS token -->
+<y-droplist
+    drag-preview
+    drag-preview-scale="0.92"
+    style="--component-droplist-drag-preview-rotate:3deg"
+></y-droplist>
+
+<!-- Custom preview content via slot -->
+<y-droplist drag-preview style="display:block">
+    <div data-id="a">Alpha</div>
+    <div slot="drag-preview" class="badge">Dragging…</div>
 </y-droplist>
 ```
 

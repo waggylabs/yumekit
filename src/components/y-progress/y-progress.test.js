@@ -407,6 +407,28 @@ describe("YumeProgress", () => {
         expect(node.textContent).to.equal("Custom");
     });
 
+    it("segmented ring produces visible angular gaps between segments", async () => {
+        const el = await fixture(
+            html`<y-progress
+                mode="ring"
+                value="100"
+                segmented="6"
+                size="120px"
+                segment-gap="8px"
+            ></y-progress>`,
+        );
+        const segs = el.shadowRoot.querySelectorAll(".ring-fill--segment");
+        expect(segs).to.have.lengthOf(6);
+        // Each segment occupies 60° of arc; with a non-zero gap the rendered
+        // arc must be shorter than the full slot — getTotalLength catches the
+        // case where the gap collapses to 0 and segments visually touch.
+        const r = 120 / 2 - parseFloat(segs[0].getAttribute("stroke-width")) / 2;
+        const fullSegLen = (2 * Math.PI * r) / 6;
+        for (const seg of segs) {
+            expect(seg.getTotalLength()).to.be.lessThan(fullSegLen - 0.5);
+        }
+    });
+
     it("ring indeterminate sets aria-busy and skips the value label", async () => {
         const el = await fixture(
             html`<y-progress mode="ring" indeterminate></y-progress>`,
