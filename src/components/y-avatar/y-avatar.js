@@ -1,4 +1,7 @@
-import { getColorVarPair } from "../../modules/helpers.js";
+import {
+    getColorVarPair,
+    createElement as _el,
+} from "../../modules/helpers.js";
 
 export class YumeAvatar extends HTMLElement {
     static get observedAttributes() {
@@ -56,14 +59,25 @@ export class YumeAvatar extends HTMLElement {
         const [bgColor, textColor] = getColorVarPair(this.color);
 
         this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(dimensions, borderRadius, bgColor, textColor)];
-        this.shadowRoot.innerHTML = this.src
-            ? `<img src="${this.src}" alt="${this.alt}" part="avatar" />`
-            : `<div class="avatar" part="avatar"><h5>${this._getInitials(this.alt)}</h5></div>`;
+        this.shadowRoot.replaceChildren(this._buildAvatar());
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
+
+    _buildAvatar() {
+        if (this.src) {
+            return _el("img", {
+                src: this.src,
+                alt: this.alt,
+                part: "avatar",
+            });
+        }
+        return _el("div", { class: "avatar", part: "avatar" }, [
+            _el("h5", null, [this._getInitials(this.alt)]),
+        ]);
+    }
 
     _buildStyleSheet(dimensions, borderRadius, bgColor, textColor) {
         const sheet = new CSSStyleSheet();

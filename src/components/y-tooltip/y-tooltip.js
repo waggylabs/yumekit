@@ -1,4 +1,9 @@
-import { getColorVarPair } from "../../modules/helpers.js";
+import {
+    getColorVarPair,
+    createElement as _el,
+} from "../../modules/helpers.js";
+
+const ALLOWED_POSITIONS = ["top", "bottom", "left", "right"];
 
 export class YumeTooltip extends HTMLElement {
     static get observedAttributes() {
@@ -106,12 +111,27 @@ export class YumeTooltip extends HTMLElement {
 
     render() {
         const [bg, fg] = getColorVarPair(this.color);
-        const visibleClass = this.open ? " visible" : "";
-        this.shadowRoot.innerHTML = `
-            <style>${this._buildStyles(bg, fg)}</style>
-            <slot class="trigger"></slot>
-            <div class="tooltip ${this.position}${visibleClass}" role="tooltip" part="tooltip">${this.text}</div>
-        `;
+        const position = ALLOWED_POSITIONS.includes(this.position)
+            ? this.position
+            : "top";
+        const classes = ["tooltip", position];
+        if (this.open) classes.push("visible");
+
+        const tip = _el(
+            "div",
+            {
+                class: classes.join(" "),
+                role: "tooltip",
+                part: "tooltip",
+            },
+            [this.text],
+        );
+
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(bg, fg)];
+        this.shadowRoot.replaceChildren(
+            _el("slot", { class: "trigger" }),
+            tip,
+        );
     }
 
     /** Programmatically shows the tooltip after the configured delay. No-op while `open` is set. */
@@ -133,8 +153,9 @@ export class YumeTooltip extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
-    _buildStyles(bg, fg) {
-        return `
+    _buildStyleSheet(bg, fg) {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: inline-block;
                 position: relative;
@@ -227,7 +248,8 @@ export class YumeTooltip extends HTMLElement {
                 transform: translateY(-50%);
                 border-right-color: ${bg};
             }
-        `;
+        `);
+        return sheet;
     }
 
     _onFocusIn() {

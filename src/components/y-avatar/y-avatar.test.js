@@ -182,4 +182,44 @@ describe("YumeAvatar", () => {
         expect(el.hasAttribute("src")).to.be.false;
         expect(el.shadowRoot.querySelector(".avatar")).to.exist;
     });
+
+    describe("XSS hardening", () => {
+        it("does not allow attribute breakout via src", async () => {
+            const hostile = `" onerror="window.__xssAvatarSrc=true" x="`;
+            const el = await fixture(
+                html`<y-avatar src=${hostile} alt="X"></y-avatar>`,
+            );
+
+            const img = el.shadowRoot.querySelector("img");
+            expect(img).to.exist;
+            expect(img.getAttribute("src")).to.equal(hostile);
+            expect(img.hasAttribute("onerror")).to.be.false;
+            expect(el.shadowRoot.querySelector("[onerror]")).to.be.null;
+            expect(window.__xssAvatarSrc).to.be.undefined;
+        });
+
+        it("does not allow attribute breakout via alt", async () => {
+            const hostile = `" onload="window.__xssAvatarAlt=true" x="`;
+            const el = await fixture(
+                html`<y-avatar src="/img/x.png" alt=${hostile}></y-avatar>`,
+            );
+
+            const img = el.shadowRoot.querySelector("img");
+            expect(img).to.exist;
+            expect(img.getAttribute("alt")).to.equal(hostile);
+            expect(img.hasAttribute("onload")).to.be.false;
+            expect(el.shadowRoot.querySelector("[onload]")).to.be.null;
+            expect(window.__xssAvatarAlt).to.be.undefined;
+        });
+
+        it("renders hostile alt as text in the initials fallback", async () => {
+            const hostile = `<img src=x onerror="window.__xssAvatarInitials=true">`;
+            const el = await fixture(html`<y-avatar alt=${hostile}></y-avatar>`);
+
+            // No injected <img> should be present in the initials branch
+            expect(el.shadowRoot.querySelector("img")).to.be.null;
+            expect(el.shadowRoot.querySelector("[onerror]")).to.be.null;
+            expect(window.__xssAvatarInitials).to.be.undefined;
+        });
+    });
 });

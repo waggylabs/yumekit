@@ -287,4 +287,19 @@ describe("YumeTextarea", () => {
         expect(el.value).to.equal("preset");
         document.body.removeChild(el);
     });
+
+    describe("XSS hardening", () => {
+        it("does not allow attribute breakout via rows", async () => {
+            const hostile = `3" onfocus="window.__xssTextareaRows=true" autofocus x="`;
+            const el = document.createElement("y-textarea");
+            el.setAttribute("rows", hostile);
+            document.body.appendChild(el);
+
+            expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+            expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+            expect(window.__xssTextareaRows).to.be.undefined;
+
+            document.body.removeChild(el);
+        });
+    });
 });

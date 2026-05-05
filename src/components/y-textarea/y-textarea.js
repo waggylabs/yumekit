@@ -1,4 +1,7 @@
-import { manageLabelVisibility } from "../../modules/helpers.js";
+import {
+    manageLabelVisibility,
+    createElement as _el,
+} from "../../modules/helpers.js";
 
 export class YumeTextarea extends HTMLElement {
     static formAssociated = true;
@@ -145,10 +148,8 @@ export class YumeTextarea extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [
             this._buildStyleSheet(isDisabled, paddingVar),
         ];
-        this.shadowRoot.innerHTML = this._buildHTML(
-            rows,
-            isLabelTop,
-            isDisabled,
+        this.shadowRoot.replaceChildren(
+            this._buildTree(rows, isLabelTop, isDisabled),
         );
 
         this.textarea = this.shadowRoot.querySelector("textarea");
@@ -187,18 +188,26 @@ export class YumeTextarea extends HTMLElement {
         });
     }
 
-    _buildHTML(rows, isLabelTop, isDisabled) {
-        const labelSlot =
-            '<div class="label-wrapper"><slot name="label"></slot></div>';
-        return `
-            <div class="input-wrapper">
-                ${isLabelTop ? labelSlot : ""}
-                <div class="input-container">
-                    <textarea part="textarea" rows="${rows}" ${isDisabled ? "disabled" : ""}></textarea>
-                </div>
-                ${!isLabelTop ? labelSlot : ""}
-            </div>
-        `;
+    _buildTree(rows, isLabelTop, isDisabled) {
+        const buildLabelSlot = () =>
+            _el("div", { class: "label-wrapper" }, [
+                _el("slot", { name: "label" }),
+            ]);
+
+        const textarea = _el("textarea", {
+            part: "textarea",
+            rows,
+            disabled: isDisabled || null,
+        });
+
+        const container = _el("div", { class: "input-container" }, [textarea]);
+
+        const children = [];
+        if (isLabelTop) children.push(buildLabelSlot());
+        children.push(container);
+        if (!isLabelTop) children.push(buildLabelSlot());
+
+        return _el("div", { class: "input-wrapper" }, children);
     }
 
     _buildStyleSheet(isDisabled, paddingVar) {

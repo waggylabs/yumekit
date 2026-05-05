@@ -283,4 +283,38 @@ describe("YumeTooltip", () => {
             expect(el.open).to.be.true;
         });
     });
+
+    describe("XSS hardening", () => {
+        it("renders text as text content, not HTML", async () => {
+            const hostile = `<img src=x onerror="window.__xssTooltipText=true">`;
+            const el = await fixture(
+                html`<y-tooltip text=${hostile}
+                    ><button>B</button></y-tooltip
+                >`,
+            );
+
+            const tip = el.shadowRoot.querySelector(".tooltip");
+            expect(tip).to.exist;
+            expect(tip.querySelector("img")).to.be.null;
+            expect(tip.textContent).to.equal(hostile);
+            expect(window.__xssTooltipText).to.be.undefined;
+        });
+
+        it("ignores an unknown position value (no class breakout)", async () => {
+            const hostile = `top" onfocus="window.__xssTooltipPos=true" autofocus x="`;
+            const el = await fixture(
+                html`<y-tooltip text="T" position=${hostile}
+                    ><button>B</button></y-tooltip
+                >`,
+            );
+
+            const tip = el.shadowRoot.querySelector(".tooltip");
+            expect(tip).to.exist;
+            // Falls back to default "top"
+            expect(tip.classList.contains("top")).to.be.true;
+            expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+            expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+            expect(window.__xssTooltipPos).to.be.undefined;
+        });
+    });
 });
