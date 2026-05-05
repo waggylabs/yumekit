@@ -618,16 +618,10 @@ describe("helpers", () => {
             expect(el.getAttribute("slot")).to.equal("left-icon");
         });
 
-        it("wraps raw SVG markup in a span escape hatch", () => {
+        it("does not write raw markup to innerHTML when iconValue starts with '<'", () => {
             const el = buildNavItemIcon("<svg><circle/></svg>", "medium");
-            expect(el.tagName.toLowerCase()).to.equal("span");
-            expect(el.getAttribute("slot")).to.equal("left-icon");
-            expect(el.innerHTML).to.include("<svg");
-        });
-
-        it("trims leading whitespace before checking for SVG markup", () => {
-            const el = buildNavItemIcon("   <svg></svg>", "medium");
-            expect(el.tagName.toLowerCase()).to.equal("span");
+            expect(el.tagName.toLowerCase()).to.equal("y-icon");
+            expect(el.innerHTML).to.equal("");
         });
     });
 

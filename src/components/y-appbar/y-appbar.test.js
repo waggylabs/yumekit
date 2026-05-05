@@ -4,18 +4,11 @@ import "./y-appbar.js";
 
 describe("YumeAppbar", () => {
     const sampleItems = [
-        {
-            text: "Home",
-            icon: '<svg width="16" height="16"><rect width="16" height="16"/></svg>',
-            href: "/",
-        },
-        {
-            text: "Dashboard",
-            icon: '<svg width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>',
-        },
+        { text: "Home", icon: "home", href: "/" },
+        { text: "Dashboard", icon: "magnifying-glass" },
         {
             text: "Settings",
-            icon: '<svg width="16" height="16"><rect width="16" height="16"/></svg>',
+            icon: "gear",
             children: [
                 { text: "Profile", href: "/settings/profile" },
                 { text: "Security", href: "/settings/security" },
@@ -307,37 +300,6 @@ describe("YumeAppbar", () => {
             ".appbar-body y-button y-icon",
         );
         expect(icon.getAttribute("part")).to.equal("icon");
-    });
-
-    it("exposes part='icon' on raw SVG icon spans for external styling", async () => {
-        const el = await fixture(html`
-            <y-appbar .items=${sampleItems}></y-appbar>
-        `);
-        const span = el.shadowRoot.querySelector(
-            '.appbar-body y-button span[slot="left-icon"]',
-        );
-        expect(span.getAttribute("part")).to.equal("icon");
-    });
-
-    it("still renders raw SVG icons via span when icon starts with '<'", async () => {
-        const el = await fixture(html`
-            <y-appbar .items=${sampleItems}></y-appbar>
-        `);
-        const spans = el.shadowRoot.querySelectorAll(
-            '.appbar-body y-button span[slot="left-icon"]',
-        );
-        expect(spans.length).to.equal(3);
-        expect(spans[0].innerHTML).to.include("<svg");
-    });
-
-    it("does not create y-icon when item.icon is raw SVG", async () => {
-        const el = await fixture(html`
-            <y-appbar .items=${sampleItems}></y-appbar>
-        `);
-        const icons = el.shadowRoot.querySelectorAll(
-            '.appbar-body y-button y-icon[slot="left-icon"]',
-        );
-        expect(icons.length).to.equal(0);
     });
 
     it("renders named icons on items", async () => {

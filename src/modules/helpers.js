@@ -417,19 +417,15 @@ export function resolveCSSColor(varExpr, el) {
 // =============================================================================
 
 /**
- * Build the icon node for a nav item. Raw SVG markup is preserved as a
- * public escape hatch (wrapped in a `<span slot="left-icon">`); named icons
- * route through `<y-icon>` for consistent sizing/theming.
- * @param {string} iconValue — icon name (e.g. `"home"`) or raw SVG markup
+ * Build the icon node for a nav item. `iconValue` must be a registered icon
+ * name; custom glyphs should be added via the `<y-icon>` registry rather
+ * than inlined as markup, so this surface is not an XSS sink for callers
+ * passing items as JSON.
+ * @param {string} iconValue — registered icon name (e.g. `"home"`)
  * @param {string} iconSize — size variant passed to `<y-icon size>`
  * @returns {HTMLElement}
  */
 export function buildNavItemIcon(iconValue, iconSize) {
-    if (iconValue.trim().startsWith("<")) {
-        const span = createElement("span", { slot: "left-icon", part: "icon" });
-        span.innerHTML = iconValue;
-        return span;
-    }
     return createElement("y-icon", {
         slot: "left-icon",
         part: "icon",

@@ -43,7 +43,7 @@ A collapsible vertical navigation sidebar. Renders a branded header, a scrollabl
 | Field      | Type    | Description                                                                    |
 | ---------- | ------- | ------------------------------------------------------------------------------ |
 | `text`     | string  | Label text.                                                                    |
-| `icon`     | string  | Registered icon name or raw SVG string.                                        |
+| `icon`     | string  | Registered `<y-icon>` name. Custom glyphs must be added via the icon registry. |
 | `href`     | string  | Navigation target.                                                             |
 | `selected` | boolean | Force active state. Auto-detected from `location.pathname` when `href` is set. |
 | `slot`     | string  | Named slot in the sidebar's light DOM whose content replaces the button.       |

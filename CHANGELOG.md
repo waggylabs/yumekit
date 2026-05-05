@@ -127,6 +127,10 @@ Delete any empty sections before publishing.
     - **Changed**: `direction` now also accepts `row-reverse` and `column-reverse`. `wrap` is now an enum (`nowrap` | `wrap` | `wrap-reverse`); presence without a value still resolves to `wrap` for back-compat. `responsive` on row directions now also collapses the stack to `column` below the mobile breakpoint via a CSS container query (in addition to the existing auto-wrap behavior).
     - **Added**: `align-content`, `row-gap`, `column-gap`, and `inline` (boolean → `display: inline-flex`) attributes. New `--component-stack-row-gap` and `--component-stack-column-gap` CSS variables.
 
+### Security
+
+- **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup. The previous escape hatch wrote any string starting with `<` to `innerHTML`, turning JSON-fed `items` into an XSS sink. `icon` now only resolves registered `<y-icon>` names; custom glyphs must be added through the icon registry (`registerIcon` / `registerIcons`).
+
 ## [0.4.4] - 2026-04-25
 
 ### Fixed
