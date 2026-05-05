@@ -53,6 +53,7 @@ export class YumeAppbar extends HTMLElement {
         this._mql = null;
         this._isMobile = false;
         this._mobileOutsideClick = null;
+        this._mobileNavigateClose = null;
     }
 
     connectedCallback() {
@@ -63,6 +64,7 @@ export class YumeAppbar extends HTMLElement {
     disconnectedCallback() {
         this._teardownMediaQuery();
         this._teardownMobileOutsideClick();
+        this._teardownMobileNavigateClose();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
@@ -504,12 +506,14 @@ export class YumeAppbar extends HTMLElement {
     _buildNavItem(item, cfg, menuDir) {
         const hasChildren = item.children?.length > 0;
         const btnId = this._uid("appbar-btn");
+        const isActive = isNavItemActive(item);
 
         const btn = _el("y-button", {
             id: btnId,
-            color: isNavItemActive(item) ? "primary" : "base",
+            color: isActive ? "primary" : "base",
             "style-type": "flat",
             size: cfg.buttonSize,
+            "aria-current": isActive ? "page" : false,
         });
 
         if (item.icon) btn.appendChild(buildNavItemIcon(item.icon, cfg.iconSize));
@@ -570,6 +574,7 @@ export class YumeAppbar extends HTMLElement {
 
     _initRender() {
         this._teardownMobileOutsideClick();
+        this._teardownMobileNavigateClose();
         this.shadowRoot.innerHTML = "";
         this._idCounter = 0;
     }
@@ -623,6 +628,12 @@ export class YumeAppbar extends HTMLElement {
         this._mobileOutsideClick = null;
     }
 
+    _teardownMobileNavigateClose() {
+        if (!this._mobileNavigateClose) return;
+        this.removeEventListener("navigate", this._mobileNavigateClose);
+        this._mobileNavigateClose = null;
+    }
+
     _uid(prefix) {
         return `${prefix}-${this._idCounter++}`;
     }
@@ -639,7 +650,10 @@ export class YumeAppbar extends HTMLElement {
             menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
         });
 
-        panel.addEventListener("navigate", closePanel);
+        // navigateFrom dispatches "navigate" from the host, so the listener
+        // must live on the host — not on a descendant of the panel.
+        this._mobileNavigateClose = closePanel;
+        this.addEventListener("navigate", this._mobileNavigateClose);
 
         this._mobileOutsideClick = (e) => {
             if (e.composedPath().includes(this)) return;

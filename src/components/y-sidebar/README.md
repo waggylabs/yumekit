@@ -109,7 +109,7 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` equivalen
 ## Accessibility
 
 - The `.sidebar` div carries `role="navigation"`.
-- Active item buttons receive the `"primary"` color; inactive use `"base"`.
-- Active state is auto-detected from `window.location` when `href` is set (checks `pathname + search + hash`).
+- The active item is marked with `aria-current="page"` and receives the `"primary"` color; inactive items use `"base"`.
+- Active state is auto-detected from `window.location` when `href` is set (checks `pathname + search + hash`), or set explicitly via `selected: true` on the item.
 - The collapse button has a dynamic `aria-label`: `"Collapse sidebar"` / `"Expand sidebar"`.
-- Submenu triggers use `y-menu` (anchored flyout) which manages its own `role="menu"` / `aria-expanded` semantics.
+- Submenu flyouts are rendered by `y-menu`, which applies `role="menu"` to its dropdown, `role="menuitem"` to each child, and sets `aria-haspopup="menu"` plus a live `aria-expanded` toggle on the resolved trigger element.

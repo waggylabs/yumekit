@@ -364,6 +364,34 @@ describe("YumeAppbar", () => {
         expect(wrapper.querySelector("slot")).to.be.null;
     });
 
+    it("marks the active item with aria-current=page", async () => {
+        const items = [
+            { text: "Home", icon: "home", href: "/" },
+            { text: "Active", icon: "gear", selected: true },
+        ];
+        const el = await fixture(html`<y-appbar .items=${items}></y-appbar>`);
+        const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
+
+        expect(buttons[0].hasAttribute("aria-current")).to.be.false;
+        expect(buttons[1].getAttribute("aria-current")).to.equal("page");
+    });
+
+    it("marks the active item with aria-current=page in mobile layout", async () => {
+        const items = [
+            { text: "Home", icon: "home", href: "/" },
+            { text: "Active", icon: "gear", selected: true },
+        ];
+        const el = await fixture(html`<y-appbar .items=${items}></y-appbar>`);
+        el._isMobile = true;
+        el.render();
+
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+        const buttons = panel.querySelectorAll(".nav-item y-button");
+
+        expect(buttons[0].hasAttribute("aria-current")).to.be.false;
+        expect(buttons[1].getAttribute("aria-current")).to.equal("page");
+    });
+
     // ── sticky attribute ─────────────────────────────────────────
 
     it("sticky getter returns false when sticky attribute is absent", async () => {
@@ -580,6 +608,27 @@ describe("YumeAppbar", () => {
         expect(menuBtn.getAttribute("aria-expanded")).to.equal("true");
         menuBtn.click();
         expect(panel.classList.contains("open")).to.be.false;
+    });
+
+    it("mobile panel closes when a nav item with href is clicked", async () => {
+        const el = await fixture(html`
+            <y-appbar .items=${namedIconItems}></y-appbar>
+        `);
+        el._isMobile = true;
+        el.render();
+
+        const menuBtn = el.shadowRoot.querySelector(".mobile-start y-button");
+        const panel = el.shadowRoot.querySelector(".mobile-panel");
+
+        menuBtn.click();
+        expect(panel.classList.contains("open")).to.be.true;
+
+        // Home is the first item and has href: "/"
+        const homeBtn = panel.querySelector(".nav-item y-button");
+        homeBtn.click();
+
+        expect(panel.classList.contains("open")).to.be.false;
+        expect(menuBtn.getAttribute("aria-expanded")).to.equal("false");
     });
 
     it("mobile layout passes size to the hamburger menu button", async () => {

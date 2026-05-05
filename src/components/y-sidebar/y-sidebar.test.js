@@ -177,6 +177,36 @@ describe("YumeSidebar", () => {
         expect(menuItems.length).to.equal(2);
     });
 
+    it("forwards history attribute to submenu y-menu", async () => {
+        const el = await fixture(html`
+            <y-sidebar history="false" .items=${sampleItems}></y-sidebar>
+        `);
+        const menu = el.shadowRoot.querySelector("y-menu");
+        expect(menu.getAttribute("history")).to.equal("false");
+    });
+
+    it("does not set history on submenu y-menu when sidebar has none", async () => {
+        const el = await fixture(html`
+            <y-sidebar .items=${sampleItems}></y-sidebar>
+        `);
+        const menu = el.shadowRoot.querySelector("y-menu");
+        expect(menu.hasAttribute("history")).to.be.false;
+    });
+
+    it("marks the active item with aria-current=page", async () => {
+        const items = [
+            { text: "Home", icon: "home", href: "/" },
+            { text: "Active", icon: "gear", selected: true },
+        ];
+        const el = await fixture(html`<y-sidebar .items=${items}></y-sidebar>`);
+        const buttons = el.shadowRoot.querySelectorAll(
+            ".sidebar-body y-button",
+        );
+
+        expect(buttons[0].hasAttribute("aria-current")).to.be.false;
+        expect(buttons[1].getAttribute("aria-current")).to.equal("page");
+    });
+
     it("renders item without icon when icon property is absent", async () => {
         const items = [{ text: "Plain" }];
         const el = await fixture(html`<y-sidebar .items=${items}></y-sidebar>`);
@@ -189,6 +219,49 @@ describe("YumeSidebar", () => {
         const el = await fixture(html`<y-sidebar items="${json}"></y-sidebar>`);
         expect(el.items.length).to.equal(3);
         expect(el.items[0].text).to.equal("Home");
+    });
+
+    it("renders a named slot when item has a slot property", async () => {
+        const items = [{ text: "Custom", slot: "custom-item" }];
+        const el = await fixture(html`
+            <y-sidebar .items=${items}>
+                <div slot="custom-item">Custom Content</div>
+            </y-sidebar>
+        `);
+        const slot = el.shadowRoot.querySelector('slot[name="custom-item"]');
+        expect(slot).to.not.be.null;
+    });
+
+    it("shows slotted content when item.slot matches a light DOM element", async () => {
+        const items = [{ text: "Custom", slot: "custom-item" }];
+        const el = await fixture(html`
+            <y-sidebar .items=${items}>
+                <span slot="custom-item" id="my-custom">My Widget</span>
+            </y-sidebar>
+        `);
+        const slot = el.shadowRoot.querySelector('slot[name="custom-item"]');
+        const assigned = slot.assignedNodes();
+        expect(assigned.length).to.equal(1);
+        expect(assigned[0].textContent).to.equal("My Widget");
+    });
+
+    it("falls back to default button when item.slot is set but no light DOM element matches", async () => {
+        const items = [{ text: "Fallback", slot: "missing-slot" }];
+        const el = await fixture(html`<y-sidebar .items=${items}></y-sidebar>`);
+        const slot = el.shadowRoot.querySelector('slot[name="missing-slot"]');
+        expect(slot).to.not.be.null;
+        const btn = slot.querySelector("y-button");
+        expect(btn).to.not.be.null;
+        expect(btn.textContent).to.include("Fallback");
+    });
+
+    it("renders default button without slot wrapper when item has no slot property", async () => {
+        const items = [{ text: "Normal" }];
+        const el = await fixture(html`<y-sidebar .items=${items}></y-sidebar>`);
+        const wrapper = el.shadowRoot.querySelector(".nav-item");
+        const btn = wrapper.querySelector("y-button");
+        expect(btn).to.not.be.null;
+        expect(wrapper.querySelector("slot")).to.be.null;
     });
 
     // -------------------------------------------------------------------------

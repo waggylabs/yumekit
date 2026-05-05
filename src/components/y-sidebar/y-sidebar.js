@@ -268,12 +268,14 @@ export class YumeSidebar extends HTMLElement {
         const showLabel = item.text && !isCollapsed;
         const showArrow = hasChildren && !isCollapsed;
         const btnId = this._uid("sidebar-btn");
+        const isActive = isNavItemActive(item);
 
         const btn = _el("y-button", {
             id: btnId,
-            color: isNavItemActive(item) ? "primary" : "base",
+            color: isActive ? "primary" : "base",
             "style-type": "flat",
             size: cfg.buttonSize,
+            "aria-current": isActive ? "page" : false,
         });
 
         if (item.icon) btn.appendChild(buildNavItemIcon(item.icon, cfg.iconSize));
@@ -306,6 +308,7 @@ export class YumeSidebar extends HTMLElement {
                 anchor: btnId,
                 direction: menuDir,
                 size: cfg.buttonSize,
+                history: this.history,
             });
             menuEl.items = item.children;
             wrapper.appendChild(menuEl);

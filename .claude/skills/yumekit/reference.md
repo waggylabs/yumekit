@@ -843,7 +843,11 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
         width: 100%;
     }
     .my-link .label {
-        display: calc(1 - var(--y-sidebar-collapsed, 0)) * 1;
+        opacity: calc(1 - var(--y-sidebar-collapsed, 0));
+        max-width: calc((1 - var(--y-sidebar-collapsed, 0)) * 200px);
+        overflow: hidden;
+        white-space: nowrap;
+        transition: opacity 0.2s ease, max-width 0.2s ease;
     }
 </style>
 <y-sidebar id="nav">
