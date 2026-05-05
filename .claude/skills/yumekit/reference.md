@@ -861,7 +861,7 @@ Drag-and-drop reorderable list. Supports within-list reordering, cross-list grou
 | `drag:end`     | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag ends (drop or cancel)                                                  |
 | `drag:enter`   | `{ originalEvent, item, list, from }`       | no         | Fired on a target list when the drag enters it (cross-list only)                                            |
 | `drag:leave`   | `{ originalEvent, item, list, to }`         | no         | Fired on a list when the drag leaves it (cross-list only)                                                   |
-| `drag:preview` | `{ item, preview, list }`                   | **yes**    | Fired after the preview element is created and inserted into `document.body`; `preventDefault()` cancels it |
+| `drag:preview` | `{ item, preview, list }`                   | **yes**    | Fired after the preview element is created but **before** it is appended to `document.body`; `preventDefault()` cancels it (no insertion)   |
 | `reorder`      | `{ oldIndex, newIndex, item, list, from? }` | no         | Fired on the destination list after a successful drop or keyboard move                                      |
 | `update`       | `{ item, oldIndex, newIndex, list, from? }` | no         | Fired on both source (cross-list) and destination after every successful drop                               |
 
@@ -873,13 +873,13 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 
 **Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). When `handle` is set, focus lands on the handle element. A polite `aria-live` region announces moves and swaps.
 
-**CSS Parts:** `list` (shadow-DOM flex wrapper around the slot). `drag-preview` (the cursor-following preview element when `drag-preview` is set).
+**CSS Parts:** `list` (shadow-DOM flex wrapper around the slot). The drag preview element carries `part="drag-preview"` but is appended to `document.body` (outside the shadow root), so `::part(drag-preview)` cannot match it — see "Styling the drag preview" below for workable selectors.
 
 **Styling items:** items are slotted light-DOM children — use descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.). `::part()` does not reach light DOM.
 
 **Styling the ghost placeholder:** target `[data-y-droplist-ghost]`, the `ghost-class` value (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties. The ghost is the dashed in-list placeholder — distinct from the drag preview.
 
-**Styling the drag preview:** target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), `::part(drag-preview)`, or the `--component-droplist-drag-preview-*` custom properties. The preview lives in `document.body` with `position: fixed` and `pointer-events: none`.
+**Styling the drag preview:** target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), the `[part="drag-preview"]` attribute selector, or the `--component-droplist-drag-preview-*` custom properties. The preview lives in `document.body` with `position: fixed` and `pointer-events: none`. Note: `::part(drag-preview)` does **not** work — `::part()` only pierces a shadow tree, and the preview is rendered outside any shadow root.
 
 **CSS Custom Properties:**
 
@@ -888,7 +888,7 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 - `--component-droplist-item-padding`, `--component-droplist-item-margin`
 - `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
 - `--component-droplist-drag-preview-opacity` (default `0.85`)
-- `--component-droplist-drag-preview-shadow` (default `var(--base-shadow)`)
+- `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`)
 - `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a Trello-style tilt)
 - `--component-droplist-drag-preview-scale` — applied via `drag-preview-scale` attribute; set directly there rather than as a CSS var
 - `--component-droplist-drag-preview-cursor-offset-x`, `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the anchor point)

@@ -136,8 +136,13 @@ export class YumeDroplist extends HTMLElement {
         this._dragPreview = null;
         this._grabOffsetX = 0;
         this._grabOffsetY = 0;
+        this._previewScale = 1;
         this._previewRafId = null;
         this._previewPending = null;
+        this._previewDocAbort = null;
+        this._hiddenSlot = null;
+        this._hiddenSlotDisplay = "";
+        this._hiddenSlotDisplayPriority = "";
 
         this.render();
     }
@@ -819,10 +824,12 @@ export class YumeDroplist extends HTMLElement {
         this._grabOffsetY = clientY - itemRect.top;
 
         // Determine preview content: custom slot node or deep clone of the item.
-        const slotted = this.querySelector('[slot="drag-preview"]');
+        // Scope to direct children — descendants inside the dragged item that
+        // happen to use slot="drag-preview" should not be hijacked here.
+        const slotted = this.querySelector(':scope > [slot="drag-preview"]');
         let content;
         if (slotted) {
-            slotted.style.display = "none";
+            this._hideSlottedPreview(slotted);
             content = slotted.cloneNode(true);
             content.removeAttribute("slot");
             content.style.display = "";
@@ -837,10 +844,15 @@ export class YumeDroplist extends HTMLElement {
             cs
                 .getPropertyValue("--component-droplist-drag-preview-opacity")
                 .trim() || "0.85";
+        // Fall back to the theme-wide `--base-shadow` (resolved against the
+        // host's theme) before the hard-coded literal — keeps the preview in
+        // step with other elevated surfaces (dialog, menu, datepicker, select).
         const shadow =
             cs
                 .getPropertyValue("--component-droplist-drag-preview-shadow")
-                .trim() || "0 4px 12px rgba(0,0,0,0.15)";
+                .trim() ||
+            cs.getPropertyValue("--base-shadow").trim() ||
+            "0 4px 12px rgba(0,0,0,0.15)";
         const rotate =
             cs
                 .getPropertyValue("--component-droplist-drag-preview-rotate")
@@ -854,6 +866,7 @@ export class YumeDroplist extends HTMLElement {
         const reducedMotion = this._prefersReducedMotion();
         const rotateVal = reducedMotion ? "0deg" : rotate;
         const scaleVal = reducedMotion ? 1 : scale;
+        this._previewScale = scaleVal;
 
         const preview = document.createElement("div");
         preview.className = this.dragPreviewClass;
@@ -885,13 +898,26 @@ export class YumeDroplist extends HTMLElement {
         const notCancelled = this.dispatchEvent(previewEvent);
         if (!notCancelled) {
             // Consumer cancelled — restore hidden slot node if any.
-            if (slotted) slotted.style.display = "";
+            this._restoreSlottedPreview();
             return;
         }
 
         document.body.appendChild(preview);
         this._dragPreview = preview;
         _previewOwner = this;
+
+        // Track the cursor everywhere — the list's own dragover handler doesn't
+        // fire when the pointer leaves all droplists during native HTML5 DnD,
+        // so without this the preview would freeze over the page background.
+        this._previewDocAbort = new AbortController();
+        document.addEventListener(
+            "dragover",
+            (ev) => {
+                if (!this._dragPreview) return;
+                this._schedulePreviewPosition(ev.clientX, ev.clientY);
+            },
+            { signal: this._previewDocAbort.signal },
+        );
 
         this._positionDragPreview(clientX, clientY);
     }
@@ -1128,6 +1154,14 @@ export class YumeDroplist extends HTMLElement {
         }
 
         return index;
+    }
+
+    _hideSlottedPreview(slotted) {
+        this._hiddenSlot = slotted;
+        this._hiddenSlotDisplay = slotted.style.getPropertyValue("display");
+        this._hiddenSlotDisplayPriority =
+            slotted.style.getPropertyPriority("display");
+        slotted.style.setProperty("display", "none");
     }
 
     _index(item) {
@@ -1733,20 +1767,21 @@ export class YumeDroplist extends HTMLElement {
             ) || 0;
 
         const offset = this.dragPreviewOffset;
+        const s = this._previewScale || 1;
         let top, left;
 
         if (offset === "center") {
-            const w = parseFloat(preview.style.width) || 0;
-            const h = parseFloat(preview.style.height) || 0;
+            const w = (parseFloat(preview.style.width) || 0) * s;
+            const h = (parseFloat(preview.style.height) || 0) * s;
             left = clientX - w / 2 + offX;
             top = clientY - h / 2 + offY;
         } else if (offset === "top-left") {
             left = clientX + offX;
             top = clientY + offY;
         } else {
-            // "cursor" (default) — preserve grab offset.
-            left = clientX - this._grabOffsetX + offX;
-            top = clientY - this._grabOffsetY + offY;
+            // "cursor" (default) — preserve grab offset under the scaled preview.
+            left = clientX - this._grabOffsetX * s + offX;
+            top = clientY - this._grabOffsetY * s + offY;
         }
 
         preview.style.left = `${left}px`;
@@ -2054,11 +2089,15 @@ export class YumeDroplist extends HTMLElement {
             this._dragPreview.remove();
             this._dragPreview = null;
         }
+        if (this._previewDocAbort) {
+            this._previewDocAbort.abort();
+            this._previewDocAbort = null;
+        }
+        this._previewScale = 1;
         if (_previewOwner === this) _previewOwner = null;
 
-        // Restore any hidden custom-slot content.
-        const slotted = this.querySelector('[slot="drag-preview"]');
-        if (slotted) slotted.style.display = "";
+        // Restore any hidden custom-slot content to its prior inline display.
+        this._restoreSlottedPreview();
 
         if (this._previewRafId !== null) {
             cancelAnimationFrame(this._previewRafId);
@@ -2071,6 +2110,23 @@ export class YumeDroplist extends HTMLElement {
         if (this._ghost && this._ghost.parentNode) this._ghost.remove();
         this._ghost = null;
         this._lastGhostRef = null;
+    }
+
+    _restoreSlottedPreview() {
+        const slotted = this._hiddenSlot;
+        if (!slotted) return;
+        if (this._hiddenSlotDisplay) {
+            slotted.style.setProperty(
+                "display",
+                this._hiddenSlotDisplay,
+                this._hiddenSlotDisplayPriority,
+            );
+        } else {
+            slotted.style.removeProperty("display");
+        }
+        this._hiddenSlot = null;
+        this._hiddenSlotDisplay = "";
+        this._hiddenSlotDisplayPriority = "";
     }
 
     /**
