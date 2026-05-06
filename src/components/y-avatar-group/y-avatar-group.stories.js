@@ -22,17 +22,19 @@ export default {
         overlap: {
             control: { type: "number", min: 0, max: 40, step: 1 },
             description: "Overlap offset in pixels between adjacent avatars.",
-            table: { defaultValue: { summary: "8" } },
+            table: { defaultValue: { summary: "2" } },
         },
         "stack-order": {
             control: "select",
             options: ["last", "first"],
-            description: "Which end sits on top. `last` raises the final avatar; `first` raises the leading one.",
+            description:
+                "Which end sits on top. `last` raises the final avatar; `first` raises the leading one.",
             table: { defaultValue: { summary: "last" } },
         },
         max: {
             control: { type: "number", min: 0, max: 10, step: 1 },
-            description: "Maximum visible avatars. `0` means unlimited; otherwise a `+N` indicator covers the remainder.",
+            description:
+                "Maximum visible avatars. `0` means unlimited; otherwise a `+N` indicator covers the remainder.",
             table: { defaultValue: { summary: "0" } },
         },
         size: {
@@ -44,12 +46,18 @@ export default {
     },
     args: {
         orientation: "horizontal",
-        overlap: 8,
+        overlap: 2,
         "stack-order": "last",
         max: 0,
         size: "medium",
     },
-    render: ({ orientation, overlap, "stack-order": stackOrder, max, size }) => `
+    render: ({
+        orientation,
+        overlap,
+        "stack-order": stackOrder,
+        max,
+        size,
+    }) => `
         <y-avatar-group
             orientation="${orientation}"
             overlap="${overlap}"

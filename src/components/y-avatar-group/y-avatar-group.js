@@ -5,7 +5,14 @@ const AVATAR_ATTRS = ["alt", "src", "color", "shape"];
 
 export class YumeAvatarGroup extends HTMLElement {
     static get observedAttributes() {
-        return ["avatars", "max", "orientation", "overlap", "size", "stack-order"];
+        return [
+            "avatars",
+            "max",
+            "orientation",
+            "overlap",
+            "size",
+            "stack-order",
+        ];
     }
 
     // -------------------------------------------------------------------------
@@ -31,35 +38,59 @@ export class YumeAvatarGroup extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** JSON array of avatar objects: `[{ alt, src, color, shape }]`. */
-    get avatars() { return this.getAttribute("avatars"); }
+    get avatars() {
+        return this.getAttribute("avatars");
+    }
     set avatars(val) {
         if (val == null) this.removeAttribute("avatars");
-        else this.setAttribute("avatars", typeof val === "string" ? val : JSON.stringify(val));
+        else
+            this.setAttribute(
+                "avatars",
+                typeof val === "string" ? val : JSON.stringify(val),
+            );
     }
 
     /** Maximum visible avatars. `0` means unlimited. */
-    get max() { return parseInt(this.getAttribute("max"), 10) || 0; }
-    set max(val) { this.setAttribute("max", val); }
+    get max() {
+        return parseInt(this.getAttribute("max"), 10) || 0;
+    }
+    set max(val) {
+        this.setAttribute("max", val);
+    }
 
     /** Layout direction: "horizontal" | "vertical" (default "horizontal"). */
-    get orientation() { return this.getAttribute("orientation") || "horizontal"; }
-    set orientation(val) { this.setAttribute("orientation", val); }
+    get orientation() {
+        return this.getAttribute("orientation") || "horizontal";
+    }
+    set orientation(val) {
+        this.setAttribute("orientation", val);
+    }
 
-    /** Overlap offset in pixels (default 8). */
+    /** Overlap offset in pixels (default 2). */
     get overlap() {
         const raw = this.getAttribute("overlap");
         const parsed = parseInt(raw, 10);
-        return Number.isFinite(parsed) && parsed >= 0 ? parsed : 8;
+        return Number.isFinite(parsed) && parsed >= 0 ? parsed : 2;
     }
-    set overlap(val) { this.setAttribute("overlap", val); }
+    set overlap(val) {
+        this.setAttribute("overlap", val);
+    }
 
     /** Avatar size for JSON-rendered avatars: "small" | "medium" | "large". */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** Which end sits on top: "first" | "last" (default "last"). */
-    get stackOrder() { return this.getAttribute("stack-order") || "last"; }
-    set stackOrder(val) { this.setAttribute("stack-order", val); }
+    get stackOrder() {
+        return this.getAttribute("stack-order") || "last";
+    }
+    set stackOrder(val) {
+        this.setAttribute("stack-order", val);
+    }
 
     // -------------------------------------------------------------------------
     // Public
@@ -83,8 +114,12 @@ export class YumeAvatarGroup extends HTMLElement {
         const overflowCount = max > 0 && total > max ? total - max : 0;
         const overlapPx = this.overlap;
         const isVertical = this.orientation === "vertical";
-        const marginProp = isVertical ? "marginBlockStart" : "marginInlineStart";
-        const otherMargin = isVertical ? "marginInlineStart" : "marginBlockStart";
+        const marginProp = isVertical
+            ? "marginBlockStart"
+            : "marginInlineStart";
+        const otherMargin = isVertical
+            ? "marginInlineStart"
+            : "marginBlockStart";
         const visibleCount = limit + (overflowCount > 0 ? 1 : 0);
         const stackLast = this.stackOrder !== "first";
 
@@ -112,14 +147,18 @@ export class YumeAvatarGroup extends HTMLElement {
         const shape = sample?.getAttribute?.("shape") || "circle";
         const stackLast = this.stackOrder !== "first";
         const zIndex = stackLast ? String(visibleCount - 1) : "0";
-        const btn = _el("button", {
-            type: "button",
-            part: "overflow",
-            class: "overflow",
-            "data-size": size,
-            "data-shape": shape,
-            "aria-label": `+${count} more`,
-        }, [`+${count}`]);
+        const btn = _el(
+            "button",
+            {
+                type: "button",
+                part: "overflow",
+                class: "overflow",
+                "data-size": size,
+                "data-shape": shape,
+                "aria-label": `+${count} more`,
+            },
+            [`+${count}`],
+        );
         btn.style.zIndex = zIndex;
         btn.addEventListener("click", () => this._handleOverflowClick(count));
         return btn;
@@ -137,6 +176,17 @@ export class YumeAvatarGroup extends HTMLElement {
             }
             ::slotted(*) {
                 flex-shrink: 0;
+            }
+            ::slotted(y-avatar),
+            y-avatar {
+                border-radius: var(--component-avatar-border-radius-circle, 9999px);
+                box-shadow: 0 0 0 var(--component-avatar-group-border-width, 2px) var(--base-background-component);
+            }
+            ::slotted(y-avatar[shape="square"]),
+            ::slotted(y-avatar[shape="rounded"]),
+            y-avatar[shape="square"],
+            y-avatar[shape="rounded"] {
+                border-radius: var(--component-avatar-border-radius-square, 4px);
             }
             .overflow {
                 display: inline-flex;
@@ -186,11 +236,13 @@ export class YumeAvatarGroup extends HTMLElement {
     }
 
     _handleOverflowClick(count) {
-        this.dispatchEvent(new CustomEvent("y-overflow-click", {
-            bubbles: true,
-            composed: true,
-            detail: { count },
-        }));
+        this.dispatchEvent(
+            new CustomEvent("y-overflow-click", {
+                bubbles: true,
+                composed: true,
+                detail: { count },
+            }),
+        );
     }
 
     _parseAvatars() {
@@ -214,11 +266,14 @@ export class YumeAvatarGroup extends HTMLElement {
             return _el("y-avatar", attrs);
         });
 
-        const { overflowCount, visibleCount } = this._applyChildStyles(children);
+        const { overflowCount, visibleCount } =
+            this._applyChildStyles(children);
         const nodes = [...children];
         if (overflowCount > 0) {
             const lastVisible = children[this.max - 1] || null;
-            nodes.push(this._buildOverflow(overflowCount, lastVisible, visibleCount));
+            nodes.push(
+                this._buildOverflow(overflowCount, lastVisible, visibleCount),
+            );
         }
         this.shadowRoot.replaceChildren(...nodes);
     }
@@ -227,7 +282,9 @@ export class YumeAvatarGroup extends HTMLElement {
         let slot = this.shadowRoot.querySelector("slot");
         if (!slot) {
             slot = _el("slot", null);
-            slot.addEventListener("slotchange", () => this._updateSlottedChildren());
+            slot.addEventListener("slotchange", () =>
+                this._updateSlottedChildren(),
+            );
             this.shadowRoot.replaceChildren(slot);
         }
         this._updateSlottedChildren();
@@ -238,14 +295,17 @@ export class YumeAvatarGroup extends HTMLElement {
         if (!slot) return;
 
         const children = slot.assignedElements({ flatten: true });
-        const { overflowCount, visibleCount } = this._applyChildStyles(children);
+        const { overflowCount, visibleCount } =
+            this._applyChildStyles(children);
 
         const existing = this.shadowRoot.querySelector(".overflow");
         if (existing) existing.remove();
 
         if (overflowCount > 0) {
             const lastVisible = children[this.max - 1] || null;
-            this.shadowRoot.appendChild(this._buildOverflow(overflowCount, lastVisible, visibleCount));
+            this.shadowRoot.appendChild(
+                this._buildOverflow(overflowCount, lastVisible, visibleCount),
+            );
         }
     }
 }

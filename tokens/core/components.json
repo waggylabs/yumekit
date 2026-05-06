@@ -115,6 +115,10 @@
             }
         },
         "avatar-group": {
+            "border-width": {
+                "$type": "sizing",
+                "$value": "{spacing.x-small}"
+            },
             "overlap": {
                 "$type": "sizing",
                 "$value": "{spacing.medium}"
