@@ -5,9 +5,9 @@ import "../../icons/all.js";
 
 const defaultItems = [
     { name: "Home", icon: "home", href: "/", selected: true },
-    { name: "Search", icon: "search", href: "/search" },
-    { name: "Chat", icon: "comments", href: "/chat" },
-    { name: "Profile", icon: "settings", href: "/profile" },
+    { name: "Search", icon: "magnifying-glass", href: "/search" },
+    { name: "Chat", icon: "speech-bubble", href: "/chat" },
+    { name: "Profile", icon: "gear", href: "/profile" },
 ];
 
 export default {
@@ -60,8 +60,8 @@ export const WithDirectChildren = {
     render: () => `
         <y-dock style="position:relative;">
             <y-button style-type="flat" size="small" left-icon="home">Home</y-button>
-            <y-button style-type="flat" size="small" left-icon="search">Search</y-button>
-            <y-button style-type="flat" size="small" left-icon="settings">Settings</y-button>
+            <y-button style-type="flat" size="small" left-icon="magnifying-glass">Search</y-button>
+            <y-button style-type="flat" size="small" left-icon="gear">Settings</y-button>
         </y-dock>
     `,
 };
@@ -70,9 +70,9 @@ export const WithSlotTemplate = {
     render: ({ position, size }) => {
         const items = [
             { name: "Home", icon: "home", href: "/" },
-            { name: "Search", icon: "search", href: "/search" },
+            { name: "Search", icon: "magnifying-glass", href: "/search" },
             { name: "Create", icon: "plus", slot: "create-action" },
-            { name: "Profile", icon: "settings", href: "/profile" },
+            { name: "Profile", icon: "gear", href: "/profile" },
         ];
 
         return `
