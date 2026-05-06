@@ -697,4 +697,104 @@ describe("<y-select>", () => {
             expect(input.value).to.equal("");
         });
     });
+
+    describe("XSS hardening", () => {
+        it("does not allow attribute breakout via placeholder", async () => {
+            const hostile = `Pick" onfocus="window.__xssSelectPlaceholder=true" autofocus x="`;
+            const el = document.createElement("y-select");
+            el.setAttribute("searchable", "");
+            el.setAttribute("placeholder", hostile);
+            el.setAttribute(
+                "options",
+                JSON.stringify([{ label: "A", value: "a" }]),
+            );
+            document.body.appendChild(el);
+
+            expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+            expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+            expect(window.__xssSelectPlaceholder).to.be.undefined;
+
+            const input = el.shadowRoot.querySelector(".search-input");
+            expect(input).to.exist;
+            expect(input.getAttribute("placeholder")).to.equal(hostile);
+
+            document.body.removeChild(el);
+        });
+
+        it("renders option label as text, not HTML", async () => {
+            const hostileLabel = `<img src=x onerror="window.__xssSelectLabel=true">`;
+            const options = JSON.stringify([
+                { label: hostileLabel, value: "h" },
+            ]);
+            const el = await fixture(
+                html`<y-select options=${options}></y-select>`,
+            );
+
+            const item = el.shadowRoot.querySelector(".dropdown-item");
+            expect(item).to.exist;
+            expect(item.querySelector("img")).to.be.null;
+            expect(item.textContent).to.equal(hostileLabel);
+            expect(window.__xssSelectLabel).to.be.undefined;
+        });
+
+        it("does not allow attribute breakout via option value", async () => {
+            const hostileValue = `a" onfocus="window.__xssSelectValue=true" autofocus x="`;
+            const options = JSON.stringify([
+                { label: "Apple", value: hostileValue },
+            ]);
+            const el = await fixture(
+                html`<y-select options=${options}></y-select>`,
+            );
+
+            const item = el.shadowRoot.querySelector(".dropdown-item");
+            expect(item).to.exist;
+            expect(item.getAttribute("data-value")).to.equal(hostileValue);
+            expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+            expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+            expect(window.__xssSelectValue).to.be.undefined;
+        });
+
+        it("ignores an unsafe option color (CSS-context escape)", async () => {
+            const hostileColor = `red; }</style><script>window.__xssSelectColor=true</script><x x="`;
+            const options = JSON.stringify([
+                { label: "A", value: "a", color: hostileColor },
+            ]);
+            const el = await fixture(
+                html`<y-select value="a" options=${options}></y-select>`,
+            );
+
+            const item = el.shadowRoot.querySelector(".dropdown-item.selected");
+            expect(item).to.exist;
+            // Hostile color is not applied as inline style
+            expect(item.style.background).to.equal("");
+            expect(window.__xssSelectColor).to.be.undefined;
+        });
+
+        it("accepts a safe hex color but rejects a hostile one wrapped in #", async () => {
+            const safeOptions = JSON.stringify([
+                { label: "A", value: "a", color: "#ff00ff" },
+            ]);
+            const el = await fixture(
+                html`<y-select value="a" options=${safeOptions}></y-select>`,
+            );
+            const safeItem = el.shadowRoot.querySelector(
+                ".dropdown-item.selected",
+            );
+            expect(safeItem.style.background).to.match(
+                /(#ff00ff|rgb\(\s*255,\s*0,\s*255\s*\))/,
+            );
+
+            const hostileColor = `#ff00ff; background-image: url(javascript:alert(1));//`;
+            const hostileOptions = JSON.stringify([
+                { label: "A", value: "a", color: hostileColor },
+            ]);
+            el.setAttribute("options", hostileOptions);
+            await nextFrame();
+
+            const hostileItem = el.shadowRoot.querySelector(
+                ".dropdown-item.selected",
+            );
+            expect(hostileItem.style.background).to.equal("");
+        });
+    });
 });

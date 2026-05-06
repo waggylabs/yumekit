@@ -1513,6 +1513,8 @@ registerIcons([
 const svg = getIcon("my-icon");
 ```
 
+`getIcon` returns the raw registered string. `<y-icon>` and `<y-rating>` render through the shared SVG sanitizer (see _SVG Sanitizer_ below), so script tags, event-handler attributes (`onload`, `onclick`, …), and any element outside the allowlist are stripped before the markup reaches the DOM — registering hostile SVG cannot lead to script execution through these components.
+
 Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
 - Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`, `ellipsis-v`, `ellipsis-h`)
 - Actions (`check`, `x`, `trash`, `floppy-disk`, `pencil`, `funnel`, `swap`, `share`, `magnifying-glass`, `plus`, `minus`, `copy`, `clipboard`, `scissors`, `undo`, `redo`)
@@ -1550,7 +1552,9 @@ import "@waggylabs/yumekit";
 
 These are not exported in the public API but are used internally:
 
+- `createElement(tag, attrs, children)` — single-call DOM builder used by every component to assemble its shadow tree without `innerHTML` (attributes flow through `setAttribute`, so user-controlled values cannot break out into new attributes or markup)
 - `getColorVarPair(color, fallbackColor)` — resolves a color name to `[bg, fg]` CSS value pair. Predefined names return token `var()` pairs; hex/rgb/hsl values return the raw color with a WCAG-contrasted foreground via `contrastTextColor()`
+- `isSafeCssColor(value)` — strict allowlist that returns `true` for `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()` literals only. Components that paint a user-supplied color into a CSS context (`y-badge`'s `color`, `y-select`'s per-option `color`) gate the value through this helper and fall back to the semantic default when it fails
 - `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
 - `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
 - `manageLabelVisibility(labelWrapper)` — toggles label wrapper visibility on slotchange
@@ -1566,6 +1570,13 @@ These are not exported in the public API but are used internally:
 - `rgbaToHex(r, g, b, a)` — RGBA → hex8 string
 - `parseHexColor(hex)` — hex → `{r, g, b, a}`
 - `parseColorString(str)` — any supported CSS color string → `{r, g, b, a}`
+
+### SVG Sanitizer (internal, `src/modules/svg-sanitizer.js`)
+
+Shared by `<y-icon>` and `<y-rating>` so both consume one allowlist-based sanitizer. Built-in icons are bundled and trusted; the sanitizer's job is to defend against script-bearing SVG passed through `registerIcon(name, svg)` at runtime.
+
+- `sanitizeSvg(raw)` — parses an SVG string, strips every element and attribute outside the allowlist, and returns the resulting `outerHTML`. Empty input or markup with no `<svg>` root returns `""`
+- `getSanitizedIcon(name)` — looks up a registered icon, sanitizes it, and memoizes the result. Repeated calls with the same name reuse the cached sanitized string
 
 ---
 

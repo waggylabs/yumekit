@@ -1,6 +1,13 @@
 import { html, fixture, expect, oneEvent } from "@open-wc/testing";
 import "./y-banner.js";
 
+/** Read concatenated CSS text from a shadowRoot's adoptedStyleSheets. */
+function getStyleText(el) {
+    return el.shadowRoot.adoptedStyleSheets
+        .flatMap((sheet) => [...sheet.cssRules].map((r) => r.cssText))
+        .join(" ");
+}
+
 describe("YumeBanner", () => {
     // ── Defaults ──────────────────────────────────────────────
 
@@ -28,7 +35,7 @@ describe("YumeBanner", () => {
     it("defaults to base color", async () => {
         const el = await fixture(html`<y-banner>Hello</y-banner>`);
         expect(el.color).to.equal("base");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--base-content--");
         expect(style).to.include("--base-content-inverse");
     });
@@ -41,7 +48,7 @@ describe("YumeBanner", () => {
     it("defaults to medium size", async () => {
         const el = await fixture(html`<y-banner>Hello</y-banner>`);
         expect(el.size).to.equal("medium");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--component-banner-padding-medium");
     });
 
@@ -57,7 +64,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner color="primary">Info</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--primary-content--");
         expect(style).to.include("--primary-content-inverse");
     });
@@ -66,7 +73,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner color="success">Done</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--success-content--");
         expect(style).to.include("--success-content-inverse");
     });
@@ -75,7 +82,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner color="error">Error</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--error-content--");
         expect(style).to.include("--error-content-inverse");
     });
@@ -84,14 +91,14 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner color="warning">Warn</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--warning-content--");
         expect(style).to.include("--warning-content-inverse");
     });
 
     it("applies help color", async () => {
         const el = await fixture(html`<y-banner color="help">Help</y-banner>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--help-content--");
         expect(style).to.include("--help-content-inverse");
     });
@@ -100,7 +107,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner color="secondary">Sec</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--secondary-content--");
         expect(style).to.include("--secondary-content-inverse");
     });
@@ -109,7 +116,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner color="unknown">Msg</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--base-content--");
     });
 
@@ -117,28 +124,28 @@ describe("YumeBanner", () => {
 
     it("applies small size", async () => {
         const el = await fixture(html`<y-banner size="small">Msg</y-banner>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--component-banner-padding-small");
         expect(style).to.include("--font-size-small");
     });
 
     it("applies medium size", async () => {
         const el = await fixture(html`<y-banner size="medium">Msg</y-banner>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--component-banner-padding-medium");
         expect(style).to.include("--font-size-label");
     });
 
     it("applies large size", async () => {
         const el = await fixture(html`<y-banner size="large">Msg</y-banner>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--component-banner-padding-large");
         expect(style).to.include("--font-size-paragraph");
     });
 
     it("falls back to medium for unknown size", async () => {
         const el = await fixture(html`<y-banner size="xl">Msg</y-banner>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--component-banner-padding-medium");
     });
 
@@ -167,7 +174,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner position="push">Msg</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.not.include("position: fixed");
         expect(style).to.not.include("position: absolute");
     });
@@ -176,7 +183,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner position="overlap">Msg</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("position: absolute");
     });
 
@@ -184,7 +191,7 @@ describe("YumeBanner", () => {
         const el = await fixture(
             html`<y-banner position="overlap" sticky>Msg</y-banner>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("position: fixed");
     });
 
@@ -371,7 +378,7 @@ describe("YumeBanner", () => {
         el.setAttribute("color", "error");
         await new Promise((r) => setTimeout(r, 0));
 
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--error-content--");
     });
 
@@ -380,7 +387,7 @@ describe("YumeBanner", () => {
         el.setAttribute("size", "large");
         await new Promise((r) => setTimeout(r, 0));
 
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--component-banner-padding-large");
     });
 
@@ -391,7 +398,7 @@ describe("YumeBanner", () => {
         el.setAttribute("position", "overlap");
         await new Promise((r) => setTimeout(r, 0));
 
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("position: absolute");
     });
 
@@ -401,7 +408,7 @@ describe("YumeBanner", () => {
         const el = await fixture(html`<y-banner>Msg</y-banner>`);
         el.color = "success";
         expect(el.getAttribute("color")).to.equal("success");
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("--success-content--");
     });
 
@@ -456,7 +463,48 @@ describe("YumeBanner", () => {
 
     it("sets host display to block", async () => {
         const el = await fixture(html`<y-banner>Msg</y-banner>`);
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("display: block");
+    });
+
+    // ── XSS hardening ─────────────────────────────────────────
+
+    describe("XSS hardening", () => {
+        const cases = [
+            {
+                name: "icon",
+                payload: `home" onload="window.__xssBannerIcon=true" x="`,
+                flag: "__xssBannerIcon",
+            },
+            {
+                // Use a hex-prefixed payload so y-button's color path doesn't
+                // crash on unknown enum values (separate y-button bug, out of
+                // scope). The XSS guarantee is the same: `setAttribute` makes
+                // the entire string a single attribute value with no breakout.
+                name: "color",
+                payload: `#fff" onload="window.__xssBannerColor=true" x="`,
+                flag: "__xssBannerColor",
+            },
+            {
+                name: "size",
+                payload: `medium" onload="window.__xssBannerSize=true" x="`,
+                flag: "__xssBannerSize",
+            },
+        ];
+
+        for (const { name, payload, flag } of cases) {
+            it(`does not allow attribute breakout via ${name}`, async () => {
+                const el = document.createElement("y-banner");
+                el.setAttribute("dismissable", "");
+                el.setAttribute("icon", "home");
+                el.setAttribute(name, payload);
+                document.body.appendChild(el);
+
+                expect(el.shadowRoot.querySelector("[onload]")).to.be.null;
+                expect(window[flag]).to.be.undefined;
+
+                document.body.removeChild(el);
+            });
+        }
     });
 });

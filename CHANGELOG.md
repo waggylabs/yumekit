@@ -98,23 +98,6 @@ Delete any empty sections before publishing.
     | `warning`  | `triangle-exclamation` | Triangle with !            |
 
 - **Breaking** `y-slider`: visual redesign, range mode, and refactor to current standards. Track is now a thin horizontal (or vertical) line; the thumb is a circle that sits on top of the track. Vertical orientation is fully supported (pointer math, keyboard, layout).
-    - **Added** `range` boolean attribute. When set, the slider exposes two thumbs and the new `value-min` / `value-max` attributes (defaulting to `min` / `max`). Each thumb is independently focusable with its own `role="slider"` and clamped `aria-valuemin` / `aria-valuemax`; the track itself becomes `role="group"` with `aria-label` (overridable) describing the pair. Thumb-specific labels are configurable via `aria-label-min` / `aria-label-max`. The form value serializes as `"lower,upper"`.
-    - **Added** `min-gap` attribute — minimum distance enforced between thumbs in range mode. Defaults to `step` when set, otherwise `1`. Drag and keyboard movement clamp against the other thumb minus this gap.
-    - **Added** click-nearest-thumb behavior in range mode. Tapping the track (away from a thumb) picks the thumb closest to the click position and starts dragging it; ties go to the lower thumb. Tapping directly on a thumb drags that thumb regardless of distance.
-    - **Added** `input` and `change` event detail. Single mode emits `{ value }`; range mode emits `{ valueMin, valueMax, thumb: "min" | "max" }` so consumers know which thumb moved.
-    - **Added** `ticks` attribute. Accepts `true` (derived from `step`, or 10 evenly spaced if no step), an integer (N evenly spaced), a JSON array of bare values (`[0, 25, 50, 75, 100]`), or a JSON array of `{value, label?}` objects. Out-of-range values are skipped with a dev console warning.
-    - **Added** `tick-labels` boolean. When set, renders a label below (horizontal) or beside (vertical) each tick. Uses the tick's `label` field, falling back to its formatted value.
-    - **Added** `snap-to-ticks` boolean. Drag and keyboard movement snap to the nearest resolved tick instead of the configured `step`. In range mode, snapping respects `min-gap` so thumbs can't cross.
-    - **Added CSS variables**: `--component-slider-tick-size` (4px), `--component-slider-tick-label-size` (`--font-size-label`), `--component-slider-tick-label-gap` (`--spacing-2x-small`), plus consumer-overridable `--component-slider-tick-color` (defaults to `--base-border`).
-    - **CSS Parts**: added `tick` and `tick-label`.
-    - **Added** `show-value` attribute (`"none"` default | `"always"` | `"dragging"`). When set to `always` or `dragging`, each thumb is wrapped in a `y-tooltip` value tooltip. `always` pins the tooltip open via the new `open` attribute on `y-tooltip`. `dragging` toggles `open` on focus/drag-start and clears it on blur/drag-end (text updates during drag preserve visibility because they ride on the same `open` attribute).
-    - **Added** `value-position` attribute. Accepts `start` (top in horizontal / left in vertical) and `end` (bottom in horizontal / right in vertical). Defaults to `start` for horizontal sliders and `end` for vertical. Invalid values fall back to the default with a dev console warning.
-    - **Added** `value-prefix` and `value-suffix` named slots. Slot textContent is flattened and inserted around the value in the tooltip (e.g. `$25`, `50%`) and into `aria-valuetext` so screen readers announce the formatted string.
-    - **CSS Parts**: added `tooltip`, `tooltip-min`, `tooltip-max` (target the wrapping `y-tooltip` per thumb).
-    - **Removed CSS variables**: `--component-slider-border-radius-outer`, `--component-slider-border-radius-inner`, `--component-slider-thumb-border-radius`. The track and thumb now use `--radii-full`; the inner-radius separation no longer applies.
-    - **Changed CSS variables**: `--component-slider-border-width` now defaults to `--border-x-thin` (1px hairline around the track instead of the previous heavier `--border-thin`). `--component-slider-padding` now defaults to `--spacing-2x-small` (2px gap between the border and the fill).
-    - **Added CSS variables**: `--component-slider-track-thickness-{small,medium,large}` (inner fill height/width per size), `--component-slider-thumb-size-{small,medium,large}` (thumb diameter per size), `--component-slider-thumb-border-width`, plus consumer-overridable `--component-slider-track-color`, `--component-slider-fill-color`, and `--component-slider-thumb-shadow` (default to `--base-background-active`, the resolved `color` token, and `--base-shadow` respectively).
-    - **CSS Parts**: existing `track` and `thumb` are unchanged. The filled portion is now `track-fill` (was `fill`).
 
 - `y-tooltip`: added `open` boolean attribute. When set, the tooltip is forced visible and ignores hover/focus events. `show()` and `hide()` become no-ops while open is set, so external visibility management (e.g. `y-slider`'s value tooltip) doesn't fight the natural triggers.
 
@@ -130,6 +113,12 @@ Delete any empty sections before publishing.
 ### Security
 
 - **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup. The previous escape hatch wrote any string starting with `<` to `innerHTML`, turning JSON-fed `items` into an XSS sink. `icon` now only resolves registered `<y-icon>` names; custom glyphs must be added through the icon registry (`registerIcon` / `registerIcons`).
+
+- **XSS hardening across components.** Eleven components — `y-avatar`, `y-input`, `y-textarea`, `y-tooltip`, `y-banner`, `y-badge`, `y-date`, `y-colorpicker`, `y-select`, `y-icon`, `y-rating` — previously interpolated user-controllable attribute values (and JSON-supplied `options` fields) directly into `innerHTML` template strings. Shadow trees are now built with `createElement`, attribute values flow through `setAttribute` (no breakout possible), and text content is rendered via `textContent`. Position/size enums fall back to a known default when the supplied value isn't on an allowlist. The two inline `<svg>` clear-button glyphs in `y-date` were replaced with `<y-icon name="x">`.
+
+- New shared `isSafeCssColor` helper validates user-supplied CSS color literals (`#hex`, `rgb()`/`rgba()`, `hsl()`/`hsla()`) before they reach a CSS context. `y-badge`'s `color` attribute and `y-select`'s per-option `color` now fall back to the semantic theme default when the value fails the allowlist.
+
+- New shared `svg-sanitizer` module (`src/modules/svg-sanitizer.js`) extracts the SVG allowlist sanitizer previously inlined in `y-icon` so both `y-icon` and `y-rating` consume one implementation. `y-rating` previously injected `getIcon(this.icon)` raw, leaving `registerIcon(name, svg)` callers free to ship script-bearing SVG; the sanitizer is now applied on the y-rating render path as well.
 
 ## [0.4.4] - 2026-04-25
 

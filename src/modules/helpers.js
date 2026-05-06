@@ -65,6 +65,26 @@ export function contrastTextColor(bgColor) {
 }
 
 /**
+ * Whether a string is a safe CSS color literal — `#hex`, `rgb()`/`rgba()`,
+ * or `hsl()`/`hsla()`. Used to gate user-supplied colors before they reach a
+ * CSS context (style tag, inline style attribute) so a hostile value cannot
+ * escape and inject markup or other declarations.
+ *
+ * Intentionally strict: rejects named colors, `currentColor`, `var(...)`, and
+ * `color()` so callers can fall back to a known semantic default. Inputs with
+ * comments, semicolons, braces, or surrounding whitespace are rejected.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isSafeCssColor(value) {
+    if (typeof value !== "string") return false;
+    return /^(#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|rgba?\([^()]*\)|hsla?\([^()]*\))$/i.test(
+        value,
+    );
+}
+
+/**
  * Return a [background, foreground] CSS variable pair for a color scheme.
  * Background is `--{color}-content--`, foreground is `--{color}-content-inverse`.
  * @param {string} color — one of base, primary, secondary, success, warning, error, help

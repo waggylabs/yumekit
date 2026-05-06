@@ -1,6 +1,8 @@
-import { chevronDown } from "../../icons/index.js";
+import "../y-icon/y-icon.js";
 import {
     contrastTextColor,
+    createElement as _el,
+    isSafeCssColor,
     manageLabelVisibility,
 } from "../../modules/helpers.js";
 
@@ -278,7 +280,7 @@ export class YumeSelect extends HTMLElement {
     render() {
         this.closeDropdown();
         this._applyStyles();
-        this.shadowRoot.innerHTML = this._generateTemplate();
+        this.shadowRoot.replaceChildren(this._generateTree());
         this._queryRefs();
         manageLabelVisibility(this.labelWrapper);
         this._attachEventListeners();
@@ -652,7 +654,7 @@ export class YumeSelect extends HTMLElement {
             noResults.style.display = visibleCount === 0 ? "" : "none";
     }
 
-    _generateTemplate() {
+    _generateTree() {
         const labelPosition = this.getAttribute("label-position") || "top";
         const isLabelTop = labelPosition === "top";
         const isInvalid = this.hasAttribute("invalid");
@@ -663,72 +665,118 @@ export class YumeSelect extends HTMLElement {
         const showClearButton = (isSearchable || isClearable) && !isMulti;
         const valueSet = isMulti ? this.selectedValues : new Set([this.value]);
         const placeholder = this.getAttribute("placeholder") || "Select...";
-        const clearButtonHTML = `<button class="clear-button" style="display:none" tabindex="-1" type="button"><y-icon name="x" size="medium"></y-icon></button>`;
 
-        let containerInner;
+        const buildClearButton = () => {
+            const btn = _el(
+                "button",
+                {
+                    class: "clear-button",
+                    tabindex: "-1",
+                    type: "button",
+                },
+                [_el("y-icon", { name: "x", size: "medium" })],
+            );
+            btn.style.display = "none";
+            return btn;
+        };
+
+        const buildSearchInput = () =>
+            _el("input", {
+                class: "search-input",
+                type: "text",
+                placeholder,
+                autocomplete: "off",
+            });
+
+        const buildLabelSlot = () =>
+            _el("div", { class: "label-wrapper" }, [
+                _el("slot", { name: "label" }),
+            ]);
+
+        const containerChildren = [];
         if (isSearchable && !isMulti) {
-            // Single searchable: inline input replacing the value display
-            containerInner = `
-                <input class="search-input" type="text" placeholder="${placeholder}" autocomplete="off">
-                ${clearButtonHTML}
-            `;
+            containerChildren.push(buildSearchInput(), buildClearButton());
         } else if (isSearchable && isMulti && isTagMode) {
-            // Multi-tag searchable: input lives inside the value display after tags
-            containerInner = `
-                <div class="value-display">
-                    <input class="search-input" type="text" placeholder="${placeholder}" autocomplete="off">
-                </div>
-                ${isClearable ? clearButtonHTML : ""}
-            `;
+            containerChildren.push(
+                _el("div", { class: "value-display" }, [buildSearchInput()]),
+            );
+            if (isClearable) containerChildren.push(buildClearButton());
         } else if (isMulti && isTagMode) {
-            // Multi-tag (non-searchable): tags + optional clear button
-            containerInner = `
-                <div class="value-display"></div>
-                ${isClearable ? clearButtonHTML : ""}
-            `;
+            containerChildren.push(_el("div", { class: "value-display" }));
+            if (isClearable) containerChildren.push(buildClearButton());
         } else if (showClearButton) {
-            // Clearable but not searchable: value display + clear button
-            containerInner = `
-                <div class="value-display">${this._getDisplayText()}</div>
-                <button class="clear-button" style="display:none" tabindex="-1" type="button">
-                    <y-icon name="x" size="medium"></y-icon>
-                </button>
-            `;
+            const display = _el("div", { class: "value-display" });
+            display.textContent = this._getDisplayText();
+            containerChildren.push(display, buildClearButton());
         } else {
-            // Default
-            containerInner = `<div class="value-display">${this._getDisplayText()}</div>`;
+            const display = _el("div", { class: "value-display" });
+            display.textContent = this._getDisplayText();
+            containerChildren.push(display);
         }
 
-        return `
-            <div class="select-wrapper">
-                ${isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
-                <div class="select-container ${isInvalid ? "is-invalid" : ""}" tabindex="${isSearchable ? "-1" : "0"}">
-                    ${containerInner}
-                    <div class="chevron-icon" part="chevron-icon">
-                        ${chevronDown}
-                    </div>
-                </div>
-                ${!isLabelTop ? '<div class="label-wrapper"><slot name="label"></slot></div>' : ""}
-                <div class="dropdown" part="dropdown">
-                    ${this.options
-                        .map((opt) => {
-                            const isSelected = valueSet.has(opt.value);
-                            let inlineStyle = "";
-                            if (isSelected && opt.color) {
-                                const semantic = SEMANTIC_COLOR_VARS[opt.color];
-                                if (semantic) {
-                                    inlineStyle = `style="background:${semantic[0]};color:${semantic[1]}"`;
-                                } else {
-                                    inlineStyle = `style="background:${opt.color};color:${contrastTextColor(opt.color)}"`;
-                                }
-                            }
-                            return `<div class="dropdown-item ${isSelected ? "selected" : ""}" data-value="${opt.value}" data-color="${opt.color || ""}" ${inlineStyle}>${opt.label}</div>`;
-                        })
-                        .join("")}
-                    <div class="no-results" style="display:none">No results</div>
-                </div>
-            </div>
-        `;
+        const chevron = _el(
+            "div",
+            { class: "chevron-icon", part: "chevron-icon" },
+            [_el("y-icon", { name: "chevron-down", size: "medium" })],
+        );
+        containerChildren.push(chevron);
+
+        const selectContainer = _el(
+            "div",
+            {
+                class: isInvalid
+                    ? "select-container is-invalid"
+                    : "select-container",
+                tabindex: isSearchable ? "-1" : "0",
+            },
+            containerChildren,
+        );
+
+        const dropdown = _el(
+            "div",
+            { class: "dropdown", part: "dropdown" },
+            [
+                ...this.options.map((opt) =>
+                    this._buildDropdownItem(opt, valueSet.has(opt.value)),
+                ),
+                (() => {
+                    const noResults = _el("div", { class: "no-results" });
+                    noResults.style.display = "none";
+                    noResults.textContent = "No results";
+                    return noResults;
+                })(),
+            ],
+        );
+
+        const wrapperChildren = [];
+        if (isLabelTop) wrapperChildren.push(buildLabelSlot());
+        wrapperChildren.push(selectContainer);
+        if (!isLabelTop) wrapperChildren.push(buildLabelSlot());
+        wrapperChildren.push(dropdown);
+
+        return _el("div", { class: "select-wrapper" }, wrapperChildren);
+    }
+
+    _buildDropdownItem(opt, isSelected) {
+        const item = _el("div", {
+            class: isSelected ? "dropdown-item selected" : "dropdown-item",
+            "data-value": opt.value,
+            "data-color": opt.color || "",
+        });
+        item.textContent = opt.label;
+
+        if (isSelected && opt.color) {
+            const semantic = SEMANTIC_COLOR_VARS[opt.color];
+            if (semantic) {
+                item.style.setProperty("background", semantic[0]);
+                item.style.setProperty("color", semantic[1]);
+            } else if (isSafeCssColor(opt.color)) {
+                item.style.setProperty("background", opt.color);
+                item.style.setProperty("color", contrastTextColor(opt.color));
+            }
+        }
+
+        return item;
     }
 
     _getDisplayText() {
@@ -923,9 +971,12 @@ export class YumeSelect extends HTMLElement {
                 if (semantic) {
                     item.style.background = semantic[0];
                     item.style.color = semantic[1];
-                } else {
+                } else if (isSafeCssColor(color)) {
                     item.style.background = color;
                     item.style.color = contrastTextColor(color);
+                } else {
+                    item.style.background = "";
+                    item.style.color = "";
                 }
             } else {
                 item.style.background = "";

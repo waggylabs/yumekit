@@ -1,4 +1,8 @@
-import { contrastTextColor } from "../../modules/helpers.js";
+import {
+    contrastTextColor,
+    createElement as _el,
+    isSafeCssColor,
+} from "../../modules/helpers.js";
 
 export class YumeBadge extends HTMLElement {
     static get observedAttributes() {
@@ -54,53 +58,21 @@ export class YumeBadge extends HTMLElement {
 
     render() {
         const [badgeColor, badgeTextColor] = this._getBadgeColors(this.color);
-        const { fontSize, padding, minSize } = this._getSizeAttributes(this.size);
-        const positionCSS = this._getBadgePosition(this.position, this.alignment);
+        const sizeCfg = this._getSizeAttributes(this.size);
+        const positionCSS = this._getBadgePosition(
+            this.position,
+            this.alignment,
+        );
 
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: inline-flex;
-                    align-items: center;
-                }
-                .root {
-                    position: static;
-                    display: inline-flex;
-                    align-items: center;
-                }
-                .root.has-target {
-                    position: relative;
-                }
-                .badge {
-                    position: static;
-                    background: ${badgeColor};
-                    color: ${badgeTextColor};
-                    font-size: ${fontSize};
-                    font-weight: bold;
-                    padding: ${padding};
-                    border-radius: var(--component-badge-border-radius-circle, 9999px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-family: var(--font-family-body, sans-serif);
-                    min-width: ${minSize};
-                    height: ${minSize};
-                    z-index: 20;
-                }
-                .root.has-target .badge {
-                    position: absolute;
-                    ${positionCSS}
-                }
-                ::slotted(*) {
-                    position: relative;
-                    display: inline-block;
-                }
-            </style>
-            <div class="root" part="root">
-                <slot></slot>
-                <div class="badge" part="badge">${this.value}</div>
-            </div>
-        `;
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(
+                badgeColor,
+                badgeTextColor,
+                sizeCfg,
+                positionCSS,
+            ),
+        ];
+        this.shadowRoot.replaceChildren(this._buildBadge());
 
         const slot = this.shadowRoot.querySelector("slot");
         slot.addEventListener("slotchange", this._onSlotChange);
@@ -110,6 +82,59 @@ export class YumeBadge extends HTMLElement {
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
+
+    _buildBadge() {
+        const badge = _el("div", { class: "badge", part: "badge" });
+        badge.textContent = this.value;
+        return _el("div", { class: "root", part: "root" }, [
+            _el("slot"),
+            badge,
+        ]);
+    }
+
+    _buildStyleSheet(badgeColor, badgeTextColor, sizeCfg, positionCSS) {
+        const { fontSize, padding, minSize } = sizeCfg;
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
+            :host {
+                display: inline-flex;
+                align-items: center;
+            }
+            .root {
+                position: static;
+                display: inline-flex;
+                align-items: center;
+            }
+            .root.has-target {
+                position: relative;
+            }
+            .badge {
+                position: static;
+                background: ${badgeColor};
+                color: ${badgeTextColor};
+                font-size: ${fontSize};
+                font-weight: bold;
+                padding: ${padding};
+                border-radius: var(--component-badge-border-radius-circle, 9999px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: var(--font-family-body, sans-serif);
+                min-width: ${minSize};
+                height: ${minSize};
+                z-index: 20;
+            }
+            .root.has-target .badge {
+                position: absolute;
+                ${positionCSS}
+            }
+            ::slotted(*) {
+                position: relative;
+                display: inline-block;
+            }
+        `);
+        return sheet;
+    }
 
     _getBadgeColors(color) {
         const colorMap = {
@@ -121,7 +146,9 @@ export class YumeBadge extends HTMLElement {
             error: ["var(--error-content--)", "var(--error-content-inverse)"],
             help: ["var(--help-content--)", "var(--help-content-inverse)"],
         };
-        return colorMap[color] || [color, contrastTextColor(color)];
+        if (colorMap[color]) return colorMap[color];
+        if (isSafeCssColor(color)) return [color, contrastTextColor(color)];
+        return colorMap.primary;
     }
 
     _getBadgePosition(position, alignment) {
