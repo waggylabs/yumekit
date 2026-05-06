@@ -1,4 +1,4 @@
-import "./y-sidebar.js";
+﻿import "./y-sidebar.js";
 import "../../icons/all.js";
 import "../y-icon/y-icon.js";
 import "../y-button/y-button.js";
@@ -29,7 +29,7 @@ const navItemsWithHrefs = JSON.stringify([
 const docsParams = { docs: { story: { inline: false, height: "440px" } } };
 
 export default {
-    title: "Components/Sidebar",
+    title: "Navigation/Sidebar",
     tags: ["autodocs"],
     parameters: docsParams,
     argTypes: {
@@ -117,7 +117,7 @@ export const NavigateEvent = {
         const log = document.createElement("div");
         log.style.cssText =
             "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px;min-width:220px;flex-shrink:0;margin-top:0";
-        log.textContent = "Click a nav item…";
+        log.textContent = "Click a nav itemâ€¦";
 
         container.innerHTML = `
             <y-sidebar id="spa-sidebar" items='${navItemsWithHrefs}'>
@@ -163,7 +163,7 @@ export const CustomNavLinks = {
 };
 
 export const CustomNavLinksCollapsible = {
-    name: "Custom Nav Links — Collapse-Responsive",
+    name: "Custom Nav Links â€” Collapse-Responsive",
     render: () => {
         // Demonstrates using --y-sidebar-collapsed and --y-sidebar-icon-col-width
         // on custom slotted elements to respond to collapse state.

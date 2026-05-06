@@ -1,4 +1,4 @@
-import "./y-breadcrumbs.js";
+﻿import "./y-breadcrumbs.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
@@ -27,7 +27,7 @@ const ITEMS_LONG = JSON.stringify([
 ]);
 
 export default {
-    title: "Components/Breadcrumbs",
+    title: "Navigation/Breadcrumbs",
     tags: ["autodocs"],
     argTypes: {
         size: {
@@ -45,7 +45,7 @@ export default {
             control: "number",
             description:
                 "Collapses middle items when count exceeds this value.",
-            table: { defaultValue: { summary: "—" } },
+            table: { defaultValue: { summary: "â€”" } },
         },
     },
     args: {
@@ -85,7 +85,7 @@ export const CustomSeparator = {
 
 export const Collapsed = {
     render: () => `
-        <p style="margin:0 0 8px; font-size:0.85em; color:#666">7 items collapsed to max-items="3". Click the … button to expand.</p>
+        <p style="margin:0 0 8px; font-size:0.85em; color:#666">7 items collapsed to max-items="3". Click the â€¦ button to expand.</p>
         <y-breadcrumbs
             items='${ITEMS_LONG}'
             max-items="3"

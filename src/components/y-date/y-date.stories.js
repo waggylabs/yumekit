@@ -1,8 +1,8 @@
-import "./y-date.js";
+﻿import "./y-date.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Date",
+    title: "Input/Date",
     tags: ["autodocs"],
     decorators: [
         (story) =>
@@ -128,7 +128,7 @@ export default {
         const attrs = [
             `mode="${args.mode}"`,
             `size="${args.size}"`,
-            // Only pass format when explicitly set — the component derives a
+            // Only pass format when explicitly set â€” the component derives a
             // time-aware default from show-hours/show-minutes/show-seconds otherwise
             args.format ? `format="${args.format}"` : "",
             `color="${args.color}"`,
@@ -142,8 +142,12 @@ export default {
             args.showMinutes ? "show-minutes" : "",
             args.showSeconds ? "show-seconds" : "",
             args.hourFormat === "24" ? `hour-format="24"` : "",
-            args.minuteInterval !== 5 ? `minute-interval="${args.minuteInterval}"` : "",
-            args.secondInterval !== 5 ? `second-interval="${args.secondInterval}"` : "",
+            args.minuteInterval !== 5
+                ? `minute-interval="${args.minuteInterval}"`
+                : "",
+            args.secondInterval !== 5
+                ? `second-interval="${args.secondInterval}"`
+                : "",
         ]
             .filter(Boolean)
             .join(" ");
@@ -179,7 +183,7 @@ export const WithTime = {
     args: { showHours: true, value: "2026-06-15T14:30:00.000Z" },
 };
 
-/** Clearable — shows an ✕ button once a date is selected. */
+/** Clearable â€” shows an âœ• button once a date is selected. */
 export const Clearable = {
     args: { clearable: true, value: "2026-06-15T12:00:00.000Z" },
 };
@@ -210,12 +214,16 @@ export const Invalid = {
     args: { invalid: true },
 };
 
-/** Native mobile input — renders native date inputs below the mobile breakpoint instead of the datepicker popup. Resize the viewport below 768px to see the effect. */
+/** Native mobile input â€” renders native date inputs below the mobile breakpoint instead of the datepicker popup. Resize the viewport below 768px to see the effect. */
 export const NativeMobile = {
-    args: { nativeMobile: true, clearable: true, value: "2026-06-15T12:00:00.000Z" },
+    args: {
+        nativeMobile: true,
+        clearable: true,
+        value: "2026-06-15T12:00:00.000Z",
+    },
 };
 
-/** Native mobile range — renders two native date inputs in range mode on mobile. */
+/** Native mobile range â€” renders two native date inputs in range mode on mobile. */
 export const NativeMobileRange = {
     args: { mode: "range", nativeMobile: true },
 };

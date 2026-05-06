@@ -1,4 +1,4 @@
-import "./y-appbar.js";
+﻿import "./y-appbar.js";
 import "../../icons/all.js";
 import "../y-icon/y-icon.js";
 import "../y-button/y-button.js";
@@ -29,7 +29,7 @@ const navItemsWithHrefs = JSON.stringify([
 const docsParams = { docs: { story: { inline: false, height: "300px" } } };
 
 export default {
-    title: "Components/AppBar",
+    title: "Navigation/AppBar",
     tags: ["autodocs"],
     parameters: docsParams,
     argTypes: {
@@ -100,7 +100,7 @@ export const NavigateEvent = {
         log.id = "nav-log";
         log.style.cssText =
             "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px";
-        log.textContent = "Click a nav item…";
+        log.textContent = "Click a nav itemâ€¦";
 
         container.innerHTML = `
             <y-appbar

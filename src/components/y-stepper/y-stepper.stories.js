@@ -1,4 +1,4 @@
-import "./y-stepper.js";
+﻿import "./y-stepper.js";
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
@@ -50,7 +50,7 @@ const panelStyle =
     "background: var(--base-background-component, #f7f7fa);padding: 24px; border: 1px solid var(--base-border, #e0e0e0); border-radius: 8px; margin-top: 8px;";
 
 export default {
-    title: "Components/Stepper",
+    title: "Navigation/Stepper",
     tags: ["autodocs"],
     argTypes: {
         orientation: {
@@ -234,7 +234,7 @@ export const Vertical = {
 
 export const PositionEnd = {
     render: () => `
-        <h3 style="margin:0 0 8px">Horizontal — indicators below content</h3>
+        <h3 style="margin:0 0 8px">Horizontal â€” indicators below content</h3>
         <y-stepper items='${ITEMS_BASIC}' position="end">
             <div slot="account" style="${panelStyle}"><p style="margin:0">Account step content.</p></div>
             <div slot="details" style="${panelStyle}"><p style="margin:0">Details step content.</p></div>
@@ -242,7 +242,7 @@ export const PositionEnd = {
             <div slot="confirm" style="${panelStyle}"><p style="margin:0">Confirm step content.</p></div>
         </y-stepper>
 
-        <h3 style="margin:24px 0 8px">Vertical — indicators to the right of content</h3>
+        <h3 style="margin:24px 0 8px">Vertical â€” indicators to the right of content</h3>
         <y-stepper items='${ITEMS_WITH_DESC}' position="end" orientation="vertical">
             <div slot="account" style="${panelStyle}"><p style="margin:0">Account step content.</p></div>
             <div slot="details" style="${panelStyle}"><p style="margin:0">Details step content.</p></div>

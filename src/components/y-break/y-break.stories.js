@@ -1,9 +1,9 @@
-import "./y-break.js";
+﻿import "./y-break.js";
 import "../y-icon/y-icon.js";
 import "../y-tag/y-tag.js";
 
 export default {
-    title: "Components/Break",
+    title: "Layout/Break",
     tags: ["autodocs"],
     argTypes: {
         orientation: {

@@ -1,9 +1,9 @@
-import "./y-input.js";
+﻿import "./y-input.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Input",
+    title: "Input/Input",
     tags: ["autodocs"],
     argTypes: {
         value: {

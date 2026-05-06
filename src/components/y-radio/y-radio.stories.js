@@ -1,4 +1,4 @@
-import "./y-radio.js";
+﻿import "./y-radio.js";
 
 const defaultOptions = JSON.stringify([
     { value: "option-1", label: "Option 1" },
@@ -7,7 +7,7 @@ const defaultOptions = JSON.stringify([
 ]);
 
 export default {
-    title: "Components/Radio",
+    title: "Input/Radio",
     tags: ["autodocs"],
     argTypes: {
         options: {

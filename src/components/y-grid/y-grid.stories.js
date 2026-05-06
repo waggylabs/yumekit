@@ -1,4 +1,4 @@
-import "./y-grid.js";
+﻿import "./y-grid.js";
 import "../y-card/y-card.js";
 import "../y-button/y-button.js";
 
@@ -14,7 +14,7 @@ const GAP_OPTIONS = [
 ];
 
 export default {
-    title: "Components/Grid",
+    title: "Layout/Grid",
     tags: ["autodocs"],
     argTypes: {
         columns: {
@@ -49,7 +49,7 @@ export default {
         dense: {
             control: "boolean",
             description:
-                "Shortcut for auto-flow=\"row dense\" — lets later items backfill earlier holes left by spanned items. Has no visible effect unless some items use grid-column: span.",
+                "Shortcut for auto-flow=\"row dense\" â€” lets later items backfill earlier holes left by spanned items. Has no visible effect unless some items use grid-column: span.",
             table: { defaultValue: { summary: false } },
         },
     },
@@ -70,7 +70,7 @@ export default {
             ${responsive ? "responsive" : 'responsive="false"'}
             ${dense ? "dense" : ""}
         >
-            <y-card style="grid-column: span 2"><div slot="header"><strong>Wide</strong></div><p>Spans 2 columns — leaves a hole that <code>dense</code> can backfill.</p></y-card>
+            <y-card style="grid-column: span 2"><div slot="header"><strong>Wide</strong></div><p>Spans 2 columns â€” leaves a hole that <code>dense</code> can backfill.</p></y-card>
             <y-card><div slot="header"><strong>Card 2</strong></div><p>Content</p></y-card>
             <y-card><div slot="header"><strong>Card 3</strong></div><p>Content</p></y-card>
             <y-card><div slot="header"><strong>Card 4</strong></div><p>Content</p></y-card>

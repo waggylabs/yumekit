@@ -1,4 +1,4 @@
-import "./y-dock.js";
+﻿import "./y-dock.js";
 import "../y-icon/y-icon.js";
 import "../y-button/y-button.js";
 import "../../icons/all.js";
@@ -11,7 +11,7 @@ const defaultItems = [
 ];
 
 export default {
-    title: "Components/Dock",
+    title: "Navigation/Dock",
     tags: ["autodocs"],
     argTypes: {
         position: {

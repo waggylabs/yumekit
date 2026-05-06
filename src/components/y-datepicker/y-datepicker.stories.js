@@ -1,8 +1,8 @@
-import "./y-datepicker.js";
+﻿import "./y-datepicker.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Datepicker",
+    title: "Data/Datepicker",
     tags: ["autodocs"],
     decorators: [
         (story) =>
@@ -124,8 +124,12 @@ export default {
             args.showYears === false ? `show-years="false"` : "",
             args.showMonths === false ? `show-months="false"` : "",
             args.showDays === false ? `show-days="false"` : "",
-            args.minuteInterval !== 5 ? `minute-interval="${args.minuteInterval}"` : "",
-            args.secondInterval !== 5 ? `second-interval="${args.secondInterval}"` : "",
+            args.minuteInterval !== 5
+                ? `minute-interval="${args.minuteInterval}"`
+                : "",
+            args.secondInterval !== 5
+                ? `second-interval="${args.secondInterval}"`
+                : "",
         ]
             .filter(Boolean)
             .join(" ");
@@ -136,7 +140,7 @@ export default {
 /** Default single-date picker. */
 export const SingleDate = {};
 
-/** Date range picker — shows two calendars side by side. */
+/** Date range picker â€” shows two calendars side by side. */
 export const DateRange = {
     args: { mode: "range" },
 };
@@ -174,7 +178,7 @@ export const WithMinMax = {
     args: { min: "2026-03-01", max: "2026-03-31" },
 };
 
-/** Month-only picker — hides the day grid. */
+/** Month-only picker â€” hides the day grid. */
 export const MonthPicker = {
     args: { showDays: false },
 };

@@ -1,4 +1,4 @@
-import "./y-table.js";
+﻿import "./y-table.js";
 
 const defaultColumns = JSON.stringify([
     { field: "name", header: "Name", sortable: true },
@@ -15,7 +15,7 @@ const defaultData = JSON.stringify([
 ]);
 
 export default {
-    title: "Components/Table",
+    title: "Data/Table",
     tags: ["autodocs"],
     argTypes: {
         columns: {

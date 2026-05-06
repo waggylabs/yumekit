@@ -1,4 +1,4 @@
-import "./y-stack.js";
+﻿import "./y-stack.js";
 import "../y-button/y-button.js";
 import "../y-input/y-input.js";
 import "../y-icon/y-icon.js";
@@ -16,7 +16,7 @@ const GAP_OPTIONS = [
 ];
 
 export default {
-    title: "Components/Stack",
+    title: "Layout/Stack",
     tags: ["autodocs"],
     argTypes: {
         direction: {
@@ -168,12 +168,12 @@ export const RowReverse = {
 export const Inline = {
     render: () => `
         <p style="margin:0">
-            Stacked actions inline with text →
+            Stacked actions inline with text â†’
             <y-stack inline gap="x-small" align="center" responsive="false">
                 <y-button color="primary" size="small">Approve</y-button>
                 <y-button color="base" size="small">Skip</y-button>
             </y-stack>
-            ← back to flowing text.
+            â† back to flowing text.
         </p>
     `,
 };
@@ -279,10 +279,10 @@ export const WrapVariants = {
 };
 
 export const ResponsiveCollapse = {
-    name: "Responsive (Row → Column)",
+    name: "Responsive (Row â†’ Column)",
     render: () => `
         <p style="margin:0 0 8px;color:#666">
-            Resize the stack's container — below the mobile breakpoint (576px by
+            Resize the stack's container â€” below the mobile breakpoint (576px by
             default) the row collapses to a column.
         </p>
         <y-stack direction="row" gap="medium" responsive style="resize:horizontal;overflow:auto;border:1px dashed #ccc;padding:8px;width:800px">

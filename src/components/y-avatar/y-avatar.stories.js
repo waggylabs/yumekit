@@ -1,7 +1,7 @@
-import "./y-avatar.js";
+﻿import "./y-avatar.js";
 
 export default {
-    title: "Components/Avatar",
+    title: "Data/Avatar",
     tags: ["autodocs"],
     argTypes: {
         alt: {

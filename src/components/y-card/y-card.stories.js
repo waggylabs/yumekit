@@ -1,7 +1,7 @@
-import "./y-card.js";
+﻿import "./y-card.js";
 
 export default {
-    title: "Components/Card",
+    title: "Layout/Card",
     tags: ["autodocs"],
     argTypes: {
         color: {
@@ -48,7 +48,7 @@ export const WithImage = {
 export const BodyOnly = {
     render: () => `
         <y-card style="width:300px">
-            <p>A card with only a body slot — no header or footer.</p>
+            <p>A card with only a body slot â€” no header or footer.</p>
         </y-card>
     `,
 };

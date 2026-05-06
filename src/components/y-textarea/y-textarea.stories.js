@@ -1,7 +1,7 @@
-import "./y-textarea.js";
+﻿import "./y-textarea.js";
 
 export default {
-    title: "Components/Textarea",
+    title: "Input/Textarea",
     tags: ["autodocs"],
     argTypes: {
         value: {

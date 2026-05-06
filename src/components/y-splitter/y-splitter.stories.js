@@ -1,4 +1,4 @@
-import "./y-splitter.js";
+﻿import "./y-splitter.js";
 import "../y-card/y-card.js";
 import "../y-icon/y-icon.js";
 
@@ -6,7 +6,7 @@ const paneStyle =
   "padding:16px;background:var(--base-background-component);color:var(--base-content);height:100%;box-sizing:border-box;overflow:auto";
 
 export default {
-  title: "Components/Splitter",
+  title: "Layout/Splitter",
   tags: ["autodocs"],
   argTypes: {
     orientation: {
@@ -99,7 +99,7 @@ export const ConstrainedRange = {
     docs: {
       description: {
         story:
-          "Min and max ratios prevent collapsing past 25% / 75% — try dragging past either end.",
+          "Min and max ratios prevent collapsing past 25% / 75% â€” try dragging past either end.",
       },
     },
   },

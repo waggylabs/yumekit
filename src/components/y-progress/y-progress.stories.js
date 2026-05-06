@@ -1,7 +1,7 @@
-import "./y-progress.js";
+﻿import "./y-progress.js";
 
 export default {
-    title: "Components/Progress",
+    title: "Feedback/Progress",
     tags: ["autodocs"],
     argTypes: {
         mode: {
@@ -183,7 +183,7 @@ export const Disabled = {
     args: { disabled: true, value: 40 },
 };
 
-// ── Stacked bar (multi-value) ─────────────────────────────
+// â”€â”€ Stacked bar (multi-value) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const StackedBar = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:8px;width:480px">
@@ -208,7 +208,7 @@ export const StackedBar = {
     },
 };
 
-// ── Segmented bar ────────────────────────────────────────
+// â”€â”€ Segmented bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const SegmentedBar = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:12px;width:480px">
@@ -219,7 +219,7 @@ export const SegmentedBar = {
     `,
 };
 
-// ── Ring mode ────────────────────────────────────────────
+// â”€â”€ Ring mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const Ring = {
     args: { mode: "ring", value: 65 },
 };
@@ -250,7 +250,7 @@ export const ConcentricRings = {
     parameters: {
         docs: {
             description: {
-                story: 'When `mode="ring"` has 2+ values, each entry renders as a concentric arc — outermost first.',
+                story: 'When `mode="ring"` has 2+ values, each entry renders as a concentric arc â€” outermost first.',
             },
         },
     },
@@ -278,7 +278,7 @@ export const RingIndeterminate = {
     args: { mode: "ring", indeterminate: true, value: 0 },
 };
 
-// ── Pie mode ─────────────────────────────────────────────
+// â”€â”€ Pie mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const Pie = {
     args: { mode: "pie", value: 65 },
 };

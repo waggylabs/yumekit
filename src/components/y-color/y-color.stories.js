@@ -1,7 +1,7 @@
-import "./y-color.js";
+﻿import "./y-color.js";
 
 export default {
-    title: "Components/Color",
+    title: "Input/Color",
     tags: ["autodocs"],
     decorators: [
         (story) =>

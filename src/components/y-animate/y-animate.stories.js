@@ -1,4 +1,4 @@
-import "./y-animate.js";
+﻿import "./y-animate.js";
 import "../y-card/y-card.js";
 import "../y-button/y-button.js";
 
@@ -39,7 +39,7 @@ const ANIMATION_PRESETS = [
 ];
 
 export default {
-    title: "Components/Animate",
+    title: "Utility/Animate",
     tags: ["autodocs"],
     argTypes: {
         animation: {
@@ -164,7 +164,7 @@ export const Reverse = {
     parameters: {
         docs: {
             description: {
-                story: "Plays the animation in reverse — useful for exit transitions.",
+                story: "Plays the animation in reverse â€” useful for exit transitions.",
             },
         },
     },
@@ -235,7 +235,7 @@ export const VisibilityTrigger = {
         const id = uid();
         return `
             <div style="padding:32px;display:flex;flex-direction:column;gap:600px">
-                <p>Scroll down to trigger the animation when the card enters the viewport…</p>
+                <p>Scroll down to trigger the animation when the card enters the viewportâ€¦</p>
                 <y-animate
                     id="${id}"
                     trigger="visible"

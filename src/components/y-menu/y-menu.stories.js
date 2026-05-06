@@ -1,4 +1,4 @@
-import "./y-menu.js";
+﻿import "./y-menu.js";
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
@@ -13,7 +13,7 @@ const defaultItems = JSON.stringify([
 const docsParams = { docs: { story: { inline: false, height: "200px" } } };
 
 export default {
-    title: "Components/Menu",
+    title: "Navigation/Menu",
     tags: ["autodocs"],
     parameters: docsParams,
     argTypes: {
@@ -159,7 +159,7 @@ export const WithCustomSlotPerItem = {
                     { text: "Sign out", value: "signout" },
                 ])}'
             >
-                <strong slot="user-banner" style="color:#a78bfa">★ Signed in as Alex</strong>
+                <strong slot="user-banner" style="color:#a78bfa">â˜… Signed in as Alex</strong>
             </y-menu>
         </div>
     `,

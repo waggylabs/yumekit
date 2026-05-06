@@ -1,8 +1,8 @@
-import "./y-tooltip.js";
+﻿import "./y-tooltip.js";
 import "../y-button/y-button.js";
 
 export default {
-    title: "Components/Tooltip",
+    title: "Feedback/Tooltip",
     tags: ["autodocs"],
     argTypes: {
         text: {

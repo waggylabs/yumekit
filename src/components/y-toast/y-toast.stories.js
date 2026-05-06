@@ -1,4 +1,4 @@
-import "./y-toast.js";
+﻿import "./y-toast.js";
 import "../y-button/y-button.js";
 
 // Helper: create a story that auto-fires .show() on render and includes a button to re-trigger.
@@ -33,7 +33,7 @@ function autoShow(opts, position = "bottom-right", duration = 3000) {
 }
 
 export default {
-    title: "Components/Toast",
+    title: "Feedback/Toast",
     tags: ["autodocs"],
     argTypes: {
         position: {
@@ -81,7 +81,7 @@ export default {
     },
 };
 
-// Interactive story — click the button to trigger
+// Interactive story â€” click the button to trigger
 export const Default = {};
 
 export const Colors = {
@@ -109,7 +109,7 @@ export const Colors = {
     },
 };
 
-// Auto-show stories — no button needed, toast fires on render
+// Auto-show stories â€” no button needed, toast fires on render
 export const WithIcons = {
     render: autoShow({ message: "File saved successfully.", color: "success", icon: "check" }),
 };

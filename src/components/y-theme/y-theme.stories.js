@@ -1,4 +1,4 @@
-import "./y-theme.js";
+﻿import "./y-theme.js";
 import "../y-button/y-button.js";
 import "../y-card/y-card.js";
 import "../y-badge/y-badge.js";
@@ -46,7 +46,7 @@ function themePreview(theme) {
 }
 
 export default {
-    title: "Components/Theme",
+    title: "Utility/Theme",
     tags: ["autodocs"],
     argTypes: {
         theme: {
