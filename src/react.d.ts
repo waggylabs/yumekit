@@ -48,6 +48,21 @@ declare module "react" {
                 shape?: string;
                 color?: string;
             }>;
+            "y-avatar-group": El<{
+                avatars?:
+                    | Array<{
+                          alt?: string;
+                          src?: string;
+                          color?: string;
+                          shape?: "circle" | "square" | "rounded";
+                      }>
+                    | string;
+                orientation?: "horizontal" | "vertical";
+                overlap?: string | number;
+                "stack-order"?: "first" | "last";
+                max?: string | number;
+                size?: "small" | "medium" | "large";
+            }>;
             "y-break": El<{
                 orientation?: "horizontal" | "vertical";
                 align?: "start" | "center" | "end";

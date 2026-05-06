@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 44 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 45 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -545,6 +545,36 @@ Attributes:
 - `shape` — `"circle"` (default) | `"square"` | `"rounded"`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `color` — predefined scheme or CSS color for the initials background; text color is auto-contrasted
+
+---
+
+### y-avatar-group
+A group of overlapping avatars rendered horizontally or vertically.
+
+Tag: `<y-avatar-group>`
+Attributes:
+- `avatars` — JSON array of avatar objects (`[{ alt, src, color, shape }]`); when set, slotted children are ignored
+- `orientation` — `"horizontal"` (default) | `"vertical"`
+- `overlap` — pixels each avatar overlaps the previous (default `8`)
+- `stack-order` — `"last"` (default; final avatar on top) | `"first"` (leading avatar on top)
+- `max` — maximum visible avatars; `0` (default) is unlimited. When exceeded, a `+N` indicator is appended
+- `size` — `"small"` | `"medium"` | `"large"` — applied to JSON-rendered avatars
+
+Events: `y-overflow-click` — fired when the user clicks the `+N` indicator (`detail: { count }`).
+
+CSS parts: `overflow` (the `+N` button).
+
+```html
+<y-avatar-group max="3" aria-label="Project members">
+  <y-avatar alt="Jane Doe" color="primary"></y-avatar>
+  <y-avatar alt="John Smith" color="secondary"></y-avatar>
+  <y-avatar alt="Pat Lee" color="success"></y-avatar>
+  <y-avatar alt="Sam Ko" color="warning"></y-avatar>
+  <y-avatar alt="Alex Yu" color="error"></y-avatar>
+</y-avatar-group>
+
+<y-avatar-group avatars='[{"alt":"Jane Doe"},{"alt":"John Smith","color":"success"}]'></y-avatar-group>
+```
 
 ---
 
