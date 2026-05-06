@@ -114,6 +114,12 @@
                 "$value": "{sizing.small}"
             }
         },
+        "avatar-group": {
+            "overlap": {
+                "$type": "sizing",
+                "$value": "{spacing.medium}"
+            }
+        },
         "badge": {
             "border-radius-circle": {
                 "$type": "borderRadius",

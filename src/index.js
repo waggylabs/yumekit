@@ -14,6 +14,7 @@ if (
 export * from "./components/y-animate/y-animate.js";
 export * from "./components/y-appbar/y-appbar.js";
 export * from "./components/y-avatar/y-avatar.js";
+export * from "./components/y-avatar-group/y-avatar-group.js";
 export * from "./components/y-sidebar/y-sidebar.js";
 export * from "./components/y-banner/y-banner.js";
 export * from "./components/y-badge/y-badge.js";
