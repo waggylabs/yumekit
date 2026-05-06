@@ -223,7 +223,7 @@ export class YumeSplitter extends HTMLElement {
                 tabindex: this.disabled ? "-1" : "0",
             },
             [
-                _el("div", { class: "handle-line", "aria-hidden": "true" }),
+                _el("div", { class: "handle-line", part: "handle-line", "aria-hidden": "true" }),
                 handleSlot,
             ],
         );
