@@ -20,6 +20,7 @@ export class YumeTreeItem extends HTMLElement {
         this._onChildrenSlotChange = this._onChildrenSlotChange.bind(this);
         this._onHeaderClick = this._onHeaderClick.bind(this);
         this._onHeaderMousedown = this._onHeaderMousedown.bind(this);
+        this._onIconSlotChange = this._onIconSlotChange.bind(this);
         this._render();
         this._attachListeners();
     }
@@ -211,12 +212,14 @@ export class YumeTreeItem extends HTMLElement {
     _attachListeners() {
         const header = this.shadowRoot.querySelector('[part="header"]');
         const arrow = this.shadowRoot.querySelector('[part="arrow"]');
-        const slot = this.shadowRoot.querySelector('slot[name="children"]');
+        const childrenSlot = this.shadowRoot.querySelector('slot[name="children"]');
+        const iconSlot = this.shadowRoot.querySelector('slot[name="icon"]');
         header.addEventListener("click", this._onHeaderClick);
         header.addEventListener("mousedown", this._onHeaderMousedown);
         arrow.addEventListener("click", this._onArrowClick);
         arrow.addEventListener("mousedown", this._onArrowMousedown);
-        slot.addEventListener("slotchange", this._onChildrenSlotChange);
+        childrenSlot.addEventListener("slotchange", this._onChildrenSlotChange);
+        iconSlot.addEventListener("slotchange", this._onIconSlotChange);
     }
 
     _buildStyles() {
@@ -271,7 +274,7 @@ export class YumeTreeItem extends HTMLElement {
 
             :host(:focus-visible) > .item .header {
                 outline: var(--component-tree-border-width, 2px) solid var(--component-tree-item-accent);
-                outline-offset: -2px;
+                outline-offset: calc(-1 * var(--component-tree-border-width, 2px));
             }
 
             :host([disabled]) .header {
@@ -299,14 +302,13 @@ export class YumeTreeItem extends HTMLElement {
             }
 
             .icon {
-                display: inline-flex;
+                display: none;
                 align-items: center;
                 flex-shrink: 0;
             }
 
-            .icon:empty,
-            .icon:has(slot[name="icon"]:not(:has(*))) {
-                display: none;
+            :host([data-has-icon]) .icon {
+                display: inline-flex;
             }
 
             .label {
@@ -414,6 +416,16 @@ export class YumeTreeItem extends HTMLElement {
         // Keep focus on the host instead of moving to the inner header element.
         e.preventDefault();
         this.focus();
+    }
+
+    _onIconSlotChange() {
+        const slot = this.shadowRoot.querySelector('slot[name="icon"]');
+        const hasIcon = slot.assignedNodes({ flatten: true }).some((n) => {
+            if (n.nodeType === Node.TEXT_NODE) return n.textContent.trim() !== "";
+            return true;
+        });
+        if (hasIcon) this.setAttribute("data-has-icon", "");
+        else this.removeAttribute("data-has-icon");
     }
 
     _performNavigation() {

@@ -23,6 +23,7 @@ export class YumeTree extends HTMLElement {
         this._onItemConnect = this._onItemConnect.bind(this);
         this._onItemDisconnect = this._onItemDisconnect.bind(this);
         this._onItemExpand = this._onItemExpand.bind(this);
+        this._onItemFocusin = this._onItemFocusin.bind(this);
         this._onItemSelect = this._onItemSelect.bind(this);
         this._onKeydown = this._onKeydown.bind(this);
         this._onPopstate = this._onPopstate.bind(this);
@@ -35,6 +36,7 @@ export class YumeTree extends HTMLElement {
             this.setAttribute("aria-label", "Tree");
         }
         this.addEventListener("keydown", this._onKeydown);
+        this.addEventListener("focusin", this._onItemFocusin);
         this.addEventListener("y-tree-item-connect", this._onItemConnect);
         this.addEventListener("y-tree-item-disconnect", this._onItemDisconnect);
         this.addEventListener("expand", this._onItemExpand);
@@ -51,6 +53,7 @@ export class YumeTree extends HTMLElement {
 
     disconnectedCallback() {
         this.removeEventListener("keydown", this._onKeydown);
+        this.removeEventListener("focusin", this._onItemFocusin);
         this.removeEventListener("y-tree-item-connect", this._onItemConnect);
         this.removeEventListener(
             "y-tree-item-disconnect",
@@ -161,7 +164,16 @@ export class YumeTree extends HTMLElement {
 
     _evaluateRouteMatch() {
         const mode = this.routeMatch;
-        if (mode === "off") return;
+
+        if (mode === "off") {
+            for (const item of this.getAllItems()) {
+                if (!item.hasAttribute("aria-current")) continue;
+
+                item.removeAttribute("aria-current");
+                if (this.selection === "single") item.selected = false;
+            }
+            return;
+        }
 
         const path =
             typeof window !== "undefined" ? window.location.pathname : "";
@@ -293,6 +305,15 @@ export class YumeTree extends HTMLElement {
         for (const sib of this._getSiblings(item)) {
             if (sib !== item && sib.expanded) sib.collapse();
         }
+    }
+
+    _onItemFocusin(e) {
+        const item = this._resolveItem(e.target);
+        if (!item || item.disabled) return;
+        if (item.tabIndex === 0) return;
+
+        for (const it of this.getAllItems()) it.tabIndex = -1;
+        item.tabIndex = 0;
     }
 
     _onItemSelect(e) {

@@ -29,6 +29,28 @@ describe("YumeTree", () => {
         expect(el.getAttribute("aria-label")).to.equal("Tree");
     });
 
+    it("icon wrapper hides when no icon slotted, shows when icon is provided", async () => {
+        const el = await fixture(html`
+            <y-tree>
+                <y-tree-item id="a"><span slot="label">No icon</span></y-tree-item>
+                <y-tree-item id="b">
+                    <y-icon slot="icon" name="folder" size="small"></y-icon>
+                    <span slot="label">With icon</span>
+                </y-tree-item>
+            </y-tree>
+        `);
+        await flush();
+        const a = el.querySelector("#a");
+        const b = el.querySelector("#b");
+        expect(a.hasAttribute("data-has-icon")).to.be.false;
+        expect(b.hasAttribute("data-has-icon")).to.be.true;
+
+        const aIcon = a.shadowRoot.querySelector(".icon");
+        const bIcon = b.shadowRoot.querySelector(".icon");
+        expect(getComputedStyle(aIcon).display).to.equal("none");
+        expect(getComputedStyle(bIcon).display).to.not.equal("none");
+    });
+
     it("preserves a caller-supplied aria-label", async () => {
         const el = await fixture(html`
             <y-tree aria-label="Docs nav">
@@ -375,6 +397,24 @@ describe("YumeTree", () => {
         expect(a.selected).to.equal(false);
     });
 
+    it("switching route-match to 'off' clears prior aria-current and selected", async () => {
+        history.replaceState({}, "", "/a");
+        const el = await fixture(html`
+            <y-tree>
+                <y-tree-item href="/a" id="a"><span slot="label">A</span></y-tree-item>
+                <y-tree-item href="/b" id="b"><span slot="label">B</span></y-tree-item>
+            </y-tree>
+        `);
+        await flush();
+        const a = el.querySelector("#a");
+        expect(a.getAttribute("aria-current")).to.equal("page");
+        expect(a.selected).to.equal(true);
+
+        el.setAttribute("route-match", "off");
+        expect(a.hasAttribute("aria-current")).to.be.false;
+        expect(a.selected).to.equal(false);
+    });
+
     it("popstate re-evaluates route match", async () => {
         history.replaceState({}, "", "/a");
         const el = await fixture(html`
@@ -405,6 +445,23 @@ describe("YumeTree", () => {
         const items = Array.from(el.querySelectorAll("y-tree-item"));
         const focusable = items.filter((it) => it.tabIndex === 0);
         expect(focusable.length).to.equal(1);
+    });
+
+    it("focusing a different item via click transfers the roving tabindex", async () => {
+        const el = await fixture(html`
+            <y-tree>
+                <y-tree-item id="a"><span slot="label">A</span></y-tree-item>
+                <y-tree-item id="b"><span slot="label">B</span></y-tree-item>
+            </y-tree>
+        `);
+        await flush();
+        const a = el.querySelector("#a");
+        const b = el.querySelector("#b");
+        expect(a.tabIndex).to.equal(0);
+
+        b.focus();
+        expect(b.tabIndex).to.equal(0);
+        expect(a.tabIndex).to.equal(-1);
     });
 
     it("ArrowDown/ArrowUp move focus among visible items, skipping disabled", async () => {

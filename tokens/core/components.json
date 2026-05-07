@@ -589,10 +589,6 @@
             }
         },
         "tree": {
-            "border-radius": {
-                "$type": "borderRadius",
-                "$value": "{radii.x-small}"
-            },
             "border-width": {
                 "$type": "borderWidth",
                 "$value": "{border.x-thin}"
