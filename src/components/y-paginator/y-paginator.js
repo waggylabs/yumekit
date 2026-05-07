@@ -92,7 +92,11 @@ export class YumePaginator extends HTMLElement {
         this.setAttribute("boundary-count", String(v));
     }
 
-    /** Currently active page (1-indexed). Clamped to [1, totalPages]. */
+    /**
+     * Currently active page (1-indexed). Clamped to [1, totalPages] when
+     * totalPages >= 1; returns 0 (the unset/no-data sentinel) when
+     * totalPages is 0.
+     */
     get currentPage() {
         const v = parseInt(this.getAttribute("current-page"), 10);
         const total = this.totalPages;

@@ -205,56 +205,64 @@ export const SinglePageVisible = {
 
 export const Interactive = {
     name: "Interactive (page-change event)",
-    render: () => `
-        <div style="${wrapStyle}">
-            <p id="paginator-status" style="margin:0 0 16px; font-family: var(--font-family-body, sans-serif)">
-                Showing page <strong>1</strong> of 25.
-            </p>
-            <y-paginator id="interactive-paginator" total-pages="25" current-page="1"></y-paginator>
-            <script>
-                (function () {
-                    const el = document.getElementById('interactive-paginator');
-                    const status = document.getElementById('paginator-status');
-                    el.addEventListener('page-change', (e) => {
-                        status.innerHTML = 'Showing page <strong>' + e.detail.page + '</strong> of 25.';
-                    });
-                })();
-            </script>
-        </div>
-    `,
+    render: () => {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = wrapStyle;
+
+        const status = document.createElement("p");
+        status.style.cssText =
+            "margin:0 0 16px; font-family: var(--font-family-body, sans-serif)";
+        status.innerHTML = "Showing page <strong>1</strong> of 25.";
+
+        const paginator = document.createElement("y-paginator");
+        paginator.setAttribute("total-pages", "25");
+        paginator.setAttribute("current-page", "1");
+
+        paginator.addEventListener("page-change", (e) => {
+            status.innerHTML = `Showing page <strong>${e.detail.page}</strong> of 25.`;
+        });
+
+        wrap.appendChild(status);
+        wrap.appendChild(paginator);
+        return wrap;
+    },
 };
 
 export const WithItemsPerPage = {
     name: "With items-per-page select",
-    render: () => `
-        <div style="${wrapStyle}">
-            <p id="iperpage-status" style="margin:0 0 16px; font-family: var(--font-family-body, sans-serif)">
-                Page <strong>1</strong> · <strong>10</strong> per page
-            </p>
-            <y-paginator
-                id="iperpage-paginator"
-                total-pages="50"
-                current-page="1"
-                items-per-page="10"
-                page-size-options="[10, 25, 50, 100]"
-            ></y-paginator>
-            <script>
-                (function () {
-                    const el = document.getElementById('iperpage-paginator');
-                    const status = document.getElementById('iperpage-status');
-                    const fmt = () =>
-                        'Page <strong>' + el.currentPage + '</strong> · <strong>' +
-                        (el.itemsPerPage || 10) + '</strong> per page';
-                    el.addEventListener('page-change', () => { status.innerHTML = fmt(); });
-                    el.addEventListener('page-size-change', () => {
-                        // Reset to page 1 when page size changes — common pattern
-                        el.currentPage = 1;
-                        setTimeout(() => { status.innerHTML = fmt(); }, 0);
-                    });
-                })();
-            </script>
-        </div>
-    `,
+    render: () => {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = wrapStyle;
+
+        const status = document.createElement("p");
+        status.style.cssText =
+            "margin:0 0 16px; font-family: var(--font-family-body, sans-serif)";
+
+        const paginator = document.createElement("y-paginator");
+        paginator.setAttribute("total-pages", "50");
+        paginator.setAttribute("current-page", "1");
+        paginator.setAttribute("items-per-page", "10");
+        paginator.setAttribute("page-size-options", "[10, 25, 50, 100]");
+
+        const renderStatus = () => {
+            status.innerHTML =
+                `Page <strong>${paginator.currentPage}</strong> · ` +
+                `<strong>${paginator.itemsPerPage || 10}</strong> per page`;
+        };
+        renderStatus();
+
+        paginator.addEventListener("page-change", () => {
+            queueMicrotask(renderStatus);
+        });
+        paginator.addEventListener("page-size-change", () => {
+            paginator.currentPage = 1;
+            queueMicrotask(renderStatus);
+        });
+
+        wrap.appendChild(status);
+        wrap.appendChild(paginator);
+        return wrap;
+    },
 };
 
 export const PageSizeOnly = {
