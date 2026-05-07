@@ -51,6 +51,8 @@ Delete any empty sections before publishing.
 
 - New `y-masonry` component — layout container that packs children of varying heights into the shortest column.
 
+- New `y-paginator` component — page navigation control with a configurable button window.
+
 ### Changed
 
 - **Icon rename — `comp-*` prefix dropped.** All 26 component-illustrating icons renamed. Two resolved collisions: `comp-menu` → `droplist` and `comp-tag` → `chip`.

@@ -279,6 +279,22 @@ declare module "react" {
                 direction?: "down" | "up" | "left" | "right";
                 size?: "small" | "medium" | "large";
             }>;
+            "y-paginator": El<{
+                "current-page"?: string | number;
+                "total-pages"?: string | number;
+                "page-count"?: string | number;
+                "boundary-count"?: string | number;
+                variant?: "default" | "compact" | "detailed";
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                "hide-on-single-page"?: boolean | string;
+                "items-per-page"?: string | number;
+                "page-size-options"?:
+                    | Array<number | { value: number | string; label?: string }>
+                    | string;
+                "page-size-label"?: string;
+                "aria-label"?: string;
+            }>;
             "y-panel": El<{
                 selected?: boolean | string;
                 expanded?: boolean | string;

@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 47 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 48 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -1310,6 +1310,52 @@ Deprecated slots (use `leftIcon`/`rightIcon` option properties instead):
   <span slot="tab-content-a"><y-icon name="star"></y-icon> A</span>
   <div slot="a">Content A</div>
 </y-tabs>
+```
+
+---
+
+### y-paginator
+Page navigation control with configurable button window, ellipsis collapsing, prev/next, an optional items-per-page select, and SPA-friendly cancelable events. Page buttons are rendered as `y-button` (flat for inactive, filled primary for the active page).
+
+Tag: `<y-paginator>`
+Attributes:
+- `current-page` — currently active page (1-indexed). Clamped to `[1, total-pages]`. Default `1`.
+- `total-pages` — total number of pages. `0` indicates no data. Default `0`.
+- `page-count` — maximum page buttons displayed at once, excluding ellipses. Default `5`.
+- `boundary-count` — number of pages always shown at each end. Default `1`.
+- `variant` — `"default"` (default) | `"compact"` (tighter) | `"detailed"` (renders prev/next text labels).
+- `size` — `"small"` | `"medium"` (default) | `"large"`. Forwarded to the page `y-button`s and the items-per-page `y-select`.
+- `disabled` — boolean. Disables every interactive control.
+- `hide-on-single-page` — defaults to `true`. The component hides itself when `total-pages <= 1` *and* there is no items-per-page select to show. Pass `hide-on-single-page="false"` to always render.
+- `items-per-page` — currently selected items-per-page value (number).
+- `page-size-options` — JSON array of numbers (`[10, 25, 50]`) or `[{value, label}]` objects. When set, an items-per-page `<y-select>` is rendered ahead of the page list.
+- `page-size-label` — label text shown next to the select. Default `"Items per page:"`.
+
+Events (cancelable, bubble + composed):
+- `page-change` — `{ page }`. Calling `preventDefault()` aborts the page transition.
+- `update:current-page` — `{ page }`. Fires after `page-change` for two-way-binding consumers; cancelling it also aborts.
+- `page-size-change` — `{ pageSize, previous }`. Cancellation reverts the select to the prior value.
+- `update:items-per-page` — `{ pageSize, previous }`. Mirror event for v-model-style consumers.
+
+Methods: `goTo(page)`, `next()`, `previous()`, `setPageSize(value)`.
+
+Slots: `prev-label`, `next-label` (override the prev/next button content; only rendered when `variant="detailed"`), `ellipsis` (override the `…` glyph).
+
+CSS Parts: `wrapper`, `nav-wrapper`, `list`, `button`, `button--active`, `button--disabled`, `nav-prev`, `nav-next`, `ellipsis`, `page-size`, `page-size-label`, `page-size-select`.
+
+Keyboard: while focus is on a page `y-button`, `ArrowLeft` / `ArrowRight` step focus between buttons and `Home` / `End` jump to the first / last interactive button.
+
+```html
+<y-paginator total-pages="50" current-page="5"></y-paginator>
+
+<y-paginator
+    total-pages="100"
+    current-page="42"
+    boundary-count="2"
+    variant="detailed"
+    items-per-page="25"
+    page-size-options="[10, 25, 50, 100]"
+></y-paginator>
 ```
 
 ---
