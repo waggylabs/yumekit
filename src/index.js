@@ -40,6 +40,7 @@ export * from "./components/y-input/y-input.js";
 export * from "./components/y-textarea/y-textarea.js";
 export * from "./components/y-masonry/y-masonry.js";
 export * from "./components/y-menu/y-menu.js";
+export * from "./components/y-paginator/y-paginator.js";
 export * from "./components/y-panel/y-panel.js";
 export * from "./components/y-panelbar/y-panelbar.js";
 export * from "./components/y-progress/y-progress.js";

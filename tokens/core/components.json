@@ -724,6 +724,56 @@
                 "$value": "576px"
             }
         },
+        "paginator": {
+            "spacing-small": {
+                "$type": "spacing",
+                "$value": "{spacing.2x-small}"
+            },
+            "spacing-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            },
+            "spacing-large": {
+                "$type": "spacing",
+                "$value": "{spacing.small}"
+            },
+            "button-size-small": {
+                "$type": "dimension",
+                "$value": "24px"
+            },
+            "button-size-medium": {
+                "$type": "dimension",
+                "$value": "32px"
+            },
+            "button-size-large": {
+                "$type": "dimension",
+                "$value": "40px"
+            },
+            "font-size-small": {
+                "$type": "fontSizes",
+                "$value": "{font-size.small}"
+            },
+            "font-size-medium": {
+                "$type": "fontSizes",
+                "$value": "{font-size.label}"
+            },
+            "font-size-large": {
+                "$type": "fontSizes",
+                "$value": "{font-size.paragraph}"
+            },
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "transition": {
+                "$type": "duration",
+                "$value": "150ms"
+            }
+        },
         "stepper": {
             "indicator-size-small": {
                 "$type": "dimension",
