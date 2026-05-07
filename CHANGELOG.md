@@ -35,19 +35,21 @@ Delete any empty sections before publishing.
 
 ### Added
 
-- New `y-avatar-group` component — displays a collection of overlapping avatars in a horizontal or vertical row. Avatars can be supplied as slotted `<y-avatar>` children or via a JSON `avatars` attribute. Configurable `overlap` distance, `stack-order` (`first` or `last` on top), and `max` count with a `+N` overflow indicator that emits `y-overflow-click`.
+- New `y-tree` / `y-tree-item` components — hierarchical navigation tree for sidebars, doc nav, and file/folder explorers.
 
-- New `y-sidebar` component — a collapsible vertical navigation sidebar extracted from `y-appbar`'s vertical mode. Accepts nav items via a JSON `items` attribute (`{ text, icon?, href?, selected?, slot?, children? }`). Items with `children` open a `y-menu` flyout. Active item auto-detection matches `window.location.pathname + search + hash` when `href` is set. Supports `collapsed` (icon-only mode), `toggle()` method, `size` (`"small"` | `"medium"` | `"large"`), `menu-direction` (`"right"` | `"down"`), `sticky` (`"start"` | `"end"`), and `history` (`"false"` for full-page navigation). The default slot accepts framework router links and custom nav elements; they render full-width when expanded and clip to the icon column when collapsed. Named slots: `logo`, `title`, `header`, `footer`. Host-exposed CSS custom properties `--y-sidebar-collapsed` (`0`/`1`) and `--y-sidebar-icon-col-width` let slotted items respond to collapse transitions. All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply without migration.
+- New `y-avatar-group` component — displays a collection of overlapping avatars in a horizontal or vertical row.
 
-- New `y-splitter` component — a two-pane container with a draggable handle that resizes the first pane (the second flexes to fill the remainder). Supports `orientation` (`horizontal` | `vertical`), `split` ratio (0–1), `min-ratio` / `max-ratio` constraints, `handle-size`, `handle-position` (`center` | `start` | `end`), and `disabled`. The handle is a `role="slider"` with full keyboard support (arrows for fine steps, PageUp/Down for 10% jumps, Home/End for the configured limits) and emits `split-start` / `split-changed` / `split-end` events. Pointer events cover mouse and touch with `requestAnimationFrame`-throttled updates.
+- New `y-sidebar` component — collapsible vertical navigation sidebar, extracted from `y-appbar`'s vertical mode.
 
-- New `y-droplist` component — a drag-and-drop reorderable list. Slot in children with `data-id` attributes and they become draggable items; consumers listen for `reorder` / `update` events to persist the new order. Supports `disabled`, `vertical` (vertical or horizontal axis), `animation` (settle duration), and `ghost-class` / `drag-class` styling hooks, plus keyboard reorder via Arrow keys with `aria-live` announcements.
+- New `y-splitter` component — two-pane container with a draggable handle that resizes the first pane.
 
-- New `y-break` component — a decorative divider that draws a horizontal or vertical line, optionally broken by centered content. Supports `orientation`, `align`, `variant` (`solid` | `dashed` | `dotted`), `inset` for outer-end padding, and convenience `label` / `icon` attributes. The default slot accepts arbitrary content (badges, buttons, etc.) and takes precedence over the convenience attributes.
+- New `y-droplist` component — drag-and-drop reorderable list with keyboard reorder support.
 
-- New `y-grid` component — a CSS Grid layout container (extracted from `y-stack` so grid has a dedicated component). Exposes the common Grid configuration as HTML attributes: `columns`, `rows`, `auto-flow`, `auto-rows`, `auto-columns`, `gap` / `row-gap` / `column-gap` (mapped to `--spacing-*` tokens), `align`, `justify`, `align-content`, `justify-content`, `min-item-width`, `responsive`, and `dense`. Children may use inline `grid-column` / `grid-row` styles to span tracks.
+- New `y-break` component — decorative horizontal or vertical divider, optionally broken by centered content.
 
-- New `y-masonry` component — a layout container that packs children of varying heights into the shortest column. Responsive collapse drops to fewer columns at configurable mobile and tablet breakpoints.
+- New `y-grid` component — CSS Grid layout container, extracted from `y-stack`.
+
+- New `y-masonry` component — layout container that packs children of varying heights into the shortest column.
 
 ### Changed
 
@@ -99,28 +101,25 @@ Delete any empty sections before publishing.
     | `tools`    | `wrench`               | Single wrench              |
     | `warning`  | `triangle-exclamation` | Triangle with !            |
 
-- **Breaking** `y-slider`: visual redesign, range mode, and refactor to current standards. Track is now a thin horizontal (or vertical) line; the thumb is a circle that sits on top of the track. Vertical orientation is fully supported (pointer math, keyboard, layout).
+- **Breaking** `y-slider`: visual redesign, range mode added, and refactor to current standards.
 
-- `y-tooltip`: added `open` boolean attribute. When set, the tooltip is forced visible and ignores hover/focus events. `show()` and `hide()` become no-ops while open is set, so external visibility management (e.g. `y-slider`'s value tooltip) doesn't fight the natural triggers.
+- `y-tooltip`: added `open` boolean attribute to force visibility independent of hover/focus.
 
-- `y-progress`: expanded to a multi-mode progress indicator with `bar` (default), `ring`, and `pie` shapes. Adds `values` for multi-value rendering (stacked bars, concentric rings, multi-slice pies), plus `thickness`, `segmented`, `segment-gap`, `start-angle`, `direction`, `track-color`, and `label-format`. Ring fills use rounded stroke caps; segmented bars share the parent track's border and only round the outermost corners.
+- `y-progress`: expanded to a multi-mode indicator supporting `bar`, `ring`, and `pie` shapes plus multi-value rendering.
 
-- **Breaking** `y-appbar`: vertical sidebar mode removed. The `orientation` and `collapsed` attributes and the `toggle()` method have been deleted. `y-appbar` is now exclusively a horizontal top bar with a mobile hamburger fallback. Migrate vertical navigation to `y-sidebar` (new this release). `sticky="start"` now sticks to the **top** edge (was left in vertical mode); `sticky="end"` now sticks to the **bottom** edge (was right). The `menu-direction` default is now `"down"` (was auto-selected based on orientation).
+- **Breaking** `y-appbar`: vertical sidebar mode removed — migrate vertical navigation to the new `y-sidebar`. `sticky="start"` / `sticky="end"` now refer to the top / bottom edges, and `menu-direction` defaults to `"down"`.
 
-- **Breaking** `y-stack`: refocused as a flexbox-only primitive now that `y-grid` and `y-masonry` own their layout algorithms.
-    - **Removed**: `mode` attribute (and the `flex` / `grid` / `masonry` branches), the `columns` attribute, and the masonry observer/positioning machinery. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `--component-stack-columns`, `--component-stack-min-item-width`, and `--component-stack-tablet-breakpoint` CSS variables are gone with them.
-    - **Changed**: `direction` now also accepts `row-reverse` and `column-reverse`. `wrap` is now an enum (`nowrap` | `wrap` | `wrap-reverse`); presence without a value still resolves to `wrap` for back-compat. `responsive` on row directions now also collapses the stack to `column` below the mobile breakpoint via a CSS container query (in addition to the existing auto-wrap behavior).
-    - **Added**: `align-content`, `row-gap`, `column-gap`, and `inline` (boolean → `display: inline-flex`) attributes. New `--component-stack-row-gap` and `--component-stack-column-gap` CSS variables.
+- **Breaking** `y-stack`: refocused as a flexbox-only primitive. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `mode` and `columns` attributes and the related `--component-stack-*` variables are removed.
 
 ### Security
 
-- **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup. The previous escape hatch wrote any string starting with `<` to `innerHTML`, turning JSON-fed `items` into an XSS sink. `icon` now only resolves registered `<y-icon>` names; custom glyphs must be added through the icon registry (`registerIcon` / `registerIcons`).
+- **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup — only registered icon names. Use `registerIcon` / `registerIcons` for custom glyphs.
 
-- **XSS hardening across components.** Eleven components — `y-avatar`, `y-input`, `y-textarea`, `y-tooltip`, `y-banner`, `y-badge`, `y-date`, `y-colorpicker`, `y-select`, `y-icon`, `y-rating` — previously interpolated user-controllable attribute values (and JSON-supplied `options` fields) directly into `innerHTML` template strings. Shadow trees are now built with `createElement`, attribute values flow through `setAttribute` (no breakout possible), and text content is rendered via `textContent`. Position/size enums fall back to a known default when the supplied value isn't on an allowlist. The two inline `<svg>` clear-button glyphs in `y-date` were replaced with `<y-icon name="x">`.
+- **XSS hardening across 11 components** (`y-avatar`, `y-input`, `y-textarea`, `y-tooltip`, `y-banner`, `y-badge`, `y-date`, `y-colorpicker`, `y-select`, `y-icon`, `y-rating`): shadow trees now build via `createElement` + `setAttribute` + `textContent` instead of `innerHTML` interpolation.
 
-- New shared `isSafeCssColor` helper validates user-supplied CSS color literals (`#hex`, `rgb()`/`rgba()`, `hsl()`/`hsla()`) before they reach a CSS context. `y-badge`'s `color` attribute and `y-select`'s per-option `color` now fall back to the semantic theme default when the value fails the allowlist.
+- New shared `isSafeCssColor` helper validates user-supplied CSS color literals; applied to `y-badge`'s `color` and `y-select`'s per-option `color`.
 
-- New shared `svg-sanitizer` module (`src/modules/svg-sanitizer.js`) extracts the SVG allowlist sanitizer previously inlined in `y-icon` so both `y-icon` and `y-rating` consume one implementation. `y-rating` previously injected `getIcon(this.icon)` raw, leaving `registerIcon(name, svg)` callers free to ship script-bearing SVG; the sanitizer is now applied on the y-rating render path as well.
+- New shared `svg-sanitizer` module (`src/modules/svg-sanitizer.js`) replaces the inlined sanitizer in `y-icon` and is now also applied on the `y-rating` render path.
 
 ## [0.4.4] - 2026-04-25
 

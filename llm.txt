@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 45 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 47 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.0
@@ -1344,6 +1344,65 @@ Slots: default (panel body content)
     <p>Content 2</p>
   </y-panel>
 </y-panelbar>
+```
+
+---
+
+### y-tree
+Hierarchical navigation tree for sidebars, doc nav, and file/folder explorers. Use when leaf nodes are navigation targets (links). For collapsible content regions, use `y-panelbar` / `y-panel`.
+
+Tag: `<y-tree>`
+Attributes:
+- `exclusive` — boolean. Expanding one branch collapses sibling branches at the same level.
+- `selection` — `"single"` (default) | `"none"`. Whether one item can be selected at a time, or selection is route-driven only.
+- `route-match` — `"exact"` (default) | `"prefix"` | `"off"`. How `href` matches against `window.location.pathname`. `"prefix"` highlights ancestor items when a descendant route is active.
+- `aria-label` — defaults to `"Tree"` if omitted.
+
+Methods: `getAllItems()`, `getVisibleItems()`, `focusItem(item)`
+
+Events bubble from items: `navigate` (cancelable, `{ href, item }`), `select` (`{ item, href }`), `expand` (`{ item }`), `collapse` (`{ item }`), `toggle` (`{ item, expanded }`).
+
+Slots: default — one or more `<y-tree-item>` elements forming the root level.
+
+CSS Parts: `tree`
+
+### y-tree-item
+Individual node in a `y-tree`.
+
+Tag: `<y-tree-item>`
+Attributes:
+- `href` — navigation target. When present, the item behaves as a link.
+- `expanded` — boolean. Whether the item's children are visible.
+- `selected` — boolean. Active/current state. Auto-managed by the tree when `route-match` is on.
+- `disabled` — boolean. Non-interactive and skipped in keyboard navigation.
+- `history` — `"push"` (default) | `"replace"` | `"false"`. History API behavior on navigate. `"false"` performs a full-page nav.
+
+Methods: `expand()`, `collapse()`, `toggle()`, `activate()`
+
+Slots: `icon`, `label` (default slot also accepted), `suffix`, `children` (nested `<y-tree-item>` elements).
+
+CSS Parts: `item`, `header`, `icon`, `label`, `suffix`, `arrow`, `children`
+
+CSS Custom Properties: `--component-tree-background`, `--component-tree-item-background`, `--component-tree-item-color`, `--component-tree-item-hover-background`, `--component-tree-item-expanded-background`, `--component-tree-item-selected-color`, `--component-tree-item-selected-background`, `--component-tree-item-accent`, `--component-tree-item-active-border`, `--component-tree-border-width`, `--component-tree-padding`, `--component-tree-indent`, `--component-tree-icon-gap`.
+
+Keyboard: ArrowUp/Down move between visible items; ArrowRight expands or focuses first child; ArrowLeft collapses or focuses parent; Home/End jump to first/last; Enter activates; Space toggles expansion; type-ahead focuses next item starting with the typed letter. Roving `tabindex` — only one item is tab-focusable at a time.
+
+```html
+<y-tree route-match="prefix" style="width:280px">
+  <y-tree-item href="/docs" expanded>
+    <y-icon slot="icon" name="book" size="small"></y-icon>
+    <span slot="label">Docs</span>
+    <y-tree-item slot="children" href="/docs/install">
+      <span slot="label">Installation</span>
+    </y-tree-item>
+    <y-tree-item slot="children" href="/docs/quickstart">
+      <span slot="label">Quick Start</span>
+    </y-tree-item>
+  </y-tree-item>
+  <y-tree-item href="/api">
+    <span slot="label">API Reference</span>
+  </y-tree-item>
+</y-tree>
 ```
 
 ---

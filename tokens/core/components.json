@@ -588,6 +588,28 @@
                 "$value": "{spacing.medium}"
             }
         },
+        "tree": {
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.x-small}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "indent": {
+                "$type": "spacing",
+                "$value": "{spacing.x-large}"
+            },
+            "padding": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "icon-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            }
+        },
         "progress": {
             "border-radius-inner": {
                 "$type": "borderRadius",
