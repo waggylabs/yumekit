@@ -1323,13 +1323,13 @@ Attributes:
 - `total-pages` — total number of pages. `0` indicates no data. Default `0`.
 - `page-count` — maximum page buttons displayed at once, excluding ellipses. Default `5`.
 - `boundary-count` — number of pages always shown at each end. Default `1`.
-- `variant` — `"default"` (default) | `"compact"` (tighter) | `"detailed"` (renders prev/next text labels).
+- `variant` — `"default"` (default — page-number buttons with prev/next), `"compact"` (first / prev / "n of n pages" status / next / last; no page list), or `"detailed"` (default layout plus prev/next text labels).
 - `size` — `"small"` | `"medium"` (default) | `"large"`. Forwarded to the page `y-button`s and the items-per-page `y-select`.
 - `disabled` — boolean. Disables every interactive control.
 - `hide-on-single-page` — defaults to `true`. The component hides itself when `total-pages <= 1` *and* there is no items-per-page select to show. Pass `hide-on-single-page="false"` to always render.
 - `items-per-page` — currently selected items-per-page value (number).
 - `page-size-options` — JSON array of numbers (`[10, 25, 50]`) or `[{value, label}]` objects. When set, an items-per-page `<y-select>` is rendered ahead of the page list.
-- `page-size-label` — label text shown next to the select. Default `"Items per page:"`.
+- `page-size-label` — label text shown next to the select; only visually rendered when `variant="detailed"`, otherwise applied as the select's `aria-label`. Default `"Items per page:"`.
 
 Events (cancelable, bubble + composed):
 - `page-change` — `{ page }`. Calling `preventDefault()` aborts the page transition.
@@ -1341,7 +1341,7 @@ Methods: `goTo(page)`, `next()`, `previous()`, `setPageSize(value)`.
 
 Slots: `prev-label`, `next-label` (override the prev/next button content; only rendered when `variant="detailed"`), `ellipsis` (override the `…` glyph).
 
-CSS Parts: `wrapper`, `nav-wrapper`, `list`, `button`, `button--active`, `button--disabled`, `nav-prev`, `nav-next`, `ellipsis`, `page-size`, `page-size-label`, `page-size-select`.
+CSS Parts: `wrapper`, `nav-wrapper`, `list`, `button`, `button--active`, `button--disabled`, `nav-first`, `nav-prev`, `nav-next`, `nav-last`, `compact-status`, `ellipsis`, `page-size`, `page-size-label`, `page-size-select`. (`nav-first` / `nav-last` / `compact-status` only appear when `variant="compact"`.)
 
 Keyboard: while focus is on a page `y-button`, `ArrowLeft` / `ArrowRight` step focus between buttons and `Home` / `End` jump to the first / last interactive button.
 

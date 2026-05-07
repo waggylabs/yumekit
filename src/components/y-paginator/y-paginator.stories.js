@@ -39,7 +39,8 @@ export default {
         variant: {
             control: "select",
             options: ["default", "compact", "detailed"],
-            description: "Visual style. `detailed` adds prev/next labels.",
+            description:
+                "Visual style. `compact` swaps the page list for a `n of n pages` status with first/prev/next/last buttons. `detailed` adds prev/next text labels and shows the items-per-page label.",
             table: { defaultValue: { summary: "default" } },
         },
         size: {
@@ -59,6 +60,27 @@ export default {
             description: "When true, hides the component if total-pages ≤ 1.",
             table: { defaultValue: { summary: true } },
         },
+        pageSizeOptions: {
+            name: "page-size-options",
+            control: "text",
+            description:
+                "JSON array of numbers (e.g. `[10, 25, 50]`) or `[{value, label}]` objects. When non-empty, an items-per-page `<y-select>` renders to the right of the page navigation.",
+            table: { defaultValue: { summary: "(none)" } },
+        },
+        itemsPerPage: {
+            name: "items-per-page",
+            control: { type: "number", min: 0 },
+            description:
+                "Currently selected items-per-page value. Must match one of `page-size-options`. `0` leaves it unset (the first option is selected).",
+            table: { defaultValue: { summary: "(unset)" } },
+        },
+        pageSizeLabel: {
+            name: "page-size-label",
+            control: "text",
+            description:
+                "Label text shown next to the items-per-page select when `variant=\"detailed\"`. Otherwise applied as the select's `aria-label`.",
+            table: { defaultValue: { summary: "Items per page:" } },
+        },
     },
     args: {
         currentPage: 5,
@@ -69,6 +91,9 @@ export default {
         size: "medium",
         disabled: false,
         hideOnSinglePage: true,
+        pageSizeOptions: "",
+        itemsPerPage: 0,
+        pageSizeLabel: "",
     },
     render: ({
         currentPage,
@@ -79,6 +104,9 @@ export default {
         size,
         disabled,
         hideOnSinglePage,
+        pageSizeOptions,
+        itemsPerPage,
+        pageSizeLabel,
     }) => `
         <div style="${wrapStyle}">
             <y-paginator
@@ -90,6 +118,9 @@ export default {
                 size="${size}"
                 ${disabled ? "disabled" : ""}
                 ${hideOnSinglePage ? "" : 'hide-on-single-page="false"'}
+                ${pageSizeOptions ? `page-size-options='${pageSizeOptions}'` : ""}
+                ${itemsPerPage ? `items-per-page="${itemsPerPage}"` : ""}
+                ${pageSizeLabel ? `page-size-label="${pageSizeLabel}"` : ""}
             ></y-paginator>
         </div>
     `,
@@ -119,6 +150,24 @@ export const Detailed = {
 
 export const Compact = {
     args: { variant: "compact", size: "small", currentPage: 6, totalPages: 50 },
+};
+
+export const ItemsPerPage = {
+    name: "Items per page (controls demo)",
+    args: {
+        totalPages: 50,
+        currentPage: 1,
+        pageSizeOptions: "[10, 25, 50, 100]",
+        itemsPerPage: 25,
+    },
+    parameters: {
+        docs: {
+            description: {
+                story:
+                    "Tweak `page-size-options`, `items-per-page`, and `page-size-label` in the controls panel. Switch `variant` to `detailed` to see the visible label render alongside the select.",
+            },
+        },
+    },
 };
 
 export const Disabled = {

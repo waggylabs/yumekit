@@ -293,6 +293,71 @@ describe("YumePaginator", () => {
         expect(el.shadowRoot.querySelector(".nav-prev .nav-text")).to.not.exist;
     });
 
+    // ── Compact variant ──────────────────────────────────────
+
+    it("compact variant: renders first/prev/status/next/last and no page list", async () => {
+        const el = await fixture(
+            html`<y-paginator
+                total-pages="10"
+                current-page="3"
+                variant="compact"
+            ></y-paginator>`,
+        );
+        expect(el.shadowRoot.querySelector(".nav-first")).to.exist;
+        expect(el.shadowRoot.querySelector(".nav-prev")).to.exist;
+        expect(el.shadowRoot.querySelector(".nav-next")).to.exist;
+        expect(el.shadowRoot.querySelector(".nav-last")).to.exist;
+        expect(el.shadowRoot.querySelector(".list")).to.not.exist;
+
+        const status = el.shadowRoot.querySelector(".compact-status");
+        expect(status).to.exist;
+        expect(status.textContent).to.contain("3 of 10");
+        expect(status.getAttribute("role")).to.equal("status");
+    });
+
+    it("compact first jumps to page 1 and last jumps to total", async () => {
+        const el = await fixture(
+            html`<y-paginator
+                total-pages="10"
+                current-page="5"
+                variant="compact"
+            ></y-paginator>`,
+        );
+        const events = [];
+        el.addEventListener("page-change", (e) => events.push(e.detail.page));
+
+        el.shadowRoot.querySelector(".nav-last").click();
+        el.shadowRoot.querySelector(".nav-first").click();
+
+        expect(events).to.deep.equal([10, 1]);
+    });
+
+    it("compact first/prev disabled at page 1; last/next disabled at total", async () => {
+        const elStart = await fixture(
+            html`<y-paginator
+                total-pages="10"
+                current-page="1"
+                variant="compact"
+            ></y-paginator>`,
+        );
+        expect(elStart.shadowRoot.querySelector(".nav-first").disabled).to.be.true;
+        expect(elStart.shadowRoot.querySelector(".nav-prev").disabled).to.be.true;
+        expect(elStart.shadowRoot.querySelector(".nav-next").disabled).to.be.false;
+        expect(elStart.shadowRoot.querySelector(".nav-last").disabled).to.be.false;
+
+        const elEnd = await fixture(
+            html`<y-paginator
+                total-pages="10"
+                current-page="10"
+                variant="compact"
+            ></y-paginator>`,
+        );
+        expect(elEnd.shadowRoot.querySelector(".nav-first").disabled).to.be.false;
+        expect(elEnd.shadowRoot.querySelector(".nav-prev").disabled).to.be.false;
+        expect(elEnd.shadowRoot.querySelector(".nav-next").disabled).to.be.true;
+        expect(elEnd.shadowRoot.querySelector(".nav-last").disabled).to.be.true;
+    });
+
     // ── Slots ─────────────────────────────────────────────────
 
     it("exposes a custom ellipsis slot when an ellipsis is rendered", async () => {

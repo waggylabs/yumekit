@@ -6,6 +6,33 @@ import { createElement as _el } from "../../modules/helpers.js";
 const VARIANT_VALUES = ["default", "compact", "detailed"];
 const SIZE_VALUES = ["small", "medium", "large"];
 
+const NAV_CONFIG = {
+    first: {
+        iconName: "expand-left",
+        iconSlot: "left-icon",
+        ariaLabel: "Go to first page",
+    },
+    prev: {
+        iconName: "chevron-left",
+        iconSlot: "left-icon",
+        ariaLabel: "Go to previous page",
+        labelSlotName: "prev-label",
+        labelFallback: "Previous",
+    },
+    next: {
+        iconName: "chevron-right",
+        iconSlot: "right-icon",
+        ariaLabel: "Go to next page",
+        labelSlotName: "next-label",
+        labelFallback: "Next",
+    },
+    last: {
+        iconName: "expand-right",
+        iconSlot: "right-icon",
+        ariaLabel: "Go to last page",
+    },
+};
+
 export class YumePaginator extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -284,17 +311,14 @@ export class YumePaginator extends HTMLElement {
     }
 
     _buildNavButton(direction, current, total, isHostDisabled) {
-        const isPrev = direction === "prev";
-        const targetPage = isPrev ? current - 1 : current + 1;
-        const isEdgeDisabled = isPrev ? current <= 1 : current >= total;
+        const cfg = NAV_CONFIG[direction];
+        const targetPage = this._navTargetPage(direction, current, total);
+        const isEdgeDisabled = this._navIsEdge(direction, current, total);
         const isDisabled = isHostDisabled || isEdgeDisabled;
 
-        const partName = isPrev ? "nav-prev" : "nav-next";
-        const slotName = isPrev ? "prev-label" : "next-label";
-        const iconName = isPrev ? "chevron-left" : "chevron-right";
-        const iconAttr = isPrev ? "left-icon" : "right-icon";
-        const ariaLabel = isPrev ? "Go to previous page" : "Go to next page";
-        const showLabel = this.variant === "detailed";
+        const partName = `nav-${direction}`;
+        const showLabel =
+            this.variant === "detailed" && !!cfg.labelSlotName;
 
         const attrs = {
             class: `nav nav-${direction}`,
@@ -302,23 +326,97 @@ export class YumePaginator extends HTMLElement {
             "style-type": "flat",
             color: "base",
             size: this.size,
-            "aria-label": ariaLabel,
-            [iconAttr]: iconName,
+            "aria-label": cfg.ariaLabel,
         };
         if (isDisabled) attrs.disabled = true;
 
-        const slotFallback = _el("span", { class: "nav-text" }, [
-            isPrev ? "Previous" : "Next",
-        ]);
-        const slot = _el("slot", { name: slotName }, [slotFallback]);
+        const icon = _el("y-icon", {
+            slot: cfg.iconSlot,
+            name: cfg.iconName,
+            size: this.size,
+        });
 
-        const children = showLabel ? [slot] : [];
+        const children = [icon];
+
+        if (showLabel) {
+            const slotFallback = _el("span", { class: "nav-text" }, [
+                cfg.labelFallback,
+            ]);
+            const slot = _el(
+                "slot",
+                { name: cfg.labelSlotName },
+                [slotFallback],
+            );
+            children.push(slot);
+        }
+
         const btn = _el("y-button", attrs, children);
 
         if (!isDisabled) {
             btn.addEventListener("click", () => this._onPageClick(targetPage));
         }
         return btn;
+    }
+
+    _navIsEdge(direction, current, total) {
+        if (direction === "first" || direction === "prev") return current <= 1;
+
+        return current >= total;
+    }
+
+    _navTargetPage(direction, current, total) {
+        if (direction === "first") return 1;
+        if (direction === "prev") return current - 1;
+        if (direction === "next") return current + 1;
+
+        return total;
+    }
+
+    _buildCompactNav(wrapper, current, total, isHostDisabled) {
+        wrapper.appendChild(
+            this._buildNavButton("first", current, total, isHostDisabled),
+        );
+        wrapper.appendChild(
+            this._buildNavButton("prev", current, total, isHostDisabled),
+        );
+        wrapper.appendChild(this._buildCompactStatus(current, total));
+        wrapper.appendChild(
+            this._buildNavButton("next", current, total, isHostDisabled),
+        );
+        wrapper.appendChild(
+            this._buildNavButton("last", current, total, isHostDisabled),
+        );
+    }
+
+    _buildCompactStatus(current, total) {
+        return _el(
+            "span",
+            {
+                class: "compact-status",
+                part: "compact-status",
+                role: "status",
+                "aria-label": `Page ${current} of ${total}`,
+            },
+            [`${current} of ${total} pages`],
+        );
+    }
+
+    _buildDefaultNav(wrapper, current, total, isHostDisabled) {
+        wrapper.appendChild(
+            this._buildNavButton("prev", current, total, isHostDisabled),
+        );
+
+        const items = this._getPageList(
+            current,
+            total,
+            this.pageCount,
+            this.boundaryCount,
+        );
+        wrapper.appendChild(this._buildList(items, current, isHostDisabled));
+
+        wrapper.appendChild(
+            this._buildNavButton("next", current, total, isHostDisabled),
+        );
     }
 
     _buildPageSizeSelect() {
@@ -350,7 +448,8 @@ export class YumePaginator extends HTMLElement {
         );
 
         const labelText = this.pageSizeLabel;
-        if (labelText) {
+        const showLabel = this.variant === "detailed" && !!labelText;
+        if (showLabel) {
             wrap.appendChild(
                 _el(
                     "span",
@@ -364,14 +463,19 @@ export class YumePaginator extends HTMLElement {
             );
         }
 
-        const select = _el("y-select", {
+        const selectAttrs = {
             class: "page-size-select",
             part: "page-size-select",
             size: this.size,
             value: selected,
             options: JSON.stringify(normalized),
-            "aria-labelledby": "y-paginator-page-size-label",
-        });
+        };
+        if (showLabel) {
+            selectAttrs["aria-labelledby"] = "y-paginator-page-size-label";
+        } else {
+            selectAttrs["aria-label"] = labelText || "Items per page";
+        }
+        const select = _el("y-select", selectAttrs);
 
         if (this.disabled) select.setAttribute("disabled", "");
 
@@ -423,11 +527,6 @@ export class YumePaginator extends HTMLElement {
                 min-width: var(--component-paginator-button-size-${this.size}, 32px);
             }
 
-            :host([variant="compact"]) .button,
-            :host([variant="compact"]) .nav {
-                min-width: calc(var(--component-paginator-button-size-${this.size}, 32px) - 4px);
-            }
-
             .ellipsis {
                 display: inline-flex;
                 align-items: center;
@@ -436,6 +535,17 @@ export class YumePaginator extends HTMLElement {
                 height: var(--component-paginator-button-size-${this.size}, 32px);
                 color: var(--component-paginator-ellipsis-color, var(--base-content-lighter, #999));
                 font-size: var(--component-paginator-font-size-${this.size}, 0.875em);
+                user-select: none;
+            }
+
+            .compact-status {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 var(--spacing-small, 8px);
+                color: var(--component-paginator-color, var(--base-content--, #333));
+                font-size: var(--component-paginator-font-size-${this.size}, 0.875em);
+                white-space: nowrap;
                 user-select: none;
             }
 
@@ -614,34 +724,23 @@ export class YumePaginator extends HTMLElement {
 
         const root = _el("div", { class: "root", part: "wrapper" });
 
-        const pageSize = this._buildPageSizeSelect();
-        if (pageSize) root.appendChild(pageSize);
-
         if (total > 0) {
             const wrapper = _el("div", {
                 class: "nav-wrapper",
                 part: "nav-wrapper",
             });
-            wrapper.appendChild(
-                this._buildNavButton("prev", current, total, isHostDisabled),
-            );
 
-            const items = this._getPageList(
-                current,
-                total,
-                this.pageCount,
-                this.boundaryCount,
-            );
-            wrapper.appendChild(
-                this._buildList(items, current, isHostDisabled),
-            );
-
-            wrapper.appendChild(
-                this._buildNavButton("next", current, total, isHostDisabled),
-            );
+            if (this.variant === "compact") {
+                this._buildCompactNav(wrapper, current, total, isHostDisabled);
+            } else {
+                this._buildDefaultNav(wrapper, current, total, isHostDisabled);
+            }
 
             root.appendChild(wrapper);
         }
+
+        const pageSize = this._buildPageSizeSelect();
+        if (pageSize) root.appendChild(pageSize);
 
         this.shadowRoot.appendChild(root);
     }
