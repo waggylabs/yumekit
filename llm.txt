@@ -1383,7 +1383,7 @@ Slots: `icon`, `label` (default slot also accepted), `suffix`, `children` (neste
 
 CSS Parts: `item`, `header`, `icon`, `label`, `suffix`, `arrow`, `children`
 
-CSS Custom Properties: `--component-tree-background`, `--component-tree-item-background`, `--component-tree-item-color`, `--component-tree-item-hover-background`, `--component-tree-item-expanded-background`, `--component-tree-item-selected-color`, `--component-tree-item-selected-background`, `--component-tree-item-accent`, `--component-tree-item-active-border`, `--component-tree-border-width`, `--component-tree-padding`, `--component-tree-indent`, `--component-tree-icon-gap`.
+CSS Custom Properties: `--component-tree-background`, `--component-tree-item-color`, `--component-tree-item-hover-background`, `--component-tree-item-selected-color`, `--component-tree-item-selected-background`, `--component-tree-item-accent`, `--component-tree-item-active-border`, `--component-tree-border-width`, `--component-tree-padding`, `--component-tree-indent`, `--component-tree-icon-gap`.
 
 Keyboard: ArrowUp/Down move between visible items; ArrowRight expands or focuses first child; ArrowLeft collapses or focuses parent; Home/End jump to first/last; Enter activates; Space toggles expansion; type-ahead focuses next item starting with the typed letter. Roving `tabindex` — only one item is tab-focusable at a time.
 

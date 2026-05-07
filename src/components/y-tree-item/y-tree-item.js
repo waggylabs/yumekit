@@ -27,22 +27,27 @@ export class YumeTreeItem extends HTMLElement {
     connectedCallback() {
         this._level = this._computeLevel();
         if (!this.hasAttribute("role")) this.setAttribute("role", "treeitem");
-        if (this.tabIndex < 0 && !this.hasAttribute("tabindex")) this.tabIndex = -1;
+        if (this.tabIndex < 0 && !this.hasAttribute("tabindex"))
+            this.tabIndex = -1;
         this.style.setProperty("--_y-tree-item-level", String(this._level));
         this._syncChildren();
         this._syncAria();
         this._syncArrow();
-        this.dispatchEvent(new CustomEvent("y-tree-item-connect", {
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("y-tree-item-connect", {
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     disconnectedCallback() {
-        this.dispatchEvent(new CustomEvent("y-tree-item-disconnect", {
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("y-tree-item-disconnect", {
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -59,21 +64,27 @@ export class YumeTreeItem extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Whether the item is non-interactive and skipped in keyboard navigation. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(v) {
         if (v) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** Whether the item's children are visible. */
-    get expanded() { return this.hasAttribute("expanded"); }
+    get expanded() {
+        return this.hasAttribute("expanded");
+    }
     set expanded(v) {
         if (v) this.setAttribute("expanded", "");
         else this.removeAttribute("expanded");
     }
 
     /** Whether this item has at least one nested `<y-tree-item slot="children">`. */
-    get hasChildren() { return this._hasChildren; }
+    get hasChildren() {
+        return this._hasChildren;
+    }
 
     /**
      * History API behavior on navigate. `"push"` (default) calls `pushState`;
@@ -89,17 +100,23 @@ export class YumeTreeItem extends HTMLElement {
     }
 
     /** Navigation target. When present the item behaves as a link. */
-    get href() { return this.getAttribute("href"); }
+    get href() {
+        return this.getAttribute("href");
+    }
     set href(v) {
         if (v) this.setAttribute("href", v);
         else this.removeAttribute("href");
     }
 
     /** 1-based depth from the enclosing `<y-tree>`. Computed at connect. */
-    get level() { return this._level; }
+    get level() {
+        return this._level;
+    }
 
     /** Active/current item state. */
-    get selected() { return this.hasAttribute("selected"); }
+    get selected() {
+        return this.hasAttribute("selected");
+    }
     set selected(v) {
         if (v) this.setAttribute("selected", "");
         else this.removeAttribute("selected");
@@ -127,11 +144,13 @@ export class YumeTreeItem extends HTMLElement {
             const proceed = this.dispatchEvent(event);
             if (proceed) this._performNavigation();
         }
-        this.dispatchEvent(new CustomEvent("select", {
-            bubbles: true,
-            composed: true,
-            detail: { item: this, href: this.href || null },
-        }));
+        this.dispatchEvent(
+            new CustomEvent("select", {
+                bubbles: true,
+                composed: true,
+                detail: { item: this, href: this.href || null },
+            }),
+        );
     }
 
     /** Collapses the branch. No-op if already collapsed. */
@@ -139,12 +158,20 @@ export class YumeTreeItem extends HTMLElement {
         if (!this.expanded) return;
 
         this.expanded = false;
-        this.dispatchEvent(new CustomEvent("collapse", {
-            bubbles: true, composed: true, detail: { item: this },
-        }));
-        this.dispatchEvent(new CustomEvent("toggle", {
-            bubbles: true, composed: true, detail: { item: this, expanded: false },
-        }));
+        this.dispatchEvent(
+            new CustomEvent("collapse", {
+                bubbles: true,
+                composed: true,
+                detail: { item: this },
+            }),
+        );
+        this.dispatchEvent(
+            new CustomEvent("toggle", {
+                bubbles: true,
+                composed: true,
+                detail: { item: this, expanded: false },
+            }),
+        );
     }
 
     /** Expands the branch. No-op if already expanded or has no children. */
@@ -153,12 +180,20 @@ export class YumeTreeItem extends HTMLElement {
         if (!this._hasChildren) return;
 
         this.expanded = true;
-        this.dispatchEvent(new CustomEvent("expand", {
-            bubbles: true, composed: true, detail: { item: this },
-        }));
-        this.dispatchEvent(new CustomEvent("toggle", {
-            bubbles: true, composed: true, detail: { item: this, expanded: true },
-        }));
+        this.dispatchEvent(
+            new CustomEvent("expand", {
+                bubbles: true,
+                composed: true,
+                detail: { item: this },
+            }),
+        );
+        this.dispatchEvent(
+            new CustomEvent("toggle", {
+                bubbles: true,
+                composed: true,
+                detail: { item: this, expanded: true },
+            }),
+        );
     }
 
     /** Toggles expansion. No-op when the item has no children. */
@@ -190,7 +225,7 @@ export class YumeTreeItem extends HTMLElement {
                 display: block;
                 box-sizing: border-box;
                 color: var(--component-tree-item-color);
-                background: var(--component-tree-item-background);
+                background: transparent;
                 outline: none;
             }
 
@@ -214,6 +249,7 @@ export class YumeTreeItem extends HTMLElement {
                 background: transparent;
                 border: 0;
                 width: 100%;
+                box-sizing: border-box;
                 font: inherit;
                 color: inherit;
                 text-align: left;
@@ -226,6 +262,10 @@ export class YumeTreeItem extends HTMLElement {
             :host([selected]) > .item .header,
             :host([aria-current="page"]) > .item .header {
                 color: var(--component-tree-item-selected-color);
+            }
+
+            :host([selected]) > .item .header:hover,
+            :host([aria-current="page"]) > .item .header:hover {
                 background: var(--component-tree-item-selected-background);
             }
 
@@ -286,20 +326,40 @@ export class YumeTreeItem extends HTMLElement {
 
             .children {
                 display: none;
-                box-shadow: inset var(--component-tree-border-width, 2px) 0 0 0 var(--component-tree-item-active-border);
-                margin-left: calc(
-                    var(--component-tree-padding, 8px)
-                    + (var(--_y-tree-item-level, 1) - 1) * var(--component-tree-indent, 16px)
-                    + 0.5em
-                );
             }
 
             :host([expanded]) > .children {
                 display: block;
             }
 
-            :host([expanded]) > .item {
-                background: var(--component-tree-item-expanded-background);
+            .item {
+                background-image: repeating-linear-gradient(
+                    to right,
+                    var(--component-tree-item-active-border) 0,
+                    var(--component-tree-item-active-border) var(--component-tree-border-width, 2px),
+                    transparent var(--component-tree-border-width, 2px),
+                    transparent var(--component-tree-indent, 16px)
+                );
+                background-repeat: no-repeat;
+                background-size: calc(
+                    (var(--_y-tree-item-level, 1) - 1) * var(--component-tree-indent, 16px)
+                ) 100%;
+                background-position: calc(
+                    var(--component-tree-padding, 8px)
+                    + 0.5em
+                    - var(--component-tree-border-width, 2px) / 2
+                ) 0;
+            }
+
+            :host([selected]) > .item,
+            :host([aria-current="page"]) > .item {
+                background-image: repeating-linear-gradient(
+                    to right,
+                    var(--component-tree-item-accent) 0,
+                    var(--component-tree-item-accent) var(--component-tree-border-width, 2px),
+                    transparent var(--component-tree-border-width, 2px),
+                    transparent var(--component-tree-indent, 16px)
+                );
             }
         `;
     }
@@ -319,7 +379,8 @@ export class YumeTreeItem extends HTMLElement {
         const slot = this.shadowRoot.querySelector('slot[name="children"]');
         if (!slot) return false;
 
-        return slot.assignedElements({ flatten: true })
+        return slot
+            .assignedElements({ flatten: true })
             .some((el) => el.tagName === "Y-TREE-ITEM");
     }
 
