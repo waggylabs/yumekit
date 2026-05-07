@@ -457,6 +457,19 @@ declare module "react" {
                 color?: string;
                 delay?: string | number;
             }>;
+            "y-tree": El<{
+                exclusive?: boolean | string;
+                selection?: "single" | "none";
+                "route-match"?: "exact" | "prefix" | "off";
+                "aria-label"?: string;
+            }>;
+            "y-tree-item": El<{
+                href?: string;
+                expanded?: boolean | string;
+                selected?: boolean | string;
+                disabled?: boolean | string;
+                history?: "push" | "replace" | "false";
+            }>;
         }
     }
 }

@@ -199,14 +199,14 @@ export class YumePanel extends HTMLElement {
             }
 
             :host([data-is-child="true"]) .header {
-                padding-left: calc(var(--component-panelbar-padding, 4px) + (var(--panel-depth, 1) * var(--component-panelbar-indent, 16px)));
+                padding-left: calc(var(--component-panelbar-padding, 8px) + (var(--panel-depth, 1) * var(--component-panelbar-indent, 16px)));
             }
 
             .header {
                 display: flex;
                 align-items: center;
                 gap: var(--spacing-medium, 8px);
-                padding: var(--component-panelbar-padding, 4px);
+                padding: var(--component-panelbar-padding, 8px);
                 cursor: pointer;
                 transition: background 0.2s ease;
                 user-select: none;

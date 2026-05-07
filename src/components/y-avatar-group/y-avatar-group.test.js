@@ -32,9 +32,9 @@ describe("YumeAvatarGroup", () => {
             expect(el.orientation).to.equal("horizontal");
         });
 
-        it("defaults overlap to 8 when unset", async () => {
+        it("defaults overlap to 2 when unset", async () => {
             const el = await fixture(html`<y-avatar-group></y-avatar-group>`);
-            expect(el.overlap).to.equal(8);
+            expect(el.overlap).to.equal(2);
         });
 
         it("defaults stack-order to last", async () => {
@@ -228,7 +228,10 @@ describe("YumeAvatarGroup", () => {
         it("applies the group's size attribute to JSON-rendered avatars", async () => {
             const data = JSON.stringify([{ alt: "A" }, { alt: "B" }]);
             const el = await fixture(
-                html`<y-avatar-group size="large" avatars=${data}></y-avatar-group>`,
+                html`<y-avatar-group
+                    size="large"
+                    avatars=${data}
+                ></y-avatar-group>`,
             );
             const avatars = el.shadowRoot.querySelectorAll("y-avatar");
             expect(avatars[0].getAttribute("size")).to.equal("large");
@@ -290,7 +293,7 @@ describe("YumeAvatarGroup", () => {
             el.setAttribute("orientation", "vertical");
             await new Promise((r) => setTimeout(r, 0));
             const avatars = el.querySelectorAll("y-avatar");
-            expect(avatars[1].style.marginBlockStart).to.equal("-8px");
+            expect(avatars[1].style.marginBlockStart).to.equal("-2px");
             expect(avatars[1].style.marginInlineStart).to.equal("");
         });
 

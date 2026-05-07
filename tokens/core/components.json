@@ -588,6 +588,24 @@
                 "$value": "{spacing.medium}"
             }
         },
+        "tree": {
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "indent": {
+                "$type": "spacing",
+                "$value": "{spacing.x-large}"
+            },
+            "padding": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "icon-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            }
+        },
         "progress": {
             "border-radius-inner": {
                 "$type": "borderRadius",
