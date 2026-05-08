@@ -172,6 +172,50 @@ describe("YumePanel", () => {
         expect(event).to.exist;
     });
 
+    it("applies --component-panel-accent color when selected", async () => {
+        const el = await fixture(html`
+            <y-panel selected>
+                <span slot="label">Item</span>
+            </y-panel>
+        `);
+
+        // Inject a sentinel value so we can confirm the CSS rule actually
+        // references --component-panel-accent (regression: the variable was
+        // never emitted by the token build, making selected state invisible).
+        el.style.setProperty("--component-panel-accent", "rgb(255, 0, 0)");
+        await new Promise((r) => setTimeout(r, 0));
+
+        const color = window.getComputedStyle(el).color;
+        expect(color).to.equal("rgb(255, 0, 0)");
+    });
+
+    it("applies accent box-shadow to a selected child panel", async () => {
+        const bar = await fixture(html`
+            <y-panelbar>
+                <y-panel expanded>
+                    <span slot="label">Parent</span>
+                    <div slot="children">
+                        <y-panel id="child" selected>
+                            <span slot="label">Child</span>
+                        </y-panel>
+                    </div>
+                </y-panel>
+            </y-panelbar>
+        `);
+
+        await new Promise((r) => setTimeout(r, 0));
+
+        const child = bar.querySelector("#child");
+        expect(child.getAttribute("data-is-child")).to.equal("true");
+
+        child.style.setProperty("--component-panel-accent", "rgb(0, 128, 0)");
+        child.style.setProperty("--component-panelbar-border-width", "4px");
+        await new Promise((r) => setTimeout(r, 0));
+
+        const boxShadow = window.getComputedStyle(child).boxShadow;
+        expect(boxShadow).to.include("rgb(0, 128, 0)");
+    });
+
     it("reflects selected attribute", async () => {
         const el = await fixture(html`
             <y-panel selected>
@@ -209,11 +253,15 @@ describe("YumePanel", () => {
             <y-panelbar exclusive>
                 <y-panel id="p1" expanded>
                     <span slot="label">One</span>
-                    <y-panel slot="children"><span slot="label">1a</span></y-panel>
+                    <y-panel slot="children"
+                        ><span slot="label">1a</span></y-panel
+                    >
                 </y-panel>
                 <y-panel id="p2">
                     <span slot="label">Two</span>
-                    <y-panel slot="children"><span slot="label">2a</span></y-panel>
+                    <y-panel slot="children"
+                        ><span slot="label">2a</span></y-panel
+                    >
                 </y-panel>
             </y-panelbar>
         `);
@@ -320,7 +368,10 @@ describe("YumePanel — href / route matching", () => {
     it("navigates using pushState when history attribute is not false", async () => {
         const pushed = [];
         const origPush = history.pushState.bind(history);
-        history.pushState = (...args) => { pushed.push(args); return origPush(...args); };
+        history.pushState = (...args) => {
+            pushed.push(args);
+            return origPush(...args);
+        };
 
         const el = await fixture(html`
             <y-panel href="/push-route">
@@ -356,7 +407,9 @@ describe("YumePanel — keyboard interaction", () => {
         const arrow = el.shadowRoot.querySelector(".arrow");
         expect(el.expanded).to.be.false;
 
-        arrow.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+        arrow.dispatchEvent(
+            new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+        );
         await new Promise((r) => setTimeout(r, 0));
 
         expect(el.expanded).to.be.true;
@@ -375,7 +428,9 @@ describe("YumePanel — keyboard interaction", () => {
         await new Promise((r) => setTimeout(r, 0));
 
         const arrow = el.shadowRoot.querySelector(".arrow");
-        arrow.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        arrow.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+        );
         await new Promise((r) => setTimeout(r, 0));
 
         expect(el.expanded).to.be.true;
@@ -391,7 +446,9 @@ describe("YumePanel — keyboard interaction", () => {
         const header = el.shadowRoot.querySelector(".header");
 
         setTimeout(() => {
-            header.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
+            header.dispatchEvent(
+                new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+            );
         });
         const event = await oneEvent(el, "select");
 
@@ -408,7 +465,9 @@ describe("YumePanel — keyboard interaction", () => {
         const header = el.shadowRoot.querySelector(".header");
 
         setTimeout(() => {
-            header.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+            header.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+            );
         });
         const event = await oneEvent(el, "select");
 

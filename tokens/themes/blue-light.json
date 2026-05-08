@@ -577,6 +577,10 @@
         }
       },
       "accent": {
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
         "hover": {
           "background": {
             "$type": "color",
