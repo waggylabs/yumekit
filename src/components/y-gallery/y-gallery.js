@@ -184,8 +184,11 @@ export class YumeGallery extends HTMLElement {
         });
         if (!this.dispatchEvent(event)) return;
 
-        const item_el = this.shadowRoot.querySelector(`.item[data-index="${index}"]`);
-        this._previouslyFocused = item_el?.querySelector(".item-btn") || item_el;
+        const item_el = this.shadowRoot.querySelector(
+            `.item[data-index="${index}"]`,
+        );
+        this._previouslyFocused =
+            item_el?.querySelector(".item-btn") || item_el;
         this._expandedIndex = index;
         this._showExpandedView();
         document.addEventListener("keydown", this._onKeyDown);
@@ -406,7 +409,7 @@ export class YumeGallery extends HTMLElement {
         const closeBtn = this._createNavButton(
             "expand-close",
             "Close image viewer",
-            "close",
+            "x",
             "expand-close-icon",
         );
         const prevBtn = this._createNavButton(
@@ -594,14 +597,28 @@ export class YumeGallery extends HTMLElement {
     }
 
     _createItemWrapper(data, index) {
-        const attrs = { class: "item", part: "item", role: "listitem", "data-index": String(index) };
-        const img = _el("img", { src: data.src, alt: data.alt, part: "item-img", draggable: "false" });
+        const attrs = {
+            class: "item",
+            part: "item",
+            role: "listitem",
+            "data-index": String(index),
+        };
+        const img = _el("img", {
+            src: data.src,
+            alt: data.alt,
+            part: "item-img",
+            draggable: "false",
+        });
 
         if (this.expandable) {
-            const btn = _el("button", {
-                class: "item-btn",
-                "aria-label": `View image: ${data.alt || `Image ${index + 1}`}`,
-            }, [img]);
+            const btn = _el(
+                "button",
+                {
+                    class: "item-btn",
+                    "aria-label": `View image: ${data.alt || `Image ${index + 1}`}`,
+                },
+                [img],
+            );
             btn.addEventListener("click", () => this.open(index));
             return _el("div", attrs, [btn]);
         }
@@ -673,7 +690,9 @@ export class YumeGallery extends HTMLElement {
             if (!data) return;
 
             this._items.push(data);
-            gallery.appendChild(this._createItemWrapper(data, this._items.length - 1));
+            gallery.appendChild(
+                this._createItemWrapper(data, this._items.length - 1),
+            );
         });
     }
 
@@ -713,7 +732,11 @@ export class YumeGallery extends HTMLElement {
 
         if (gapMap[gap]) return gapMap[gap];
 
-        if (typeof CSS !== "undefined" && CSS.supports && CSS.supports("gap", gap)) {
+        if (
+            typeof CSS !== "undefined" &&
+            CSS.supports &&
+            CSS.supports("gap", gap)
+        ) {
             return gap;
         }
 
