@@ -33,13 +33,12 @@ declare module "react" {
                 disabled?: boolean | string;
             }>;
             "y-appbar": El<{
-                orientation?: "vertical" | "horizontal";
-                collapsed?: boolean | string;
                 items?: unknown[] | string;
                 size?: "small" | "medium" | "large";
                 "menu-direction"?: "right" | "down" | "";
                 sticky?: "start" | "end";
                 "mobile-breakpoint"?: string | number;
+                history?: string;
             }>;
             "y-avatar": El<{
                 src?: string;
@@ -114,6 +113,12 @@ declare module "react" {
                 "aria-label"?: string;
                 "aria-pressed"?: string;
                 "aria-hidden"?: string;
+                "aria-haspopup"?: string;
+                "aria-expanded"?: string;
+                "aria-controls"?: string;
+                href?: string;
+                target?: string;
+                rel?: string;
             }>;
             "y-button-group": El<{
                 orientation?: "horizontal" | "vertical";
@@ -216,11 +221,13 @@ declare module "react" {
                 resizable?: boolean | string;
             }>;
             "y-droplist": El<{
+                group?: string;
                 disabled?: boolean | string;
                 vertical?: "true" | "false" | string;
                 animation?: string | number;
                 "ghost-class"?: string;
                 "drag-class"?: string;
+                handle?: string;
             }>;
             "y-gallery": El<{
                 layout?: "grid" | "row" | "column" | "masonry";
@@ -237,13 +244,51 @@ declare module "react" {
                 "auto-flow"?: "row" | "column" | "row dense" | "column dense";
                 "auto-rows"?: string;
                 "auto-columns"?: string;
-                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                gap?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "row-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "column-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
                 align?: "start" | "center" | "end" | "stretch" | "baseline";
                 justify?: "start" | "center" | "end" | "stretch";
-                "align-content"?: "start" | "center" | "end" | "stretch" | "between" | "around" | "evenly";
-                "justify-content"?: "start" | "center" | "end" | "stretch" | "between" | "around" | "evenly";
+                "align-content"?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "stretch"
+                    | "between"
+                    | "around"
+                    | "evenly";
+                "justify-content"?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "stretch"
+                    | "between"
+                    | "around"
+                    | "evenly";
                 "min-item-width"?: string;
                 responsive?: boolean | string;
                 dense?: boolean | string;
@@ -262,14 +307,40 @@ declare module "react" {
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
-                placeholder?: string;
                 "label-position"?: "top" | "bottom";
+                min?: string | number;
+                max?: string | number;
+                step?: string | number;
             }>;
             "y-masonry": El<{
                 columns?: string | number;
-                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                gap?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "row-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "column-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
                 responsive?: boolean | string;
             }>;
             "y-menu": El<{
@@ -278,6 +349,7 @@ declare module "react" {
                 visible?: boolean | string;
                 direction?: "down" | "up" | "left" | "right";
                 size?: "small" | "medium" | "large";
+                history?: string;
             }>;
             "y-paginator": El<{
                 "current-page"?: string | number;
@@ -303,6 +375,14 @@ declare module "react" {
             }>;
             "y-panelbar": El<{
                 exclusive?: boolean | string;
+            }>;
+            "y-sidebar": El<{
+                collapsed?: boolean | string;
+                items?: unknown[] | string;
+                size?: "small" | "medium" | "large";
+                "menu-direction"?: "right" | "down" | "";
+                sticky?: "start" | "end";
+                history?: string;
             }>;
             "y-progress": El<{
                 mode?: "bar" | "ring" | "pie";
@@ -367,6 +447,8 @@ declare module "react" {
             "y-slider": El<{
                 name?: string;
                 value?: string | number;
+                "value-min"?: string | number;
+                "value-max"?: string | number;
                 min?: string | number;
                 max?: string | number;
                 step?: string | number;
@@ -374,6 +456,15 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 orientation?: "horizontal" | "vertical";
+                range?: boolean | string;
+                "min-gap"?: string | number;
+                "aria-label-min"?: string;
+                "aria-label-max"?: string;
+                ticks?: string | number;
+                "tick-labels"?: string;
+                "snap-to-ticks"?: boolean | string;
+                "show-value"?: boolean | string;
+                "value-position"?: "auto" | "above" | "below" | string;
             }>;
             "y-splitter": El<{
                 orientation?: "horizontal" | "vertical";
@@ -387,12 +478,49 @@ declare module "react" {
             "y-stack": El<{
                 direction?: "row" | "row-reverse" | "column" | "column-reverse";
                 wrap?: boolean | "nowrap" | "wrap" | "wrap-reverse";
-                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "row-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                "column-gap"?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
+                gap?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "row-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "column-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
                 align?: "start" | "center" | "end" | "stretch" | "baseline";
-                justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
-                "align-content"?: "start" | "center" | "end" | "stretch" | "between" | "around" | "evenly";
+                justify?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "between"
+                    | "around"
+                    | "evenly";
+                "align-content"?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "stretch"
+                    | "between"
+                    | "around"
+                    | "evenly";
                 inline?: boolean | string;
                 responsive?: boolean | string;
             }>;
@@ -413,16 +541,15 @@ declare module "react" {
                 animate?: boolean | string;
                 "toggle-label"?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
-                color?: string;
+                "on-color"?: string;
+                "off-color"?: string;
                 size?: "small" | "medium" | "large";
             }>;
             "y-textarea": El<{
                 name?: string;
                 value?: string;
                 rows?: string | number;
-                placeholder?: string;
                 disabled?: boolean | string;
-                required?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
@@ -440,6 +567,8 @@ declare module "react" {
                           label: string;
                           slot?: string;
                           disabled?: boolean;
+                          leftIcon?: string;
+                          rightIcon?: string;
                       }>
                     | string;
                 size?: "small" | "medium" | "large";
@@ -455,6 +584,7 @@ declare module "react" {
             "y-theme": El<{
                 theme?: string;
                 "cross-origin"?: boolean | string;
+                "no-default-font"?: boolean | string;
             }>;
             "y-toast": El<{
                 position?:
@@ -472,6 +602,7 @@ declare module "react" {
                 position?: "top" | "bottom" | "left" | "right";
                 color?: string;
                 delay?: string | number;
+                open?: boolean | string;
             }>;
             "y-tree": El<{
                 exclusive?: boolean | string;
