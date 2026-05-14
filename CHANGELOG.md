@@ -53,6 +53,8 @@ Delete any empty sections before publishing.
 
 - New `y-paginator` component — page navigation control with a configurable button window.
 
+- New `y-animate` component — a declarative wrapper that applies CSS-based entrance animations to its slotted children.
+
 ### Changed
 
 - **Icon rename — `comp-*` prefix dropped.** All 26 component-illustrating icons renamed. Two resolved collisions: `comp-menu` → `droplist` and `comp-tag` → `chip`.
