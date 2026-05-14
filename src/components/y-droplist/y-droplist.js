@@ -919,7 +919,7 @@ export class YumeDroplist extends HTMLElement {
             return;
         }
 
-        document.body.appendChild(preview);
+        this._getOverlayHost().appendChild(preview);
         this._dragPreview = preview;
         _previewOwner = this;
 
@@ -1190,6 +1190,20 @@ export class YumeDroplist extends HTMLElement {
             };
             item.addEventListener("transitionend", onEnd);
         }
+    }
+
+    /**
+     * Pick the element to mount drag-time overlays (preview, float ghost) into.
+     * Prefer the nearest `<y-theme>` ancestor so the overlay inherits the theme's
+     * CSS custom properties — `y-theme` sets them as inline styles on its host,
+     * so they only cascade to descendants. Falls back to `document.body` when no
+     * `<y-theme>` is in scope.
+     */
+    _getOverlayHost() {
+        // `this.closest()` is overridden as a public coordinate-lookup API on
+        // y-droplist, so reach for the native traversal via the prototype.
+        const theme = Element.prototype.closest.call(this, "y-theme");
+        return theme || document.body;
     }
 
     /**
@@ -1728,7 +1742,7 @@ export class YumeDroplist extends HTMLElement {
             this._positionFloatGhost(reference);
 
             if (!this._ghost.parentNode) {
-                document.body.appendChild(this._ghost);
+                this._getOverlayHost().appendChild(this._ghost);
             }
         } else {
             if (

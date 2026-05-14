@@ -2970,6 +2970,67 @@ describe("y-droplist — drag:over event", () => {
         );
     });
 
+    it("preview is mounted inside the nearest <y-theme> ancestor so theme tokens cascade", async () => {
+        // The drag preview lives outside the droplist, so it needs a host that
+        // is inside the themed subtree — otherwise `y-theme`'s inline custom
+        // properties (set on the y-theme host) don't reach it.
+        const wrapper = await fixture(html`
+            <y-theme>
+                <y-droplist drag-preview animation="0">
+                    <div data-id="a">A</div>
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </y-theme>
+        `);
+        const el = wrapper.querySelector("y-droplist");
+        const a = el.children[0];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        await flushFrame();
+
+        expect(el._dragPreview.parentElement).to.equal(wrapper);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
+    it("force-float ghost is mounted inside the nearest <y-theme> ancestor", async () => {
+        const wrapper = await fixture(html`
+            <y-theme>
+                <y-droplist force-float animation="0">
+                    <div data-id="a">A</div>
+                    <div data-id="b">B</div>
+                </y-droplist>
+            </y-theme>
+        `);
+        const el = wrapper.querySelector("y-droplist");
+        const a = el.children[0];
+        const b = el.children[1];
+
+        a.dispatchEvent(
+            new DragEvent("dragstart", { bubbles: true, composed: true }),
+        );
+        b.dispatchEvent(
+            new DragEvent("dragover", {
+                bubbles: true,
+                composed: true,
+                clientX: 0,
+                clientY: 0,
+            }),
+        );
+        await flushFrame();
+
+        expect(el._ghost).to.exist;
+        expect(el._ghost.parentElement).to.equal(wrapper);
+
+        a.dispatchEvent(
+            new DragEvent("dragend", { bubbles: true, composed: true }),
+        );
+    });
+
     it("preview element carries aria-hidden, pointer-events:none, and correct class", async () => {
         const el = await fixture(html`
             <y-droplist drag-preview animation="0">
