@@ -15,11 +15,14 @@ export class YumeAvatar extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._imgFailed = false;
         this.render();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue) this.render();
+        if (oldValue === newValue) return;
+        if (name === "src") this._imgFailed = false;
+        this.render();
     }
 
     // -------------------------------------------------------------------------
@@ -57,31 +60,37 @@ export class YumeAvatar extends HTMLElement {
         const dimensions = this._getDimensions(this.size);
         const borderRadius = `var(--component-avatar-border-radius-${this.shape}, 9999px)`;
         const [bgColor, textColor] = getColorVarPair(this.color);
+        const showImg = !!this.src && !this._imgFailed;
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(dimensions, borderRadius, bgColor, textColor)];
-        this.shadowRoot.replaceChildren(this._buildAvatar());
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(showImg, dimensions, borderRadius, bgColor, textColor)];
+        this.shadowRoot.replaceChildren(this._buildAvatar(showImg));
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
-    _buildAvatar() {
-        if (this.src) {
-            return _el("img", {
+    _buildAvatar(showImg) {
+        if (showImg) {
+            const img = _el("img", {
                 src: this.src,
                 alt: this.alt,
                 part: "avatar",
             });
+            img.addEventListener("error", () => {
+                this._imgFailed = true;
+                this.render();
+            }, { once: true });
+            return img;
         }
         return _el("div", { class: "avatar", part: "avatar" }, [
             _el("h5", null, [this._getInitials(this.alt)]),
         ]);
     }
 
-    _buildStyleSheet(dimensions, borderRadius, bgColor, textColor) {
+    _buildStyleSheet(showImg, dimensions, borderRadius, bgColor, textColor) {
         const sheet = new CSSStyleSheet();
-        const css = this.src
+        const css = showImg
             ? `
               :host {
                 display: inline-block;

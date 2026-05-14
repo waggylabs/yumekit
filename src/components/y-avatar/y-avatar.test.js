@@ -1,15 +1,19 @@
 import { fixture, expect, html } from "@open-wc/testing";
 import "./y-avatar.js";
 
+// 1x1 transparent GIF — a valid image source so tests that need the <img> to
+// stay rendered are not knocked into the initials-fallback branch by a 404.
+const VALID_IMG = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
 describe("YumeAvatar", () => {
     it("renders an img when src is provided", async () => {
         const el = await fixture(
-            html`<y-avatar src="/img/user.png" alt="User"></y-avatar>`,
+            html`<y-avatar src=${VALID_IMG} alt="User"></y-avatar>`,
         );
 
         const img = el.shadowRoot.querySelector("img");
         expect(img).to.exist;
-        expect(img.getAttribute("src")).to.equal("/img/user.png");
+        expect(img.getAttribute("src")).to.equal(VALID_IMG);
         expect(img.getAttribute("alt")).to.equal("User");
         expect(img.getAttribute("part")).to.equal("avatar");
     });
@@ -51,7 +55,7 @@ describe("YumeAvatar", () => {
 
         expect(el.shadowRoot.querySelector(".avatar")).to.exist;
 
-        el.setAttribute("src", "/img/jane.png");
+        el.setAttribute("src", VALID_IMG);
         await new Promise((r) => setTimeout(r, 0));
 
         expect(el.shadowRoot.querySelector("img")).to.exist;
@@ -60,7 +64,7 @@ describe("YumeAvatar", () => {
 
     it("re-renders as initials when src attribute is removed", async () => {
         const el = await fixture(
-            html`<y-avatar src="/img/user.png" alt="Jane Doe"></y-avatar>`,
+            html`<y-avatar src=${VALID_IMG} alt="Jane Doe"></y-avatar>`,
         );
 
         expect(el.shadowRoot.querySelector("img")).to.exist;
@@ -169,14 +173,44 @@ describe("YumeAvatar", () => {
 
     it("sets src via the src setter and renders an img", async () => {
         const el = await fixture(html`<y-avatar alt="AB"></y-avatar>`);
-        el.src = "/img/test.png";
-        expect(el.getAttribute("src")).to.equal("/img/test.png");
+        el.src = VALID_IMG;
+        expect(el.getAttribute("src")).to.equal(VALID_IMG);
         expect(el.shadowRoot.querySelector("img")).to.exist;
+    });
+
+    it("falls back to initials when the image fails to load", async () => {
+        const el = await fixture(
+            html`<y-avatar src="/img/does-not-exist.png" alt="Jane Doe"></y-avatar>`,
+        );
+        // Give the natural error event a tick to fire after the 404.
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.shadowRoot.querySelector("img")).to.not.exist;
+        const h5 = el.shadowRoot.querySelector("h5");
+        expect(h5).to.exist;
+        expect(h5.textContent).to.equal("JD");
+    });
+
+    it("re-attempts the image after src changes following a failure", async () => {
+        const el = await fixture(html`<y-avatar alt="Jane Doe"></y-avatar>`);
+
+        // Force a failure on a first src.
+        el.src = "/img/does-not-exist.png";
+        const failingImg = el.shadowRoot.querySelector("img");
+        failingImg.dispatchEvent(new Event("error"));
+        expect(el.shadowRoot.querySelector(".avatar")).to.exist;
+
+        // A new src should clear the failure flag and render the image again.
+        el.setAttribute("src", VALID_IMG);
+        await new Promise((r) => setTimeout(r, 0));
+
+        expect(el.shadowRoot.querySelector("img")).to.exist;
+        expect(el.shadowRoot.querySelector(".avatar")).to.not.exist;
     });
 
     it("removes src attribute when src setter is called with a falsy value", async () => {
         const el = await fixture(
-            html`<y-avatar src="/img/test.png" alt="AB"></y-avatar>`,
+            html`<y-avatar src=${VALID_IMG} alt="AB"></y-avatar>`,
         );
         el.src = null;
         expect(el.hasAttribute("src")).to.be.false;
@@ -189,11 +223,10 @@ describe("YumeAvatar", () => {
             const el = await fixture(
                 html`<y-avatar src=${hostile} alt="X"></y-avatar>`,
             );
-
-            const img = el.shadowRoot.querySelector("img");
-            expect(img).to.exist;
-            expect(img.getAttribute("src")).to.equal(hostile);
-            expect(img.hasAttribute("onerror")).to.be.false;
+            // Hostile src is an invalid URL so it triggers the fallback; either
+            // way, no `onerror` attribute should ever appear in the shadow root
+            // and the inline handler must not execute.
+            await new Promise((r) => setTimeout(r, 0));
             expect(el.shadowRoot.querySelector("[onerror]")).to.be.null;
             expect(window.__xssAvatarSrc).to.be.undefined;
         });
@@ -201,7 +234,7 @@ describe("YumeAvatar", () => {
         it("does not allow attribute breakout via alt", async () => {
             const hostile = `" onload="window.__xssAvatarAlt=true" x="`;
             const el = await fixture(
-                html`<y-avatar src="/img/x.png" alt=${hostile}></y-avatar>`,
+                html`<y-avatar src=${VALID_IMG} alt=${hostile}></y-avatar>`,
             );
 
             const img = el.shadowRoot.querySelector("img");

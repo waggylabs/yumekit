@@ -113,6 +113,10 @@ Delete any empty sections before publishing.
 
 - **Breaking** `y-stack`: refocused as a flexbox-only primitive. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `mode` and `columns` attributes and the related `--component-stack-*` variables are removed.
 
+### Fixed
+
+- `y-avatar`: when the image at `src` fails to load, the component now falls back to the initials rendering rather than displaying the browser's broken-image graphic.
+
 ### Security
 
 - **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup — only registered icon names. Use `registerIcon` / `registerIcons` for custom glyphs.

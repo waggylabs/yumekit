@@ -96,3 +96,17 @@ export const Shapes = {
         </div>
     `,
 };
+
+export const BrokenImageFallback = {
+    args: {
+        src: "https://example.invalid/missing-avatar.png",
+        alt: "Jane Doe",
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: "When the image at `src` fails to load, the avatar falls back to rendering the initials derived from `alt` instead of showing the browser's broken-image graphic.",
+            },
+        },
+    },
+};
