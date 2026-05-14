@@ -319,6 +319,7 @@ export class YumeProgress extends HTMLElement {
     }
     set values(val) {
         if (val === null || val === undefined) this.removeAttribute("values");
+        else if (typeof val === "string") this.setAttribute("values", val);
         else this.setAttribute("values", JSON.stringify(val));
     }
 

@@ -90,7 +90,7 @@ Delete any empty sections before publishing.
 
     | Old name   | New name               | Glyph                      |
     | ---------- | ---------------------- | -------------------------- |
-    | `ai`       | `robot`                | Microchip / CPU            |
+    | `ai`       | `robot`                | Robot Head                 |
     | `ban`      | `circle-slash`         | Circle with diagonal slash |
     | `chart`    | `waveform`             | ECG / pulse waveform       |
     | `close`    | `x`                    | × mark                     |

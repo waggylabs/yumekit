@@ -501,4 +501,12 @@ describe("YumeProgress", () => {
         );
         expect(el.values.length).to.equal(2);
     });
+
+    it("values setter passes pre-serialized JSON strings through unchanged", async () => {
+        const el = await fixture(html`<y-progress></y-progress>`);
+        const raw = '[{"value":10},{"value":20}]';
+        el.values = raw;
+        expect(el.getAttribute("values")).to.equal(raw);
+        expect(el.values.length).to.equal(2);
+    });
 });
