@@ -169,8 +169,7 @@ export class YumeDock extends HTMLElement {
         const pos = this.position;
         const sz = this.size;
         const heightVar = `var(--component-dock-height, var(--component-dock-height-${sz}))`;
-        const fontSize =
-            sz === "small" ? "10px" : sz === "large" ? "13px" : "11px";
+        const fontSizeVar = `var(--component-dock-font-size-${sz}, ${this._getDefaultFontSize()})`;
         style.textContent = `
             :host {
                 display: block;
@@ -213,7 +212,7 @@ export class YumeDock extends HTMLElement {
                 cursor: pointer;
                 color: var(--component-dock-color);
                 font-family: inherit;
-                font-size: ${fontSize};
+                font-size: ${fontSizeVar};
                 min-width: 48px;
                 outline: none;
                 transition: color 0.15s ease;
@@ -245,6 +244,11 @@ export class YumeDock extends HTMLElement {
             }
         `;
         return style;
+    }
+
+    _getDefaultFontSize() {
+        const map = { small: "10px", medium: "11px", large: "13px" };
+        return map[this.size] || map.medium;
     }
 
     _handleItemClick(item) {

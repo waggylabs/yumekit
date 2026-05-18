@@ -391,6 +391,18 @@
                 "$type": "sizing",
                 "$value": "72px"
             },
+            "font-size-small": {
+                "$type": "fontSizes",
+                "$value": "10px"
+            },
+            "font-size-medium": {
+                "$type": "fontSizes",
+                "$value": "11px"
+            },
+            "font-size-large": {
+                "$type": "fontSizes",
+                "$value": "13px"
+            },
             "border-width": {
                 "$type": "borderWidth",
                 "$value": "{border.x-thin}"
