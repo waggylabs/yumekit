@@ -467,7 +467,7 @@ export class YumeGallery extends HTMLElement {
                 content: "";
                 position: absolute;
                 inset: 0;
-                background: var(--component-gallery-thumbnail-overlay-color, var(--neutral-black-translucent, rgba(0,0,0,0.12)));
+                background: var(--component-gallery-thumbnail-overlay-color, rgba(0, 0, 0, 0.12));
                 opacity: 0;
                 transition: opacity 0.2s ease;
                 pointer-events: none;

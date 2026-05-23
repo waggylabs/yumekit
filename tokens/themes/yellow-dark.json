@@ -323,6 +323,10 @@
       "body": {
         "$type": "fontWeights",
         "$value": "300"
+      },
+      "heading": {
+        "$type": "fontWeights",
+        "$value": "500"
       }
     }
   },
@@ -352,6 +356,10 @@
         "current": {
           "$type": "color",
           "$value": "{base.content.DEFAULT}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
         }
       },
       "separator": {
@@ -400,6 +408,10 @@
         "active": {
           "$type": "color",
           "$value": "{primary.content.DEFAULT}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
         }
       },
       "border": {
@@ -473,11 +485,21 @@
       "ghost-border-color": {
         "$type": "color",
         "$value": "{base.border}"
+      },
+      "swap-indicator": {
+        "background": {
+          "$type": "color",
+          "$value": "{primary.background.active}"
+        }
       }
     },
     "input": {
       "background": {
         "disabled": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        },
+        "DEFAULT": {
           "$type": "color",
           "$value": "{base.background.component}"
         }
@@ -712,6 +734,10 @@
         "light": {
           "$type": "color",
           "$value": "{base.content.lightest}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
         }
       },
       "border": {
@@ -805,6 +831,10 @@
           "complete": {
             "$type": "color",
             "$value": "{primary.content.DEFAULT}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{base.border}"
           }
         }
       },
@@ -817,18 +847,30 @@
           "text": {
             "$type": "color",
             "$value": "{primary.content.inverse}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
           }
         },
         "complete": {
           "text": {
             "$type": "color",
             "$value": "{success.content.inverse}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{success.content.DEFAULT}"
           }
         },
         "error": {
           "text": {
             "$type": "color",
             "$value": "{error.content.inverse}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{error.content.DEFAULT}"
           }
         }
       },
@@ -884,6 +926,34 @@
         "active-grip-color": {
           "$type": "color",
           "$value": "{primary.content.inverse}"
+        }
+      }
+    },
+    "progress": {
+      "track": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        }
+      }
+    },
+    "slider": {
+      "track": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.background.active}"
+        }
+      },
+      "tick": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "thumb": {
+        "shadow": {
+          "$type": "shadow",
+          "$value": "{base.shadow}"
         }
       }
     }

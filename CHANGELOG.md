@@ -119,6 +119,8 @@ Delete any empty sections before publishing.
 
 - `y-avatar`: when the image at `src` fails to load, the component now falls back to the initials rendering rather than displaying the browser's broken-image graphic.
 
+- Orphaned CSS custom properties across several components now resolve to real design tokens instead of only their inline fallbacks. `y-dialog`, `y-banner`, `y-droplist`, `y-gallery`, `y-breadcrumbs`, `y-dock`, `y-input`, `y-progress`, `y-slider`, `y-stepper`, and `y-table` referenced `--component-*` variables that were never defined in the token pipeline; these are now themeable. Also fixed `y-gallery`'s broken `--neutral-black-translucent` fallback and stale `--y-color-*` references in the `y-droplist` stories.
+
 ### Security
 
 - **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup — only registered icon names. Use `registerIcon` / `registerIcons` for custom glyphs.

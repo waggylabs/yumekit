@@ -422,7 +422,7 @@ export const TouchDelay = {
     render: () => /* html */ `
         <style>
             .touch-demo y-droplist { display: block; max-width: 320px; }
-            .touch-demo .hint { font-size: 0.85rem; color: var(--y-color-text-secondary, #666); margin-bottom: 0.5rem; }
+            .touch-demo .hint { font-size: 0.85rem; color: var(--base-content-light, #666); margin-bottom: 0.5rem; }
         </style>
         <div class="touch-demo">
             <p class="hint">delay="300" delay-on-touch-only touch-start-threshold="8"</p>
@@ -463,7 +463,7 @@ export const DragDropEvent = {
     name: "drag:drop pre-mutation hook",
     render: () => `
         <div style="display:flex;flex-direction:column;gap:12px;max-width:300px">
-            <p style="margin:0;font-size:0.85rem;color:var(--y-color-on-surface-variant)">
+            <p style="margin:0;font-size:0.85rem;color:var(--base-content-light, #666)">
                 The <code>drag:drop</code> event fires <em>before</em> the DOM is mutated.
                 The log below captures the projected drop index.
             </p>
@@ -473,7 +473,7 @@ export const DragDropEvent = {
                 <div data-id="three">Three</div>
                 <div data-id="four">Four</div>
             </y-droplist>
-            <pre id="event-log" style="margin:0;padding:8px;background:var(--y-color-surface-variant);border-radius:4px;font-size:0.8rem;min-height:40px"></pre>
+            <pre id="event-log" style="margin:0;padding:8px;background:var(--base-background-component, #1a1a1c);border-radius:4px;font-size:0.8rem;min-height:40px"></pre>
             <script>
                 document.getElementById('event-list').addEventListener('drag:drop', (e) => {
                     const log = document.getElementById('event-log');
@@ -506,8 +506,8 @@ export const DragPreviewCustomSlot = {
                 align-items: center;
                 justify-content: center;
                 padding: 8px 16px;
-                background: var(--primary-background-DEFAULT, #4c8bf5);
-                color: var(--primary-content-DEFAULT, #fff);
+                background: var(--primary-background-active, #4c8bf5);
+                color: var(--primary-content-inverse, #fff);
                 border-radius: 20px;
                 font-size: 0.9rem;
                 font-weight: 600;

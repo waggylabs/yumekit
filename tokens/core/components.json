@@ -163,6 +163,18 @@
                 "$type": "spacing",
                 "$value": "{spacing.medium}"
             },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small} {spacing.medium}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.medium} {spacing.x-large}"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.large} {spacing.2x-large}"
+            },
             "icon-size-small": {
                 "$type": "dimension",
                 "$value": "{component.icon.size-small}"
@@ -413,6 +425,14 @@
             }
         },
         "dialog": {
+            "animation-duration": {
+                "$type": "duration",
+                "$value": "200ms"
+            },
+            "backdrop-blur": {
+                "$type": "dimension",
+                "$value": "4px"
+            },
             "border-radius-inner": {
                 "$type": "borderRadius",
                 "$value": "{radii.x-small}"
@@ -425,9 +445,17 @@
                 "$type": "borderWidth",
                 "$value": "{border.x-thin}"
             },
+            "footer-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.small}"
+            },
             "inner-border-width": {
                 "$type": "borderWidth",
                 "$value": "{border.x-thin}"
+            },
+            "offset": {
+                "$type": "dimension",
+                "$value": "16px"
             },
             "padding": {
                 "$type": "spacing",
@@ -458,6 +486,10 @@
             "item-margin": {
                 "$type": "spacing",
                 "$value": "{spacing.2x-small}"
+            },
+            "transition-easing": {
+                "$type": "other",
+                "$value": "ease"
             }
         },
         "drawer": {
@@ -477,9 +509,21 @@
                 "$type": "dimension",
                 "$value": "{spacing.x-small}"
             },
+            "height": {
+                "$type": "sizing",
+                "$value": "300px"
+            },
             "padding": {
                 "$type": "spacing",
                 "$value": "{spacing.medium}"
+            },
+            "transition-duration": {
+                "$type": "duration",
+                "$value": "300ms"
+            },
+            "width": {
+                "$type": "sizing",
+                "$value": "300px"
             },
             "z-index": {
                 "$type": "number",
@@ -507,9 +551,29 @@
                 "$type": "borderRadius",
                 "$value": "{radii.small}"
             },
+            "thumbnail-overlay-color": {
+                "$type": "color",
+                "$value": "rgba(0, 0, 0, 0.12)"
+            },
             "expand-z-index": {
                 "$type": "number",
                 "$value": 1000
+            },
+            "expand-background": {
+                "$type": "color",
+                "$value": "rgba(0, 0, 0, 0.9)"
+            },
+            "expand-color": {
+                "$type": "color",
+                "$value": "#ffffff"
+            },
+            "expand-button-background": {
+                "$type": "color",
+                "$value": "rgba(255, 255, 255, 0.1)"
+            },
+            "expand-button-background-hover": {
+                "$type": "color",
+                "$value": "rgba(255, 255, 255, 0.2)"
             }
         },
         "icon": {

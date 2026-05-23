@@ -191,6 +191,8 @@ Attributes:
 
 Events: `change`, `input`
 
+CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`
+
 ```html
 <y-input type="email" name="email" label="Email" required></y-input>
 ```
@@ -452,6 +454,8 @@ Attributes:
 
 Events: `change`, `input`
 
+CSS Custom Properties: `--component-slider-track-color`, `--component-slider-track-thickness-{small|medium|large}`, `--component-slider-fill-color` (overrides the per-instance `color` fill), `--component-slider-thumb-size-{small|medium|large}`, `--component-slider-thumb-shadow`, `--component-slider-thumb-border-width`, `--component-slider-tick-color`, `--component-slider-tick-size`, `--component-slider-tick-label-size`, `--component-slider-tick-label-gap`, `--component-slider-border-width`, `--component-slider-padding`
+
 ---
 
 ### y-splitter
@@ -531,6 +535,34 @@ Slots: default (badge label), `anchor` (element to badge-over)
 <y-badge color="error" position="top-right">3
   <y-button slot="anchor">Inbox</y-button>
 </y-badge>
+```
+
+---
+
+### y-banner
+Full-width inline alert / notification region with optional icon, action, and dismiss button.
+
+Tag: `<y-banner>`
+Attributes:
+- `color` — semantic scheme: `"base"` (default) | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`
+- `icon` — registered icon name shown before the content
+- `position` — `"push"` (default, in-flow) | `"overlap"` (positioned over content)
+- `sticky` — boolean; with `position="overlap"`, fixes the banner to the viewport top on scroll
+- `dismissable` — boolean; shows a close button
+- `dismissed` — boolean; reflects/sets the hidden state
+- `size` — `"small"` | `"medium"` (default) | `"large"` — controls padding, icon size, and font size
+
+Events: `dismiss` (cancelable, bubbles, composed) — fired before hiding; call `preventDefault()` to keep the banner open
+Methods: `dismiss()`, `show()`
+Slots: default (message content), `icon` (custom icon; falls back to the icon named by the `icon` attribute), `action` (action button/controls)
+CSS Parts: `banner`, `icon`, `content`, `action`, `close-btn`
+CSS Custom Properties: `--component-banner-gap`, `--component-banner-padding-{small|medium|large}`, `--component-banner-icon-size-{small|medium|large}`, `--component-banner-border-radius`, `--component-banner-z-index`
+
+```html
+<y-banner color="success" icon="check" dismissable>
+  Your changes have been saved.
+  <y-button slot="action" size="small">Undo</y-button>
+</y-banner>
 ```
 
 ---
@@ -978,6 +1010,8 @@ Slots: default, `expand-prev-icon`, `expand-next-icon`, `expand-close-icon`
 
 CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expand-caption`, `expand-prev`, `expand-next`, `expand-close`, `expand-counter`
 
+CSS Custom Properties: `--component-gallery-columns`, `--component-gallery-gap-{small|medium|large}`, `--component-gallery-thumbnail-radius`, `--component-gallery-thumbnail-overlay-color`, `--component-gallery-expand-background`, `--component-gallery-expand-color`, `--component-gallery-expand-button-background`, `--component-gallery-expand-button-background-hover`, `--component-gallery-expand-z-index`
+
 ```html
 <y-gallery layout="masonry" columns="3" loop>
   <img src="thumb1.jpg" data-src="full1.jpg" alt="Mountain vista">
@@ -1135,6 +1169,8 @@ Events: `open`, `close`
 Methods: `show()`, `hide()`
 
 Slots: `header`, `footer`, default (body)
+
+CSS Custom Properties: `--component-dialog-background`, `--component-dialog-color`, `--component-dialog-accent`, `--component-dialog-border-color`, `--component-dialog-border-width`, `--component-dialog-inner-border-width`, `--component-dialog-border-radius-outer`, `--component-dialog-border-radius-inner`, `--component-dialog-padding`, `--component-dialog-footer-gap`, `--component-dialog-offset`, `--component-dialog-backdrop-blur`, `--component-dialog-animation-duration`, `--component-dialog-shadow`, `--component-dialog-hover-background`, `--component-dialog-z-index`
 
 ```html
 <y-dialog id="my-dialog">
@@ -1467,6 +1503,8 @@ Events: `sort` (detail: `{ field, direction }`) — fired on header click when `
 
 Sorting: clicking a sortable column header shows an up arrow (asc) or down arrow (desc); unsorted columns show no icon. Sort is client-side by default.
 
+CSS Custom Properties: `--component-table-color`, `--component-table-color-light`, `--component-table-border-color`, `--component-table-border-width`, `--component-table-border-width-header`, `--component-table-border-radius`, `--component-table-padding-{small|medium|large}`, `--component-table-hover-background`, `--component-table-active-background`
+
 ```html
 <y-table
   columns='[{"field":"id","header":"ID"},{"field":"name","header":"Name"}]'
@@ -1560,13 +1598,18 @@ Where `{scheme}` is: `base`, `primary`, `secondary`, `success`, `warning`, `erro
 
 Additional tokens:
 ```
---spacing-xs-small, --spacing-small, --spacing-medium, --spacing-large, --spacing-x-large
---font-size-small, --font-size-paragraph, --font-size-label
---radii-small, --radii-medium, --radii-large, --radii-full
+--spacing-none, --spacing-4x-small, --spacing-2x-small, --spacing-x-small, --spacing-small, --spacing-medium, --spacing-large, --spacing-x-large, --spacing-2x-large, --spacing-4x-large
+--font-size-small, --font-size-paragraph, --font-size-label, --font-size-button, --font-size-quote, --font-size-h1…h5, --font-size-display-1…4
+--radii-none, --radii-x-small, --radii-small, --radii-medium, --radii-large, --radii-x-large, --radii-full
+--font-weight-body (300), --font-weight-heading (500)
 --base-shadow
 ```
 
-Component-specific tokens (subset — see `styles/variables.css` for the full list):
+### Component tokens
+
+Every component reads tokens named `--component-{component}-{property}` (e.g. `--component-dialog-offset`, `--component-slider-track-color`). Structural/dimension tokens are defined in `tokens/core/components.json`; color tokens are defined per-theme in `tokens/themes/*.json`. Both are compiled by `npm run build:tokens` into `styles/variables.css` (the baseline + default theme) and `styles/{theme}.css` (per-theme overrides) — **`styles/variables.css` is the authoritative full list.** Many component entries in the Component Reference above also enumerate their own tokens on a `CSS Custom Properties:` line.
+
+A few illustrative examples:
 ```
 /* y-breadcrumbs */
 --component-breadcrumbs-font-size-small/medium/large  /* font size per size variant */
