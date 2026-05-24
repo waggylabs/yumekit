@@ -186,6 +186,13 @@ export class YumeRating extends HTMLElement {
                 color: ${filledColor};
             }
 
+            /* Selected icons use the thickest stroke (matches y-icon's "x-thick")
+               so they read as bolder than the unselected outlines. */
+            .icon.filled svg,
+            .icon.filled svg * {
+                stroke-width: 3 !important;
+            }
+
             .icon svg {
                 width: 100%;
                 height: 100%;

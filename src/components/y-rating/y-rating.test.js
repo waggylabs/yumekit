@@ -130,6 +130,18 @@ describe("YumeRating", () => {
         expect(rules).to.include("--error-content--");
     });
 
+    it("applies the thickest stroke width to filled icons", async () => {
+        const el = await fixture(html`<y-rating value="1"></y-rating>`);
+        const rules = Array.from(
+            el.shadowRoot.adoptedStyleSheets[0].cssRules,
+        )
+            .map((r) => r.cssText)
+            .join(" ");
+        expect(rules).to.match(
+            /\.icon\.filled svg[\s\S]*stroke-width:\s*3/,
+        );
+    });
+
     // ── Size ──────────────────────────────────────────────────
     it("applies medium icon size by default", async () => {
         const el = await fixture(html`<y-rating></y-rating>`);

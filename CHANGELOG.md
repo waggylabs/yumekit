@@ -111,6 +111,8 @@ Delete any empty sections before publishing.
 
 - `y-progress`: expanded to a multi-mode indicator supporting `bar`, `ring`, and `pie` shapes plus multi-value rendering.
 
+- `y-rating`: selected icons now render with the thickest stroke weight, making them easier to distinguish from the unselected outlines beyond color alone.
+
 - **Breaking** `y-appbar`: vertical sidebar mode removed — migrate vertical navigation to the new `y-sidebar`. `sticky="start"` / `sticky="end"` now refer to the top / bottom edges, and `menu-direction` defaults to `"down"`.
 
 - **Breaking** `y-stack`: refocused as a flexbox-only primitive. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `mode` and `columns` attributes and the related `--component-stack-*` variables are removed.
