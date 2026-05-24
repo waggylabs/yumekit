@@ -76,7 +76,9 @@ export class YumeDock extends HTMLElement {
         }
     }
     set items(val) {
-        this.setAttribute("items", JSON.stringify(val));
+        if (val === null || val === undefined) this.removeAttribute("items");
+        else if (typeof val === "string") this.setAttribute("items", val);
+        else this.setAttribute("items", JSON.stringify(val));
     }
 
     /** Which edge of the viewport the dock anchors to. */

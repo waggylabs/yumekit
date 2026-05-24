@@ -116,6 +116,16 @@ describe("YumeTabs", () => {
         expect(buttons[0].dataset.id).to.equal("alpha");
     });
 
+    it("options setter mirrors a JSON string instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-tabs></y-tabs>`);
+        const json = '[{"id":"alpha","label":"Alpha","slot":"alpha-slot"}]';
+        el.options = json;
+        expect(el.getAttribute("options")).to.equal(json);
+        const buttons = el.shadowRoot.querySelectorAll("button");
+        expect(buttons.length).to.equal(1);
+        expect(buttons[0].dataset.id).to.equal("alpha");
+    });
+
     it("size setter normalises invalid values to medium", async () => {
         const el = await fixture(html`
             <y-tabs options="${JSON.stringify(options)}"></y-tabs>

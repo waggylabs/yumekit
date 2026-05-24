@@ -172,6 +172,16 @@ describe("YumeAppbar", () => {
         expect(buttons.length).to.equal(3);
     });
 
+    it("mirrors a JSON string assigned to items instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-appbar></y-appbar>`);
+        const json = JSON.stringify(sampleItems);
+        el.items = json;
+        expect(el.getAttribute("items")).to.equal(json);
+        expect(el.items.length).to.equal(3);
+        const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
+        expect(buttons.length).to.equal(3);
+    });
+
     it("defaults to medium size", async () => {
         const el = await fixture(html`<y-appbar></y-appbar>`);
         expect(el.size).to.equal("medium");

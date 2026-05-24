@@ -495,6 +495,14 @@ describe("YumeBreadcrumbs", () => {
         expect(JSON.parse(el.getAttribute("items"))).to.deep.equal(newItems);
     });
 
+    it("items setter mirrors a JSON string instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-breadcrumbs></y-breadcrumbs>`);
+        const json = '[{"text":"One","href":"/"}]';
+        el.items = json;
+        expect(el.getAttribute("items")).to.equal(json);
+        expect(el.items).to.deep.equal([{ text: "One", href: "/" }]);
+    });
+
     it("size setter updates the attribute", async () => {
         const el = await fixture(
             html`<y-breadcrumbs items="${ITEMS_3}"></y-breadcrumbs>`,

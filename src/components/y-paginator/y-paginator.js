@@ -181,6 +181,7 @@ export class YumePaginator extends HTMLElement {
     }
     set pageSizeOptions(v) {
         if (v == null) this.removeAttribute("page-size-options");
+        else if (typeof v === "string") this.setAttribute("page-size-options", v);
         else this.setAttribute("page-size-options", JSON.stringify(v));
     }
 

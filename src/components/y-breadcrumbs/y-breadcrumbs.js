@@ -52,7 +52,9 @@ export class YumeBreadcrumbs extends HTMLElement {
         }
     }
     set items(val) {
-        this.setAttribute("items", JSON.stringify(val));
+        if (val === null || val === undefined) this.removeAttribute("items");
+        else if (typeof val === "string") this.setAttribute("items", val);
+        else this.setAttribute("items", JSON.stringify(val));
     }
 
     /** Maximum visible items before collapsing. */

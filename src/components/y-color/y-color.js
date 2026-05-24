@@ -118,7 +118,9 @@ export class YumeColor extends HTMLElement {
         }
     }
     set formats(v) {
-        this.setAttribute("formats", JSON.stringify(v));
+        if (v === null || v === undefined) this.removeAttribute("formats");
+        else if (typeof v === "string") this.setAttribute("formats", v);
+        else this.setAttribute("formats", JSON.stringify(v));
     }
 
     get invalid() {

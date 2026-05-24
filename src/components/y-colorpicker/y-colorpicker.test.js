@@ -129,6 +129,13 @@ describe("<y-colorpicker>", () => {
         ]);
     });
 
+    it("formats setter mirrors a JSON string instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
+        el.formats = '["hex","rgb"]';
+        expect(el.getAttribute("formats")).to.equal('["hex","rgb"]');
+        expect(el.formats).to.deep.equal(["hex", "rgb"]);
+    });
+
     it("formats getter handles invalid JSON gracefully", async () => {
         const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
         el.setAttribute("formats", "not-json");

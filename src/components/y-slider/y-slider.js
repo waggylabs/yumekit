@@ -245,6 +245,11 @@ export class YumeSlider extends HTMLElement {
             this.setAttribute("ticks", "true");
         } else if (typeof val === "number") {
             this.setAttribute("ticks", String(val));
+        } else if (typeof val === "string") {
+            // Mirror the attribute form directly. React 19 (and any property
+            // assignment) routes strings like "5" or "[0,25,50]" here; JSON
+            // -stringifying them would double-encode and break _resolveTicks.
+            this.setAttribute("ticks", val);
         } else {
             this.setAttribute("ticks", JSON.stringify(val));
         }

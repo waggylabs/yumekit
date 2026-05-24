@@ -865,6 +865,46 @@ describe("YumeSlider", () => {
             );
             expect(thumbMinIndex).to.be.greaterThan(lastTickIndex);
         });
+
+        it("renders ticks when the count is assigned as a string via the setter", async () => {
+            // React 19 routes ticks="5" through the property setter as a string;
+            // it must mirror the attribute rather than JSON-stringify (double-encode).
+            const el = await fixture(
+                html`<y-slider min="0" max="100"></y-slider>`,
+            );
+            el.ticks = "5";
+            expect(el.getAttribute("ticks")).to.equal("5");
+            const ticks = el.shadowRoot.querySelectorAll(".tick");
+            expect(ticks.length).to.equal(5);
+        });
+
+        it("renders ticks when a JSON array is assigned as a string via the setter", async () => {
+            const el = await fixture(
+                html`<y-slider min="0" max="100"></y-slider>`,
+            );
+            el.ticks = "[0, 25, 50, 75, 100]";
+            expect(el.getAttribute("ticks")).to.equal("[0, 25, 50, 75, 100]");
+            const ticks = el.shadowRoot.querySelectorAll(".tick");
+            expect(ticks.length).to.equal(5);
+        });
+
+        it("renders ticks when a real number is assigned via the setter", async () => {
+            const el = await fixture(
+                html`<y-slider min="0" max="100"></y-slider>`,
+            );
+            el.ticks = 5;
+            expect(el.getAttribute("ticks")).to.equal("5");
+            expect(el.shadowRoot.querySelectorAll(".tick").length).to.equal(5);
+        });
+
+        it("renders ticks when a real array is assigned via the setter", async () => {
+            const el = await fixture(
+                html`<y-slider min="0" max="100"></y-slider>`,
+            );
+            el.ticks = [0, 50, 100];
+            expect(el.getAttribute("ticks")).to.equal("[0,50,100]");
+            expect(el.shadowRoot.querySelectorAll(".tick").length).to.equal(3);
+        });
     });
 
     describe("snap-to-ticks", () => {

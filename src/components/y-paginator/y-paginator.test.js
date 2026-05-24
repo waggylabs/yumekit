@@ -404,6 +404,15 @@ describe("YumePaginator", () => {
         ]);
     });
 
+    it("mirrors a JSON string assigned to pageSizeOptions instead of double-encoding it", async () => {
+        const el = await fixture(
+            html`<y-paginator total-pages="5"></y-paginator>`,
+        );
+        el.pageSizeOptions = "[10,25,50]";
+        expect(el.getAttribute("page-size-options")).to.equal("[10,25,50]");
+        expect(el.pageSizeOptions).to.deep.equal([10, 25, 50]);
+    });
+
     it("accepts {value, label} objects in page-size-options", async () => {
         const el = await fixture(
             html`<y-paginator

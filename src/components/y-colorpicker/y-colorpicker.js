@@ -89,7 +89,9 @@ export class YumeColorpicker extends HTMLElement {
         }
     }
     set formats(val) {
-        this.setAttribute("formats", JSON.stringify(val));
+        if (val === null || val === undefined) this.removeAttribute("formats");
+        else if (typeof val === "string") this.setAttribute("formats", val);
+        else this.setAttribute("formats", JSON.stringify(val));
     }
 
     get showAlpha() {
