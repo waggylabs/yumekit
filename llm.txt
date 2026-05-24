@@ -1,9 +1,9 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 35 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 48 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.4.4
+0.5.0
 
 ## License
 MIT
@@ -98,6 +98,34 @@ Attributes:
 
 ---
 
+### y-break
+Decorative divider that draws a horizontal or vertical line, optionally broken by centered content.
+
+Tag: `<y-break>`
+Attributes:
+- `orientation` — `"horizontal"` (default) | `"vertical"`. Vertical breaks need a height from their container (flex/grid parent or explicit height).
+- `align` — `"start"` | `"center"` (default) | `"end"` — position of the centered content along the line.
+- `variant` — `"solid"` (default) | `"dashed"` | `"dotted"` — line style.
+- `label` — string, plain text rendered in the center.
+- `icon` — registered icon name rendered in the center (icon then label when both are set).
+- `inset` — `"none"` (default) | `"sm"` | `"md"` | `"lg"` — padding applied to the outer ends of the line(s).
+
+Slots: default — slotted content takes precedence over `label` / `icon`.
+CSS Parts: `line`, `line-start`, `line-end`, `content`.
+
+The host receives `role="separator"`, plus `aria-orientation="vertical"` when vertical (horizontal is the implicit default and is omitted). With no slotted content, label, or icon, a single unbroken line is rendered.
+
+`--component-break-line-style` overrides the `variant` attribute per instance without re-render.
+
+```html
+<y-break></y-break>
+<y-break label="OR"></y-break>
+<y-break icon="star" variant="dashed"></y-break>
+<y-break align="start" inset="md"><y-tag color="primary">New section</y-tag></y-break>
+```
+
+---
+
 ### y-breadcrumbs
 Navigation breadcrumb trail with collapse/expand and SPA navigation.
 
@@ -162,6 +190,8 @@ Attributes:
 - `pattern` — validation regex
 
 Events: `change`, `input`
+
+CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`
 
 ```html
 <y-input type="email" name="email" label="Email" required></y-input>
@@ -424,6 +454,53 @@ Attributes:
 
 Events: `change`, `input`
 
+CSS Custom Properties: `--component-slider-track-color`, `--component-slider-track-thickness-{small|medium|large}`, `--component-slider-fill-color` (overrides the per-instance `color` fill), `--component-slider-thumb-size-{small|medium|large}`, `--component-slider-thumb-shadow`, `--component-slider-thumb-border-width`, `--component-slider-tick-color`, `--component-slider-tick-size`, `--component-slider-tick-label-size`, `--component-slider-tick-label-gap`, `--component-slider-border-width`, `--component-slider-padding`
+
+---
+
+### y-splitter
+Two-pane container with a draggable resize handle. The first child becomes the resizable pane; the second fills the remainder. Auto-assigns `slot="pane-1"` and `slot="pane-2"` to the first two non-handle children — additional children are ignored with a console warning.
+
+Tag: `<y-splitter>`
+Attributes:
+- `orientation` — `"horizontal"` (default, splits left/right) | `"vertical"` (splits top/bottom)
+- `split` — number `0.0`–`1.0`, ratio of the first pane (default `0.5`). Reflects the current value while the user drags.
+- `min-ratio` — minimum ratio for the first pane (default `0.1`)
+- `max-ratio` — maximum ratio for the first pane (default `0.9`)
+- `disabled` — boolean, disables drag and keyboard resizing
+- `handle-size` — width (horizontal) or height (vertical) of the drag handle in pixels (default `10`)
+- `handle-position` — `"center"` (default) | `"start"` | `"end"` — visual position of the visible line/grip within the handle's allocated space
+- `aria-label` — overrides the handle's default `"Resizable splitter"` label
+
+Events (bubble + composed, not cancelable):
+- `split-changed` — `{ split, orientation, source }` (`source` is `"pointer"` or `"keyboard"` when user-driven; absent for programmatic attribute writes)
+- `split-start` — `{ x, y }` — pointer drag begins
+- `split-end` — `{ x, y }` — pointer drag releases
+
+Slots: default — first two non-handle children become `pane-1` / `pane-2` (the slot attribute is auto-assigned on connect and as children change). `handle` — custom drag-handle content; defaults to a centered ellipsis grip icon.
+
+CSS Parts: `container`, `pane-1`, `pane-2`, `handle`, `grip`.
+
+CSS Custom Properties: `--component-splitter-handle-size`, `--component-splitter-handle-background`, `--component-splitter-handle-hover-background`, `--component-splitter-handle-active-background`, `--component-splitter-handle-border-color`, `--component-splitter-handle-border-width`, `--component-splitter-handle-grip-color`, `--component-splitter-handle-active-grip-color`, `--component-splitter-grip-size`, `--component-splitter-cursor`.
+
+Accessibility: the handle has `role="slider"` with `aria-valuemin="0"`, `aria-valuemax="100"`, `aria-valuenow` reflecting the percentage, `aria-valuetext` (e.g. `"40%"`), `aria-orientation`, and `tabindex="0"` (or `-1` when disabled). Keyboard: Arrow Left / Down decreases by 1%, Arrow Right / Up increases by 1%, PageDown / PageUp adjust by 10%, Home / End jump to `min-ratio` / `max-ratio`. Pointer events handle both mouse and touch; updates are throttled with `requestAnimationFrame`. The host needs a sized container (e.g. an explicit width/height on a parent) — it stretches to fill that container.
+
+```html
+<div style="width:600px;height:300px">
+    <y-splitter split="0.3" min-ratio="0.2" max-ratio="0.8">
+        <nav>Sidebar</nav>
+        <main>Content</main>
+    </y-splitter>
+</div>
+
+<!-- Vertical split with a custom handle -->
+<y-splitter orientation="vertical" handle-size="14">
+    <section>Editor</section>
+    <section>Console</section>
+    <span slot="handle"><y-icon name="ellipsis-h"></y-icon></span>
+</y-splitter>
+```
+
 ---
 
 ### y-icon
@@ -462,6 +539,34 @@ Slots: default (badge label), `anchor` (element to badge-over)
 
 ---
 
+### y-banner
+Full-width inline alert / notification region with optional icon, action, and dismiss button.
+
+Tag: `<y-banner>`
+Attributes:
+- `color` — semantic scheme: `"base"` (default) | `"primary"` | `"secondary"` | `"success"` | `"error"` | `"warning"` | `"help"`
+- `icon` — registered icon name shown before the content
+- `position` — `"push"` (default, in-flow) | `"overlap"` (positioned over content)
+- `sticky` — boolean; with `position="overlap"`, fixes the banner to the viewport top on scroll
+- `dismissable` — boolean; shows a close button
+- `dismissed` — boolean; reflects/sets the hidden state
+- `size` — `"small"` | `"medium"` (default) | `"large"` — controls padding, icon size, and font size
+
+Events: `dismiss` (cancelable, bubbles, composed) — fired before hiding; call `preventDefault()` to keep the banner open
+Methods: `dismiss()`, `show()`
+Slots: default (message content), `icon` (custom icon; falls back to the icon named by the `icon` attribute), `action` (action button/controls)
+CSS Parts: `banner`, `icon`, `content`, `action`, `close-btn`
+CSS Custom Properties: `--component-banner-gap`, `--component-banner-padding-{small|medium|large}`, `--component-banner-icon-size-{small|medium|large}`, `--component-banner-border-radius`, `--component-banner-z-index`
+
+```html
+<y-banner color="success" icon="check" dismissable>
+  Your changes have been saved.
+  <y-button slot="action" size="small">Undo</y-button>
+</y-banner>
+```
+
+---
+
 ### y-avatar
 User avatar with image or initials fallback.
 
@@ -472,6 +577,36 @@ Attributes:
 - `shape` — `"circle"` (default) | `"square"` | `"rounded"`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `color` — predefined scheme or CSS color for the initials background; text color is auto-contrasted
+
+---
+
+### y-avatar-group
+A group of overlapping avatars rendered horizontally or vertically.
+
+Tag: `<y-avatar-group>`
+Attributes:
+- `avatars` — JSON array of avatar objects (`[{ alt, src, color, shape }]`); when set, slotted children are ignored
+- `orientation` — `"horizontal"` (default) | `"vertical"`
+- `overlap` — pixels each avatar overlaps the previous (default `8`)
+- `stack-order` — `"last"` (default; final avatar on top) | `"first"` (leading avatar on top)
+- `max` — maximum visible avatars; `0` (default) is unlimited. When exceeded, a `+N` indicator is appended
+- `size` — `"small"` | `"medium"` | `"large"` — applied to JSON-rendered avatars
+
+Events: `y-overflow-click` — fired when the user clicks the `+N` indicator (`detail: { count }`).
+
+CSS parts: `overflow` (the `+N` button).
+
+```html
+<y-avatar-group max="3" aria-label="Project members">
+  <y-avatar alt="Jane Doe" color="primary"></y-avatar>
+  <y-avatar alt="John Smith" color="secondary"></y-avatar>
+  <y-avatar alt="Pat Lee" color="success"></y-avatar>
+  <y-avatar alt="Sam Ko" color="warning"></y-avatar>
+  <y-avatar alt="Alex Yu" color="error"></y-avatar>
+</y-avatar-group>
+
+<y-avatar-group avatars='[{"alt":"Jane Doe"},{"alt":"John Smith","color":"success"}]'></y-avatar-group>
+```
 
 ---
 
@@ -525,15 +660,72 @@ Icons up to `value` render in the specified color; icons above `value` render mu
 ---
 
 ### y-progress
-Progress bar.
+Progress indicator. Renders as a horizontal bar (default), a circular ring, or a filled pie sector. Supports single-value or multi-value rendering — when a `values` array of 2+ entries is supplied, the bar stacks, the ring shows concentric arcs, and the pie renders multiple slices.
 
 Tag: `<y-progress>`
 Attributes:
-- `value` — numeric 0–100
-- `max` — numeric (default: 100)
-- `indeterminate` — boolean, animated spinner-style bar
-- `color` — color scheme name
-- `size` — `"small"` | `"medium"` | `"large"`
+- `mode` — `"bar"` (default) | `"ring"` | `"pie"`
+- `value` — single numeric value. Deprecated when using multi-value rendering — use `values` instead. Falls back when `values` is unset or invalid.
+- `values` — JSON array of `{ value, color?, label? }` entries. With ≥2 entries: `bar` stacks each entry as its own full-width row separated by `segment-gap` (only the top and bottom rows get outer rounding), `ring` renders concentric arcs (outer to inner), `pie` renders back-to-back slices from `start-angle`. Each entry's `color` overrides the host `color`; `label` is exposed via `title` (bar) or as a hover tooltip target.
+- `min` — numeric (default `0`)
+- `max` — numeric (default `100`)
+- `step` — numeric, snaps `percentage` to step boundaries
+- `size` — `"small"` | `"medium"` (default) | `"large"` or a raw length (e.g. `"160px"`). Bar thickness in `bar`, diameter in `ring`/`pie`.
+- `thickness` — `"small"` | `"medium"` (default) | `"large"` or a raw length. Ring stroke width; ignored in `bar`/`pie`.
+- `color` — predefined scheme (default `"primary"`) or any CSS color
+- `track-color` — overrides the unfilled track / ring background; falls back to `--base-background-component`
+- `label-display` — `"true"` (default) | `"false"`. In `ring`/`pie`, the label centers inside the shape.
+- `label-format` — `"percent"` (default) | `"value"` | `"fraction"`
+- `indeterminate` — boolean. `bar`: sliding strip. `ring`/`pie`: rotating partial arc.
+- `disabled` — boolean. Reduces opacity, disables pointer events, sets `aria-disabled`.
+- `segmented` — boolean (presence: auto count from `step` or default 10) or integer (explicit count, capped at 50). Splits the fill into discrete segments. Supported in `bar` and `ring`; ignored in `pie` and when multi-value.
+- `segment-gap` — `"none"` | `"x-small"` (default) | `"small"` | `"medium"` or a raw length. Gap between segments.
+- `start-angle` — degrees (clock convention: `0` = 12 o'clock, `90` = 3 o'clock). Default `0`. Also where the sweep ends since it's a full circle. Ignored in `bar`.
+- `direction` — `"clockwise"` (default) | `"counterclockwise"`. Ignored in `bar`.
+
+Slots:
+- _(default)_ — header label rendered above the shape; hidden when empty.
+- `center` — content rendered inside the ring/pie center, replacing the built-in value label. Ignored in `bar`.
+
+Methods: `increment()`, `decrement()` — single-value only; mutate `value` by `step` (or 1) within `[min, max]`.
+
+CSS Parts: `track`, `bar`, `value-label`, `segment`, `stack-row`, `ring`, `ring-track`, `ring-fill`, `pie`, `pie-track`, `pie-fill`, `center`.
+
+CSS Custom Properties: `--component-progress-border-width`, `--component-progress-border-radius-outer`, `--component-progress-border-radius-inner`, `--component-progress-padding`, `--component-progress-size-small/medium/large`, `--component-progress-thickness-small/medium/large`, `--component-progress-segment-gap`, `--component-progress-track-color`, `--component-progress-label-size`.
+
+Accessibility: each shape carries `role="progressbar"` with `aria-valuemin`/`aria-valuemax` and `aria-valuenow` (sum of `values` capped at `max` when multi-value). `aria-busy="true"` while `indeterminate`. The default-slot header is the implicit label; otherwise consumers should provide `aria-label` on the host.
+
+```html
+<!-- Single-value bar (back-compat) -->
+<y-progress value="60" color="primary">Uploading…</y-progress>
+
+<!-- Stacked bar -->
+<y-progress
+    values='[{"value":35,"color":"primary","label":"Photos"},{"value":22,"color":"success","label":"Apps"},{"value":18,"color":"warning","label":"Other"}]'
+    label-display="false"
+></y-progress>
+
+<!-- Ring with custom center content -->
+<y-progress mode="ring" value="78" size="140px">
+    <span slot="center"><strong>78</strong> / 100</span>
+</y-progress>
+
+<!-- Concentric activity rings -->
+<y-progress
+    mode="ring" size="160px"
+    values='[{"value":80,"color":"primary"},{"value":55,"color":"success"},{"value":30,"color":"warning"}]'
+></y-progress>
+
+<!-- Multi-slice pie -->
+<y-progress
+    mode="pie" size="140px"
+    values='[{"value":40,"color":"primary"},{"value":25,"color":"success"},{"value":15,"color":"warning"}]'
+    label-display="false"
+></y-progress>
+
+<!-- Segmented bar (5 chunks) -->
+<y-progress value="40" segmented="5" size="large" label-display="false"></y-progress>
+```
 
 ---
 
@@ -569,32 +761,62 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 ---
 
 ### y-appbar
-Top/side navigation bar with collapsible vertical sidebar mode and a mobile hamburger fallback.
+Horizontal top navigation bar with mobile hamburger fallback.
 
 Tag: `<y-appbar>`
 Attributes:
-- `orientation` — `"vertical"` (default) | `"horizontal"`
-- `collapsed` — boolean, vertical only — collapses sidebar to icon-only width
 - `items` — JSON array of `{ text, icon?, href?, selected?, slot?, children? }` objects driving the auto-generated nav buttons
 - `size` — `"small"` | `"medium"` (default) | `"large"`
-- `menu-direction` — `"right"` | `"down"` — direction submenus pop out (auto: vertical → right, horizontal → down)
-- `sticky` — `"start"` | `"end"` — sticks the appbar to the named edge
-- `mobile-breakpoint` — number (px) — viewport width below which horizontal appbar switches to mobile hamburger mode (default 768)
+- `menu-direction` — `"right"` | `"down"` (default) — direction submenus pop out
+- `sticky` — `"start"` | `"end"` — `"start"` sticks to the top edge; `"end"` sticks to the bottom edge
+- `mobile-breakpoint` — number (px) — viewport width below which the appbar switches to mobile hamburger mode (default 768)
+- `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
+
+Events: `navigate` (cancelable, `detail: { href }`)
+
+Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same unslotted children are rendered inside the hamburger dropdown panel after the items.)
+
+```html
+<!-- Mix items array with framework router links -->
+<y-appbar items='[{"text":"Home","icon":"home","href":"/"}]'>
+  <span slot="title">MyApp</span>
+  <router-link to="/projects">Projects</router-link>
+  <router-link to="/settings">Settings</router-link>
+</y-appbar>
+```
+
+---
+
+### y-sidebar
+Collapsible vertical navigation sidebar. Renders a branded header, a scrollable body of nav items, and a footer with a collapse toggle. Supports framework router links in the default slot.
+
+Tag: `<y-sidebar>`
+Attributes:
+- `collapsed` — boolean, collapses sidebar to icon-only width
+- `items` — JSON array of `{ text, icon?, href?, selected?, slot?, children? }` objects driving the auto-generated nav buttons
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `menu-direction` — `"right"` (default) | `"down"` — direction submenus pop out
+- `sticky` — `"start"` | `"end"` — sticks the sidebar to the named viewport edge
 - `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
 
 Events: `navigate` (cancelable, `detail: { href }`)
 
 Methods: `toggle()` — flip collapsed state
 
-Slots: `logo`, `title`, `header`, `footer`, default (user-supplied link elements rendered in the body alongside `items` — use this for framework router links like Vue Router's `<router-link>` or React Router's `<NavLink>`. In mobile mode the same unslotted children are rendered inside the hamburger dropdown panel after the items.)
+Slots: `logo`, `title`, `header`, `footer`, default (framework router links or custom nav elements — full-width when expanded, clipped to icon-column width when collapsed)
+
+CSS custom properties exposed on host: `--y-sidebar-collapsed` (`0`/`1`), `--y-sidebar-icon-col-width` (icon column width) — slotted items can read these to respond to collapse state.
+
+All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply automatically.
 
 ```html
-<!-- Mix items array with framework router links -->
-<y-appbar orientation="vertical" items='[{"text":"Home","icon":"home","href":"/"}]'>
-  <span slot="title">MyApp</span>
-  <router-link to="/projects">Projects</router-link>
-  <router-link to="/settings">Settings</router-link>
-</y-appbar>
+<y-sidebar
+    items='[{"text":"Dashboard","icon":"home","href":"/","selected":true},{"text":"Projects","icon":"folder","href":"/projects"}]'
+    sticky="start"
+>
+    <img slot="logo" src="/logo.svg" alt="" width="32" height="32" />
+    <span slot="title">MyApp</span>
+</y-sidebar>
 ```
 
 ---
@@ -614,6 +836,154 @@ Events: `open`, `close`
 Methods: `show()`, `hide()`
 
 Slots: default (drawer content)
+
+---
+
+### y-droplist
+Drag-and-drop reorderable list with optional cross-list group support, drag handles, swap mode, and clone mode.
+
+Tag: `<y-droplist>`
+Attributes:
+- `disabled` — boolean. Removes `draggable` from all items, sets `aria-disabled` on the host, and ignores keyboard reorder shortcuts.
+- `vertical` — default reorders along the vertical axis. Set `vertical="false"` to reorder horizontally.
+- `animation` — settle-animation duration in ms (default `150`). `0` disables. Honors `prefers-reduced-motion: reduce` regardless of value.
+- `scroll` — boolean (default `true`). Auto-scrolls the nearest scrollable ancestor (or `window`) when the cursor is within `scroll-sensitivity` pixels of its edge during a drag. Set `scroll="false"` to disable.
+- `scroll-sensitivity` — number (px, default `30`). Distance from the scroll-container edge at which auto-scroll engages. Invalid values fall back to `30`.
+- `scroll-speed` — number (px/frame, default `10`). Per-frame scroll delta; clamped internally to `30`. Halved automatically when `prefers-reduced-motion: reduce` is active. Invalid values fall back to `10`.
+- `revert` — boolean (default `false`). When present, items dropped outside any valid drop target animate back to their original positions using FLIP. `drag:end` fires after the animation completes. Without `revert`, a cancel is silent (item stays put, `drag:end` fires immediately).
+- `force-float` — boolean (default `false`). When present, the ghost placeholder is appended to `document.body` with `position: fixed` so it floats above `overflow: hidden` containers and all stacking contexts. Ghost remains `aria-hidden`.
+- `delay` — number (ms, default `0`). Delay before a press becomes a drag. The drag starts only if the pointer remains within `touch-start-threshold` pixels for the duration. `0` means the drag starts immediately on `pointerdown` (for touch/pen) or `dragstart` (for mouse with no effective delay).
+- `delay-on-touch-only` — boolean (default `false`). When present, `delay` applies only to touch/pen pointer types; mouse presses bypass the delay and fall through to native HTML5 DnD.
+- `touch-start-threshold` — number (px, default `0`). Maximum pointer movement allowed during the `delay` window. If the pointer moves further than this before the timer fires, the pending drag is cancelled. `0` disables threshold checking.
+- `ghost-class` — CSS class applied to the placeholder shown at the projected drop position. Default `"y-droplist__ghost"`.
+- `drag-class` — CSS class applied to the dragged item. Default `"y-droplist__dragging"`.
+- `swap-class` — CSS class applied to the active swap target while dragging in swap mode. Default `"y-droplist__swap-target"`.
+- `drag-preview` — boolean (default `false`). When present, a cursor-following clone of the dragged item is rendered in `document.body` during the drag. Distinct from the in-list ghost placeholder — both can be active simultaneously.
+- `drag-preview-class` — CSS class applied to the preview element. Default `"y-droplist__drag-preview"`.
+- `drag-preview-offset` — `"cursor"` (default) | `"center"` | `"top-left"`. Controls where the preview anchors relative to the cursor. `"cursor"` preserves the grab offset captured at drag start; `"center"` centers the preview on the cursor; `"top-left"` pins the cursor to the top-left corner.
+- `drag-preview-scale` — number (default `1`). Scale factor applied via `transform: scale()` to the preview element. Use `< 1` for a shrunken card effect.
+- `group` — string. Lists with the same `group` name can exchange items via drag-and-drop. Empty / unset means within-list only.
+- `pull` — `"true"` (default) | `"clone"` | `"false"`. Controls whether items leave this list. `"true"` moves the item; `"clone"` leaves the original in place and inserts a copy in the destination; `"false"` blocks dragging out.
+- `put` — `"true"` (default) | `"false"` | comma-separated group-name list. Controls whether items can be dropped into this list. `"true"` accepts any same-group item; `"false"` rejects all incoming; a group-name list restricts accepted sources to those whose `group` appears in the list.
+- `handle` — CSS selector. When set, drags only initiate from elements within each item that match this selector. Empty (default) keeps the whole item draggable. Invalid selectors `console.warn` and fall back to whole-item.
+- `prevent-on-filter` — boolean (default `true`). When `handle` is set, calls `preventDefault()` on `pointerdown` events outside the handle to suppress text selection. No-op when `handle` is empty.
+- `swap` — boolean. When present, dropping over an item swaps the two items in place rather than inserting between items. Same-list only; cross-list drops fall through to insert mode. Disabled when `clone` is also set (clone wins).
+- `invert-swap-element` — boolean (default `true`). In `swap` mode, controls swap-target selection: `true` picks the item the cursor is currently over; `false` picks the item whose midpoint the cursor has crossed.
+- `clone` — boolean. When present, drops insert a `cloneNode(true)` copy at the drop position; the original stays at its source index. Composes with `pull="clone"` (which is the cross-list-source equivalent).
+
+Events (bubble + composed):
+- `drag:start` — `{ originalEvent, item, list }` — not cancelable.
+- `drag:end` — `{ originalEvent, item, list }` — not cancelable. Always fires; `originalEvent` is the native dragend.
+- `drag:enter` — `{ originalEvent, item, list, from }` — not cancelable. Fired on the **destination** list when a foreign item first enters its hit area. `from` is the source list. Only fires when the two lists are compatible (same group, pull/put allow).
+- `drag:leave` — `{ originalEvent, item, list, to }` — not cancelable. Fired on the **source** list when the dragged item leaves its bounds. `to` is the destination list, or `null` if the cursor left all droplists.
+- `drag:preview` — `{ item, preview, list }` — **cancelable**. Fired after the preview element is created and styled but **before** it is appended to `document.body`. Calling `preventDefault()` cancels preview creation for this drag session — the element is discarded and never enters the DOM. Consumers may mutate `detail.preview` to alter content or add classes; mutations apply before insertion. Because the preview is detached when the event fires, do not rely on `getBoundingClientRect()` or `offsetParent` inside the handler.
+- `drag:move` — `{ originalEvent, item, list, x, y }` — not cancelable. Throttled to one event per `requestAnimationFrame`. Fires on every `dragover` / `pointermove` while a drag is active. `x` and `y` are the current viewport cursor coordinates.
+- `drag:over` — `{ originalEvent, item, list, target }` — not cancelable. Fires only when the cursor transitions to hover a **different** slotted child (`target`) than on the previous tick. Does not re-fire when the cursor stays over the same item.
+- `drag:drop` — `{ originalEvent, item, list, index }` — not cancelable. Fires **before** the DOM mutation on a successful drop. `index` is the projected insertion index (0-based).
+- `reorder` — `{ oldIndex, newIndex, item, list[, from] }` — not cancelable. Fires only when index changes. On a cross-list drop `oldIndex` is `-1` and `from` is the source list. On a `swap` drop, `oldIndex` and `newIndex` describe the two swapped items. On a same-list `clone` drop, `oldIndex` is `-1` and `item` is the inserted clone.
+- `update` — `{ item, oldIndex, newIndex, list[, from] }` — not cancelable. Fires immediately after `reorder`. On a cross-list drop the **source** fires first with `newIndex: -1`; the destination fires next with the insert position. On a same-list `clone` drop only the destination event fires (source is suppressed).
+
+Methods:
+- `toArray()` — returns each direct child's `data-id` (or `""` if missing) in current DOM order.
+- `hasItem(item)` — true when `item` is a direct slotted child of the droplist.
+- `destroy()` — removes all listeners, the mutation observer, and unregisters from the cross-list group registry. The component re-initializes on disconnect/reconnect.
+- `sort(compareFn?)` — sorts all slotted children in place. The default comparator compares each child's `data-id` using `<` / `>` semantics (plain lexicographic/ASCII-style ordering, not `localeCompare`). Fires a single `update` event with `{ oldIndex: -1, newIndex: -1 }`. Pass a custom `(a, b) => number` comparator for custom order.
+- `option(name, value?)` — get or set the component property corresponding to a kebab-case option name (mapped to camelCase). One argument returns the current property value; two arguments assigns that property. Depending on the property, this may return non-string values and may reflect to, update, or remove the underlying attribute.
+- `closest(evt)` — returns the direct slotted child whose bounding rect contains `evt.clientX`/`evt.clientY`, or `null` if none match.
+
+Behavior:
+- Items get `role="listitem"`, `tabindex="0"`, `draggable="true"`, and `aria-grabbed="false"` automatically; new children added at runtime are auto-initialized via `MutationObserver`.
+- Keyboard reorder: focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when `vertical="false"`). Focus stays on the moved item; `reorder` and `update` fire identically to a mouse drop. When `handle` is set, focus may be on the handle element; keydown still works via bubbling and focus stays on the handle.
+- A polite `aria-live` region inside the shadow root announces moves. Within-list: _"Item moved from position X to position Y."_ Cross-list: _"Item moved to list `<aria-label>` at position N."_, falling back to _"another list"_ when the destination has no accessible name. Swap mode: _"Item swapped with position N."_ Clone: _"Item copied to position N."_ (or _"Item copied to list `<label>` at position N."_ for cross-list).
+- Settle animation uses FLIP. Skipped when `animation="0"` or `prefers-reduced-motion: reduce`. Swap mode skips FLIP since the two affected items jump directly.
+- Cross-list compatibility is checked on every `dragover`. Incompatible combinations do not call `preventDefault()`, so the OS shows the "not allowed" cursor and no ghost appears.
+- `handle` mode: items get `tabindex="-1"` and the first matching descendant element gets `tabindex="0"` (only when the descendant doesn't already have a tabindex). On `pointerdown` outside the handle, `draggable` is flipped to `false` until `pointerup` / `pointercancel`, blocking the native drag from starting.
+- `clone` overrides `swap` when both are set on the same list — the drop performs a clone insert and the swap indicator never appears.
+- **Touch / pointer pipeline**: Touch and pen input uses `pointerdown` / `pointermove` / `pointerup` with `setPointerCapture`. `touch-action: none` is applied to the pressed item for the duration of the gesture. Mouse presses with no effective delay defer to native HTML5 DnD. Cross-list touch drops use bounding-box hit-testing via `getBoundingClientRect`. `originalEvent` in `drag:start` / `drag:end` is the originating `PointerEvent` for touch drags. Supported: iOS Safari 14+, Chrome Android 90+, desktop Chromium / Firefox / Safari latest two majors.
+- Auto-scroll uses a shared `requestAnimationFrame` loop (one loop across all `<y-droplist>` instances). The scroll container is found by walking up from the hovered list via `getComputedStyle(...).overflow` and is cached per-drag on the source list. Scrolling stops on `dragend`.
+- `revert` shares `--component-droplist-transition-duration` / `--component-droplist-transition-easing` with the settle animation. With `prefers-reduced-motion: reduce`, the items snap back without easing and `drag:end` fires immediately.
+- `force-float` ghost inlines its own styles (background/border/opacity via CSS custom properties that cascade from `:root`). The `::slotted([data-y-droplist-ghost])` shadow rule does not apply to it. The insertion position is tracked internally per-drop so the item is inserted at the correct index on drop.
+
+Slots: default (slotted items). `drag-preview` — optional; when present, the slotted element is deep-cloned and used as the preview content instead of cloning the dragged item. The original is hidden during the drag and restored on drop.
+
+CSS Parts: `list` (the shadow-DOM wrapper around the slot). The drag preview element carries `part="drag-preview"` but is appended to `document.body` (outside the shadow root), so `::part(drag-preview)` cannot match it — see "Styling the drag preview" below for workable selectors.
+
+Styling items: list items are slotted light-DOM children, so style them with regular descendant selectors (`y-droplist > *`, `y-droplist > .y-droplist__dragging`, etc.) — `::part()` doesn't reach light DOM.
+
+Ghost vs. preview: the ghost (`[data-y-droplist-ghost]`) is the in-list dashed placeholder that shows where the item will land. The drag preview (enabled via the `drag-preview` attribute) is the cursor-following visual clone rendered in `document.body`. Both can be active simultaneously. Safari may show its native drag image alongside the custom preview because it ignores `setDragImage` — a known Safari limitation.
+
+Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attribute selector, the class set by the `ghost-class` attribute (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties below.
+
+Styling the drag preview: target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), the `[part="drag-preview"]` attribute selector, or the `--component-droplist-drag-preview-*` custom properties. Note: `::part(drag-preview)` does **not** work because the preview is rendered in `document.body`, not inside the shadow root — use the class or attribute selector instead.
+
+CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`, `--component-droplist-swap-indicator-background` (background applied to the active swap target), `--component-droplist-handle-color` and `--component-droplist-handle-size` (convenience tokens consumers can use to style their own handle elements; not used internally), `--component-droplist-drag-preview-opacity` (default `0.85`), `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`), `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a tilt), `--component-droplist-drag-preview-cursor-offset-x` / `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the cursor anchor), `--component-droplist-drag-preview-z-index` (default `9999`).
+
+```html
+<!-- Within-list reorder -->
+<y-droplist>
+    <div data-id="alpha">Alpha</div>
+    <div data-id="bravo">Bravo</div>
+    <div data-id="charlie">Charlie</div>
+</y-droplist>
+
+<!-- Cross-list Kanban columns -->
+<y-droplist id="todo" group="kanban" aria-label="To Do">
+    <div data-id="task-1">Task 1</div>
+</y-droplist>
+<y-droplist id="done" group="kanban" aria-label="Done">
+    <div data-id="task-2">Task 2</div>
+</y-droplist>
+
+<!-- Clone-only template list (items can be cloned out but nothing comes in) -->
+<y-droplist id="templates" group="kanban" pull="clone" put="false">
+    <div data-id="tpl-bug">Bug report</div>
+</y-droplist>
+
+<!-- Drag handle -->
+<y-droplist handle=".grip">
+    <div data-id="row-1">
+        <span class="grip" aria-label="Reorder">⋮⋮</span>
+        <span>Row 1</span>
+    </div>
+</y-droplist>
+
+<!-- Swap mode -->
+<y-droplist swap>
+    <div data-id="t1">Tile 1</div>
+    <div data-id="t2">Tile 2</div>
+</y-droplist>
+
+<!-- Cursor-following drag preview -->
+<y-droplist drag-preview>
+    <div data-id="alpha">Alpha</div>
+    <div data-id="bravo">Bravo</div>
+</y-droplist>
+
+<!-- Tilted preview (Trello-style) -->
+<y-droplist drag-preview drag-preview-scale="0.92"
+    style="--component-droplist-drag-preview-rotate:3deg">
+    <div data-id="card-1">Card 1</div>
+</y-droplist>
+
+<!-- Custom preview via slot -->
+<y-droplist drag-preview>
+    <div data-id="a">Alpha</div>
+    <div slot="drag-preview" class="badge">Dragging…</div>
+</y-droplist>
+
+<!-- Same-list clone palette -->
+<y-droplist clone>
+    <div data-id="snippet">Snippet</div>
+</y-droplist>
+
+<script type="module">
+    document.querySelectorAll("[group='kanban']").forEach((list) => {
+        list.addEventListener("update", (e) => {
+            console.log("update", e.detail);
+        });
+    });
+</script>
+```
 
 ---
 
@@ -640,6 +1010,8 @@ Slots: default, `expand-prev-icon`, `expand-next-icon`, `expand-close-icon`
 
 CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expand-caption`, `expand-prev`, `expand-next`, `expand-close`, `expand-counter`
 
+CSS Custom Properties: `--component-gallery-columns`, `--component-gallery-gap-{small|medium|large}`, `--component-gallery-thumbnail-radius`, `--component-gallery-thumbnail-overlay-color`, `--component-gallery-expand-background`, `--component-gallery-expand-color`, `--component-gallery-expand-button-background`, `--component-gallery-expand-button-background-hover`, `--component-gallery-expand-z-index`
+
 ```html
 <y-gallery layout="masonry" columns="3" loop>
   <img src="thumb1.jpg" data-src="full1.jpg" alt="Mountain vista">
@@ -648,6 +1020,138 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
     <figcaption>Golden hour at the coast</figcaption>
   </figure>
 </y-gallery>
+```
+
+---
+
+### y-grid
+CSS-Grid layout container. Pure CSS — no JS positioning, no events. Use `y-masonry` for shortest-column packing, or `y-stack` for flexbox row/column layouts.
+
+Tag: `<y-grid>`
+Attributes:
+- `columns` — integer column count (default `3`), `"auto"` for auto-fit, or a raw `grid-template-columns` value (e.g. `"1fr 2fr auto"`)
+- `rows` — integer or raw `grid-template-rows` value (default unset → implicit rows)
+- `auto-flow` — `"row"` (default) | `"column"` | `"row dense"` | `"column dense"`
+- `auto-rows`, `auto-columns` — raw values for `grid-auto-rows` / `grid-auto-columns`
+- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
+- `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
+- `align` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"baseline"` — maps to `align-items`
+- `justify` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) — maps to `justify-items`
+- `align-content` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"between"` | `"around"` | `"evenly"`
+- `justify-content` — same set as `align-content`, default `"start"`
+- `min-item-width` — minimum item width for `columns="auto"` and responsive collapse (default `"240px"`)
+- `responsive` — boolean (default `true`); set `responsive="false"` to opt out. Only applies when `columns` is an integer.
+- `dense` — boolean shortcut for `auto-flow="row dense"`
+
+Children may use inline `style="grid-column: span N"` or `grid-row` to span tracks.
+
+Responsive behavior (integer `columns` only — raw template strings and `columns="auto"` opt out automatically): uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width`. Items shrink toward `min-item-width` and the column count drops smoothly as the container narrows.
+
+CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`), `--component-grid-auto-rows`, `--component-grid-auto-columns`
+
+CSS Parts: `container`
+
+A11y: layout-only (no role, no aria). Tab order follows DOM order — in `dense` mode the visual order may diverge from the focus order.
+
+```html
+<!-- Card grid, responsive -->
+<y-grid columns="3" gap="large" responsive>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+  <y-card>...</y-card>
+</y-grid>
+
+<!-- Auto-fit at min item width -->
+<y-grid columns="auto" min-item-width="200px" gap="medium">
+  <y-card>...</y-card>
+</y-grid>
+
+<!-- Item spans -->
+<y-grid columns="4" gap="medium" responsive="false">
+  <y-card style="grid-column: span 2">Wide</y-card>
+  <y-card>1</y-card>
+  <y-card>1</y-card>
+</y-grid>
+```
+
+---
+
+### y-masonry
+Layout container that packs children of varying heights into the shortest column via JS positioning. Use `y-grid` for uniform CSS-Grid layouts.
+
+Tag: `<y-masonry>`
+Attributes:
+- `columns` — integer column count (default `3`)
+- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
+- `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
+- `responsive` — boolean (default `true`); set `responsive="false"` to opt out
+
+Responsive behavior: drops to 1 column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default), measured against container width.
+
+Layout: positions items absolutely into the shortest column via JS, respecting `columns` (or responsive column count), `row-gap`, and `column-gap`. A `ResizeObserver` on container and items drives rAF-batched relayouts. Child `grid-column` / `grid-row` styles are ignored.
+
+Events: `y-masonry-layout` (`{ columns, containerWidth }`) — fires after each settle (deduped on no-change).
+
+Methods: `relayout()` — force an immediate repack (useful when item heights change in ways `ResizeObserver` won't catch synchronously, e.g. after an image loads).
+
+CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
+
+CSS Parts: `container`
+
+A11y: layout-only (no role, no aria). Tab order follows DOM order — visual order may diverge from focus order.
+
+```html
+<y-masonry columns="3" gap="large">
+  <y-card>Short content</y-card>
+  <y-card>Tall content with extra paragraphs to demonstrate the packing.</y-card>
+  <y-card>Medium content here.</y-card>
+</y-masonry>
+```
+
+---
+
+### y-stack
+Flexbox layout container for rows or columns. Pure CSS — no JS positioning, no events. Use `y-grid` for CSS-Grid layouts or `y-masonry` for shortest-column packing.
+
+Tag: `<y-stack>`
+Attributes:
+- `direction` — `"row"` (default) | `"row-reverse"` | `"column"` | `"column-reverse"` — maps to `flex-direction`
+- `wrap` — `"nowrap"` (default) | `"wrap"` | `"wrap-reverse"`. Boolean presence (no value) resolves to `"wrap"` for back-compat.
+- `gap` — `"none"` | `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"` | `"2x-large"` | `"4x-large"` — maps to `--spacing-*` tokens
+- `row-gap`, `column-gap` — same scale as `gap`; override row/column gap independently
+- `align` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"baseline"` — maps to `align-items`
+- `justify` — `"start"` (default) | `"center"` | `"end"` | `"between"` | `"around"` | `"evenly"` — maps to `justify-content`
+- `align-content` — `"start"` | `"center"` | `"end"` | `"stretch"` (default) | `"between"` | `"around"` | `"evenly"` — maps to `align-content` (only meaningful with wrap)
+- `inline` — boolean; use `display: inline-flex` instead of `flex`
+- `responsive` — boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables wrap and collapses to `column` below the mobile breakpoint (measured against the stack's own container width via a CSS container query). This collapse behavior does not apply when `inline` is set, because inline stacks do not use the container query. Set `responsive="false"` to opt out.
+
+CSS Custom Properties: `--component-stack-gap`, `--component-stack-row-gap`, `--component-stack-column-gap`, `--component-stack-mobile-breakpoint` (default `576px`)
+
+CSS Parts: `container`
+
+Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `mode` and `columns` attributes have been removed.
+
+A11y: layout-only (no role, no aria). Tab order follows DOM order — `row-reverse` / `column-reverse` and `wrap-reverse` may make visual order diverge from focus order.
+
+```html
+<!-- Row of buttons -->
+<y-stack direction="row" gap="small">
+  <y-button>Save</y-button>
+  <y-button>Cancel</y-button>
+</y-stack>
+
+<!-- Vertical form -->
+<y-stack direction="column" gap="medium">
+  <y-input label="Name"></y-input>
+  <y-input label="Email"></y-input>
+</y-stack>
+
+<!-- Wrapping toolbar with separate row/column gaps -->
+<y-stack direction="row" wrap row-gap="x-small" column-gap="large">
+  <y-button>One</y-button>
+  <y-button>Two</y-button>
+  <y-button>Three</y-button>
+</y-stack>
 ```
 
 ---
@@ -665,6 +1169,8 @@ Events: `open`, `close`
 Methods: `show()`, `hide()`
 
 Slots: `header`, `footer`, default (body)
+
+CSS Custom Properties: `--component-dialog-background`, `--component-dialog-color`, `--component-dialog-accent`, `--component-dialog-border-color`, `--component-dialog-border-width`, `--component-dialog-inner-border-width`, `--component-dialog-border-radius-outer`, `--component-dialog-border-radius-inner`, `--component-dialog-padding`, `--component-dialog-footer-gap`, `--component-dialog-offset`, `--component-dialog-backdrop-blur`, `--component-dialog-animation-duration`, `--component-dialog-shadow`, `--component-dialog-hover-background`, `--component-dialog-z-index`
 
 ```html
 <y-dialog id="my-dialog">
@@ -694,7 +1200,7 @@ Attributes:
 Events: `navigate` (cancelable, `detail: { href }`)
 Slots: default (direct child elements as dock items), `{item.slot}` (per-item custom template)
 CSS Parts: `bar`, `item`
-CSS Custom Properties: `--component-dock-height`, `--component-dock-background`, `--component-dock-border-color`, `--component-dock-border-width`, `--component-dock-color`, `--component-dock-color-active`, `--component-dock-z-index`
+CSS Custom Properties: `--component-dock-height`, `--component-dock-height-{small|medium|large}`, `--component-dock-font-size-{small|medium|large}`, `--component-dock-background`, `--component-dock-border-color`, `--component-dock-border-width`, `--component-dock-color`, `--component-dock-color-active`, `--component-dock-z-index`
 
 ```html
 <y-dock
@@ -844,6 +1350,52 @@ Deprecated slots (use `leftIcon`/`rightIcon` option properties instead):
 
 ---
 
+### y-paginator
+Page navigation control with configurable button window, ellipsis collapsing, prev/next, an optional items-per-page select, and SPA-friendly cancelable events. Page buttons are rendered as `y-button` (flat for inactive, filled primary for the active page).
+
+Tag: `<y-paginator>`
+Attributes:
+- `current-page` — currently active page (1-indexed). Clamped to `[1, total-pages]` when `total-pages >= 1`, and reports `0` when `total-pages = 0` (no-data state). Default `1` (or `0` when there is no data).
+- `total-pages` — total number of pages. `0` indicates no data; in that state the page list is omitted and `current-page` reads as `0`. Default `0`.
+- `page-count` — maximum page buttons displayed at once, excluding ellipses. Default `5`.
+- `boundary-count` — number of pages always shown at each end. Default `1`.
+- `variant` — `"default"` (default — page-number buttons with prev/next), `"compact"` (first / prev / "n of n pages" status / next / last; no page list), or `"detailed"` (default layout plus prev/next text labels).
+- `size` — `"small"` | `"medium"` (default) | `"large"`. Forwarded to the page `y-button`s and the items-per-page `y-select`.
+- `disabled` — boolean. Disables every interactive control.
+- `hide-on-single-page` — defaults to `true`. The component hides itself when `total-pages <= 1` *and* there is no items-per-page select to show. Pass `hide-on-single-page="false"` to always render.
+- `items-per-page` — currently selected items-per-page value (number).
+- `page-size-options` — JSON array of numbers (`[10, 25, 50]`) or `[{value, label}]` objects. When set, an items-per-page `<y-select>` is appended after the navigation wrapper (i.e., to the right of the page list, wrapping below on narrow widths).
+- `page-size-label` — label text shown next to the select; only visually rendered when `variant="detailed"`, otherwise applied as the select's `aria-label`. Default `"Items per page:"`.
+
+Events (cancelable, bubble + composed):
+- `page-change` — `{ page }`. Calling `preventDefault()` aborts the page transition.
+- `update:current-page` — `{ page }`. Fires after `page-change` for two-way-binding consumers; cancelling it also aborts.
+- `page-size-change` — `{ pageSize, previous }`. Cancellation reverts the select to the prior value.
+- `update:items-per-page` — `{ pageSize, previous }`. Mirror event for v-model-style consumers.
+
+Methods: `goTo(page)`, `next()`, `previous()`, `setPageSize(value)`.
+
+Slots: `prev-label`, `next-label` (override the prev/next button content; only rendered when `variant="detailed"`), `ellipsis` (override the `…` glyph).
+
+CSS Parts: `wrapper`, `nav-wrapper`, `list`, `button`, `button--active`, `button--disabled`, `nav-first`, `nav-prev`, `nav-next`, `nav-last`, `compact-status`, `ellipsis`, `page-size`, `page-size-label`, `page-size-select`. (`nav-first` / `nav-last` / `compact-status` only appear when `variant="compact"`.)
+
+Keyboard: while focus is on a page `y-button`, `ArrowLeft` / `ArrowRight` step focus between buttons and `Home` / `End` jump to the first / last interactive button.
+
+```html
+<y-paginator total-pages="50" current-page="5"></y-paginator>
+
+<y-paginator
+    total-pages="100"
+    current-page="42"
+    boundary-count="2"
+    variant="detailed"
+    items-per-page="25"
+    page-size-options="[10, 25, 50, 100]"
+></y-paginator>
+```
+
+---
+
 ### y-panelbar
 Accordion container. Groups y-panel elements.
 
@@ -878,6 +1430,65 @@ Slots: default (panel body content)
 
 ---
 
+### y-tree
+Hierarchical navigation tree for sidebars, doc nav, and file/folder explorers. Use when leaf nodes are navigation targets (links). For collapsible content regions, use `y-panelbar` / `y-panel`.
+
+Tag: `<y-tree>`
+Attributes:
+- `exclusive` — boolean. Expanding one branch collapses sibling branches at the same level.
+- `selection` — `"single"` (default) | `"none"`. Whether one item can be selected at a time, or selection is route-driven only.
+- `route-match` — `"exact"` (default) | `"prefix"` | `"off"`. How `href` matches against `window.location.pathname`. `"prefix"` highlights ancestor items when a descendant route is active.
+- `aria-label` — defaults to `"Tree"` if omitted.
+
+Methods: `getAllItems()`, `getVisibleItems()`, `focusItem(item)`
+
+Events bubble from items: `navigate` (cancelable, `{ href, item }`), `select` (`{ item, href }`), `expand` (`{ item }`), `collapse` (`{ item }`), `toggle` (`{ item, expanded }`).
+
+Slots: default — one or more `<y-tree-item>` elements forming the root level.
+
+CSS Parts: `tree`
+
+### y-tree-item
+Individual node in a `y-tree`.
+
+Tag: `<y-tree-item>`
+Attributes:
+- `href` — navigation target. When present, the item behaves as a link.
+- `expanded` — boolean. Whether the item's children are visible.
+- `selected` — boolean. Active/current state. Auto-managed by the tree when `route-match` is on.
+- `disabled` — boolean. Non-interactive and skipped in keyboard navigation.
+- `history` — `"push"` (default) | `"replace"` | `"false"`. History API behavior on navigate. `"false"` performs a full-page nav.
+
+Methods: `expand()`, `collapse()`, `toggle()`, `activate()`
+
+Slots: `icon`, `label` (default slot also accepted), `suffix`, `children` (nested `<y-tree-item>` elements).
+
+CSS Parts: `item`, `header`, `icon`, `label`, `suffix`, `arrow`, `children`
+
+CSS Custom Properties: `--component-tree-background`, `--component-tree-item-color`, `--component-tree-item-hover-background`, `--component-tree-item-selected-color`, `--component-tree-item-selected-background`, `--component-tree-item-accent`, `--component-tree-item-active-border`, `--component-tree-border-width`, `--component-tree-padding`, `--component-tree-indent`, `--component-tree-icon-gap`.
+
+Keyboard: ArrowUp/Down move between visible items; ArrowRight expands or focuses first child; ArrowLeft collapses or focuses parent; Home/End jump to first/last; Enter activates; Space toggles expansion; type-ahead focuses next item starting with the typed letter. Roving `tabindex` — only one item is tab-focusable at a time.
+
+```html
+<y-tree route-match="prefix" style="width:280px">
+  <y-tree-item href="/docs" expanded>
+    <y-icon slot="icon" name="book" size="small"></y-icon>
+    <span slot="label">Docs</span>
+    <y-tree-item slot="children" href="/docs/install">
+      <span slot="label">Installation</span>
+    </y-tree-item>
+    <y-tree-item slot="children" href="/docs/quickstart">
+      <span slot="label">Quick Start</span>
+    </y-tree-item>
+  </y-tree-item>
+  <y-tree-item href="/api">
+    <span slot="label">API Reference</span>
+  </y-tree-item>
+</y-tree>
+```
+
+---
+
 ### y-table
 Data table with optional client-side sorting.
 
@@ -892,12 +1503,77 @@ Events: `sort` (detail: `{ field, direction }`) — fired on header click when `
 
 Sorting: clicking a sortable column header shows an up arrow (asc) or down arrow (desc); unsorted columns show no icon. Sort is client-side by default.
 
+CSS Custom Properties: `--component-table-color`, `--component-table-color-light`, `--component-table-border-color`, `--component-table-border-width`, `--component-table-border-width-header`, `--component-table-border-radius`, `--component-table-padding-{small|medium|large}`, `--component-table-hover-background`, `--component-table-active-background`
+
 ```html
 <y-table
   columns='[{"field":"id","header":"ID"},{"field":"name","header":"Name"}]'
   data='[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]'
   striped
 ></y-table>
+```
+
+---
+
+### y-animate
+Lightweight wrapper that applies a preset CSS-based entrance/exit animation to its children using the Web Animations API. Useful for adding visual polish to list items, modals, cards, or anything that enters / leaves the DOM.
+
+Tag: `<y-animate>`
+Attributes:
+- `animation` — preset name: `"fade"` (default) | `"slide"` | `"zoom-in"` | `"zoom-out"` | `"flip-horizontal"` | `"flip-vertical"` | `"rotate-in"` | `"bounce"` | `"shake"` | `"scale"`
+- `direction` — `"up"` (default) | `"down"` | `"left"` | `"right"`. Used by `slide`, `bounce`, and `shake`; ignored by `flip-*`, `zoom-*`, and `rotate-in`.
+- `duration` — animation duration in ms (default `300`)
+- `delay` — delay before the animation starts in ms (default `0`)
+- `easing` — CSS easing keyword, `cubic-bezier(...)`, or `steps(...)` (default `"ease-out"`)
+- `trigger` — `"load"` (default, plays on connect) | `"visible"` (plays when scrolled into view via `IntersectionObserver`) | `"manual"` (only via `play()`)
+- `once` — `"true"` (default) | `"false"`. When false, visibility-based triggers re-fire on each entry.
+- `reverse` — boolean, plays the animation in reverse
+- `stagger` — boolean, animates each direct child individually with a per-index delay
+- `stagger-delay` — per-child delay in ms when `stagger` is set (default `50`)
+- `disabled` — boolean, blocks playback entirely
+- `hidden` — standard HTML attribute; cancels any in-flight animation and hides the host
+
+Events (bubble + composed, not cancelable):
+- `animation-start` — `{ animation, element }` — fired when each animation begins
+- `animation-end` — `{ animation, element }` — fired when each animation completes
+- `animation-cancel` — `{ animation, element }` — fired when `abort()` is called or the host is hidden / disabled mid-flight
+
+Methods:
+- `play()` — manually triggers the animation. Returns `Promise<void>` that resolves once all animations finish.
+- `reset()` — clears `hasPlayed` state and inline styles applied by stagger targets
+- `abort()` — cancels any currently running animations and emits `animation-cancel`
+- `setAnimation(name, duration?, easing?)` — convenience setter that updates the matching attributes
+
+Slots: default — children to animate.
+CSS Parts: `content` — the wrapper around the children.
+
+Accessibility: respects `prefers-reduced-motion: reduce` — animations are skipped, but `animation-start` / `animation-end` still fire so consumers can sequence dependent UI.
+
+CSS Custom Properties:
+`--component-animate-duration` (default `300`), `--component-animate-stagger-delay` (default `50`), `--component-animate-fade-opacity-start` (default `0`), `--component-animate-fade-opacity-end` (default `1`), `--component-animate-slide-distance` (default `16px`), `--component-animate-zoom-in-scale-start` (default `0.8`), `--component-animate-zoom-out-scale-start` (default `1.2`), `--component-animate-rotate-angle` (default `90`), `--component-animate-bounce-height` (default `16px`), `--component-animate-shake-amplitude` (default `8px`), `--component-animate-scale-start` (default `0.5`), `--component-animate-scale-end` (default `1`).
+
+```html
+<!-- Fade in on mount -->
+<y-animate animation="fade" duration="400">
+  <y-card>Hello</y-card>
+</y-animate>
+
+<!-- Stagger a list when it scrolls into view -->
+<y-animate trigger="visible" animation="slide" direction="up" stagger stagger-delay="80">
+  <y-card>One</y-card>
+  <y-card>Two</y-card>
+  <y-card>Three</y-card>
+</y-animate>
+
+<!-- Manual play -->
+<y-animate id="bump" trigger="manual" animation="bounce" once="false">
+  <y-button>Bump me</y-button>
+</y-animate>
+<script>
+  document.querySelector("#bump y-button").addEventListener("click", () =>
+    document.getElementById("bump").play()
+  );
+</script>
 ```
 
 ---
@@ -922,13 +1598,18 @@ Where `{scheme}` is: `base`, `primary`, `secondary`, `success`, `warning`, `erro
 
 Additional tokens:
 ```
---spacing-xs-small, --spacing-small, --spacing-medium, --spacing-large, --spacing-x-large
---font-size-small, --font-size-paragraph, --font-size-label
---radii-small, --radii-medium, --radii-large, --radii-full
+--spacing-none, --spacing-4x-small, --spacing-2x-small, --spacing-x-small, --spacing-small, --spacing-medium, --spacing-large, --spacing-x-large, --spacing-2x-large, --spacing-4x-large
+--font-size-small, --font-size-paragraph, --font-size-label, --font-size-button, --font-size-quote, --font-size-h1…h5, --font-size-display-1…4
+--radii-none, --radii-x-small, --radii-small, --radii-medium, --radii-large, --radii-x-large, --radii-full
+--font-weight-body (300), --font-weight-heading (500)
 --base-shadow
 ```
 
-Component-specific tokens (subset — see `styles/variables.css` for the full list):
+### Component tokens
+
+Every component reads tokens named `--component-{component}-{property}` (e.g. `--component-dialog-offset`, `--component-slider-track-color`). Structural/dimension tokens are defined in `tokens/core/components.json`; color tokens are defined per-theme in `tokens/themes/*.json`. Both are compiled by `npm run build:tokens` into `styles/variables.css` (the baseline + default theme) and `styles/{theme}.css` (per-theme overrides) — **`styles/variables.css` is the authoritative full list.** Many component entries in the Component Reference above also enumerate their own tokens on a `CSS Custom Properties:` line.
+
+A few illustrative examples:
 ```
 /* y-breadcrumbs */
 --component-breadcrumbs-font-size-small/medium/large  /* font size per size variant */
@@ -1010,23 +1691,25 @@ registerIcons([
 const svg = getIcon("my-icon");
 ```
 
+`getIcon` returns the raw registered string. `<y-icon>` and `<y-rating>` render through the shared SVG sanitizer (see _SVG Sanitizer_ below), so script tags, event-handler attributes (`onload`, `onclick`, …), and any element outside the allowlist are stripped before the markup reaches the DOM — registering hostile SVG cannot lead to script execution through these components.
+
 Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
 - Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`, `ellipsis-v`, `ellipsis-h`)
-- Actions (`check`, `close`, `trash`, `save`, `pencil`, `filter`, `swap`, `share`, `search`, `plus`, `minus`, `copy`, `paste`, `scissors`, `undo`, `redo`)
+- Actions (`check`, `x`, `trash`, `floppy-disk`, `pencil`, `funnel`, `swap`, `share`, `magnifying-glass`, `plus`, `minus`, `copy`, `clipboard`, `scissors`, `undo`, `redo`)
 - Brackets (`up-from-bracket`, `down-from-bracket`, `left-from-bracket`, `right-from-bracket`, `up-to-bracket`, `down-to-bracket`, `left-to-bracket`, `right-to-bracket`)
-- Communication (`bell`, `mail`, `comments`, `paper-airplane`)
+- Communication (`bell`, `mail`, `speech-bubble`, `paper-airplane`)
 - Faces (`face-smile`, `face-neutral`, `face-frown`)
-- Files & data (`archive`, `folder`, `save`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `chart`, `grid`, `layout`, `tag`)
+- Files & data (`archive`, `folder`, `floppy-disk`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `waveform`, `grid`, `layout`, `tag`)
 - Location & navigation (`home`, `menu`, `compass`, `map-marker`, `thumbtack`, `globe`)
 - Media & display (`image`, `monitor`, `smartphone`, `tablet`, `moon`, `sun`, `palette`, `calendar`, `clock`, `play`, `pause`, `stop`, `skip-back`, `skip-forward`, `fast-back`, `fast-forward`)
 - People (`user`, `users`, `accessibility`)
-- Science & work (`flask`, `briefcase`, `puzzle`, `ai`, `tools`, `bug`)
+- Science & work (`flask`, `briefcase`, `puzzle`, `robot`, `wrench`, `bug`)
 - Social (`discord`, `figma`, `github`)
 - Nature (`flower`, `campfire`)
-- Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `unlock`, `shield`, `ban`, `warning`, `circle-exclamation`, `circle-info`, `circle-question`)
+- Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `unlock`, `shield`, `circle-slash`, `triangle-exclamation`, `circle-exclamation`, `circle-info`, `circle-question`)
 - Utilities & devices (`plug`, `bluetooth`, `fan`, `thermometer-high`, `thermometer-low`, `gasoline`, `ev-charger`)
-- Component icons (`comp-appbar`, `comp-avatar`, `comp-badge`, `comp-button`, `comp-card`, `comp-checkbox`, `comp-date`, `comp-dialog`, `comp-drawer`, `comp-icon`, `comp-input`, `comp-menu`, `comp-panelbar`, `comp-progress`, `comp-radio`, `comp-rating`, `comp-select`, `comp-slider`, `comp-switch`, `comp-table`, `comp-tabs`, `comp-tag`, `comp-textarea`, `comp-theme`, `comp-toast`, `comp-tooltip`)
-- Other (`cloud`, `code`, `settings`)
+- Component icons (`appbar`, `avatar`, `badge`, `button`, `card`, `checkbox`, `chip`, `date`, `dialog`, `drawer`, `droplist`, `icon`, `input`, `panelbar`, `progress`, `radio`, `rating`, `select`, `slider`, `switch`, `table`, `tabs`, `textarea`, `theme`, `toast`, `tooltip`)
+- Other (`cloud`, `code`, `gear`)
 
 ---
 
@@ -1047,7 +1730,9 @@ import "@waggylabs/yumekit";
 
 These are not exported in the public API but are used internally:
 
+- `createElement(tag, attrs, children)` — single-call DOM builder used by every component to assemble its shadow tree without `innerHTML` (attributes flow through `setAttribute`, so user-controlled values cannot break out into new attributes or markup)
 - `getColorVarPair(color, fallbackColor)` — resolves a color name to `[bg, fg]` CSS value pair. Predefined names return token `var()` pairs; hex/rgb/hsl values return the raw color with a WCAG-contrasted foreground via `contrastTextColor()`
+- `isSafeCssColor(value)` — strict allowlist that returns `true` for `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()` literals only. Components that paint a user-supplied color into a CSS context (`y-badge`'s `color`, `y-select`'s per-option `color`) gate the value through this helper and fall back to the semantic default when it fails
 - `hideEmptySlotContainers(shadowRoot, config)` — hides wrappers when slots are empty
 - `resolveCSSColor(varExpr, element)` — resolves CSS variable to computed color
 - `manageLabelVisibility(labelWrapper)` — toggles label wrapper visibility on slotchange
@@ -1063,6 +1748,13 @@ These are not exported in the public API but are used internally:
 - `rgbaToHex(r, g, b, a)` — RGBA → hex8 string
 - `parseHexColor(hex)` — hex → `{r, g, b, a}`
 - `parseColorString(str)` — any supported CSS color string → `{r, g, b, a}`
+
+### SVG Sanitizer (internal, `src/modules/svg-sanitizer.js`)
+
+Shared by `<y-icon>` and `<y-rating>` so both consume one allowlist-based sanitizer. Built-in icons are bundled and trusted; the sanitizer's job is to defend against script-bearing SVG passed through `registerIcon(name, svg)` at runtime.
+
+- `sanitizeSvg(raw)` — parses an SVG string, strips every element and attribute outside the allowlist, and returns the resulting `outerHTML`. Empty input or markup with no `<svg>` root returns `""`
+- `getSanitizedIcon(name)` — looks up a registered icon, sanitizes it, and memoizes the result. Repeated calls with the same name reuse the cached sanitized string
 
 ---
 

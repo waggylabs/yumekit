@@ -1,4 +1,4 @@
-import "./y-tabs.js";
+﻿import "./y-tabs.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
@@ -9,12 +9,13 @@ const defaultOptions = JSON.stringify([
 ]);
 
 export default {
-    title: "Components/Tabs",
+    title: "Navigation/Tabs",
     tags: ["autodocs"],
     argTypes: {
         options: {
             control: "text",
-            description: 'JSON array of `{ id, label, slot, disabled? }` objects.',
+            description:
+                "JSON array of `{ id, label, slot, disabled? }` objects.",
         },
         size: {
             control: "select",
@@ -49,19 +50,19 @@ export const Sizes = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:32px">
             <y-tabs options='${defaultOptions}' size="small" style="width:400px">
-                <div slot="tab1"><p>Small tabs — overview.</p></div>
-                <div slot="tab2"><p>Small tabs — details.</p></div>
-                <div slot="tab3"><p>Small tabs — settings.</p></div>
+                <div slot="tab1"><p>Small tabs â€” overview.</p></div>
+                <div slot="tab2"><p>Small tabs â€” details.</p></div>
+                <div slot="tab3"><p>Small tabs â€” settings.</p></div>
             </y-tabs>
             <y-tabs options='${defaultOptions}' size="medium" style="width:400px">
-                <div slot="tab1"><p>Medium tabs — overview.</p></div>
-                <div slot="tab2"><p>Medium tabs — details.</p></div>
-                <div slot="tab3"><p>Medium tabs — settings.</p></div>
+                <div slot="tab1"><p>Medium tabs â€” overview.</p></div>
+                <div slot="tab2"><p>Medium tabs â€” details.</p></div>
+                <div slot="tab3"><p>Medium tabs â€” settings.</p></div>
             </y-tabs>
             <y-tabs options='${defaultOptions}' size="large" style="width:400px">
-                <div slot="tab1"><p>Large tabs — overview.</p></div>
-                <div slot="tab2"><p>Large tabs — details.</p></div>
-                <div slot="tab3"><p>Large tabs — settings.</p></div>
+                <div slot="tab1"><p>Large tabs â€” overview.</p></div>
+                <div slot="tab2"><p>Large tabs â€” details.</p></div>
+                <div slot="tab3"><p>Large tabs â€” settings.</p></div>
             </y-tabs>
         </div>
     `,
@@ -71,24 +72,24 @@ export const Positions = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:32px">
             <y-tabs options='${defaultOptions}' position="top" style="width:400px">
-                <div slot="tab1"><p>Top position — overview.</p></div>
-                <div slot="tab2"><p>Top position — details.</p></div>
-                <div slot="tab3"><p>Top position — settings.</p></div>
+                <div slot="tab1"><p>Top position â€” overview.</p></div>
+                <div slot="tab2"><p>Top position â€” details.</p></div>
+                <div slot="tab3"><p>Top position â€” settings.</p></div>
             </y-tabs>
             <y-tabs options='${defaultOptions}' position="bottom" style="width:400px">
-                <div slot="tab1"><p>Bottom position — overview.</p></div>
-                <div slot="tab2"><p>Bottom position — details.</p></div>
-                <div slot="tab3"><p>Bottom position — settings.</p></div>
+                <div slot="tab1"><p>Bottom position â€” overview.</p></div>
+                <div slot="tab2"><p>Bottom position â€” details.</p></div>
+                <div slot="tab3"><p>Bottom position â€” settings.</p></div>
             </y-tabs>
             <y-tabs options='${defaultOptions}' position="left" style="width:400px;height:120px">
-                <div slot="tab1"><p>Left position — overview.</p></div>
-                <div slot="tab2"><p>Left position — details.</p></div>
-                <div slot="tab3"><p>Left position — settings.</p></div>
+                <div slot="tab1"><p>Left position â€” overview.</p></div>
+                <div slot="tab2"><p>Left position â€” details.</p></div>
+                <div slot="tab3"><p>Left position â€” settings.</p></div>
             </y-tabs>
             <y-tabs options='${defaultOptions}' position="right" style="width:400px;height:120px">
-                <div slot="tab1"><p>Right position — overview.</p></div>
-                <div slot="tab2"><p>Right position — details.</p></div>
-                <div slot="tab3"><p>Right position — settings.</p></div>
+                <div slot="tab1"><p>Right position â€” overview.</p></div>
+                <div slot="tab2"><p>Right position â€” details.</p></div>
+                <div slot="tab3"><p>Right position â€” settings.</p></div>
             </y-tabs>
         </div>
     `,
@@ -116,8 +117,18 @@ export const WithIcons = {
         <y-tabs
             options='${JSON.stringify([
                 { id: "home", label: "Home", slot: "home", leftIcon: "home" },
-                { id: "user", label: "Profile", slot: "user", leftIcon: "user" },
-                { id: "settings", label: "Settings", slot: "settings", leftIcon: "settings" },
+                {
+                    id: "user",
+                    label: "Profile",
+                    slot: "user",
+                    leftIcon: "user",
+                },
+                {
+                    id: "settings",
+                    label: "Settings",
+                    slot: "settings",
+                    leftIcon: "gear",
+                },
             ])}'
             style="width:400px"
         >
@@ -145,7 +156,7 @@ export const WithTabContentSlot = {
                 <y-icon name="user" size="small"></y-icon> Profile
             </span>
             <span slot="tab-content-settings" style="display:inline-flex;align-items:center;gap:4px">
-                <y-icon name="settings" size="small"></y-icon> Settings
+                <y-icon name="gear" size="small"></y-icon> Settings
             </span>
             <div slot="home"><p>Home content.</p></div>
             <div slot="user"><p>Profile content.</p></div>

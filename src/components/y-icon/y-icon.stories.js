@@ -1,8 +1,8 @@
-import "./y-icon.js";
+﻿import "./y-icon.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Icon",
+    title: "Data/Icon",
     tags: ["autodocs"],
     argTypes: {
         name: {

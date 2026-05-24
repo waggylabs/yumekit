@@ -71,6 +71,16 @@ describe("YumeDock", () => {
         expect(buttons.length).to.equal(3);
     });
 
+    it("items setter mirrors a JSON string instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-dock></y-dock>`);
+
+        const json = JSON.stringify(items);
+        el.items = json;
+        expect(el.getAttribute("items")).to.equal(json);
+        expect(el.items).to.deep.equal(items);
+        expect(el.shadowRoot.querySelectorAll(".item").length).to.equal(3);
+    });
+
     it("position defaults to bottom", async () => {
         const el = await fixture(html`<y-dock></y-dock>`);
         expect(el.position).to.equal("bottom");

@@ -1,4 +1,4 @@
-import "./y-select.js";
+﻿import "./y-select.js";
 import "../y-tag/y-tag.js";
 
 const defaultOptions = JSON.stringify([
@@ -10,7 +10,7 @@ const defaultOptions = JSON.stringify([
 ]);
 
 export default {
-    title: "Components/Select",
+    title: "Input/Select",
     tags: ["autodocs"],
     decorators: [
         (story) =>

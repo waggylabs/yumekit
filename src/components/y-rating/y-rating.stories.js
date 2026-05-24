@@ -1,8 +1,8 @@
-import "./y-rating.js";
+﻿import "./y-rating.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Rating",
+    title: "Input/Rating",
     tags: ["autodocs"],
     argTypes: {
         value: {

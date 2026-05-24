@@ -1,9 +1,9 @@
-import "./y-gallery.js";
+﻿import "./y-gallery.js";
 import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Gallery",
+    title: "Data/Gallery",
     tags: ["autodocs"],
     argTypes: {
         layout: {

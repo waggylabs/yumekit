@@ -129,6 +129,13 @@ describe("<y-colorpicker>", () => {
         ]);
     });
 
+    it("formats setter mirrors a JSON string instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
+        el.formats = '["hex","rgb"]';
+        expect(el.getAttribute("formats")).to.equal('["hex","rgb"]');
+        expect(el.formats).to.deep.equal(["hex", "rgb"]);
+    });
+
     it("formats getter handles invalid JSON gracefully", async () => {
         const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
         el.setAttribute("formats", "not-json");
@@ -858,5 +865,64 @@ describe("<y-colorpicker>", () => {
         expect(spy.calledWith("pointermove")).to.be.true;
         expect(spy.calledWith("pointerup")).to.be.true;
         spy.restore();
+    });
+
+    describe("XSS hardening", () => {
+        const cases = [
+            {
+                name: "size",
+                payload: `medium" onfocus="window.__xssCpSize=true" autofocus x="`,
+                flag: "__xssCpSize",
+            },
+            {
+                name: "format",
+                payload: `hex" onfocus="window.__xssCpFormat=true" autofocus x="`,
+                flag: "__xssCpFormat",
+            },
+        ];
+
+        for (const { name, payload, flag } of cases) {
+            it(`does not allow attribute breakout via ${name}`, async () => {
+                const el = document.createElement("y-colorpicker");
+                el.setAttribute(name, payload);
+                document.body.appendChild(el);
+
+                expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+                expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+                expect(window[flag]).to.be.undefined;
+
+                document.body.removeChild(el);
+            });
+        }
+
+        it("does not allow attribute breakout via the formats JSON (single-quote escape)", async () => {
+            // A single quote in a JSON value previously broke the
+            // single-quoted `options='...'` attribute boundary.
+            const hostile = JSON.stringify([
+                "hex",
+                `rgb' onfocus='window.__xssCpFormats=true`,
+            ]);
+            const el = document.createElement("y-colorpicker");
+            el.setAttribute("formats", hostile);
+            document.body.appendChild(el);
+
+            expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+            expect(window.__xssCpFormats).to.be.undefined;
+
+            // The y-select still receives the JSON unaltered as a single
+            // `options` attribute value — no breakout.
+            const select = el.shadowRoot.querySelector(".format-select");
+            expect(select).to.exist;
+            expect(select.getAttribute("options")).to.equal(
+                JSON.stringify(
+                    JSON.parse(hostile).map((f) => ({
+                        value: f,
+                        label: f.toUpperCase(),
+                    })),
+                ),
+            );
+
+            document.body.removeChild(el);
+        });
     });
 });

@@ -42,7 +42,9 @@ export class YumeTabs extends HTMLElement {
         }
     }
     set options(val) {
-        this.setAttribute("options", JSON.stringify(val));
+        if (val === null || val === undefined) this.removeAttribute("options");
+        else if (typeof val === "string") this.setAttribute("options", val);
+        else this.setAttribute("options", JSON.stringify(val));
         this.render();
     }
 

@@ -1,4 +1,7 @@
-import { manageLabelVisibility } from "../../modules/helpers.js";
+import {
+    manageLabelVisibility,
+    createElement as _el,
+} from "../../modules/helpers.js";
 
 export class YumeInput extends HTMLElement {
     static formAssociated = true;
@@ -164,11 +167,8 @@ export class YumeInput extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [
             this._buildStyleSheet(isDisabled, paddingVar, minHeightVar),
         ];
-        this.shadowRoot.innerHTML = this._buildHTML(
-            type,
-            value,
-            isLabelTop,
-            isDisabled,
+        this.shadowRoot.replaceChildren(
+            this._buildTree(type, value, isLabelTop, isDisabled),
         );
 
         this.input = this.shadowRoot.querySelector("input");
@@ -201,30 +201,37 @@ export class YumeInput extends HTMLElement {
         });
     }
 
-    _buildHTML(type, value, isLabelTop, isDisabled) {
-        const labelSlot =
-            '<div class="label-wrapper"><slot name="label"></slot></div>';
+    _buildTree(type, value, isLabelTop, isDisabled) {
+        const buildLabelSlot = () =>
+            _el("div", { class: "label-wrapper" }, [
+                _el("slot", { name: "label" }),
+            ]);
+
+        const input = _el("input", {
+            part: "input",
+            type,
+            value,
+            disabled: isDisabled || null,
+        });
         const min = this.getAttribute("min");
         const max = this.getAttribute("max");
         const step = this.getAttribute("step");
-        const numAttrs = [
-            min != null ? `min="${min}"` : "",
-            max != null ? `max="${max}"` : "",
-            step != null ? `step="${step}"` : "",
-        ]
-            .filter(Boolean)
-            .join(" ");
-        return `
-            <div class="input-wrapper">
-                ${isLabelTop ? labelSlot : ""}
-                <div class="input-container">
-                    <slot name="left-icon"></slot>
-                    <input part="input" type="${type}" value="${value}" ${numAttrs} ${isDisabled ? "disabled" : ""} />
-                    <slot name="right-icon"></slot>
-                </div>
-                ${!isLabelTop ? labelSlot : ""}
-            </div>
-        `;
+        if (min != null) input.setAttribute("min", min);
+        if (max != null) input.setAttribute("max", max);
+        if (step != null) input.setAttribute("step", step);
+
+        const container = _el("div", { class: "input-container" }, [
+            _el("slot", { name: "left-icon" }),
+            input,
+            _el("slot", { name: "right-icon" }),
+        ]);
+
+        const children = [];
+        if (isLabelTop) children.push(buildLabelSlot());
+        children.push(container);
+        if (!isLabelTop) children.push(buildLabelSlot());
+
+        return _el("div", { class: "input-wrapper" }, children);
     }
 
     _buildStyleSheet(isDisabled, paddingVar, minHeightVar) {

@@ -182,7 +182,7 @@ class YumeDrawer extends HTMLElement {
                 position: absolute;
                 top: 0; left: 0; right: 0; bottom: 0;
                 background: rgba(0, 0, 0, 0);
-                transition: background var(--drawer-transition-duration, 0.3s) ease;
+                transition: background var(--component-drawer-transition-duration, 0.3s) ease;
             }
             .overlay.open {
                 background: rgba(0, 0, 0, 0.4);
@@ -199,14 +199,14 @@ class YumeDrawer extends HTMLElement {
                 flex-direction: column;
                 border: none;
                 border-radius: var(--component-drawer-border-radius, 0);
-                transition: transform var(--drawer-transition-duration, 0.3s) ease;
+                transition: transform var(--component-drawer-transition-duration, 0.3s) ease;
             }
 
             .drawer-panel[data-position="left"],
             .drawer-panel[data-position="right"] {
                 top: 0;
                 bottom: 0;
-                width: var(--drawer-width, 300px);
+                width: var(--component-drawer-width, 300px);
                 flex-direction: row;
             }
             .drawer-panel[data-position="left"] {
@@ -224,7 +224,7 @@ class YumeDrawer extends HTMLElement {
             .drawer-panel[data-position="bottom"] {
                 left: 0;
                 right: 0;
-                height: var(--drawer-height, 300px);
+                height: var(--component-drawer-height, 300px);
             }
             .drawer-panel[data-position="top"] {
                 top: 0;

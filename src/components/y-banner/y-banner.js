@@ -1,5 +1,6 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
+import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeBanner extends HTMLElement {
     static get observedAttributes() {
@@ -126,23 +127,12 @@ export class YumeBanner extends HTMLElement {
     render() {
         const color = this.color;
         const size = this.size;
-        const iconAttr = this.icon;
+        const iconSize = this._getIconSize(size);
 
-        this.shadowRoot.innerHTML = `
-            <style>${this._buildStyles(color, size)}</style>
-            <div class="banner" part="banner" role="region" aria-label="${this._getAriaLabel(color)}">
-                <span class="icon-wrapper" part="icon">
-                    <slot name="icon">${iconAttr ? `<y-icon name="${iconAttr}" size="${this._getIconSize(size)}"></y-icon>` : ""}</slot>
-                </span>
-                <span class="content" part="content">
-                    <slot></slot>
-                </span>
-                <span class="action-wrapper" part="action">
-                    <slot name="action"></slot>
-                </span>
-                ${this.dismissable ? `<y-button class="close-btn" part="close-btn" aria-label="Dismiss banner" color="${color}" style-type="filled" size="${size}"><y-icon name="close" size="${this._getIconSize(size)}"></y-icon></y-button>` : ""}
-            </div>
-        `;
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(color, size),
+        ];
+        this.shadowRoot.replaceChildren(this._buildBanner(color, size, iconSize));
 
         if (this.dismissable) {
             this.shadowRoot
@@ -156,6 +146,14 @@ export class YumeBanner extends HTMLElement {
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
+
+    _applyDismissedState() {
+        if (this.dismissed) {
+            this.setAttribute("hidden", "");
+        } else {
+            this.removeAttribute("hidden");
+        }
+    }
 
     _bindSlotListeners() {
         const iconSlot = this.shadowRoot.querySelector("slot[name='icon']");
@@ -175,80 +173,53 @@ export class YumeBanner extends HTMLElement {
         this._updateSlotVisibility();
     }
 
-    _updateSlotVisibility() {
-        const iconSlot = this.shadowRoot.querySelector("slot[name='icon']");
-        const actionSlot = this.shadowRoot.querySelector("slot[name='action']");
-        const iconWrapper = this.shadowRoot.querySelector(".icon-wrapper");
-        const actionWrapper = this.shadowRoot.querySelector(".action-wrapper");
+    _buildBanner(color, size, iconSize) {
+        const iconAttr = this.icon;
 
-        if (iconSlot && iconWrapper) {
-            const hasSlotted = iconSlot
-                .assignedNodes({ flatten: true })
-                .some(
-                    (n) =>
-                        !(
-                            n.nodeType === Node.TEXT_NODE &&
-                            n.textContent.trim() === ""
-                        ),
-                );
-            const hasIconAttr = !!this.icon;
-            iconWrapper.style.display = hasSlotted || hasIconAttr ? "" : "none";
+        const iconSlot = _el("slot", { name: "icon" });
+        if (iconAttr) {
+            iconSlot.appendChild(
+                _el("y-icon", { name: iconAttr, size: iconSize }),
+            );
         }
 
-        if (actionSlot && actionWrapper) {
-            const hasSlotted = actionSlot
-                .assignedNodes({ flatten: true })
-                .some(
-                    (n) =>
-                        !(
-                            n.nodeType === Node.TEXT_NODE &&
-                            n.textContent.trim() === ""
-                        ),
-                );
-            actionWrapper.style.display = hasSlotted ? "" : "none";
+        const children = [
+            _el("span", { class: "icon-wrapper", part: "icon" }, [iconSlot]),
+            _el("span", { class: "content", part: "content" }, [_el("slot")]),
+            _el("span", { class: "action-wrapper", part: "action" }, [
+                _el("slot", { name: "action" }),
+            ]),
+        ];
+
+        if (this.dismissable) {
+            const closeBtn = _el(
+                "y-button",
+                {
+                    class: "close-btn",
+                    part: "close-btn",
+                    "aria-label": "Dismiss banner",
+                    color,
+                    "style-type": "filled",
+                    size,
+                },
+                [_el("y-icon", { name: "x", size: iconSize })],
+            );
+            children.push(closeBtn);
         }
+
+        return _el(
+            "div",
+            {
+                class: "banner",
+                part: "banner",
+                role: "region",
+                "aria-label": this._getAriaLabel(color),
+            },
+            children,
+        );
     }
 
-    _applyDismissedState() {
-        if (this.dismissed) {
-            this.setAttribute("hidden", "");
-        } else {
-            this.removeAttribute("hidden");
-        }
-    }
-
-    _getAriaLabel(color) {
-        const labels = {
-            base: "Banner",
-            primary: "Information banner",
-            secondary: "Information banner",
-            success: "Success banner",
-            error: "Error banner",
-            warning: "Warning banner",
-            help: "Help banner",
-        };
-        return labels[color] || "Banner";
-    }
-
-    _getIconSize(size) {
-        const map = { small: "small", medium: "medium", large: "large" };
-        return map[size] || "medium";
-    }
-
-    _getColorVars(color) {
-        const map = {
-            base: ["--base-content--", "--base-content-inverse"],
-            primary: ["--primary-content--", "--primary-content-inverse"],
-            secondary: ["--secondary-content--", "--secondary-content-inverse"],
-            success: ["--success-content--", "--success-content-inverse"],
-            error: ["--error-content--", "--error-content-inverse"],
-            warning: ["--warning-content--", "--warning-content-inverse"],
-            help: ["--help-content--", "--help-content-inverse"],
-        };
-        return map[color] || map.base;
-    }
-
-    _buildStyles(color, size) {
+    _buildStyleSheet(color, size) {
         const [bgVar, fgVar] = this._getColorVars(color);
         const position = this.position;
         const isOverlap = position === "overlap";
@@ -299,7 +270,8 @@ export class YumeBanner extends HTMLElement {
             `;
         }
 
-        return `
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: block;
                 font-family: var(--font-family-body, sans-serif);
@@ -350,7 +322,73 @@ export class YumeBanner extends HTMLElement {
                 align-items: center;
                 flex-shrink: 0;
             }
-        `;
+        `);
+        return sheet;
+    }
+
+    _getAriaLabel(color) {
+        const labels = {
+            base: "Banner",
+            primary: "Information banner",
+            secondary: "Information banner",
+            success: "Success banner",
+            error: "Error banner",
+            warning: "Warning banner",
+            help: "Help banner",
+        };
+        return labels[color] || "Banner";
+    }
+
+    _getColorVars(color) {
+        const map = {
+            base: ["--base-content--", "--base-content-inverse"],
+            primary: ["--primary-content--", "--primary-content-inverse"],
+            secondary: ["--secondary-content--", "--secondary-content-inverse"],
+            success: ["--success-content--", "--success-content-inverse"],
+            error: ["--error-content--", "--error-content-inverse"],
+            warning: ["--warning-content--", "--warning-content-inverse"],
+            help: ["--help-content--", "--help-content-inverse"],
+        };
+        return map[color] || map.base;
+    }
+
+    _getIconSize(size) {
+        const map = { small: "small", medium: "medium", large: "large" };
+        return map[size] || "medium";
+    }
+
+    _updateSlotVisibility() {
+        const iconSlot = this.shadowRoot.querySelector("slot[name='icon']");
+        const actionSlot = this.shadowRoot.querySelector("slot[name='action']");
+        const iconWrapper = this.shadowRoot.querySelector(".icon-wrapper");
+        const actionWrapper = this.shadowRoot.querySelector(".action-wrapper");
+
+        if (iconSlot && iconWrapper) {
+            const hasSlotted = iconSlot
+                .assignedNodes({ flatten: true })
+                .some(
+                    (n) =>
+                        !(
+                            n.nodeType === Node.TEXT_NODE &&
+                            n.textContent.trim() === ""
+                        ),
+                );
+            const hasIconAttr = !!this.icon;
+            iconWrapper.style.display = hasSlotted || hasIconAttr ? "" : "none";
+        }
+
+        if (actionSlot && actionWrapper) {
+            const hasSlotted = actionSlot
+                .assignedNodes({ flatten: true })
+                .some(
+                    (n) =>
+                        !(
+                            n.nodeType === Node.TEXT_NODE &&
+                            n.textContent.trim() === ""
+                        ),
+                );
+            actionWrapper.style.display = hasSlotted ? "" : "none";
+        }
     }
 }
 

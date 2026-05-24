@@ -1,4 +1,4 @@
-import { getIcon } from "../../icons/registry.js";
+import { getSanitizedIcon } from "../../modules/svg-sanitizer.js";
 
 export class YumeRating extends HTMLElement {
     static formAssociated = true;
@@ -89,7 +89,7 @@ export class YumeRating extends HTMLElement {
 
     render() {
         const isInteractive = !this.disabled && !this.readonly;
-        const iconSvg = getIcon(this.icon);
+        const iconSvg = getSanitizedIcon(this.icon);
         const filledColor = this._getFilledColor(this.color);
         const iconSizePx = this._getIconSize(this.size);
         const gapPx = this._getIconGap(this.size);
@@ -184,6 +184,13 @@ export class YumeRating extends HTMLElement {
 
             .icon.filled {
                 color: ${filledColor};
+            }
+
+            /* Selected icons use the thickest stroke (matches y-icon's "x-thick")
+               so they read as bolder than the unselected outlines. */
+            .icon.filled svg,
+            .icon.filled svg * {
+                stroke-width: 3 !important;
             }
 
             .icon svg {

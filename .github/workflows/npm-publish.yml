@@ -8,11 +8,6 @@ on:
                 required: false
                 type: string
                 default: latest
-            pre-version-suffix:
-                description: "If set, stamps a pre-release version suffix (e.g. beta.123)"
-                required: false
-                type: string
-                default: ""
 
 jobs:
     build-and-publish:
@@ -30,12 +25,6 @@ jobs:
                   node-version: 24
 
             - run: npm ci
-
-            - name: Stamp pre-release version
-              if: inputs.pre-version-suffix != ''
-              run: |
-                  VERSION=$(jq -r .version package.json)
-                  npm version "${VERSION}-${{ inputs.pre-version-suffix }}" --no-git-tag-version
 
             - name: Read package version
               id: pkg

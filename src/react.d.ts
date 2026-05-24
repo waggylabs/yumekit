@@ -9,14 +9,36 @@ type El<T = object> = DetailedHTMLProps<
 declare module "react" {
     namespace JSX {
         interface IntrinsicElements {
+            "y-animate": El<{
+                animation?:
+                    | "fade"
+                    | "slide"
+                    | "zoom-in"
+                    | "zoom-out"
+                    | "flip-horizontal"
+                    | "flip-vertical"
+                    | "rotate-in"
+                    | "bounce"
+                    | "shake"
+                    | "scale";
+                direction?: "up" | "down" | "left" | "right";
+                duration?: string | number;
+                delay?: string | number;
+                easing?: string;
+                trigger?: "load" | "visible" | "manual";
+                once?: "true" | "false" | string;
+                reverse?: boolean | string;
+                stagger?: boolean | string;
+                "stagger-delay"?: string | number;
+                disabled?: boolean | string;
+            }>;
             "y-appbar": El<{
-                orientation?: "vertical" | "horizontal";
-                collapsed?: boolean | string;
                 items?: unknown[] | string;
                 size?: "small" | "medium" | "large";
                 "menu-direction"?: "right" | "down" | "";
                 sticky?: "start" | "end";
                 "mobile-breakpoint"?: string | number;
+                history?: string;
             }>;
             "y-avatar": El<{
                 src?: string;
@@ -24,6 +46,29 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 shape?: string;
                 color?: string;
+            }>;
+            "y-avatar-group": El<{
+                avatars?:
+                    | Array<{
+                          alt?: string;
+                          src?: string;
+                          color?: string;
+                          shape?: "circle" | "square" | "rounded";
+                      }>
+                    | string;
+                orientation?: "horizontal" | "vertical";
+                overlap?: string | number;
+                "stack-order"?: "first" | "last";
+                max?: string | number;
+                size?: "small" | "medium" | "large";
+            }>;
+            "y-break": El<{
+                orientation?: "horizontal" | "vertical";
+                align?: "start" | "center" | "end";
+                variant?: "solid" | "dashed" | "dotted";
+                label?: string;
+                icon?: string;
+                inset?: "none" | "sm" | "md" | "lg";
             }>;
             "y-breadcrumbs": El<{
                 items?: string;
@@ -68,6 +113,12 @@ declare module "react" {
                 "aria-label"?: string;
                 "aria-pressed"?: string;
                 "aria-hidden"?: string;
+                "aria-haspopup"?: string;
+                "aria-expanded"?: string;
+                "aria-controls"?: string;
+                href?: string;
+                target?: string;
+                rel?: string;
             }>;
             "y-button-group": El<{
                 orientation?: "horizontal" | "vertical";
@@ -169,6 +220,15 @@ declare module "react" {
                 position?: "left" | "right" | "top" | "bottom";
                 resizable?: boolean | string;
             }>;
+            "y-droplist": El<{
+                group?: string;
+                disabled?: boolean | string;
+                vertical?: "true" | "false" | string;
+                animation?: string | number;
+                "ghost-class"?: string;
+                "drag-class"?: string;
+                handle?: string;
+            }>;
             "y-gallery": El<{
                 layout?: "grid" | "row" | "column" | "masonry";
                 columns?: string | number;
@@ -177,6 +237,61 @@ declare module "react" {
                 expandable?: boolean | string;
                 loop?: boolean | string;
                 size?: "small" | "medium" | "large";
+            }>;
+            "y-grid": El<{
+                columns?: string | number;
+                rows?: string | number;
+                "auto-flow"?: "row" | "column" | "row dense" | "column dense";
+                "auto-rows"?: string;
+                "auto-columns"?: string;
+                gap?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "row-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "column-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                align?: "start" | "center" | "end" | "stretch" | "baseline";
+                justify?: "start" | "center" | "end" | "stretch";
+                "align-content"?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "stretch"
+                    | "between"
+                    | "around"
+                    | "evenly";
+                "justify-content"?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "stretch"
+                    | "between"
+                    | "around"
+                    | "evenly";
+                "min-item-width"?: string;
+                responsive?: boolean | string;
+                dense?: boolean | string;
             }>;
             "y-icon": El<{
                 name?: string;
@@ -192,8 +307,41 @@ declare module "react" {
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
-                placeholder?: string;
                 "label-position"?: "top" | "bottom";
+                min?: string | number;
+                max?: string | number;
+                step?: string | number;
+            }>;
+            "y-masonry": El<{
+                columns?: string | number;
+                gap?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "row-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "column-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                responsive?: boolean | string;
             }>;
             "y-menu": El<{
                 items?: unknown[] | string;
@@ -201,6 +349,23 @@ declare module "react" {
                 visible?: boolean | string;
                 direction?: "down" | "up" | "left" | "right";
                 size?: "small" | "medium" | "large";
+                history?: string;
+            }>;
+            "y-paginator": El<{
+                "current-page"?: string | number;
+                "total-pages"?: string | number;
+                "page-count"?: string | number;
+                "boundary-count"?: string | number;
+                variant?: "default" | "compact" | "detailed";
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                "hide-on-single-page"?: boolean | string;
+                "items-per-page"?: string | number;
+                "page-size-options"?:
+                    | Array<number | { value: number | string; label?: string }>
+                    | string;
+                "page-size-label"?: string;
+                "aria-label"?: string;
             }>;
             "y-panel": El<{
                 selected?: boolean | string;
@@ -211,17 +376,40 @@ declare module "react" {
             "y-panelbar": El<{
                 exclusive?: boolean | string;
             }>;
+            "y-sidebar": El<{
+                collapsed?: boolean | string;
+                items?: unknown[] | string;
+                size?: "small" | "medium" | "large";
+                "menu-direction"?: "right" | "down" | "";
+                sticky?: "start" | "end";
+                history?: string;
+            }>;
             "y-progress": El<{
+                mode?: "bar" | "ring" | "pie";
                 value?: string | number;
+                values?:
+                    | Array<{ value: number; color?: string; label?: string }>
+                    | string;
                 min?: string | number;
                 max?: string | number;
                 step?: string | number;
                 color?: string;
-                size?: "small" | "medium" | "large";
+                "track-color"?: string;
+                size?: "small" | "medium" | "large" | string;
+                thickness?: "small" | "medium" | "large" | string;
                 "label-display"?: boolean | string;
                 "label-format"?: "percent" | "value" | "fraction";
                 indeterminate?: boolean | string;
                 disabled?: boolean | string;
+                segmented?: boolean | string | number;
+                "segment-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | string;
+                "start-angle"?: string | number;
+                direction?: "clockwise" | "counterclockwise";
             }>;
             "y-rating": El<{
                 name?: string;
@@ -259,6 +447,8 @@ declare module "react" {
             "y-slider": El<{
                 name?: string;
                 value?: string | number;
+                "value-min"?: string | number;
+                "value-max"?: string | number;
                 min?: string | number;
                 max?: string | number;
                 step?: string | number;
@@ -266,15 +456,72 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 orientation?: "horizontal" | "vertical";
+                range?: boolean | string;
+                "min-gap"?: string | number;
+                "aria-label-min"?: string;
+                "aria-label-max"?: string;
+                ticks?: string | number;
+                "tick-labels"?: string;
+                "snap-to-ticks"?: boolean | string;
+                "show-value"?: boolean | string;
+                "value-position"?: "auto" | "above" | "below" | string;
+            }>;
+            "y-splitter": El<{
+                orientation?: "horizontal" | "vertical";
+                split?: string | number;
+                "min-ratio"?: string | number;
+                "max-ratio"?: string | number;
+                disabled?: boolean | string;
+                "handle-size"?: string | number;
+                "handle-position"?: "center" | "start" | "end";
             }>;
             "y-stack": El<{
-                direction?: "row" | "column";
-                mode?: "flex" | "grid" | "masonry";
-                columns?: string | number;
-                gap?: "none" | "x-small" | "small" | "medium" | "large" | "x-large" | "2x-large" | "4x-large";
-                wrap?: boolean | string;
+                direction?: "row" | "row-reverse" | "column" | "column-reverse";
+                wrap?: boolean | "nowrap" | "wrap" | "wrap-reverse";
+                gap?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "row-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
+                "column-gap"?:
+                    | "none"
+                    | "x-small"
+                    | "small"
+                    | "medium"
+                    | "large"
+                    | "x-large"
+                    | "2x-large"
+                    | "4x-large";
                 align?: "start" | "center" | "end" | "stretch" | "baseline";
-                justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
+                justify?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "between"
+                    | "around"
+                    | "evenly";
+                "align-content"?:
+                    | "start"
+                    | "center"
+                    | "end"
+                    | "stretch"
+                    | "between"
+                    | "around"
+                    | "evenly";
+                inline?: boolean | string;
                 responsive?: boolean | string;
             }>;
             "y-stepper": El<{
@@ -294,16 +541,15 @@ declare module "react" {
                 animate?: boolean | string;
                 "toggle-label"?: boolean | string;
                 "label-position"?: "top" | "bottom" | "left" | "right";
-                color?: string;
+                "on-color"?: string;
+                "off-color"?: string;
                 size?: "small" | "medium" | "large";
             }>;
             "y-textarea": El<{
                 name?: string;
                 value?: string;
                 rows?: string | number;
-                placeholder?: string;
                 disabled?: boolean | string;
-                required?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
@@ -321,6 +567,8 @@ declare module "react" {
                           label: string;
                           slot?: string;
                           disabled?: boolean;
+                          leftIcon?: string;
+                          rightIcon?: string;
                       }>
                     | string;
                 size?: "small" | "medium" | "large";
@@ -336,6 +584,7 @@ declare module "react" {
             "y-theme": El<{
                 theme?: string;
                 "cross-origin"?: boolean | string;
+                "no-default-font"?: boolean | string;
             }>;
             "y-toast": El<{
                 position?:
@@ -353,6 +602,20 @@ declare module "react" {
                 position?: "top" | "bottom" | "left" | "right";
                 color?: string;
                 delay?: string | number;
+                open?: boolean | string;
+            }>;
+            "y-tree": El<{
+                exclusive?: boolean | string;
+                selection?: "single" | "none";
+                "route-match"?: "exact" | "prefix" | "off";
+                "aria-label"?: string;
+            }>;
+            "y-tree-item": El<{
+                href?: string;
+                expanded?: boolean | string;
+                selected?: boolean | string;
+                disabled?: boolean | string;
+                history?: "push" | "replace" | "false";
             }>;
         }
     }

@@ -1,10 +1,10 @@
-import "./y-banner.js";
+﻿import "./y-banner.js";
 import "../y-icon/y-icon.js";
 import "../y-button/y-button.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/Banner",
+    title: "Feedback/Banner",
     tags: ["autodocs"],
     argTypes: {
         message: {
@@ -70,13 +70,13 @@ export const Default = {};
 export const Colors = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:8px">
-            <y-banner color="base">Base — neutral informational banner.</y-banner>
-            <y-banner color="primary">Primary — highlighted information.</y-banner>
-            <y-banner color="secondary">Secondary — alternative highlight.</y-banner>
-            <y-banner color="success">Success — operation completed successfully!</y-banner>
-            <y-banner color="warning">Warning — please review before continuing.</y-banner>
-            <y-banner color="error">Error — something went wrong.</y-banner>
-            <y-banner color="help">Help — here is some guidance.</y-banner>
+            <y-banner color="base">Base â€” neutral informational banner.</y-banner>
+            <y-banner color="primary">Primary â€” highlighted information.</y-banner>
+            <y-banner color="secondary">Secondary â€” alternative highlight.</y-banner>
+            <y-banner color="success">Success â€” operation completed successfully!</y-banner>
+            <y-banner color="warning">Warning â€” please review before continuing.</y-banner>
+            <y-banner color="error">Error â€” something went wrong.</y-banner>
+            <y-banner color="help">Help â€” here is some guidance.</y-banner>
         </div>
     `,
 };

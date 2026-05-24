@@ -1,7 +1,7 @@
-import "./y-colorpicker.js";
+﻿import "./y-colorpicker.js";
 
 export default {
-    title: "Components/Colorpicker",
+    title: "Data/Colorpicker",
     tags: ["autodocs"],
     argTypes: {
         value: {
@@ -37,15 +37,18 @@ export const WithAlpha = {
 };
 
 export const RGBFormat = {
-    render: () => `<y-colorpicker value="#3498db" format="rgb"></y-colorpicker>`,
+    render: () =>
+        `<y-colorpicker value="#3498db" format="rgb"></y-colorpicker>`,
 };
 
 export const HSLFormat = {
-    render: () => `<y-colorpicker value="#2ecc71" format="hsl"></y-colorpicker>`,
+    render: () =>
+        `<y-colorpicker value="#2ecc71" format="hsl"></y-colorpicker>`,
 };
 
 export const HSVFormat = {
-    render: () => `<y-colorpicker value="#e67e22" format="hsv"></y-colorpicker>`,
+    render: () =>
+        `<y-colorpicker value="#e67e22" format="hsv"></y-colorpicker>`,
 };
 
 export const Sizes = {
@@ -59,9 +62,11 @@ export const Sizes = {
 };
 
 export const LimitedFormats = {
-    render: () => `<y-colorpicker value="#1abc9c" formats='["hex","rgb"]'></y-colorpicker>`,
+    render: () =>
+        `<y-colorpicker value="#1abc9c" formats='["hex","rgb"]'></y-colorpicker>`,
 };
 
 export const WithAlphaAllFormats = {
-    render: () => `<y-colorpicker value="#8e44ad" show-alpha formats='["hex","rgb","hsl","hsv"]'></y-colorpicker>`,
+    render: () =>
+        `<y-colorpicker value="#8e44ad" show-alpha formats='["hex","rgb","hsl","hsv"]'></y-colorpicker>`,
 };

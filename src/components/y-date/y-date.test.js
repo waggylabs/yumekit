@@ -645,4 +645,61 @@ describe("<y-date>", () => {
 
         trigger.getBoundingClientRect = origGetBoundingClientRect;
     });
+
+    describe("XSS hardening", () => {
+        const cases = [
+            {
+                name: "placeholder",
+                payload: `Pick" onfocus="window.__xssDatePlaceholder=true" autofocus x="`,
+                flag: "__xssDatePlaceholder",
+            },
+            {
+                name: "value",
+                payload: `2026-01-01" onfocus="window.__xssDateValue=true" autofocus x="`,
+                flag: "__xssDateValue",
+            },
+            {
+                name: "min",
+                payload: `2026-01-01" onfocus="window.__xssDateMin=true" autofocus x="`,
+                flag: "__xssDateMin",
+            },
+            {
+                name: "max",
+                payload: `2026-12-31" onfocus="window.__xssDateMax=true" autofocus x="`,
+                flag: "__xssDateMax",
+            },
+            {
+                name: "format",
+                payload: `MM/DD/YYYY" onfocus="window.__xssDateFormat=true" autofocus x="`,
+                flag: "__xssDateFormat",
+            },
+        ];
+
+        for (const { name, payload, flag } of cases) {
+            it(`does not allow attribute breakout via ${name}`, async () => {
+                const el = document.createElement("y-date");
+                el.setAttribute(name, payload);
+                document.body.appendChild(el);
+
+                expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+                expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+                expect(window[flag]).to.be.undefined;
+
+                document.body.removeChild(el);
+            });
+        }
+
+        it("clear button uses <y-icon name='x'> rather than inline SVG", async () => {
+            const el = await fixture(
+                html`<y-date clearable value="2026-01-01"></y-date>`,
+            );
+            const btn = el.shadowRoot.querySelector(".clear-btn");
+            expect(btn).to.exist;
+            // No raw SVG element inside the clear button
+            expect(btn.querySelector("svg")).to.be.null;
+            const icon = btn.querySelector("y-icon");
+            expect(icon).to.exist;
+            expect(icon.getAttribute("name")).to.equal("x");
+        });
+    });
 });

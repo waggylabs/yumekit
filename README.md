@@ -17,7 +17,7 @@
 
 ## Overview
 
-YumeKit is a collection of 35 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
+YumeKit is a collection of 41 production-ready custom elements built with native Web Components. It works with any framework — or none at all — and ships with a comprehensive design token system, built-in theming, an icon registry, and full TypeScript support.
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
@@ -78,6 +78,7 @@ Then use the `<y-theme>` component to apply a theme:
 | App Bar      | `<y-appbar>`       | Top or side navigation bar                          |
 | Avatar       | `<y-avatar>`       | User avatar with shape and color variants           |
 | Badge        | `<y-badge>`        | Status badge or label                               |
+| Break        | `<y-break>`        | Divider with optional centered label, icon, or slot |
 | Breadcrumbs  | `<y-breadcrumbs>`  | Navigation breadcrumb trail with collapse support   |
 | Button       | `<y-button>`       | Button with icon, size, and style variants          |
 | Button Group | `<y-button-group>` | Groups buttons (or inputs) into a connected toolbar |
@@ -88,9 +89,12 @@ Then use the `<y-theme>` component to apply a theme:
 | Dialog       | `<y-dialog>`       | Modal dialog                                        |
 | Dock         | `<y-dock>`         | Fixed navigation dock                               |
 | Drawer       | `<y-drawer>`       | Side drawer / sidebar                               |
+| Droplist     | `<y-droplist>`     | Drag-and-drop reorderable list                      |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                         |
+| Grid         | `<y-grid>`         | CSS Grid layout container                           |
 | Icon         | `<y-icon>`         | SVG icon display                                    |
 | Input        | `<y-input>`        | Text input field                                    |
+| Masonry      | `<y-masonry>`      | JS-positioned masonry layout                        |
 | Menu         | `<y-menu>`         | Dropdown navigation menu                            |
 | Panel        | `<y-panel>`        | Accordion panel                                     |
 | Panel Bar    | `<y-panelbar>`     | Accordion panel group                               |
@@ -99,7 +103,8 @@ Then use the `<y-theme>` component to apply a theme:
 | Rating       | `<y-rating>`       | Star / icon rating input                            |
 | Select       | `<y-select>`       | Select / dropdown input                             |
 | Slider       | `<y-slider>`       | Range slider input                                  |
-| Stack        | `<y-stack>`        | Layout container (row, column, grid, masonry)       |
+| Splitter     | `<y-splitter>`     | Two-pane container with a draggable resize handle   |
+| Stack        | `<y-stack>`        | Flexbox layout container (row or column)            |
 | Stepper      | `<y-stepper>`      | Multi-step wizard with sequential flow              |
 | Switch       | `<y-switch>`       | Toggle switch                                       |
 | Table        | `<y-table>`        | Sortable data table                                 |

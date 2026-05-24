@@ -118,7 +118,9 @@ export class YumeColor extends HTMLElement {
         }
     }
     set formats(v) {
-        this.setAttribute("formats", JSON.stringify(v));
+        if (v === null || v === undefined) this.removeAttribute("formats");
+        else if (typeof v === "string") this.setAttribute("formats", v);
+        else this.setAttribute("formats", JSON.stringify(v));
     }
 
     get invalid() {
@@ -234,7 +236,7 @@ export class YumeColor extends HTMLElement {
                         ${
                             this.clearable && this.value
                                 ? `<button class="clear-btn" part="clear-btn" aria-label="Clear color" tabindex="-1" type="button">
-                                    <y-icon name="close" size="small"></y-icon>
+                                    <y-icon name="x" size="small"></y-icon>
                                 </button>`
                                 : ""
                         }
@@ -560,7 +562,7 @@ export class YumeColor extends HTMLElement {
             btn.setAttribute("aria-label", "Clear color");
             btn.setAttribute("tabindex", "-1");
             btn.setAttribute("type", "button");
-            btn.innerHTML = `<y-icon name="close" size="small"></y-icon>`;
+            btn.innerHTML = `<y-icon name="x" size="small"></y-icon>`;
             display.insertAdjacentElement("afterend", btn);
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();

@@ -1,7 +1,7 @@
-import "./y-tag.js";
+﻿import "./y-tag.js";
 
 export default {
-    title: "Components/Tag",
+    title: "Data/Tag",
     tags: ["autodocs"],
     argTypes: {
         color: {

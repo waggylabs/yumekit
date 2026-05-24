@@ -2,6 +2,7 @@ node_modules
 coverage
 dist
 index.html
-styles.css
+styles/*.css
+!styles/style.css
 .vscode
 .DS_Store

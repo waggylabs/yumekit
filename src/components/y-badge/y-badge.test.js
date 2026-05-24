@@ -1,6 +1,13 @@
 import { html, fixture, expect } from "@open-wc/testing";
 import "./y-badge.js"; // adjust path as needed
 
+/** Read concatenated CSS text from a shadowRoot's adoptedStyleSheets. */
+function getStyleText(el) {
+    return el.shadowRoot.adoptedStyleSheets
+        .flatMap((sheet) => [...sheet.cssRules].map((r) => r.cssText))
+        .join(" ");
+}
+
 describe("YumeBadge", () => {
     it("renders with default attributes", async () => {
         const el = await fixture(
@@ -23,7 +30,7 @@ describe("YumeBadge", () => {
                 ><div>Box</div></y-badge
             >`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
 
         expect(style).to.include(
             "bottom: calc(var(--spacing-small, 6px) * -1);",
@@ -37,7 +44,7 @@ describe("YumeBadge", () => {
                 ><div>Target</div></y-badge
             >`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include("background: var(--success");
     });
 
@@ -47,15 +54,19 @@ describe("YumeBadge", () => {
                 ><div>Target</div></y-badge
             >`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
-        expect(style).to.include("background: #ff00ff");
+        const style = getStyleText(el);
+        // Browser may serialize #ff00ff as rgb(255, 0, 255) when read from
+        // CSSStyleSheet rules.
+        expect(style).to.match(
+            /background:\s*(#ff00ff|rgb\(\s*255,\s*0,\s*255\s*\))/,
+        );
     });
 
     it("adjusts size correctly for small", async () => {
         const el = await fixture(
             html`<y-badge value="1" size="small"><div>Size</div></y-badge>`,
         );
-        const style = el.shadowRoot.querySelector("style").textContent;
+        const style = getStyleText(el);
         expect(style).to.include(
             "min-width: var(--component-badge-size-small)",
         );
@@ -110,5 +121,59 @@ describe("YumeBadge", () => {
         // slotchange fires asynchronously after slot assignment settles
         await new Promise((r) => setTimeout(r, 0));
         expect(getComputedStyle(badge).position).to.equal("absolute");
+    });
+
+    describe("XSS hardening", () => {
+        it("renders value as text, not HTML", async () => {
+            const hostile = `<img src=x onerror="window.__xssBadgeValue=true">`;
+            const el = await fixture(
+                html`<y-badge value=${hostile}></y-badge>`,
+            );
+
+            const badge = el.shadowRoot.querySelector(".badge");
+            expect(badge).to.exist;
+            expect(badge.querySelector("img")).to.be.null;
+            expect(badge.textContent).to.equal(hostile);
+            expect(window.__xssBadgeValue).to.be.undefined;
+        });
+
+        it("falls back to the primary theme for an unsafe custom color (CSS-context escape)", async () => {
+            // A hostile color that tries to escape the <style> context. Since
+            // the badge no longer uses an inline <style> block this would be
+            // moot, but we still validate the input to keep CSS clean and
+            // preempt regressions.
+            const hostile = `red; }</style><script>window.__xssBadgeColor=true</script><x x="`;
+            const el = await fixture(
+                html`<y-badge value="!" color=${hostile}></y-badge>`,
+            );
+
+            const style = getStyleText(el);
+            // No </style> sequence in the resolved rules
+            expect(style).to.not.include("</style>");
+            expect(style).to.not.include("<script>");
+            // Falls back to the primary theme variable
+            expect(style).to.include("--primary-content");
+            expect(window.__xssBadgeColor).to.be.undefined;
+        });
+
+        it("accepts a safe hex color but rejects a hostile one wrapped in #", async () => {
+            const el = await fixture(
+                html`<y-badge value="!" color="#ff00ff"></y-badge>`,
+            );
+            const safeStyle = getStyleText(el);
+            expect(safeStyle).to.match(
+                /background:\s*(#ff00ff|rgb\(\s*255,\s*0,\s*255\s*\))/,
+            );
+
+            // Now a hostile string that starts with `#` but is not a valid hex
+            const hostile = `#ff00ff; background-image: url(javascript:alert(1));//`;
+            el.setAttribute("color", hostile);
+            await new Promise((r) => setTimeout(r, 0));
+
+            const hostileStyle = getStyleText(el);
+            expect(hostileStyle).to.not.include("javascript:");
+            // Falls back to the primary theme variable
+            expect(hostileStyle).to.include("--primary-content");
+        });
     });
 });

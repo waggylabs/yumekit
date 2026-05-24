@@ -1,8 +1,6 @@
 name: Publish
 
 on:
-    push:
-        branches: [dev]
     release:
         types: [published]
 
@@ -28,7 +26,7 @@ jobs:
             - run: npm test
 
     publish-beta:
-        if: github.event_name == 'push'
+        if: github.event.release.prerelease == true
         needs: test
         permissions:
             id-token: write
@@ -36,11 +34,10 @@ jobs:
         uses: ./.github/workflows/npm-publish.yml
         with:
             tag: beta
-            pre-version-suffix: beta.${{ github.run_number }}
         secrets: inherit
 
     publish-release:
-        if: github.event_name == 'release'
+        if: github.event.release.prerelease == false
         needs: test
         permissions:
             id-token: write

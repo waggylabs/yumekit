@@ -65,6 +65,26 @@ export function contrastTextColor(bgColor) {
 }
 
 /**
+ * Whether a string is a safe CSS color literal — `#hex`, `rgb()`/`rgba()`,
+ * or `hsl()`/`hsla()`. Used to gate user-supplied colors before they reach a
+ * CSS context (style tag, inline style attribute) so a hostile value cannot
+ * escape and inject markup or other declarations.
+ *
+ * Intentionally strict: rejects named colors, `currentColor`, `var(...)`, and
+ * `color()` so callers can fall back to a known semantic default. Inputs with
+ * comments, semicolons, braces, or surrounding whitespace are rejected.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isSafeCssColor(value) {
+    if (typeof value !== "string") return false;
+    return /^(#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|rgba?\([^()]*\)|hsla?\([^()]*\))$/i.test(
+        value,
+    );
+}
+
+/**
  * Return a [background, foreground] CSS variable pair for a color scheme.
  * Background is `--{color}-content--`, foreground is `--{color}-content-inverse`.
  * @param {string} color — one of base, primary, secondary, success, warning, error, help
@@ -413,6 +433,68 @@ export function resolveCSSColor(varExpr, el) {
 }
 
 // =============================================================================
+// Nav utilities
+// =============================================================================
+
+/**
+ * Build the icon node for a nav item. `iconValue` must be a registered icon
+ * name; custom glyphs should be added via the `<y-icon>` registry rather
+ * than inlined as markup, so this surface is not an XSS sink for callers
+ * passing items as JSON.
+ * @param {string} iconValue — registered icon name (e.g. `"home"`)
+ * @param {string} iconSize — size variant passed to `<y-icon size>`
+ * @returns {HTMLElement}
+ */
+export function buildNavItemIcon(iconValue, iconSize) {
+    return createElement("y-icon", {
+        slot: "left-icon",
+        part: "icon",
+        name: iconValue,
+        size: iconSize,
+    });
+}
+
+/**
+ * Determine whether a nav item should render as active. Items may set
+ * `selected: true` for explicit control; otherwise the `href` is matched
+ * against the current `window.location` (path+search+hash, then full URL).
+ * @param {{selected?: boolean, href?: string}} item
+ * @returns {boolean}
+ */
+export function isNavItemActive(item) {
+    if (item.selected) return true;
+    if (!item.href) return false;
+    const loc = window.location;
+    const current = loc.pathname + loc.search + loc.hash;
+    return item.href === current || item.href === loc.href;
+}
+
+/**
+ * Dispatch a cancelable `navigate` event from `host`, then either
+ * `pushState` (default) or assign `window.location.href` when the host's
+ * `history` attribute is `"false"`. Bails out if a listener calls
+ * `preventDefault()` on the event.
+ * @param {HTMLElement} host
+ * @param {string} href
+ */
+export function navigateFrom(host, href) {
+    const event = new CustomEvent("navigate", {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: { href },
+    });
+    if (!host.dispatchEvent(event)) return;
+
+    if (host.getAttribute("history") === "false") {
+        window.location.href = href;
+    } else {
+        history.pushState({}, "", href);
+        window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
+    }
+}
+
+// =============================================================================
 // Slot utilities
 // =============================================================================
 
@@ -442,4 +524,58 @@ export function hideEmptySlotContainers(shadowRoot, slotsConfig = {}) {
             container.style.display = assigned.length > 0 ? "" : "none";
         }
     });
+}
+
+// =============================================================================
+// Spacing / gap utilities
+// =============================================================================
+
+/**
+ * Map of gap-token names to the CSS expression that resolves them, used by
+ * layout components (`y-grid`, `y-masonry`, `y-stack`) to translate the
+ * shared `gap` / `row-gap` / `column-gap` attribute scale to spacing tokens.
+ */
+export const GAP_TOKEN_MAP = {
+    none: "var(--spacing-none, 0px)",
+    "x-small": "var(--spacing-x-small, 4px)",
+    small: "var(--spacing-small, 6px)",
+    medium: "var(--spacing-medium, 8px)",
+    large: "var(--spacing-large, 12px)",
+    "x-large": "var(--spacing-x-large, 16px)",
+    "2x-large": "var(--spacing-2x-large, 24px)",
+    "4x-large": "var(--spacing-4x-large, 32px)",
+};
+
+/**
+ * Resolve a gap-token attribute on a host element to its CSS expression.
+ * Falls back to the unified `gap` attribute when the side override is unset
+ * or unknown, and to `medium` when neither resolves.
+ * @param {HTMLElement} host — the component element holding the attributes
+ * @param {string} attrName — `"gap"`, `"row-gap"`, or `"column-gap"`
+ * @returns {string} CSS expression, e.g. `var(--spacing-medium, 8px)`
+ */
+export function resolveGapToken(host, attrName) {
+    const raw = host.getAttribute(attrName);
+    if (raw && GAP_TOKEN_MAP[raw]) return GAP_TOKEN_MAP[raw];
+    const fallback = host.getAttribute("gap");
+    if (fallback && GAP_TOKEN_MAP[fallback]) return GAP_TOKEN_MAP[fallback];
+    return GAP_TOKEN_MAP.medium;
+}
+
+/**
+ * Measure a CSS length expression in pixels by appending a hidden probe
+ * element to the given container. Useful when JS-positioned layout (e.g.
+ * masonry) needs the resolved pixel value of a token-driven gap.
+ * @param {HTMLElement} container — element to append the probe to
+ * @param {string} cssLength — any valid `width` value (e.g. `var(--spacing-medium, 8px)`)
+ * @returns {number} resolved pixel width
+ */
+export function measureCSSLength(container, cssLength) {
+    const probe = createElement("div", {
+        style: `position:absolute;visibility:hidden;width:${cssLength}`,
+    });
+    container.appendChild(probe);
+    const px = probe.offsetWidth;
+    probe.remove();
+    return px;
 }

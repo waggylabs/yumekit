@@ -1,4 +1,4 @@
-import "./y-drawer.js";
+﻿import "./y-drawer.js";
 import "../y-button/y-button.js";
 
 // Force iframe rendering so position:fixed drawer panels sit within the story
@@ -6,7 +6,7 @@ import "../y-button/y-button.js";
 const docsParams = { docs: { story: { inline: false, height: "320px" } } };
 
 export default {
-    title: "Components/Drawer",
+    title: "Feedback/Drawer",
     tags: ["autodocs"],
     parameters: docsParams,
     argTypes: {

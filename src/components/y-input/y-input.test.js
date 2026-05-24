@@ -125,4 +125,28 @@ describe("<y-input>", () => {
         expect(el.value).to.equal("preset");
         document.body.removeChild(el);
     });
+
+    describe("XSS hardening", () => {
+        const cases = [
+            { name: "value", payload: `" onfocus="window.__xssInputValue=true" autofocus x="`, flag: "__xssInputValue" },
+            { name: "type",  payload: `text" onfocus="window.__xssInputType=true" autofocus x="`, flag: "__xssInputType" },
+            { name: "min",   payload: `0" onfocus="window.__xssInputMin=true" autofocus x="`,   flag: "__xssInputMin" },
+            { name: "max",   payload: `9" onfocus="window.__xssInputMax=true" autofocus x="`,   flag: "__xssInputMax" },
+            { name: "step",  payload: `1" onfocus="window.__xssInputStep=true" autofocus x="`,  flag: "__xssInputStep" },
+        ];
+
+        for (const { name, payload, flag } of cases) {
+            it(`does not allow attribute breakout via ${name}`, async () => {
+                const el = document.createElement("y-input");
+                el.setAttribute(name, payload);
+                document.body.appendChild(el);
+
+                expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+                expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+                expect(window[flag]).to.be.undefined;
+
+                document.body.removeChild(el);
+            });
+        }
+    });
 });

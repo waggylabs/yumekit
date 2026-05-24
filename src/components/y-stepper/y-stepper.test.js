@@ -700,6 +700,14 @@ describe("YumeStepper", () => {
         expect(JSON.parse(el.getAttribute("items"))).to.deep.equal(newItems);
     });
 
+    it("items setter mirrors a JSON string instead of double-encoding it", async () => {
+        const el = await fixture(html`<y-stepper></y-stepper>`);
+        const json = '[{"label":"One","slot":"one"}]';
+        el.items = json;
+        expect(el.getAttribute("items")).to.equal(json);
+        expect(el.items).to.deep.equal([{ label: "One", slot: "one" }]);
+    });
+
     // ── Position ──────────────────────────────────────────────
 
     it("renders indicators before panels by default (start)", async () => {

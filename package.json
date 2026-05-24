@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.4.4",
+    "version": "0.5.0",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -36,10 +36,14 @@
         "access": "public"
     },
     "scripts": {
-        "build": "rollup -c && tsc && node scripts/copy-component-types.js",
+        "build": "npm run build:tokens && rollup -c && tsc && node scripts/copy-component-types.js",
+        "build:tokens": "node scripts/build-tokens.js",
         "prepublishOnly": "npm run build",
+        "pretest": "npm run build:tokens",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage",
+        "prestorybook": "npm run build:tokens",
         "storybook": "storybook dev -p 6006",
+        "prebuild-storybook": "npm run build:tokens",
         "build-storybook": "storybook build"
     },
     "repository": {
@@ -61,6 +65,7 @@
         "@storybook/addon-docs": "^10.3.5",
         "@storybook/addon-vitest": "^10.3.5",
         "@storybook/html-vite": "^10.3.5",
+        "@tokens-studio/sd-transforms": "^2.0.3",
         "@vitest/browser-playwright": "^4.1.2",
         "@vitest/coverage-v8": "^4.1.2",
         "@web/test-runner": "^0.20.0",
@@ -74,6 +79,7 @@
         "rollup": "^4.59.0",
         "sinon": "^21.0.1",
         "storybook": "^10.3.5",
+        "style-dictionary": "^5.4.0",
         "typescript": "^5.9.3",
         "vite": "^6.4.1",
         "vitest": "^4.1.2"

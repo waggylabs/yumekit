@@ -1,7 +1,7 @@
-import "./y-checkbox.js";
+﻿import "./y-checkbox.js";
 
 export default {
-    title: "Components/Checkbox",
+    title: "Input/Checkbox",
     tags: ["autodocs"],
     argTypes: {
         label: {

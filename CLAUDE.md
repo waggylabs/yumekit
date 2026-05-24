@@ -60,9 +60,20 @@ slot.appendChild(defaultContent);
 if (this.querySelector('[slot="my-slot"]')) { ... }
 ```
 
+## Untrusted Input
+
+Two cases need extra care — `_el` alone doesn't cover them:
+
+- **CSS color literals.** When painting a user-supplied color into any CSS context (inline `style`, `<style>` block, CSS variable), gate the value through `isSafeCssColor` from `src/modules/helpers.js` and fall back to a semantic theme default when it fails. The helper accepts only `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()` literals. See `y-badge` and `y-select` (per-option `color`) for the pattern.
+- **SVG markup.** Anything that ultimately came from `registerIcon(name, svg)` must go through the shared sanitizer in `src/modules/svg-sanitizer.js` before it touches `innerHTML`. Prefer `<y-icon name="…">`; if you need raw markup, call `getSanitizedIcon(name)`.
+
 ## New Component Checklist
 
-Every new component requires: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, `variables.css`, `.figma/variables.json`, `llm.txt` entry, and a story in `y-*.stories.js`.
+Every new component requires: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, token entries under `tokens/core/components.json` and each `tokens/themes/*.json` (run `npm run build:tokens` to regenerate `styles/`), `llm.txt` entry, and a story in `y-*.stories.js`.
+
+## Design Tokens
+
+Tokens under `tokens/` are the source of truth. `styles/*.css` is generated — never edit it directly. Run `npm run build:tokens` after any token change. `npm run build` chains the tokens build first.
 
 ## Testing
 

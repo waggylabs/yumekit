@@ -7,6 +7,7 @@ export class YumeButton extends HTMLElement {
             "disabled", "name", "value", "autofocus", "form", "formaction",
             "formenctype", "formmethod", "formnovalidate", "formtarget",
             "aria-label", "aria-pressed", "aria-hidden",
+            "aria-haspopup", "aria-expanded", "aria-controls",
             "href", "target", "rel",
         ];
     }
@@ -125,14 +126,6 @@ export class YumeButton extends HTMLElement {
     // -------------------------------------------------------------------------
     // Public
     // -------------------------------------------------------------------------
-
-    /**
-     * Sets the button options from an array of objects.
-     * @param {Array<Object>} options
-     */
-    setOptions(options) {
-        this.setAttribute("options", JSON.stringify(options));
-    }
 
     // -------------------------------------------------------------------------
     // Private

@@ -130,6 +130,18 @@ describe("YumeRating", () => {
         expect(rules).to.include("--error-content--");
     });
 
+    it("applies the thickest stroke width to filled icons", async () => {
+        const el = await fixture(html`<y-rating value="1"></y-rating>`);
+        const rules = Array.from(
+            el.shadowRoot.adoptedStyleSheets[0].cssRules,
+        )
+            .map((r) => r.cssText)
+            .join(" ");
+        expect(rules).to.match(
+            /\.icon\.filled svg[\s\S]*stroke-width:\s*3/,
+        );
+    });
+
     // ── Size ──────────────────────────────────────────────────
     it("applies medium icon size by default", async () => {
         const el = await fixture(html`<y-rating></y-rating>`);
@@ -304,5 +316,38 @@ describe("YumeRating", () => {
         await new Promise((r) => setTimeout(r, 0));
         const icons = el.shadowRoot.querySelectorAll(".icon");
         expect(icons.length).to.equal(3);
+    });
+
+    describe("XSS hardening", () => {
+        it("sanitizes a registered icon containing a hostile <script>", async () => {
+            registerIcon(
+                "test-hostile-rating",
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><script>window.__xssRatingScript=true</script><path d="M0 0h24v24H0z"/></svg>`,
+            );
+            const el = await fixture(
+                html`<y-rating
+                    icon="test-hostile-rating"
+                    max="3"
+                ></y-rating>`,
+            );
+            expect(el.shadowRoot.querySelector("script")).to.be.null;
+            expect(window.__xssRatingScript).to.be.undefined;
+        });
+
+        it("sanitizes a registered icon containing an event-handler attribute", async () => {
+            registerIcon(
+                "test-hostile-rating-attr",
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" onload="window.__xssRatingAttr=true"><path d="M0 0h24v24H0z" onclick="window.__xssRatingAttr=true"/></svg>`,
+            );
+            const el = await fixture(
+                html`<y-rating
+                    icon="test-hostile-rating-attr"
+                    max="2"
+                ></y-rating>`,
+            );
+            expect(el.shadowRoot.querySelector("[onload]")).to.be.null;
+            expect(el.shadowRoot.querySelector("[onclick]")).to.be.null;
+            expect(window.__xssRatingAttr).to.be.undefined;
+        });
     });
 });

@@ -1,13 +1,51 @@
+import {
+    createElement as _el,
+    resolveGapToken,
+} from "../../modules/helpers.js";
+
+const DIRECTION_VALUES = new Set([
+    "row",
+    "row-reverse",
+    "column",
+    "column-reverse",
+]);
+
+const WRAP_VALUES = new Set(["nowrap", "wrap", "wrap-reverse"]);
+
+const ALIGN_MAP = {
+    start: "flex-start",
+    end: "flex-end",
+    center: "center",
+    stretch: "stretch",
+    baseline: "baseline",
+};
+
+const JUSTIFY_MAP = {
+    start: "flex-start",
+    end: "flex-end",
+    center: "center",
+    between: "space-between",
+    around: "space-around",
+    evenly: "space-evenly",
+};
+
+const ALIGN_CONTENT_MAP = {
+    ...JUSTIFY_MAP,
+    stretch: "stretch",
+};
+
 export class YumeStack extends HTMLElement {
     static get observedAttributes() {
         return [
             "direction",
-            "mode",
-            "columns",
-            "gap",
             "wrap",
             "align",
             "justify",
+            "align-content",
+            "gap",
+            "row-gap",
+            "column-gap",
+            "inline",
             "responsive",
         ];
     }
@@ -19,82 +57,50 @@ export class YumeStack extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
-        this._resizeObserver = null;
-        this._masonryRAF = null;
         this.render();
     }
 
     connectedCallback() {
-        this._applyLayout();
-        if (this.mode === "masonry") this._initMasonry();
-        if (this.responsive) this._initResponsive();
-    }
-
-    disconnectedCallback() {
-        this._teardownMasonry();
+        this._applyStyles();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
-
-        const wasMasonry = name === "mode" && oldValue === "masonry";
-        const isMasonry = this.mode === "masonry";
-
-        if (wasMasonry) this._teardownMasonry();
-
-        this._applyLayout();
-
-        if (isMasonry && this.isConnected) this._initMasonry();
-        if (name === "responsive" && this.responsive && this.isConnected)
-            this._initResponsive();
+        this._applyStyles();
     }
 
     // -------------------------------------------------------------------------
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** Main axis direction (flex mode only). */
+    /** Main axis direction; maps to `flex-direction`. */
     get direction() {
-        return this.getAttribute("direction") || "row";
+        const raw = this.getAttribute("direction");
+        return DIRECTION_VALUES.has(raw) ? raw : "row";
     }
     set direction(val) {
         this.setAttribute("direction", val);
     }
 
-    /** Layout algorithm: "flex" | "grid" | "masonry". */
-    get mode() {
-        return this.getAttribute("mode") || "flex";
-    }
-    set mode(val) {
-        this.setAttribute("mode", val);
-    }
-
-    /** Number of columns (grid/masonry modes). */
-    get columns() {
-        return parseInt(this.getAttribute("columns"), 10) || 3;
-    }
-    set columns(val) {
-        this.setAttribute("columns", String(val));
-    }
-
-    /** Gap between items, maps to --spacing-* tokens. */
-    get gap() {
-        return this.getAttribute("gap") || "medium";
-    }
-    set gap(val) {
-        this.setAttribute("gap", val);
-    }
-
-    /** Allow items to wrap (flex mode only). */
+    /**
+     * `nowrap` (default) | `wrap` | `wrap-reverse`. Presence of the `wrap`
+     * attribute without a value resolves to `wrap` for back-compat with the
+     * earlier boolean form.
+     */
     get wrap() {
-        return this.hasAttribute("wrap");
+        if (!this.hasAttribute("wrap")) return "nowrap";
+        const raw = this.getAttribute("wrap");
+        if (raw === "" || raw == null) return "wrap";
+        return WRAP_VALUES.has(raw) ? raw : "wrap";
     }
     set wrap(val) {
-        if (val) this.setAttribute("wrap", "");
-        else this.removeAttribute("wrap");
+        if (val === false || val === "nowrap") this.removeAttribute("wrap");
+        else if (val === true || val === "" || val == null)
+            this.setAttribute("wrap", "");
+        else this.setAttribute("wrap", String(val));
     }
 
-    /** Cross-axis alignment. */
+    /** Cross-axis alignment; maps to `align-items`. */
     get align() {
         return this.getAttribute("align") || "stretch";
     }
@@ -102,7 +108,7 @@ export class YumeStack extends HTMLElement {
         this.setAttribute("align", val);
     }
 
-    /** Main-axis distribution (flex mode only). */
+    /** Main-axis distribution; maps to `justify-content`. */
     get justify() {
         return this.getAttribute("justify") || "start";
     }
@@ -110,9 +116,51 @@ export class YumeStack extends HTMLElement {
         this.setAttribute("justify", val);
     }
 
+    /** Cross-axis distribution between wrapped lines; maps to `align-content`. */
+    get alignContent() {
+        return this.getAttribute("align-content") || "stretch";
+    }
+    set alignContent(val) {
+        this.setAttribute("align-content", val);
+    }
+
+    /** Gap between items, maps to `--spacing-*` tokens. */
+    get gap() {
+        return this.getAttribute("gap") || "medium";
+    }
+    set gap(val) {
+        this.setAttribute("gap", val);
+    }
+
+    /** Row gap override; falls back to `gap` when unset. */
+    get rowGap() {
+        return this.getAttribute("row-gap") || "";
+    }
+    set rowGap(val) {
+        this.setAttribute("row-gap", val);
+    }
+
+    /** Column gap override; falls back to `gap` when unset. */
+    get columnGap() {
+        return this.getAttribute("column-gap") || "";
+    }
+    set columnGap(val) {
+        this.setAttribute("column-gap", val);
+    }
+
+    /** Use `display: inline-flex` instead of `flex`. */
+    get inline() {
+        return this.hasAttribute("inline");
+    }
+    set inline(val) {
+        if (val) this.setAttribute("inline", "");
+        else this.removeAttribute("inline");
+    }
+
     /**
-     * Auto-reduce columns at narrow container widths. Defaults to `true`;
-     * set `responsive="false"` to disable.
+     * On `direction="row"`, auto-enable wrap and collapse to `column` below the
+     * mobile breakpoint (measured against the stack's own container width).
+     * Defaults to `true`; set `responsive="false"` to disable.
      */
     get responsive() {
         return this.getAttribute("responsive") !== "false";
@@ -130,266 +178,100 @@ export class YumeStack extends HTMLElement {
     // -------------------------------------------------------------------------
 
     render() {
-        this.shadowRoot.innerHTML = `<div class="container" part="container"><slot></slot></div>`;
-        this._container = this.shadowRoot.querySelector(".container");
-        this._slot = this.shadowRoot.querySelector("slot");
-        this._slot.addEventListener("slotchange", () => {
-            if (this.mode === "masonry") this._syncMasonryObserver();
-        });
+        const slot = _el("slot");
+        this._container = _el(
+            "div",
+            { class: "container", part: "container" },
+            [slot],
+        );
+        this.shadowRoot.replaceChildren(this._container);
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
-    _applyLayout() {
+    _applyStyles() {
         if (!this._container) return;
-        const sheet = this._buildStyleSheet();
-        this.shadowRoot.adoptedStyleSheets = [sheet];
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+    }
 
-        if (this.mode === "masonry") {
-            this._layoutMasonry();
-        } else {
-            this._clearMasonryPositions();
-        }
+    _buildCollapseRule(useContainerQuery) {
+        if (!useContainerQuery) return "";
+        const breakpoint = this._getMobileBreakpoint();
+        return `
+            @container (max-width: ${breakpoint}px) {
+                .container {
+                    flex-direction: column;
+                    flex-wrap: nowrap;
+                    align-content: stretch;
+                }
+            }
+        `;
     }
 
     _buildStyleSheet() {
+        const direction = this.direction;
+        const isRow = direction === "row" || direction === "row-reverse";
+        const wrapValue = this._resolveWrap(isRow);
+        const alignItems = ALIGN_MAP[this.align] || "stretch";
+        const justifyContent = JUSTIFY_MAP[this.justify] || "flex-start";
+        const alignContent = ALIGN_CONTENT_MAP[this.alignContent] || "stretch";
+        const inline = this.inline;
+        const display = inline ? "inline-flex" : "flex";
+        const hostDisplay = inline ? "inline-block" : "block";
+        const gapValue = `var(--component-stack-gap, ${resolveGapToken(this, "gap")})`;
+        const rowGapValue = `var(--component-stack-row-gap, ${resolveGapToken(this, "row-gap")})`;
+        const columnGapValue = `var(--component-stack-column-gap, ${resolveGapToken(this, "column-gap")})`;
+
+        // Container queries require `container-type: inline-size`, which also
+        // applies inline-size containment — that breaks intrinsic sizing for
+        // `inline-flex` hosts (they collapse to 0 width). Only opt in when the
+        // responsive collapse rule actually needs the query.
+        const useContainerQuery = this.responsive && isRow && !inline;
+        const containerType = useContainerQuery
+            ? "container-type: inline-size;"
+            : "";
+        const slottedRule =
+            wrapValue !== "nowrap" ? "::slotted(*) { flex-shrink: 0; }" : "";
+        const collapseRule = this._buildCollapseRule(useContainerQuery);
+
         const sheet = new CSSStyleSheet();
-        const gapValue = this._resolveGap();
-        const mode = this.mode;
-        const cols = this.columns;
-        const responsive = this.responsive;
-
-        let containerCSS;
-        let slottedCSS = "";
-
-        if (mode === "grid") {
-            const columnsTemplate = responsive
-                ? this._buildResponsiveGridTemplate(cols, gapValue)
-                : `repeat(var(--component-stack-columns, ${cols}), 1fr)`;
-            containerCSS = `
-                .container {
-                    display: grid;
-                    grid-template-columns: ${columnsTemplate};
-                    gap: ${gapValue};
-                }
-            `;
-        } else if (mode === "masonry") {
-            containerCSS = `
-                .container {
-                    position: relative;
-                }
-            `;
-        } else {
-            const dir = this.direction;
-            const wrap = this.wrap || (responsive && dir === "row");
-            const alignMap = {
-                start: "flex-start",
-                end: "flex-end",
-                center: "center",
-                stretch: "stretch",
-                baseline: "baseline",
-            };
-            const justifyMap = {
-                start: "flex-start",
-                end: "flex-end",
-                center: "center",
-                between: "space-between",
-                around: "space-around",
-                evenly: "space-evenly",
-            };
-
-            containerCSS = `
-                .container {
-                    display: flex;
-                    flex-direction: ${dir};
-                    flex-wrap: ${wrap ? "wrap" : "nowrap"};
-                    align-items: ${alignMap[this.align] || "stretch"};
-                    justify-content: ${justifyMap[this.justify] || "flex-start"};
-                    gap: ${gapValue};
-                }
-            `;
-
-            if (wrap) {
-                slottedCSS = `::slotted(*) { flex-shrink: 0; }`;
-            }
-        }
-
         sheet.replaceSync(`
             :host {
-                display: block;
+                display: ${hostDisplay};
                 box-sizing: border-box;
+                ${containerType}
             }
-            ${containerCSS}
-            ${slottedCSS}
+            .container {
+                display: ${display};
+                flex-direction: ${direction};
+                flex-wrap: ${wrapValue};
+                align-items: ${alignItems};
+                justify-content: ${justifyContent};
+                align-content: ${alignContent};
+                gap: ${gapValue};
+                row-gap: ${rowGapValue};
+                column-gap: ${columnGapValue};
+            }
+            ${slottedRule}
+            ${collapseRule}
         `);
         return sheet;
     }
 
-    _buildResponsiveGridTemplate(cols, gapValue) {
-        const minWidth = `var(--component-stack-min-item-width, 240px)`;
-        const evenShare = `calc((100% - ${cols - 1} * ${gapValue}) / ${cols})`;
-        const itemMin = `min(100%, max(${minWidth}, ${evenShare}))`;
-        return `repeat(auto-fit, minmax(${itemMin}, 1fr))`;
+    _getMobileBreakpoint() {
+        const raw = getComputedStyle(this)
+            .getPropertyValue("--component-stack-mobile-breakpoint")
+            .trim();
+        const parsed = parseInt(raw, 10);
+        return Number.isFinite(parsed) ? parsed : 576;
     }
 
-    _clearMasonryPositions() {
-        const items = this._getSlottedElements();
-        items.forEach((item) => {
-            item.style.position = "";
-            item.style.top = "";
-            item.style.left = "";
-            item.style.width = "";
-        });
-        if (this._container) {
-            this._container.style.height = "";
-        }
-    }
-
-    _getBreakpointValue(prop, fallback) {
-        const val = getComputedStyle(this).getPropertyValue(prop).trim();
-        return val ? parseInt(val, 10) : fallback;
-    }
-
-    _getResolvedColumns() {
-        return this._getBreakpointValue(
-            "--component-stack-columns",
-            this.columns,
-        );
-    }
-
-    _getResponsiveColumns() {
-        const cols = this._getResolvedColumns();
-        const mobileBreakpoint = this._getBreakpointValue(
-            "--component-stack-mobile-breakpoint",
-            576,
-        );
-        const tabletBreakpoint = this._getBreakpointValue(
-            "--component-stack-tablet-breakpoint",
-            768,
-        );
-        const width = this._container
-            ? this._container.offsetWidth
-            : window.innerWidth;
-
-        if (width <= mobileBreakpoint) return 1;
-        if (width <= tabletBreakpoint) return Math.min(2, cols);
-        return cols;
-    }
-
-    _getSlottedElements() {
-        if (!this._slot) return [];
-        return this._slot.assignedElements({ flatten: true });
-    }
-
-    _initMasonry() {
-        this._teardownMasonry();
-        this._observedItems = new Set();
-        this._resizeObserver = new ResizeObserver(() => {
-            if (this._masonryRAF) cancelAnimationFrame(this._masonryRAF);
-            this._masonryRAF = requestAnimationFrame(() =>
-                this._layoutMasonry(),
-            );
-        });
-        this._resizeObserver.observe(this._container);
-        this._syncMasonryObserver();
-    }
-
-    _initResponsive() {
-        if (this.mode !== "masonry") return;
-        if (!this._resizeObserver) this._initMasonry();
-    }
-
-    _layoutMasonry() {
-        const items = this._getSlottedElements();
-        if (!items.length || !this._container) return;
-
-        const cols = this.responsive
-            ? this._getResponsiveColumns()
-            : this._getResolvedColumns();
-        const gapPx = this._resolveGapPx();
-        const containerWidth = this._container.offsetWidth;
-        const colWidth = (containerWidth - gapPx * (cols - 1)) / cols;
-
-        const colHeights = new Array(cols).fill(0);
-
-        items.forEach((item) => {
-            const shortest = colHeights.indexOf(Math.min(...colHeights));
-            const x = shortest * (colWidth + gapPx);
-            const y = colHeights[shortest];
-
-            item.style.position = "absolute";
-            item.style.top = `${y}px`;
-            item.style.left = `${x}px`;
-            item.style.width = `${colWidth}px`;
-
-            colHeights[shortest] += item.offsetHeight + gapPx;
-        });
-
-        this._container.style.height = `${Math.max(...colHeights) - gapPx}px`;
-    }
-
-    _resolveGap() {
-        const gapMap = {
-            none: "var(--spacing-none, 0px)",
-            "x-small": "var(--spacing-x-small, 4px)",
-            small: "var(--spacing-small, 6px)",
-            medium: "var(--spacing-medium, 8px)",
-            large: "var(--spacing-large, 12px)",
-            "x-large": "var(--spacing-x-large, 16px)",
-            "2x-large": "var(--spacing-2x-large, 24px)",
-            "4x-large": "var(--spacing-4x-large, 32px)",
-        };
-        return `var(--component-stack-gap, ${gapMap[this.gap] || gapMap.medium})`;
-    }
-
-    _resolveGapPx() {
-        const temp = document.createElement("div");
-        temp.style.position = "absolute";
-        temp.style.visibility = "hidden";
-        temp.style.width = this._resolveGap();
-        this._container.appendChild(temp);
-        const px = temp.offsetWidth;
-        temp.remove();
-        return px;
-    }
-
-    _syncMasonryObserver() {
-        if (!this._resizeObserver) {
-            this._initMasonry();
-            return;
-        }
-
-        const current = new Set(this._getSlottedElements());
-
-        for (const item of this._observedItems) {
-            if (!current.has(item)) {
-                this._resizeObserver.unobserve(item);
-                this._observedItems.delete(item);
-            }
-        }
-
-        for (const item of current) {
-            if (!this._observedItems.has(item)) {
-                this._resizeObserver.observe(item);
-                this._observedItems.add(item);
-            }
-        }
-
-        this._layoutMasonry();
-    }
-
-    _teardownMasonry() {
-        if (this._resizeObserver) {
-            this._resizeObserver.disconnect();
-            this._resizeObserver = null;
-            this._observedItems = null;
-        }
-        if (this._masonryRAF) {
-            cancelAnimationFrame(this._masonryRAF);
-            this._masonryRAF = null;
-        }
+    _resolveWrap(isRow) {
+        if (this.hasAttribute("wrap")) return this.wrap;
+        if (this.responsive && isRow) return "wrap";
+        return "nowrap";
     }
 }
 

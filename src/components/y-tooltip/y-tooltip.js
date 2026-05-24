@@ -1,8 +1,13 @@
-import { getColorVarPair } from "../../modules/helpers.js";
+import {
+    getColorVarPair,
+    createElement as _el,
+} from "../../modules/helpers.js";
+
+const ALLOWED_POSITIONS = ["top", "bottom", "left", "right"];
 
 export class YumeTooltip extends HTMLElement {
     static get observedAttributes() {
-        return ["text", "position", "delay", "color"];
+        return ["text", "position", "delay", "color", "open"];
     }
 
     // -------------------------------------------------------------------------
@@ -66,6 +71,15 @@ export class YumeTooltip extends HTMLElement {
         this.setAttribute("delay", String(val));
     }
 
+    /** When true, the tooltip is forced visible and ignores hover/focus events. */
+    get open() {
+        return this.hasAttribute("open");
+    }
+    set open(val) {
+        if (val) this.setAttribute("open", "");
+        else this.removeAttribute("open");
+    }
+
     /** Placement relative to the trigger: "top" | "bottom" | "left" | "right". */
     get position() {
         return this.getAttribute("position") || "top";
@@ -86,8 +100,9 @@ export class YumeTooltip extends HTMLElement {
     // Public
     // -------------------------------------------------------------------------
 
-    /** Immediately hides the tooltip. */
+    /** Immediately hides the tooltip. No-op while `open` is set. */
     hide() {
+        if (this.open) return;
         clearTimeout(this._showTimeout);
         this._visible = false;
         const tip = this.shadowRoot.querySelector(".tooltip");
@@ -96,15 +111,32 @@ export class YumeTooltip extends HTMLElement {
 
     render() {
         const [bg, fg] = getColorVarPair(this.color);
-        this.shadowRoot.innerHTML = `
-            <style>${this._buildStyles(bg, fg)}</style>
-            <slot class="trigger"></slot>
-            <div class="tooltip ${this.position}" role="tooltip" part="tooltip">${this.text}</div>
-        `;
+        const position = ALLOWED_POSITIONS.includes(this.position)
+            ? this.position
+            : "top";
+        const classes = ["tooltip", position];
+        if (this.open) classes.push("visible");
+
+        const tip = _el(
+            "div",
+            {
+                class: classes.join(" "),
+                role: "tooltip",
+                part: "tooltip",
+            },
+            [this.text],
+        );
+
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(bg, fg)];
+        this.shadowRoot.replaceChildren(
+            _el("slot", { class: "trigger" }),
+            tip,
+        );
     }
 
-    /** Programmatically shows the tooltip after the configured delay. */
+    /** Programmatically shows the tooltip after the configured delay. No-op while `open` is set. */
     show() {
+        if (this.open) return;
         clearTimeout(this._hideTimeout);
         this._showTimeout = setTimeout(() => {
             this._visible = true;
@@ -121,8 +153,9 @@ export class YumeTooltip extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
-    _buildStyles(bg, fg) {
-        return `
+    _buildStyleSheet(bg, fg) {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: inline-block;
                 position: relative;
@@ -215,7 +248,8 @@ export class YumeTooltip extends HTMLElement {
                 transform: translateY(-50%);
                 border-right-color: ${bg};
             }
-        `;
+        `);
+        return sheet;
     }
 
     _onFocusIn() {

@@ -1,6 +1,9 @@
 import "../y-datepicker/y-datepicker.js";
 import "../y-icon/y-icon.js";
-import { manageLabelVisibility } from "../../modules/helpers.js";
+import {
+    manageLabelVisibility,
+    createElement as _el,
+} from "../../modules/helpers.js";
 
 export class YumeDate extends HTMLElement {
     static formAssociated = true;
@@ -358,79 +361,13 @@ export class YumeDate extends HTMLElement {
         }
         const isDisabled = this.disabled;
         const isLabelTop = this.labelPosition === "top";
-        const labelSlot = `<div class="label-wrapper"><slot name="label"></slot></div>`;
 
-        const pickerAttrs = [
-            `mode="${this.mode}"`,
-            `color="${this.color}"`,
-            `format="${this.format}"`,
-            this.value ? `value="${this.value}"` : "",
-            this.min ? `min="${this.min}"` : "",
-            this.max ? `max="${this.max}"` : "",
-            this.hasAttribute("show-hours") ? "show-hours" : "",
-            this.hasAttribute("show-minutes") ? "show-minutes" : "",
-            this.hasAttribute("show-seconds") ? "show-seconds" : "",
-            this.getAttribute("hour-format") === "24" ? `hour-format="24"` : "",
-            this.hasAttribute("minute-interval")
-                ? `minute-interval="${this.minuteInterval}"`
-                : "",
-            this.hasAttribute("second-interval")
-                ? `second-interval="${this.secondInterval}"`
-                : "",
-            this.getAttribute("show-years") === "false"
-                ? `show-years="false"`
-                : "",
-            this.getAttribute("show-months") === "false"
-                ? `show-months="false"`
-                : "",
-            this.getAttribute("show-days") === "false"
-                ? `show-days="false"`
-                : "",
-            this.mobileBreakpoint
-                ? `mobile-breakpoint="${this.mobileBreakpoint}"`
-                : "",
-        ]
-            .filter(Boolean)
-            .join(" ");
-
-        const displayText = this._getFormattedDisplay();
-
-        this.shadowRoot.innerHTML = `
-            <style>${this._buildStyles(isDisabled)}</style>
-            <div class="wrapper">
-                ${isLabelTop ? labelSlot : ""}
-                <div
-                    class="trigger${this.invalid ? " is-invalid" : ""}"
-                    role="combobox"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                    tabindex="-1"
-                >
-                    <slot name="left-icon"></slot>
-                    <input
-                        class="display"
-                        type="text"
-                        value="${displayText}"
-                        placeholder="${this.placeholder}"
-                        autocomplete="off"
-                        spellcheck="false"
-                        ${isDisabled ? "disabled" : ""}
-                    >
-                    ${
-                        this.clearable && this.value
-                            ? `<button class="clear-btn" aria-label="Clear date" tabindex="-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>`
-                            : ""
-                    }
-                    <y-icon name="calendar" size="small" class="cal-icon"></y-icon>
-                </div>
-                <div class="popup" hidden>
-                    <y-datepicker ${pickerAttrs}></y-datepicker>
-                </div>
-                ${!isLabelTop ? labelSlot : ""}
-            </div>
-        `;
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(isDisabled),
+        ];
+        this.shadowRoot.replaceChildren(
+            this._buildDesktopTree(isDisabled, isLabelTop),
+        );
 
         manageLabelVisibility(this.shadowRoot.querySelector(".label-wrapper"));
         if (!isDisabled) this._bindListeners();
@@ -732,6 +669,187 @@ export class YumeDate extends HTMLElement {
         });
     }
 
+    _buildClearButton() {
+        return _el(
+            "button",
+            {
+                class: "clear-btn",
+                "aria-label": "Clear date",
+                tabindex: "-1",
+            },
+            [_el("y-icon", { name: "x", size: "small" })],
+        );
+    }
+
+    _buildDesktopTree(isDisabled, isLabelTop) {
+        const displayText = this._getFormattedDisplay();
+
+        const display = _el("input", {
+            class: "display",
+            type: "text",
+            value: displayText,
+            placeholder: this.placeholder,
+            autocomplete: "off",
+            spellcheck: "false",
+            disabled: isDisabled || null,
+        });
+
+        const triggerChildren = [
+            _el("slot", { name: "left-icon" }),
+            display,
+        ];
+        if (this.clearable && this.value) {
+            triggerChildren.push(this._buildClearButton());
+        }
+        triggerChildren.push(
+            _el("y-icon", {
+                name: "calendar",
+                size: "small",
+                class: "cal-icon",
+            }),
+        );
+
+        const trigger = _el(
+            "div",
+            {
+                class: this.invalid ? "trigger is-invalid" : "trigger",
+                role: "combobox",
+                "aria-expanded": "false",
+                "aria-haspopup": "true",
+                tabindex: "-1",
+            },
+            triggerChildren,
+        );
+
+        const popup = _el("div", { class: "popup", hidden: true }, [
+            this._buildPicker(),
+        ]);
+
+        const wrapperChildren = [];
+        if (isLabelTop) wrapperChildren.push(this._buildLabelSlot());
+        wrapperChildren.push(trigger, popup);
+        if (!isLabelTop) wrapperChildren.push(this._buildLabelSlot());
+
+        return _el("div", { class: "wrapper" }, wrapperChildren);
+    }
+
+    _buildLabelSlot() {
+        return _el("div", { class: "label-wrapper" }, [
+            _el("slot", { name: "label" }),
+        ]);
+    }
+
+    _buildMobileTree(isDisabled, isLabelTop) {
+        const hasTime = this.showHours || this.showMinutes || this.showSeconds;
+        const inputType = hasTime ? "datetime-local" : "date";
+        const isRange = this.mode === "range";
+
+        const toNativeVal = (iso) => {
+            if (!iso) return "";
+            const d = new Date(iso);
+            if (isNaN(d)) return "";
+            const pad = (n) => String(n).padStart(2, "0");
+            const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+            if (!hasTime) return datePart;
+            return `${datePart}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        };
+
+        let startVal = "";
+        let endVal = "";
+        if (isRange && this.value) {
+            const [s, e] = this.value.split(",");
+            startVal = toNativeVal(s);
+            endVal = toNativeVal(e);
+        } else {
+            startVal = toNativeVal(this.value);
+        }
+
+        const buildNativeInput = (side, value) => {
+            const input = _el("input", {
+                class: "native-date",
+                type: inputType,
+                "data-side": side,
+                value,
+                disabled: isDisabled || null,
+            });
+            if (this.min) input.setAttribute("min", toNativeVal(this.min));
+            if (this.max) input.setAttribute("max", toNativeVal(this.max));
+            return input;
+        };
+
+        const triggerChildren = [_el("slot", { name: "left-icon" })];
+        if (isRange) {
+            triggerChildren.push(
+                buildNativeInput("start", startVal),
+                _el("span", { class: "native-sep" }, ["–"]),
+                buildNativeInput("end", endVal),
+            );
+        } else {
+            triggerChildren.push(buildNativeInput("start", startVal));
+        }
+        if (this.clearable && this.value) {
+            triggerChildren.push(this._buildClearButton());
+        }
+
+        const trigger = _el(
+            "div",
+            { class: this.invalid ? "trigger is-invalid" : "trigger" },
+            triggerChildren,
+        );
+
+        const wrapperChildren = [];
+        if (isLabelTop) wrapperChildren.push(this._buildLabelSlot());
+        wrapperChildren.push(trigger);
+        if (!isLabelTop) wrapperChildren.push(this._buildLabelSlot());
+
+        return _el("div", { class: "wrapper" }, wrapperChildren);
+    }
+
+    _buildPicker() {
+        const picker = _el("y-datepicker", {
+            mode: this.mode,
+            color: this.color,
+            format: this.format,
+        });
+
+        const set = (name, value) => {
+            if (value != null && value !== "") picker.setAttribute(name, value);
+        };
+        const setFlag = (name) => {
+            if (this.hasAttribute(name)) picker.setAttribute(name, "");
+        };
+
+        set("value", this.value);
+        set("min", this.min);
+        set("max", this.max);
+        setFlag("show-hours");
+        setFlag("show-minutes");
+        setFlag("show-seconds");
+        if (this.getAttribute("hour-format") === "24") {
+            picker.setAttribute("hour-format", "24");
+        }
+        if (this.hasAttribute("minute-interval")) {
+            set("minute-interval", this.minuteInterval);
+        }
+        if (this.hasAttribute("second-interval")) {
+            set("second-interval", this.secondInterval);
+        }
+        if (this.getAttribute("show-years") === "false") {
+            picker.setAttribute("show-years", "false");
+        }
+        if (this.getAttribute("show-months") === "false") {
+            picker.setAttribute("show-months", "false");
+        }
+        if (this.getAttribute("show-days") === "false") {
+            picker.setAttribute("show-days", "false");
+        }
+        if (this.mobileBreakpoint) {
+            set("mobile-breakpoint", this.mobileBreakpoint);
+        }
+
+        return picker;
+    }
+
     /**
      * Build a presumed Date from partial input parts, filling in defaults.
      * Returns null if the result is invalid.
@@ -754,7 +872,7 @@ export class YumeDate extends HTMLElement {
         return d;
     }
 
-    _buildStyles(isDisabled) {
+    _buildStyleSheet(isDisabled) {
         const size = this.size;
         const heightMap = {
             small: "var(--sizing-small, 32px)",
@@ -769,7 +887,8 @@ export class YumeDate extends HTMLElement {
         const minHeight = heightMap[size] || heightMap.medium;
         const padding = paddingMap[size] || paddingMap.medium;
 
-        return `
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: block;
                 font-family: var(--font-family-body);
@@ -904,7 +1023,8 @@ export class YumeDate extends HTMLElement {
                 padding: 0 var(--spacing-x-small, 6px);
                 color: var(--base-content-light);
             }
-        `;
+        `);
+        return sheet;
     }
 
     _getBreakpointPx() {
@@ -1263,68 +1383,13 @@ export class YumeDate extends HTMLElement {
     _renderMobile() {
         const isDisabled = this.disabled;
         const isLabelTop = this.labelPosition === "top";
-        const labelSlot = `<div class="label-wrapper"><slot name="label"></slot></div>`;
-        const hasTime = this.showHours || this.showMinutes || this.showSeconds;
-        const inputType = hasTime ? "datetime-local" : "date";
-        const isRange = this.mode === "range";
 
-        const toNativeVal = (iso) => {
-            if (!iso) return "";
-            const d = new Date(iso);
-            if (isNaN(d)) return "";
-            const pad = (n) => String(n).padStart(2, "0");
-            const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-            if (!hasTime) return datePart;
-            return `${datePart}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        };
-
-        let startVal = "";
-        let endVal = "";
-        if (isRange && this.value) {
-            const [s, e] = this.value.split(",");
-            startVal = toNativeVal(s);
-            endVal = toNativeVal(e);
-        } else {
-            startVal = toNativeVal(this.value);
-        }
-
-        const minAttr = this.min ? ` min="${toNativeVal(this.min)}"` : "";
-        const maxAttr = this.max ? ` max="${toNativeVal(this.max)}"` : "";
-
-        this.shadowRoot.innerHTML = `
-            <style>${this._buildStyles(isDisabled)}</style>
-            <div class="wrapper">
-                ${isLabelTop ? labelSlot : ""}
-                <div class="trigger${this.invalid ? " is-invalid" : ""}">
-                    <slot name="left-icon"></slot>
-                    ${
-                        isRange
-                            ? `
-                        <input class="native-date" type="${inputType}" data-side="start"
-                            value="${startVal}"${minAttr}${maxAttr}
-                            ${isDisabled ? "disabled" : ""}>
-                        <span class="native-sep">–</span>
-                        <input class="native-date" type="${inputType}" data-side="end"
-                            value="${endVal}"${minAttr}${maxAttr}
-                            ${isDisabled ? "disabled" : ""}>
-                    `
-                            : `
-                        <input class="native-date" type="${inputType}" data-side="start"
-                            value="${startVal}"${minAttr}${maxAttr}
-                            ${isDisabled ? "disabled" : ""}>
-                    `
-                    }
-                    ${
-                        this.clearable && this.value
-                            ? `<button class="clear-btn" aria-label="Clear date" tabindex="-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>`
-                            : ""
-                    }
-                </div>
-                ${!isLabelTop ? labelSlot : ""}
-            </div>
-        `;
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(isDisabled),
+        ];
+        this.shadowRoot.replaceChildren(
+            this._buildMobileTree(isDisabled, isLabelTop),
+        );
 
         if (!isDisabled) this._bindMobileListeners();
     }
@@ -1371,11 +1436,7 @@ export class YumeDate extends HTMLElement {
         const calIcon = trigger.querySelector(".cal-icon");
 
         if (this.value && !existing) {
-            const btn = document.createElement("button");
-            btn.className = "clear-btn";
-            btn.setAttribute("aria-label", "Clear date");
-            btn.setAttribute("tabindex", "-1");
-            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            const btn = this._buildClearButton();
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 this.clear();

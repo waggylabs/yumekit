@@ -1,7 +1,7 @@
-import "./y-switch.js";
+﻿import "./y-switch.js";
 
 export default {
-    title: "Components/Switch",
+    title: "Input/Switch",
     tags: ["autodocs"],
     argTypes: {
         checked: {

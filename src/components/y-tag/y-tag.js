@@ -1,4 +1,4 @@
-import { close as closeSvg } from "../../icons/index.js";
+import { x as xSvg } from "../../icons/index.js";
 import { contrastTextColor } from "../../modules/helpers.js";
 
 export class YumeTag extends HTMLElement {
@@ -78,7 +78,7 @@ export class YumeTag extends HTMLElement {
             <style>${this._getStyle()}</style>
             <span class="tag" part="tag">
                 <slot></slot>
-                ${this.removable ? `<button class="remove" part="remove" aria-label="Remove tag">${closeSvg}</button>` : ""}
+                ${this.removable ? `<button class="remove" part="remove" aria-label="Remove tag">${xSvg}</button>` : ""}
             </span>
         `;
 

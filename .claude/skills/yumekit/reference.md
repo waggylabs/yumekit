@@ -54,6 +54,41 @@ Injects design tokens as CSS custom properties. Wraps entire app.
 
 ---
 
+## y-break
+
+A divider that draws a line, optionally broken by centered content (text, icon, or any slotted element).
+
+| Attribute     | Values / Notes                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| `orientation` | `horizontal` (default) \| `vertical` (host needs a height from its container when vertical) |
+| `align`       | `start` \| `center` (default) \| `end` — position of centered content along the line        |
+| `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                      |
+| `label`       | Convenience text rendered in the center                                                     |
+| `icon`        | Convenience icon name rendered in the center (icon then label when both are set)            |
+| `inset`       | `none` (default) \| `sm` \| `md` \| `lg` — outer end padding                                |
+
+**Slots:** default — content rendered in the center; takes precedence over `label` / `icon`.
+
+**CSS Parts:** `line`, `line-start`, `line-end`, `content`
+
+**CSS Custom Properties:** `--component-break-line-color`, `--component-break-line-thickness`, `--component-break-line-style` (override the `variant`), `--component-break-gap`, `--component-break-content-color`, `--component-break-content-font-size`, `--component-break-content-font-weight`, `--component-break-inset`, `--component-break-min-length`
+
+```html
+<y-break></y-break>
+<y-break label="OR"></y-break>
+<y-break icon="star" variant="dashed"></y-break>
+<y-break align="start"><y-tag color="primary">New section</y-tag></y-break>
+
+<!-- vertical needs a height from the container -->
+<div style="display:flex;align-items:stretch;height:40px">
+    <span>Left</span>
+    <y-break orientation="vertical"></y-break>
+    <span>Right</span>
+</div>
+```
+
+---
+
 ## y-breadcrumbs
 
 Navigation breadcrumb trail with collapse/expand support and SPA-friendly navigation.
@@ -343,32 +378,166 @@ Events: `change`, `input`
 
 ---
 
-## y-stack
+## y-splitter
 
-Layout container for rows, columns, grids, or masonry. Purely structural — no visual styling.
+Two-pane container with a draggable resize handle. The first child becomes the resizable pane (`pane-1`); the second flexes to fill the remainder (`pane-2`). The component auto-assigns `slot="pane-1"` / `slot="pane-2"` to the first two non-handle children — extra children are ignored with a console warning. Host needs a sized container (it stretches to fill 100% width × 100% height).
+
+| Attribute         | Values / Notes                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `orientation`     | `horizontal` (default, splits left/right) \| `vertical` (splits top/bottom)                     |
+| `split`           | number `0.0`–`1.0`, ratio of the first pane (default `0.5`); reflects current value during drag |
+| `min-ratio`       | minimum ratio for pane 1 (default `0.1`)                                                        |
+| `max-ratio`       | maximum ratio for pane 1 (default `0.9`)                                                        |
+| `disabled`        | boolean — disables drag and keyboard resizing                                                   |
+| `handle-size`     | width (horizontal) / height (vertical) of the drag handle in pixels (default `10`)              |
+| `handle-position` | `center` (default) \| `start` \| `end` — where the visible line/grip sits within the handle     |
+| `aria-label`      | overrides the handle's default `"Resizable splitter"` label                                     |
+
+**Events:** `split-changed` (`{ split, orientation, source }`), `split-start` (`{ x, y }`), `split-end` (`{ x, y }`)
+
+**Slots:** default — first two non-handle children become pane 1 / pane 2 (slot attribute auto-assigned). `handle` — custom drag-handle content; defaults to a centered ellipsis grip icon.
+
+**CSS Parts:** `container`, `pane-1`, `pane-2`, `handle`, `grip`
+
+**CSS Custom Properties:** `--component-splitter-handle-size`, `--component-splitter-handle-background`, `--component-splitter-handle-hover-background`, `--component-splitter-handle-active-background`, `--component-splitter-handle-border-color`, `--component-splitter-handle-border-width`, `--component-splitter-handle-grip-color`, `--component-splitter-handle-active-grip-color`, `--component-splitter-grip-size`, `--component-splitter-cursor`
+
+**Keyboard (handle focused):** Arrow Left / Down decreases by 1%, Arrow Right / Up increases by 1%, PageDown / PageUp adjust by 10%, Home / End jump to `min-ratio` / `max-ratio`. The handle has `role="slider"` with `aria-valuemin/max/now/text/orientation`. Pointer events cover both mouse and touch; updates are throttled with `requestAnimationFrame`.
+
+```html
+<div style="width:600px;height:300px">
+    <y-splitter split="0.3" min-ratio="0.2" max-ratio="0.8">
+        <nav>Sidebar</nav>
+        <main>Content</main>
+    </y-splitter>
+</div>
+
+<!-- Vertical split with a custom handle -->
+<y-splitter orientation="vertical" handle-size="14">
+    <section>Editor</section>
+    <section>Console</section>
+    <span slot="handle"><y-icon name="ellipsis-h"></y-icon></span>
+</y-splitter>
+```
+
+---
+
+## y-grid
+
+CSS-Grid layout container. Pure CSS — no observer, no event. Use `y-masonry` for shortest-column packing, or `y-stack` for flex layouts.
+
+| Attribute         | Values / Notes                                                                                                                           |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`         | integer (default `3`) → `repeat(N, 1fr)`; `"auto"` → `repeat(auto-fit, minmax(min-item-width, 1fr))`; raw template string passed through |
+| `rows`            | integer or raw `grid-template-rows` value (default unset)                                                                                |
+| `auto-flow`       | `row` (default) \| `column` \| `row dense` \| `column dense`                                                                             |
+| `auto-rows`       | raw `grid-auto-rows` value (e.g. `"minmax(100px, auto)"`)                                                                                |
+| `auto-columns`    | raw `grid-auto-columns` value                                                                                                            |
+| `gap`             | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens  |
+| `row-gap`         | same scale as `gap`; overrides row gap independently                                                                                     |
+| `column-gap`      | same scale as `gap`; overrides column gap independently                                                                                  |
+| `align`           | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                                |
+| `justify`         | `start` \| `center` \| `end` \| `stretch` (default) — maps to `justify-items`                                                            |
+| `align-content`   | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly`                                                 |
+| `justify-content` | same set as `align-content`, default `start`                                                                                             |
+| `min-item-width`  | minimum item width for `columns="auto"` and responsive collapse (default `240px`)                                                        |
+| `responsive`      | boolean (default `true`); set `responsive="false"` to opt out. Only applies when `columns` is an integer.                                |
+| `dense`           | boolean shortcut for `auto-flow="row dense"`                                                                                             |
+
+Slot: default (grid items). Children may use `style="grid-column: span 2"` or similar to span tracks.
+
+Responsive behavior (integer `columns` only — raw template strings and `columns="auto"` opt out automatically): uses `repeat(auto-fit, minmax(...))` keyed off `min-item-width`. Items shrink toward `min-item-width` and the column count drops smoothly as the container narrows.
+
+A11y: layout-only — no role or ARIA. Tab order follows DOM order; in `dense` mode the visual order may diverge from the focus order.
+
+CSS Custom Properties: `--component-grid-columns`, `--component-grid-rows`, `--component-grid-gap`, `--component-grid-row-gap`, `--component-grid-column-gap`, `--component-grid-min-item-width` (default `240px`), `--component-grid-auto-rows`, `--component-grid-auto-columns`
+
+CSS Parts: `container`
+
+```html
+<!-- Card grid, responsive -->
+<y-grid columns="3" gap="large" responsive>
+    <y-card>...</y-card>
+    <y-card>...</y-card>
+    <y-card>...</y-card>
+</y-grid>
+
+<!-- Auto-fit at min item width -->
+<y-grid columns="auto" min-item-width="200px" gap="medium">
+    <y-card>...</y-card>
+</y-grid>
+
+<!-- Item spans -->
+<y-grid columns="4" gap="medium" responsive="false">
+    <y-card style="grid-column: span 2">Wide</y-card>
+    <y-card>1</y-card>
+    <y-card>1</y-card>
+</y-grid>
+```
+
+---
+
+## y-masonry
+
+Layout container that packs children of varying heights into the shortest column via JS positioning. Use `y-grid` for uniform CSS-Grid layouts.
 
 | Attribute    | Values / Notes                                                                                                                          |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `mode`       | `flex` (default) \| `grid` \| `masonry`                                                                                                 |
-| `direction`  | `row` (default) \| `column` — flex mode only                                                                                            |
-| `columns`    | number of columns for grid/masonry (default: `3`)                                                                                       |
+| `columns`    | integer column count (default `3`)                                                                                                      |
 | `gap`        | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens |
-| `wrap`       | boolean — allow flex items to wrap (flex mode only)                                                                                     |
-| `align`      | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — cross-axis alignment                                                |
-| `justify`    | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — flex only                                                 |
-| `responsive` | boolean (default `true`) — auto-adapt to the stack's container width (not viewport). Set `responsive="false"` to opt out                |
+| `row-gap`    | same scale as `gap`; overrides row gap independently                                                                                    |
+| `column-gap` | same scale as `gap`; overrides column gap independently                                                                                 |
+| `responsive` | boolean (default `true`); set `responsive="false"` to opt out                                                                           |
+
+Slot: default (masonry items). Child `grid-column` / `grid-row` styles are ignored — masonry is JS-positioned.
+
+Events: `y-masonry-layout` — `{ columns, containerWidth }`, fires after each settle (deduped on no-change).
+
+Methods: `relayout()` — force an immediate repack. Use after async height changes a `ResizeObserver` won't catch synchronously (e.g. an image loading and updating its intrinsic size).
+
+Responsive behavior: drops to `1` column at or below `--component-masonry-mobile-breakpoint` (576px default) and `min(2, columns)` at or below `--component-masonry-tablet-breakpoint` (768px default), measured against container width.
+
+A11y: layout-only — no role or ARIA. Tab order follows DOM order; visual order may diverge from focus order.
+
+CSS Custom Properties: `--component-masonry-gap`, `--component-masonry-row-gap`, `--component-masonry-column-gap`, `--component-masonry-mobile-breakpoint` (default `576px`), `--component-masonry-tablet-breakpoint` (default `768px`)
+
+CSS Parts: `container`
+
+```html
+<y-masonry columns="3" gap="large">
+    <y-card>Short content</y-card>
+    <y-card
+        >Tall content with extra paragraphs to demonstrate the packing.</y-card
+    >
+    <y-card>Medium content here.</y-card>
+</y-masonry>
+```
+
+---
+
+## y-stack
+
+Flexbox layout container for rows or columns. Purely structural — no visual styling. For CSS Grid layouts use [`y-grid`](#y-grid); for shortest-column packing use [`y-masonry`](#y-masonry).
+
+| Attribute       | Values / Notes                                                                                                                                                                                                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `direction`     | `row` (default) \| `row-reverse` \| `column` \| `column-reverse` — maps to `flex-direction`                                                                                                                                                                                                      |
+| `wrap`          | `nowrap` (default) \| `wrap` \| `wrap-reverse`. Boolean presence (no value) resolves to `wrap` for back-compat.                                                                                                                                                                                  |
+| `gap`           | `none` \| `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` \| `2x-large` \| `4x-large` — maps to `--spacing-*` tokens                                                                                                                                                          |
+| `row-gap`       | same scale as `gap`; overrides row gap independently                                                                                                                                                                                                                                             |
+| `column-gap`    | same scale as `gap`; overrides column gap independently                                                                                                                                                                                                                                          |
+| `align`         | `start` \| `center` \| `end` \| `stretch` (default) \| `baseline` — maps to `align-items`                                                                                                                                                                                                        |
+| `justify`       | `start` (default) \| `center` \| `end` \| `between` \| `around` \| `evenly` — maps to `justify-content`                                                                                                                                                                                          |
+| `align-content` | `start` \| `center` \| `end` \| `stretch` (default) \| `between` \| `around` \| `evenly` — maps to `align-content` (only meaningful with wrap)                                                                                                                                                   |
+| `inline`        | boolean — use `display: inline-flex` instead of `flex`                                                                                                                                                                                                                                           |
+| `responsive`    | boolean (default `true`). On `direction="row"`/`row-reverse`, auto-enables `wrap` and collapses to `column` below the mobile breakpoint (measured against the stack's own container width). This collapse behavior does not apply when `inline` is present. Set `responsive="false"` to opt out. |
 
 Slot: default (child elements to lay out)
 
-`responsive` behavior by mode:
-
-- **grid**: uses `repeat(auto-fit, minmax(...))` so columns collapse when the container narrows, capped at the `columns` value. Each item is at least `--component-stack-min-item-width` wide.
-- **flex** + `direction="row"`: automatically enables `wrap` so items flow to the next line when they no longer fit.
-- **masonry**: column count drops to `2` below the tablet breakpoint and `1` below the mobile breakpoint, measured against container width.
-
-CSS Custom Properties: `--component-stack-gap`, `--component-stack-columns`, `--component-stack-min-item-width` (default `240px`, grid responsive only), `--component-stack-mobile-breakpoint` (default `576px`, masonry only), `--component-stack-tablet-breakpoint` (default `768px`, masonry only)
+CSS Custom Properties: `--component-stack-gap`, `--component-stack-row-gap`, `--component-stack-column-gap`, `--component-stack-mobile-breakpoint` (default `576px`)
 
 CSS Parts: `container`
+
+Migration: `<y-stack mode="grid" …>` → [`<y-grid …>`](#y-grid); `<y-stack mode="masonry" …>` → [`<y-masonry …>`](#y-masonry).
 
 ```html
 <!-- Row of buttons -->
@@ -377,24 +546,28 @@ CSS Parts: `container`
     <y-button>Cancel</y-button>
 </y-stack>
 
-<!-- Card grid -->
-<y-stack mode="grid" columns="3" gap="large" responsive>
-    <y-card>...</y-card>
-    <y-card>...</y-card>
-    <y-card>...</y-card>
-</y-stack>
-
 <!-- Vertical form -->
 <y-stack direction="column" gap="medium">
     <y-input label="Name"></y-input>
     <y-input label="Email"></y-input>
 </y-stack>
 
-<!-- Masonry layout -->
-<y-stack mode="masonry" columns="3" gap="large" responsive>
-    <y-card>...</y-card>
-    <y-card>...</y-card>
+<!-- Wrapping toolbar with separate row/column gaps -->
+<y-stack direction="row" wrap row-gap="x-small" column-gap="large">
+    <y-button>One</y-button>
+    <y-button>Two</y-button>
+    <y-button>Three</y-button>
 </y-stack>
+
+<!-- Inline-flex action group inside flowing text -->
+<p>
+    Confirm
+    <y-stack inline gap="x-small">
+        <y-button size="small" color="primary">Yes</y-button>
+        <y-button size="small">No</y-button>
+    </y-stack>
+    to continue.
+</p>
 ```
 
 ---
@@ -584,27 +757,24 @@ Slots: `image` (flush, no padding, clips to card border radius), `header`, `foot
 
 | Attribute           | Values / Notes                                                                                |
 | ------------------- | --------------------------------------------------------------------------------------------- |
-| `orientation`       | `vertical` (default) \| `horizontal`                                                          |
-| `collapsed`         | boolean — collapses vertical sidebar to icon-only mode                                        |
 | `items`             | JSON: `[{"text":"Home","icon":"home","href":"/","children":[...]}]`                           |
 | `size`              | `small` \| `medium` (default) \| `large`                                                      |
-| `menu-direction`    | `right` \| `down` \| `""` (auto: vertical→right, horizontal→down)                             |
-| `sticky`            | `start` \| `end` — sticks to top/left (start) or bottom/right (end)                           |
-| `mobile-breakpoint` | px width below which horizontal bar collapses to a hamburger menu (default: `768`)            |
+| `menu-direction`    | `right` \| `down` (default)                                                                   |
+| `sticky`            | `start` \| `end` — `start` sticks to the top edge; `end` sticks to the bottom edge            |
+| `mobile-breakpoint` | px width below which bar collapses to a hamburger menu (default: `768`)                       |
 | `history`           | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
 
 Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
 
 Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
 
-Slots: `logo`, `title`, `header`, `footer`
+Slots: `logo`, `title`, `header`, `footer`, default (router links / custom nav elements shown in bar body and inside mobile hamburger panel)
 
 ```html
-<!-- Basic vertical sidebar -->
+<!-- Basic horizontal appbar -->
 <y-appbar
-    orientation="vertical"
     sticky="start"
-    items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    items='[{"text":"Home","icon":"home","href":"/"},{"text":"Settings","icon":"gear","href":"/settings"}]'
 >
     <y-icon slot="logo" name="bolt" size="medium"></y-icon>
     <span slot="title">MyApp</span>
@@ -622,6 +792,70 @@ Slots: `logo`, `title`, `header`, `footer`
 
 <!-- Full-page navigation (opt out of pushState) -->
 <y-appbar history="false" items='[{"text":"Home","href":"/"}]'></y-appbar>
+```
+
+---
+
+## y-sidebar
+
+| Attribute        | Values / Notes                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `collapsed`      | boolean — collapses sidebar to icon-only width                                                |
+| `items`          | JSON: `[{"text":"Dashboard","icon":"home","href":"/","selected":true,"children":[...]}]`      |
+| `size`           | `small` \| `medium` (default) \| `large`                                                      |
+| `menu-direction` | `right` (default) \| `down` — direction submenus pop out                                      |
+| `sticky`         | `start` \| `end` — sticks to left (start) or right (end) viewport edge                        |
+| `history`        | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+
+Item object fields: `text`, `icon` (icon name or inline SVG), `href`, `selected`, `slot`, `children`
+
+Events: `navigate` — cancelable; `event.detail.href`. Fires before navigation when an item with `href` is clicked.
+
+Methods: `.toggle()` — flip collapsed state
+
+Slots: `logo`, `title`, `header`, `footer`, default (router links / custom nav elements)
+
+Host-exposed CSS vars: `--y-sidebar-collapsed` (`0`/`1`), `--y-sidebar-icon-col-width` — slotted items can read these.
+
+All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existing appbar theme tokens apply automatically.
+
+```html
+<!-- Basic sticky sidebar -->
+<y-sidebar
+    sticky="start"
+    items='[{"text":"Dashboard","icon":"home","href":"/","selected":true},{"text":"Projects","icon":"folder","href":"/projects"}]'
+>
+    <img slot="logo" src="/logo.svg" alt="" width="32" />
+    <span slot="title">MyApp</span>
+</y-sidebar>
+
+<!-- With framework router links in default slot -->
+<y-sidebar items='[{"text":"Dashboard","icon":"home","href":"/"}]'>
+    <router-link to="/projects">Projects</router-link>
+    <router-link to="/settings">Settings</router-link>
+</y-sidebar>
+
+<!-- Custom slotted item that responds to collapse state -->
+<style>
+    .my-link {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .my-link .label {
+        opacity: calc(1 - var(--y-sidebar-collapsed, 0));
+        max-width: calc((1 - var(--y-sidebar-collapsed, 0)) * 200px);
+        overflow: hidden;
+        white-space: nowrap;
+        transition: opacity 0.2s ease, max-width 0.2s ease;
+    }
+</style>
+<y-sidebar id="nav">
+    <a class="my-link" href="/reports">
+        <y-icon name="waveform"></y-icon>
+        <span class="label">Reports</span>
+    </a>
+</y-sidebar>
 ```
 
 ---
@@ -651,6 +885,128 @@ Slot: default (drawer content)
 <script type="module">
     document.getElementById("nav-drawer").show();
 </script>
+```
+
+---
+
+## y-droplist
+
+Drag-and-drop reorderable list. Supports within-list reordering, cross-list groups, clone/pull/put policies, drag handles, and swap mode.
+
+| Attribute             | Values / Notes                                                                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `disabled`            | boolean — disables drag and keyboard reorder                                                                                                   |
+| `vertical`            | default vertical; set `vertical="false"` to reorder horizontally                                                                               |
+| `animation`           | settle-animation duration in ms (default `150`); `0` disables                                                                                  |
+| `group`               | string — name of the cross-list drag group; lists sharing a name can exchange items                                                            |
+| `clone`               | boolean — drops insert a copy at the destination; the original stays at its source index                                                       |
+| `pull`                | `"true"` (default) \| `"clone"` \| `"false"` — controls whether items can be dragged out; `"clone"` leaves a copy, `"false"` blocks pulling    |
+| `put`                 | `"true"` (default) \| `"false"` \| comma-separated group names — controls which sources this list accepts; `"false"` rejects all incoming      |
+| `handle`              | CSS selector — restricts drag initiation to matching child elements; invalid selectors warn and fall back to whole-item drag                   |
+| `prevent-on-filter`   | boolean (default `true`) — when `handle` is set, calls `preventDefault()` on non-handle `pointerdown` to suppress text selection               |
+| `swap`                | boolean — dropping over an item swaps the two in place instead of inserting between them; same-list only                                       |
+| `swap-class`          | CSS class on the active swap target (default `y-droplist__swap-target`)                                                                        |
+| `invert-swap-element` | boolean (default `true`) — `true`: swap target is the item under the cursor; `false`: item whose midpoint the cursor has crossed               |
+| `ghost-class`         | CSS class on the drop placeholder (default `y-droplist__ghost`)                                                                                |
+| `drag-class`          | CSS class on the dragged item (default `y-droplist__dragging`)                                                                                 |
+| `drag-preview`        | boolean — when present, a cursor-following clone of the dragged item is rendered during the drag (distinct from the in-list ghost placeholder) |
+| `drag-preview-class`  | CSS class applied to the preview element (default `y-droplist__drag-preview`)                                                                  |
+| `drag-preview-offset` | `"cursor"` (default) \| `"center"` \| `"top-left"` — where the preview anchors relative to the cursor; `"cursor"` preserves the grab offset    |
+| `drag-preview-scale`  | number (default `1`) — scale factor applied via `transform: scale()` to the preview; use `< 1` for a shrunken card                             |
+
+**Events:**
+
+| Event          | Detail                                      | Cancelable | Notes                                                                                                       |
+| -------------- | ------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| `drag:start`   | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag begins                                                                 |
+| `drag:end`     | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag ends (drop or cancel)                                                  |
+| `drag:enter`   | `{ originalEvent, item, list, from }`       | no         | Fired on a target list when the drag enters it (cross-list only)                                            |
+| `drag:leave`   | `{ originalEvent, item, list, to }`         | no         | Fired on a list when the drag leaves it (cross-list only)                                                   |
+| `drag:preview` | `{ item, preview, list }`                   | **yes**    | Fired after the preview element is created but **before** it is appended to `document.body`; `preventDefault()` cancels it (no insertion)   |
+| `reorder`      | `{ oldIndex, newIndex, item, list, from? }` | no         | Fired on the destination list after a successful drop or keyboard move                                      |
+| `update`       | `{ item, oldIndex, newIndex, list, from? }` | no         | Fired on both source (cross-list) and destination after every successful drop                               |
+
+For cross-list drops: the source `update` fires first with `newIndex: -1`; the destination `reorder` and `update` fire second with `from` set to the source list. For clone drops `oldIndex` is `-1`.
+
+**Methods:** `toArray()` — returns each direct child's `data-id` in current DOM order. `hasItem(item)` — strict direct-child check (excludes ghost). `destroy()` — removes all listeners and observers.
+
+**Slots:** default — give each item a unique `data-id` so `toArray()` is meaningful. `drag-preview` — optional; when present, the slotted element is deep-cloned and used as the preview content instead of cloning the dragged item. The original node is hidden (`display:none`) during the drag and restored on drop.
+
+**Keyboard:** focus an item, press `ArrowUp`/`ArrowDown` (or `ArrowLeft`/`ArrowRight` when horizontal). When `handle` is set, focus lands on the handle element. A polite `aria-live` region announces moves and swaps.
+
+**CSS Parts:** `list` (shadow-DOM flex wrapper around the slot). The drag preview element carries `part="drag-preview"` but is appended to `document.body` (outside the shadow root), so `::part(drag-preview)` cannot match it — see "Styling the drag preview" below for workable selectors.
+
+**Styling items:** items are slotted light-DOM children — use descendant selectors (`y-droplist > *`, `.y-droplist__dragging`, etc.). `::part()` does not reach light DOM.
+
+**Styling the ghost placeholder:** target `[data-y-droplist-ghost]`, the `ghost-class` value (default `.y-droplist__ghost`), or the `--component-droplist-ghost-*` custom properties. The ghost is the dashed in-list placeholder — distinct from the drag preview.
+
+**Styling the drag preview:** target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), the `[part="drag-preview"]` attribute selector, or the `--component-droplist-drag-preview-*` custom properties. The preview lives in `document.body` with `position: fixed` and `pointer-events: none`. Note: `::part(drag-preview)` does **not** work — `::part()` only pierces a shadow tree, and the preview is rendered outside any shadow root.
+
+**CSS Custom Properties:**
+
+- `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`
+- `--component-droplist-swap-indicator-background`
+- `--component-droplist-item-padding`, `--component-droplist-item-margin`
+- `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
+- `--component-droplist-drag-preview-opacity` (default `0.85`)
+- `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`)
+- `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a Trello-style tilt)
+- `--component-droplist-drag-preview-scale` — applied via `drag-preview-scale` attribute; set directly there rather than as a CSS var
+- `--component-droplist-drag-preview-cursor-offset-x`, `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the anchor point)
+- `--component-droplist-drag-preview-z-index` (default `9999`)
+
+> **Ghost vs. preview:** the ghost (`[data-y-droplist-ghost]`) is the in-list dashed placeholder that tracks where the item will land. The drag preview (`drag-preview` attribute) is the cursor-following visual clone. Both can be active simultaneously. Safari may show both the browser's native drag image and the custom preview because it ignores `setDragImage` — this is a known Safari limitation.
+
+> Supports pointer/touch dragging and auto-scroll during drag interactions.
+
+```html
+<!-- Basic reorderable list -->
+<y-droplist>
+    <div data-id="alpha">Alpha</div>
+    <div data-id="bravo">Bravo</div>
+    <div data-id="charlie">Charlie</div>
+</y-droplist>
+
+<!-- Cross-list Kanban (move between columns) -->
+<y-droplist id="todo" group="board" style="display:block"></y-droplist>
+<y-droplist id="doing" group="board" style="display:block"></y-droplist>
+
+<!-- Clone from palette into lane (original stays) -->
+<y-droplist id="palette" group="board" clone put="false" style="display:block">
+    <div data-id="bug">Bug report</div>
+</y-droplist>
+<y-droplist
+    id="lane"
+    group="board"
+    style="display:block;min-height:64px"
+></y-droplist>
+
+<!-- Drag handle -->
+<y-droplist handle=".grip" style="display:block">
+    <div data-id="a"><span class="grip">⋮⋮</span> Alpha</div>
+</y-droplist>
+
+<!-- Swap mode -->
+<y-droplist swap style="display:block">
+    <div data-id="x">X</div>
+    <div data-id="y">Y</div>
+</y-droplist>
+
+<!-- Cursor-following drag preview (default: clone of dragged item) -->
+<y-droplist drag-preview style="display:block"></y-droplist>
+
+<!-- Tilted preview using CSS token -->
+<y-droplist
+    drag-preview
+    drag-preview-scale="0.92"
+    style="--component-droplist-drag-preview-rotate:3deg"
+></y-droplist>
+
+<!-- Custom preview content via slot -->
+<y-droplist drag-preview style="display:block">
+    <div data-id="a">Alpha</div>
+    <div slot="drag-preview" class="badge">Dragging…</div>
+</y-droplist>
 ```
 
 ---
@@ -786,14 +1142,14 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 
 Positioned relative to an `anchor` element. Items can be defined via the `items` JSON attribute or as light-DOM children.
 
-| Attribute   | Values / Notes                                                                                |
-| ----------- | --------------------------------------------------------------------------------------------- |
+| Attribute   | Values / Notes                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------- |
 | `items`     | JSON: `[{"text":"Edit","value":"...","href":"...","icon":"...","selected":true,"children":[...]}]` |
-| `anchor`    | CSS selector or element ID of the trigger element                                             |
-| `visible`   | boolean                                                                                       |
-| `direction` | `down` (default) \| `up` \| `left` \| `right`                                                 |
-| `size`      | `small` \| `medium` \| `large`                                                                |
-| `history`   | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+| `anchor`    | CSS selector or element ID of the trigger element                                                  |
+| `visible`   | boolean                                                                                            |
+| `direction` | `down` (default) \| `up` \| `left` \| `right`                                                      |
+| `size`      | `small` \| `medium` \| `large`                                                                     |
+| `history`   | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`      |
 
 Item object fields: `text`, `value` (defaults to `text`), `href`, `icon` (icon name for `<y-icon>`), `slot` (named slot for custom item content), `selected`, `children`.
 

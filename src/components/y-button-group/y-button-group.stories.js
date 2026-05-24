@@ -1,4 +1,4 @@
-import "./y-button-group.js";
+﻿import "./y-button-group.js";
 import "../y-button/y-button.js";
 import "../y-input/y-input.js";
 import "../y-select/y-select.js";
@@ -6,7 +6,7 @@ import "../y-icon/y-icon.js";
 import "../../icons/all.js";
 
 export default {
-    title: "Components/ButtonGroup",
+    title: "Input/ButtonGroup",
     tags: ["autodocs"],
     argTypes: {
         orientation: {
@@ -139,9 +139,9 @@ export const InputAndButton = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:16px">
             <y-button-group>
-                <y-input placeholder="Search…"></y-input>
+                <y-input placeholder="Searchâ€¦"></y-input>
                 <y-button color="primary" style-type="filled">
-                    <y-icon slot="left-icon" name="search" size="small"></y-icon>
+                    <y-icon slot="left-icon" name="magnifying-glass" size="small"></y-icon>
                     Search
                 </y-button>
             </y-button-group>
@@ -161,7 +161,7 @@ export const MixedContent = {
         <div style="display:flex;flex-direction:column;gap:16px">
             <y-button-group>
                 <y-select
-                    placeholder="Choose…"
+                    placeholder="Chooseâ€¦"
                     options='[{"value":"opt1","label":"Option 1"},{"value":"opt2","label":"Option 2"},{"value":"opt3","label":"Option 3"}]'
                     style="width:180px"
                 ></y-select>
@@ -170,12 +170,12 @@ export const MixedContent = {
             <y-button-group>
                 <y-button style-type="outlined" color="base">All</y-button>
                 <y-select
-                    placeholder="Filter by status…"
+                    placeholder="Filter by statusâ€¦"
                     options='[{"value":"active","label":"Active"},{"value":"inactive","label":"Inactive"},{"value":"pending","label":"Pending"}]'
                     style="width:200px"
                 ></y-select>
                 <y-button style-type="filled" color="primary">
-                    <y-icon slot="left-icon" name="filter" size="small"></y-icon>
+                    <y-icon slot="left-icon" name="funnel" size="small"></y-icon>
                     Apply
                 </y-button>
             </y-button-group>

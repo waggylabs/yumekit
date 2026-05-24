@@ -1,13 +1,18 @@
-import {
-    check,
-    minus as indeterminateSvg,
-} from "../../icons/index.js";
+import { createElement as _el } from "../../modules/helpers.js";
+import "../y-icon/y-icon.js";
 
 export class YumeCheckbox extends HTMLElement {
     static formAssociated = true;
 
     static get observedAttributes() {
-        return ["checked", "disabled", "indeterminate", "label-position", "name", "value"];
+        return [
+            "checked",
+            "disabled",
+            "indeterminate",
+            "label-position",
+            "name",
+            "value",
+        ];
     }
 
     // -------------------------------------------------------------------------
@@ -22,7 +27,8 @@ export class YumeCheckbox extends HTMLElement {
     }
 
     connectedCallback() {
-        if (!this.hasAttribute("label-position")) this.setAttribute("label-position", "right");
+        if (!this.hasAttribute("label-position"))
+            this.setAttribute("label-position", "right");
         this._internals.setFormValue(this.checked ? this.value : null);
     }
 
@@ -30,7 +36,6 @@ export class YumeCheckbox extends HTMLElement {
         if (name === "checked" || name === "value") {
             this._internals.setFormValue(this.checked ? this.value : null);
         }
-        if (name === "indeterminate") this._updateIcon();
         if (name === "label-position") this.render();
         this._updateState();
     }
@@ -40,41 +45,87 @@ export class YumeCheckbox extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the checkbox is checked. */
-    get checked() { return this.hasAttribute("checked"); }
+    get checked() {
+        return this.hasAttribute("checked");
+    }
     set checked(val) {
         if (val) this.setAttribute("checked", "");
         else this.removeAttribute("checked");
     }
 
     /** @type {boolean} Whether the checkbox is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** @type {boolean} Whether the checkbox is in an indeterminate state. */
-    get indeterminate() { return this.hasAttribute("indeterminate"); }
+    get indeterminate() {
+        return this.hasAttribute("indeterminate");
+    }
     set indeterminate(val) {
         if (val) this.setAttribute("indeterminate", "");
         else this.removeAttribute("indeterminate");
     }
 
     /** @type {string} Label position: "top" | "bottom" | "left" | "right" (default "right"). */
-    get labelPosition() { return this.getAttribute("label-position") || "right"; }
-    set labelPosition(val) { this.setAttribute("label-position", val); }
+    get labelPosition() {
+        return this.getAttribute("label-position") || "right";
+    }
+    set labelPosition(val) {
+        this.setAttribute("label-position", val);
+    }
 
     /** @type {string|null} The form name of the checkbox. */
-    get name() { return this.getAttribute("name"); }
-    set name(val) { this.setAttribute("name", val); }
+    get name() {
+        return this.getAttribute("name");
+    }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
 
     /** @type {string} The form value submitted when checked. Defaults to "on". */
-    get value() { return this.getAttribute("value") || "on"; }
-    set value(val) { this.setAttribute("value", val); }
+    get value() {
+        return this.getAttribute("value") || "on";
+    }
+    set value(val) {
+        this.setAttribute("value", val);
+    }
 
     // -------------------------------------------------------------------------
     // Public
     // -------------------------------------------------------------------------
+
+    render() {
+        const icon = _el("y-icon", {
+            name: "check",
+            weight: "thick",
+            "aria-hidden": "true",
+            class: "icon",
+        });
+
+        const box = _el(
+            "div",
+            {
+                class: "checkbox",
+                role: "checkbox",
+                tabindex: "0",
+            },
+            [icon],
+        );
+
+        const label = _el("label", { part: "label" }, [_el("slot")]);
+        const wrapper = _el("div", { class: "wrapper" }, [box, label]);
+
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.replaceChildren(wrapper);
+
+        this._bindCheckboxListeners();
+        this._updateState();
+    }
 
     /** Toggles the checked state and dispatches a "change" event. */
     toggle() {
@@ -85,23 +136,9 @@ export class YumeCheckbox extends HTMLElement {
         } else {
             this.checked = !this.checked;
         }
-        this.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-    }
-
-    render() {
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
-        this.shadowRoot.innerHTML = `
-            <div class="wrapper">
-                <div class="checkbox" role="checkbox" tabindex="0">
-                    <span class="icon"></span>
-                </div>
-                <label part="label">
-                    <slot></slot>
-                </label>
-            </div>
-        `;
-        this._bindCheckboxListeners();
-        this._updateState();
+        this.dispatchEvent(
+            new Event("change", { bubbles: true, composed: true }),
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -120,12 +157,13 @@ export class YumeCheckbox extends HTMLElement {
     }
 
     _buildStyleSheet() {
-        const flexDir = {
-            top:    "column",
-            bottom: "column-reverse",
-            left:   "row-reverse",
-            right:  "row",
-        }[this.labelPosition] || "row";
+        const flexDir =
+            {
+                top: "column",
+                bottom: "column-reverse",
+                left: "row-reverse",
+                right: "row",
+            }[this.labelPosition] || "row";
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
@@ -156,30 +194,27 @@ export class YumeCheckbox extends HTMLElement {
                 align-items: center;
                 justify-content: center;
                 background: var(--component-checkbox-background);
+                color: var(--component-checkbox-accent);
                 box-sizing: border-box;
                 transition: border-color 0.2s ease;
-                line-height: 0;
             }
 
             :host([disabled]) .checkbox {
-                border-color: var(--component-checkbox-border-color);
                 background: var(--component-checkbox-disabled-background, var(--component-checkbox-background));
                 cursor: not-allowed;
-            }
-
-            :host([disabled]) .checkbox:hover {
-                border-color: var(--component-checkbox-border-color);
             }
 
             .checkbox:hover {
                 border-color: var(--component-checkbox-accent);
             }
 
-            .checkbox svg {
+            :host([disabled]) .checkbox:hover {
+                border-color: var(--component-checkbox-border-color);
+            }
+
+            .icon {
                 width: var(--component-checkbox-icon-size, 16px);
                 height: var(--component-checkbox-icon-size, 16px);
-                stroke: var(--component-checkbox-accent);
-                display: block;
             }
 
             [part="label"] {
@@ -189,32 +224,27 @@ export class YumeCheckbox extends HTMLElement {
                 line-height: 1;
                 color: var(--component-checkbox-color);
             }
-
-            .icon {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-                line-height: 0;
-            }
         `);
         return sheet;
     }
 
-    _updateIcon() {
-        const icon = this.shadowRoot.querySelector(".icon");
-        if (!icon) return;
-        if (this.indeterminate) icon.innerHTML = indeterminateSvg;
-        else if (this.checked) icon.innerHTML = check;
-        else icon.innerHTML = "";
-    }
-
     _updateState() {
         const box = this.shadowRoot.querySelector(".checkbox");
-        if (!box) return;
-        box.setAttribute("aria-checked", this.indeterminate ? "mixed" : this.checked ? "true" : "false");
-        this._updateIcon();
+        const icon = this.shadowRoot.querySelector(".icon");
+        if (!box || !icon) return;
+
+        const ariaChecked = this.indeterminate
+            ? "mixed"
+            : this.checked
+              ? "true"
+              : "false";
+        const showIcon = this.indeterminate || this.checked;
+        const iconName = this.indeterminate ? "minus" : "check";
+
+        box.setAttribute("aria-checked", ariaChecked);
+        icon.setAttribute("name", iconName);
+        icon.setAttribute("weight", "x-thick");
+        icon.style.display = showIcon ? "" : "none";
     }
 }
 

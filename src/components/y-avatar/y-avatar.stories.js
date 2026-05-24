@@ -1,7 +1,7 @@
-import "./y-avatar.js";
+﻿import "./y-avatar.js";
 
 export default {
-    title: "Components/Avatar",
+    title: "Data/Avatar",
     tags: ["autodocs"],
     argTypes: {
         alt: {
@@ -95,4 +95,18 @@ export const Shapes = {
             <y-avatar alt="SQ" shape="square"></y-avatar>
         </div>
     `,
+};
+
+export const BrokenImageFallback = {
+    args: {
+        src: "https://example.invalid/missing-avatar.png",
+        alt: "Jane Doe",
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: "When the image at `src` fails to load, the avatar falls back to rendering the initials derived from `alt` instead of showing the browser's broken-image graphic.",
+            },
+        },
+    },
 };

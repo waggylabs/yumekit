@@ -83,14 +83,48 @@ parent.appendChild(slot);
 if (this.querySelector('[slot="icon"]')) { ... }
 ```
 
+### Security — handling untrusted input
+
+The DOM-element, icon, and slot rules above exist primarily to keep user-controlled values out of `innerHTML` template strings, where attribute interpolation can break out of the surrounding quote. Building the shadow tree with `_el` and writing values through `setAttribute` makes that breakout impossible — the entire string becomes a single attribute value, no matter what quotes or angle brackets it contains. Two shared helpers cover the cases where `_el` alone isn't enough:
+
+- **CSS color literals (`isSafeCssColor` from `src/modules/helpers.js`).** When a component paints a user-supplied color into any CSS context — an inline `style` attribute, a `<style>` block built via `replaceSync`, or a CSS variable — gate the value through `isSafeCssColor` first. It accepts only `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()` literals; everything else (including named colors, `var(...)`, `currentColor`, and anything containing whitespace, semicolons, or braces) is rejected. Fall back to a semantic theme default when the check fails. `y-badge` and `y-select` (per-option `color`) follow this pattern.
+
+- **SVG markup (`getSanitizedIcon` / `sanitizeSvg` from `src/modules/svg-sanitizer.js`).** Any time you would render an SVG that originated outside the bundled icon set — e.g. anything coming back from `getIcon(name)` where `name` could resolve to a `registerIcon` payload — run it through the shared sanitizer first. `<y-icon>` is the simplest path; if you need raw markup, call `getSanitizedIcon(name)` and inject the returned string. The sanitizer strips every element and attribute outside the SVG allowlist (no `<script>`, no `onload`, no `xlink:href`, …) and memoizes results per icon name.
+
 ### New component checklist
 
-Every new component requireschanges to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, `variables.css`, `.figma/variables.json`, entry in `llm.txt`, and a `y-*.stories.js` stories file.
+Every new component requires changes to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, its token sets under `tokens/` (see [Design Tokens](#design-tokens)), entry in `llm.txt`, and a `y-*.stories.js` stories file.
 
 ### Testing
 
 - Tests co-locate with the component source file.
 - Use `sinon.createSandbox()` at the `describe` level with `afterEach(() => sandbox.restore())`.
+
+## Design Tokens
+
+Tokens are the source of truth for the visual design system. The JSON under `tokens/` drives the generated CSS under `styles/`.
+
+### Layout
+
+- `tokens/core/colors.json` — palette primitives (neutral, red, blue, etc.)
+- `tokens/core/numerics.json` — border / spacing / radii / sizing / font-size primitives
+- `tokens/core/components.json` — component dimensional tokens (widths, sizes, gaps)
+- `tokens/themes/{name}.json` — per-theme semantic tokens and component color overrides
+- `tokens/$themes.json` — Tokens Studio theme manifest
+- `tokens/$metadata.json` — token-set order
+
+### Building CSS
+
+Run `npm run build:tokens` to regenerate all files under `styles/`. The full `npm run build` runs this first before bundling, and `prepublishOnly` invokes `build`, so published packages always reflect the current tokens.
+
+Generated outputs:
+
+- `styles/variables.css` — palette + numerics + component dims + the default theme (Blue Light)
+- `styles/{slug}.css` — per-theme override files (one per Themes entry in the manifest)
+
+### Figma sync
+
+Use the [Tokens Studio for Figma](https://tokens.studio/) plugin pointed at this repo's `tokens/` directory to keep Figma Variables in sync with code.
 
 ## AI Assistance
 

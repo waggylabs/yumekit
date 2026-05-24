@@ -25,6 +25,27 @@ describe("KeplerButton", () => {
         expect(shadowButton.getAttribute("aria-disabled")).to.equal("true");
     });
 
+    it("forwards aria-haspopup, aria-expanded, and aria-controls to the inner button", async () => {
+        const el = await fixture(html`
+            <y-button
+                aria-haspopup="menu"
+                aria-expanded="false"
+                aria-controls="my-popup"
+            >Trigger</y-button>
+        `);
+        const inner = el.shadowRoot.querySelector("button");
+
+        expect(inner.getAttribute("aria-haspopup")).to.equal("menu");
+        expect(inner.getAttribute("aria-expanded")).to.equal("false");
+        expect(inner.getAttribute("aria-controls")).to.equal("my-popup");
+
+        el.setAttribute("aria-expanded", "true");
+        expect(inner.getAttribute("aria-expanded")).to.equal("true");
+
+        el.removeAttribute("aria-haspopup");
+        expect(inner.hasAttribute("aria-haspopup")).to.be.false;
+    });
+
     it("updates styles when the color attribute changes", async () => {
         const el = await fixture(
             html`<y-button color="primary">Test</y-button>`
@@ -110,14 +131,6 @@ describe("KeplerButton", () => {
         el.value = "something";
         el.value = 42;
         expect(el.value).to.equal("");
-    });
-
-    it("setOptions stores options as JSON attribute", async () => {
-        const el = await fixture(html`<y-button>Test</y-button>`);
-        const opts = [{ label: "One", value: "1" }, { label: "Two", value: "2" }];
-        el.setOptions(opts);
-        const stored = JSON.parse(el.getAttribute("options"));
-        expect(stored).to.deep.equal(opts);
     });
 
     it("dispatches focus custom event when inner button receives focus", async () => {

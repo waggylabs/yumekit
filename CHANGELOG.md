@@ -31,6 +31,110 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.0]
+
+### Added
+
+- New `y-tree` / `y-tree-item` components — hierarchical navigation tree for sidebars, doc nav, and file/folder explorers.
+
+- New `y-avatar-group` component — displays a collection of overlapping avatars in a horizontal or vertical row.
+
+- New `y-sidebar` component — collapsible vertical navigation sidebar, extracted from `y-appbar`'s vertical mode.
+
+- New `y-splitter` component — two-pane container with a draggable handle that resizes the first pane.
+
+- New `y-droplist` component — drag-and-drop reorderable list with keyboard reorder support.
+
+- New `y-break` component — decorative horizontal or vertical divider, optionally broken by centered content.
+
+- New `y-grid` component — CSS Grid layout container, extracted from `y-stack`.
+
+- New `y-masonry` component — layout container that packs children of varying heights into the shortest column.
+
+- New `y-paginator` component — page navigation control with a configurable button window.
+
+- New `y-animate` component — a declarative wrapper that applies CSS-based entrance animations to its slotted children.
+
+### Changed
+
+- **Icon rename — `comp-*` prefix dropped.** All 26 component-illustrating icons renamed. Two resolved collisions: `comp-menu` → `droplist` and `comp-tag` → `chip`.
+
+    | Old name        | New name   |
+    | --------------- | ---------- |
+    | `comp-appbar`   | `appbar`   |
+    | `comp-avatar`   | `avatar`   |
+    | `comp-badge`    | `badge`    |
+    | `comp-button`   | `button`   |
+    | `comp-card`     | `card`     |
+    | `comp-checkbox` | `checkbox` |
+    | `comp-date`     | `date`     |
+    | `comp-dialog`   | `dialog`   |
+    | `comp-drawer`   | `drawer`   |
+    | `comp-icon`     | `icon`     |
+    | `comp-input`    | `input`    |
+    | `comp-menu`     | `droplist` |
+    | `comp-panelbar` | `panelbar` |
+    | `comp-progress` | `progress` |
+    | `comp-radio`    | `radio`    |
+    | `comp-rating`   | `rating`   |
+    | `comp-select`   | `select`   |
+    | `comp-slider`   | `slider`   |
+    | `comp-switch`   | `switch`   |
+    | `comp-table`    | `table`    |
+    | `comp-tabs`     | `tabs`     |
+    | `comp-tag`      | `chip`     |
+    | `comp-textarea` | `textarea` |
+    | `comp-theme`    | `theme`    |
+    | `comp-toast`    | `toast`    |
+    | `comp-tooltip`  | `tooltip`  |
+
+- **Icon rename — usage names replaced with glyph-descriptive names.** 12 general-purpose icons renamed so the name describes what the icon depicts rather than how it is used.
+
+    | Old name   | New name               | Glyph                      |
+    | ---------- | ---------------------- | -------------------------- |
+    | `ai`       | `robot`                | Robot Head                 |
+    | `ban`      | `circle-slash`         | Circle with diagonal slash |
+    | `chart`    | `waveform`             | ECG / pulse waveform       |
+    | `close`    | `x`                    | × mark                     |
+    | `comments` | `speech-bubble`        | Chat / speech bubble       |
+    | `filter`   | `funnel`               | Funnel shape               |
+    | `paste`    | `clipboard`            | Clipboard                  |
+    | `save`     | `floppy-disk`          | Floppy disk                |
+    | `search`   | `magnifying-glass`     | Magnifying glass           |
+    | `settings` | `gear`                 | Gear / cog                 |
+    | `tools`    | `wrench`               | Single wrench              |
+    | `warning`  | `triangle-exclamation` | Triangle with !            |
+
+- **Breaking** `y-slider`: visual redesign, range mode added, and refactor to current standards.
+
+- `y-tooltip`: added `open` boolean attribute to force visibility independent of hover/focus.
+
+- `y-progress`: expanded to a multi-mode indicator supporting `bar`, `ring`, and `pie` shapes plus multi-value rendering.
+
+- `y-rating`: selected icons now render with the thickest stroke weight, making them easier to distinguish from the unselected outlines beyond color alone.
+
+- **Breaking** `y-appbar`: vertical sidebar mode removed — migrate vertical navigation to the new `y-sidebar`. `sticky="start"` / `sticky="end"` now refer to the top / bottom edges, and `menu-direction` defaults to `"down"`.
+
+- **Breaking** `y-stack`: refocused as a flexbox-only primitive. Migration: `<y-stack mode="grid" …>` → `<y-grid …>`; `<y-stack mode="masonry" …>` → `<y-masonry …>`. The `mode` and `columns` attributes and the related `--component-stack-*` variables are removed.
+
+### Fixed
+
+- Property setters that back a JSON attribute no longer double-encode a string value. Assigning a JSON string (e.g. `el.ticks = "[0,25,50]"`, as React 19 does for matching properties) previously ran it through `JSON.stringify` again, producing an unparseable attribute and a blank render. Setters now mirror string input directly, matching `y-progress`. Affects `y-slider` (`ticks`), `y-appbar`/`y-sidebar`/`y-dock`/`y-stepper`/`y-breadcrumbs` (`items`), `y-tabs` (`options`), `y-paginator` (`pageSizeOptions`), and `y-color`/`y-colorpicker` (`formats`).
+
+- `y-avatar`: when the image at `src` fails to load, the component now falls back to the initials rendering rather than displaying the browser's broken-image graphic.
+
+- Orphaned CSS custom properties across several components now resolve to real design tokens instead of only their inline fallbacks. `y-dialog`, `y-banner`, `y-droplist`, `y-gallery`, `y-breadcrumbs`, `y-dock`, `y-input`, `y-progress`, `y-slider`, `y-stepper`, and `y-table` referenced `--component-*` variables that were never defined in the token pipeline; these are now themeable. Also fixed `y-gallery`'s broken `--neutral-black-translucent` fallback and stale `--y-color-*` references in the `y-droplist` stories.
+
+### Security
+
+- **Breaking** `y-appbar` / `y-sidebar`: nav-item `icon` no longer accepts raw SVG markup — only registered icon names. Use `registerIcon` / `registerIcons` for custom glyphs.
+
+- **XSS hardening across 11 components** (`y-avatar`, `y-input`, `y-textarea`, `y-tooltip`, `y-banner`, `y-badge`, `y-date`, `y-colorpicker`, `y-select`, `y-icon`, `y-rating`): shadow trees now build via `createElement` + `setAttribute` + `textContent` instead of `innerHTML` interpolation.
+
+- New shared `isSafeCssColor` helper validates user-supplied CSS color literals; applied to `y-badge`'s `color` and `y-select`'s per-option `color`.
+
+- New shared `svg-sanitizer` module (`src/modules/svg-sanitizer.js`) replaces the inlined sanitizer in `y-icon` and is now also applied on the `y-rating` render path.
+
 ## [0.4.4] - 2026-04-25
 
 ### Fixed
@@ -38,6 +142,8 @@ Delete any empty sections before publishing.
 - `y-badge`: slotted children would disappear when the badge was upgraded before its children were parsed (e.g. when `y-badge.js` loaded before the tag appeared in the HTML stream). The shadow DOM now always includes a `<slot>` and toggles overlay vs. inline layout via a `slotchange`-driven class on an internal root element, so children projected in after upgrade are always picked up. Knock-on: text-only and comment-only children no longer trigger overlay mode (only element children do). This matches how the component is actually used in practice.
 
 ### Added
+
+- New shared layout helpers in `src/modules/helpers.js`: `GAP_TOKEN_MAP`, `resolveGapToken(host, attrName)`, and `measureCSSLength(container, cssLength)` — used by `y-grid` and `y-masonry` to map the shared gap-token scale to CSS expressions and measure resolved pixel widths.
 
 - `y-appbar`: the default (unnamed) slot now lets consumers supply their own link elements (e.g. Vue Router's `<router-link>`, React Router's `<NavLink>`, plain `<a>`) in place of — or in addition to — the auto-generated `y-button` items. Unslotted children render in the appbar body after any items from the `items` attribute, get full-width treatment in vertical mode, and are hidden-overflow when collapsed. In mobile (hamburger) mode the same slot is rendered inside the dropdown panel below the items, preserving the desktop priority order.
 

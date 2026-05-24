@@ -9,6 +9,7 @@ import {
     rgbToHex,
     rgbaToHex,
     parseColorString,
+    createElement as _el,
 } from "../../modules/helpers.js";
 
 export class YumeColorpicker extends HTMLElement {
@@ -88,7 +89,9 @@ export class YumeColorpicker extends HTMLElement {
         }
     }
     set formats(val) {
-        this.setAttribute("formats", JSON.stringify(val));
+        if (val === null || val === undefined) this.removeAttribute("formats");
+        else if (typeof val === "string") this.setAttribute("formats", val);
+        else this.setAttribute("formats", JSON.stringify(val));
     }
 
     get showAlpha() {
@@ -117,53 +120,8 @@ export class YumeColorpicker extends HTMLElement {
     }
 
     render() {
-        const size = this.size;
-        const showAlpha = this.showAlpha;
-        const formats = this.formats;
-
-        this.shadowRoot.innerHTML = `
-            <style>${this._buildStyles()}</style>
-            <div class="colorpicker" part="colorpicker">
-                <div class="canvas-container">
-                    <canvas class="canvas" part="canvas" tabindex="0"
-                        role="slider" aria-label="Color"
-                        aria-valuetext="Hue ${this._h}, Saturation ${this._s}%, Brightness ${this._v}%"
-                    ></canvas>
-                    <div class="canvas-handle" part="canvas-handle"></div>
-                </div>
-                <div class="hue-slider" part="hue-slider" tabindex="0"
-                    role="slider" aria-label="Hue"
-                    aria-valuemin="0" aria-valuemax="359" aria-valuenow="${this._h}"
-                >
-                    <div class="hue-thumb" part="hue-thumb"></div>
-                </div>
-                ${
-                    showAlpha
-                        ? `
-                <div class="alpha-slider" part="alpha-slider" tabindex="0"
-                    role="slider" aria-label="Alpha"
-                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(this._a * 100)}"
-                >
-                    <div class="alpha-gradient"></div>
-                    <div class="alpha-thumb" part="alpha-thumb"></div>
-                </div>`
-                        : ""
-                }
-                <div class="inputs-row" part="inputs-row">
-                    <div class="swatch-container">
-                        <slot name="swatch">
-                            <div class="swatch-preview" part="swatch-preview"></div>
-                        </slot>
-                    </div>
-                    <y-select class="format-select" part="format-select"
-                        size="${size}"
-                        options='${JSON.stringify(formats.map((f) => ({ value: f, label: f.toUpperCase() })))}'
-                        value="${this.format}"
-                    ></y-select>
-                    <div class="channel-inputs"></div>
-                </div>
-            </div>
-        `;
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.replaceChildren(this._buildTree());
 
         this._canvas = this.shadowRoot.querySelector(".canvas");
         this._canvasHandle = this.shadowRoot.querySelector(".canvas-handle");
@@ -800,8 +758,9 @@ export class YumeColorpicker extends HTMLElement {
     // Private — styles
     // -------------------------------------------------------------------------
 
-    _buildStyles() {
-        return `
+    _buildStyleSheet() {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body, sans-serif);
@@ -963,7 +922,103 @@ export class YumeColorpicker extends HTMLElement {
             .channel-inputs y-input.full-width {
                 flex: 2;
             }
-        `;
+        `);
+        return sheet;
+    }
+
+    _buildTree() {
+        const showAlpha = this.showAlpha;
+
+        const canvasContainer = _el("div", { class: "canvas-container" }, [
+            _el("canvas", {
+                class: "canvas",
+                part: "canvas",
+                tabindex: "0",
+                role: "slider",
+                "aria-label": "Color",
+                "aria-valuetext": `Hue ${this._h}, Saturation ${this._s}%, Brightness ${this._v}%`,
+            }),
+            _el("div", { class: "canvas-handle", part: "canvas-handle" }),
+        ]);
+
+        const hueSlider = _el(
+            "div",
+            {
+                class: "hue-slider",
+                part: "hue-slider",
+                tabindex: "0",
+                role: "slider",
+                "aria-label": "Hue",
+                "aria-valuemin": "0",
+                "aria-valuemax": "359",
+                "aria-valuenow": this._h,
+            },
+            [_el("div", { class: "hue-thumb", part: "hue-thumb" })],
+        );
+
+        const inputsRow = _el("div", { class: "inputs-row", part: "inputs-row" }, [
+            _el("div", { class: "swatch-container" }, [
+                (() => {
+                    const slot = _el("slot", { name: "swatch" });
+                    slot.appendChild(
+                        _el("div", {
+                            class: "swatch-preview",
+                            part: "swatch-preview",
+                        }),
+                    );
+                    return slot;
+                })(),
+            ]),
+            this._buildFormatSelect(),
+            _el("div", { class: "channel-inputs" }),
+        ]);
+
+        const children = [canvasContainer, hueSlider];
+        if (showAlpha) {
+            children.push(
+                _el(
+                    "div",
+                    {
+                        class: "alpha-slider",
+                        part: "alpha-slider",
+                        tabindex: "0",
+                        role: "slider",
+                        "aria-label": "Alpha",
+                        "aria-valuemin": "0",
+                        "aria-valuemax": "100",
+                        "aria-valuenow": Math.round(this._a * 100),
+                    },
+                    [
+                        _el("div", { class: "alpha-gradient" }),
+                        _el("div", { class: "alpha-thumb", part: "alpha-thumb" }),
+                    ],
+                ),
+            );
+        }
+        children.push(inputsRow);
+
+        return _el(
+            "div",
+            { class: "colorpicker", part: "colorpicker" },
+            children,
+        );
+    }
+
+    _buildFormatSelect() {
+        const formats = this.formats;
+        const select = _el("y-select", {
+            class: "format-select",
+            part: "format-select",
+            size: this.size,
+            value: this.format,
+        });
+        select.setAttribute(
+            "options",
+            JSON.stringify(
+                formats.map((f) => ({ value: f, label: f.toUpperCase() })),
+            ),
+        );
+        return select;
     }
 }
 
