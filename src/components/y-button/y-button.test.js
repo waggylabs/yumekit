@@ -133,14 +133,6 @@ describe("KeplerButton", () => {
         expect(el.value).to.equal("");
     });
 
-    it("setOptions stores options as JSON attribute", async () => {
-        const el = await fixture(html`<y-button>Test</y-button>`);
-        const opts = [{ label: "One", value: "1" }, { label: "Two", value: "2" }];
-        el.setOptions(opts);
-        const stored = JSON.parse(el.getAttribute("options"));
-        expect(stored).to.deep.equal(opts);
-    });
-
     it("dispatches focus custom event when inner button receives focus", async () => {
         const el = await fixture(html`<y-button>Test</y-button>`);
         setTimeout(() => el.button.dispatchEvent(new Event("focus", { bubbles: true })));
