@@ -609,6 +609,46 @@ export class YumeDroplist extends HTMLElement {
         });
     }
 
+    /**
+     * Apply `touch-action: none` to the press target (item or its handle)
+     * BEFORE any touch begins, so the browser does not preempt the press as
+     * a scroll/pan gesture. Setting this at runtime from inside pointerdown
+     * is too late on mobile.
+     */
+    _applyTouchAction(item, handle) {
+        this._clearTouchAction(item);
+
+        if (!handle) {
+            item.style.touchAction = "none";
+            item.setAttribute("data-y-droplist-touch-action", "");
+            return;
+        }
+
+        let handleEl = null;
+        try {
+            handleEl = item.querySelector(handle);
+        } catch {
+            // Selector validity is checked on attribute change.
+        }
+        if (handleEl) {
+            handleEl.style.touchAction = "none";
+            handleEl.setAttribute("data-y-droplist-touch-action", "");
+        }
+    }
+
+    _clearTouchAction(item) {
+        for (const el of item.querySelectorAll(
+            "[data-y-droplist-touch-action]",
+        )) {
+            el.style.removeProperty("touch-action");
+            el.removeAttribute("data-y-droplist-touch-action");
+        }
+        if (item.hasAttribute("data-y-droplist-touch-action")) {
+            item.style.removeProperty("touch-action");
+            item.removeAttribute("data-y-droplist-touch-action");
+        }
+    }
+
     _applyHandleA11y(item, handle) {
         // Strip any tabindex we previously placed on a descendant (the prior handle).
         for (const el of item.querySelectorAll(
@@ -1245,8 +1285,13 @@ export class YumeDroplist extends HTMLElement {
             if (child !== this._dragItem) {
                 child.setAttribute("aria-grabbed", "false");
             }
-            if (this.disabled) child.removeAttribute("draggable");
-            else child.setAttribute("draggable", "true");
+            if (this.disabled) {
+                child.removeAttribute("draggable");
+                this._clearTouchAction(child);
+            } else {
+                child.setAttribute("draggable", "true");
+                this._applyTouchAction(child, handle);
+            }
         }
     }
 
@@ -1598,8 +1643,9 @@ export class YumeDroplist extends HTMLElement {
             /* optional */
         }
 
-        // Set touch-action:none to block native scrolling during potential drag.
-        item.style.touchAction = "none";
+        // `touch-action: none` is applied to the press target at decoration
+        // time (see _applyTouchAction); setting it here would be too late on
+        // mobile because the browser commits to scroll-vs-gesture at touchstart.
 
         // Set up per-gesture pointer listeners on the item.
         this._touchPointerAbort = new AbortController();

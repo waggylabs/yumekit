@@ -2443,7 +2443,10 @@ describe("y-droplist — touch reorder (pointerType=touch)", () => {
         expect(ev.detail.list).to.equal(el);
     });
 
-    it("touch-action reset to empty string after drag ends", async () => {
+    it("touch-action stays 'none' on draggable items so mobile drag can start", async () => {
+        // touch-action must be applied before the press so the browser does
+        // not commit to scrolling. It is cleared only when the item becomes
+        // undraggable (disabled), not after each drag.
         const el = await fixture(html`
             <y-droplist animation="0">
                 <div>A</div>
@@ -2451,8 +2454,9 @@ describe("y-droplist — touch reorder (pointerType=touch)", () => {
             </y-droplist>
         `);
         const a = el.children[0];
-        const elRect = el.getBoundingClientRect();
+        expect(a.style.touchAction).to.equal("none");
 
+        const elRect = el.getBoundingClientRect();
         fire(a, "pointerdown", {
             clientX: elRect.left + 5,
             clientY: elRect.top + 5,
@@ -2462,6 +2466,10 @@ describe("y-droplist — touch reorder (pointerType=touch)", () => {
             clientX: elRect.left + 5,
             clientY: elRect.top + 5,
         });
+        await aTimeout(0);
+        expect(a.style.touchAction).to.equal("none");
+
+        el.disabled = true;
         await aTimeout(0);
         expect(a.style.touchAction).to.equal("");
     });

@@ -41,6 +41,10 @@ Delete any empty sections before publishing.
 
 - `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
 
+### Fixed
+
+- `y-droplist` — touch drag now works reliably on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time instead of from inside `pointerdown`, so mobile browsers stop preempting the press as a scroll gesture.
+
 ## [0.5.0] - 2026-05-25
 
 ### Added
