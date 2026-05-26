@@ -532,6 +532,8 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 linear?: boolean | string;
                 editable?: boolean | string;
+                responsive?: boolean | string;
+                "responsive-breakpoint"?: number | string;
             }>;
             "y-switch": El<{
                 name?: string;

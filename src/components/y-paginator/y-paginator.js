@@ -58,6 +58,10 @@ export class YumePaginator extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this._onKeydown = this._onKeydown.bind(this);
+        this._effectivePageCount = null;
+        this._lastObservedWidth = 0;
+        this._fitPending = false;
+        this._fitIterations = 0;
     }
 
     connectedCallback() {
@@ -66,15 +70,30 @@ export class YumePaginator extends HTMLElement {
             this.setAttribute("aria-label", "Pagination");
         }
         this.shadowRoot.addEventListener("keydown", this._onKeydown);
+        this._setupResizeObserver();
         this._render();
     }
 
     disconnectedCallback() {
         this.shadowRoot.removeEventListener("keydown", this._onKeydown);
+        this._teardownResizeObserver();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+
+        // Declared maximum / variant changed — discard fit state so we
+        // re-evaluate from the declared pageCount.
+        if (
+            name === "page-count" ||
+            name === "total-pages" ||
+            name === "variant" ||
+            name === "size" ||
+            name === "page-size-options"
+        ) {
+            this._effectivePageCount = null;
+            this._fitIterations = 0;
+        }
 
         if (this.isConnected) this._render();
     }
@@ -250,6 +269,14 @@ export class YumePaginator extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
+    _applyEffectivePageCount(next) {
+        this._effectivePageCount = next;
+        this._fitIterations++;
+        const focus = this._captureFocusKey();
+        this._render();
+        this._restoreFocusKey(focus);
+    }
+
     _buildButton(page, { isCurrent, isDisabled }) {
         const parts = ["button"];
         if (isCurrent) parts.push("button--active");
@@ -411,10 +438,12 @@ export class YumePaginator extends HTMLElement {
             this._buildNavButton("prev", current, total, isHostDisabled),
         );
 
+        const effectivePageCount =
+            this._effectivePageCount ?? this.pageCount;
         const items = this._getPageList(
             current,
             total,
-            this.pageCount,
+            effectivePageCount,
             this.boundaryCount,
         );
         wrapper.appendChild(this._buildList(items, current, isHostDisabled));
@@ -498,6 +527,7 @@ export class YumePaginator extends HTMLElement {
         return `
             :host {
                 display: inline-block;
+                max-width: 100%;
                 font-family: var(--font-family-body, sans-serif);
                 font-weight: var(--font-weight-body, 400);
                 color: var(--component-paginator-color, var(--base-content--, #333));
@@ -566,6 +596,37 @@ export class YumePaginator extends HTMLElement {
                 white-space: nowrap;
             }
         `;
+    }
+
+    _buttonSizePx() {
+        const styles = getComputedStyle(this);
+        const raw = styles
+            .getPropertyValue(`--component-paginator-button-size-${this.size}`)
+            .trim();
+        const parsed = parseFloat(raw);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : 32;
+    }
+
+    _captureFocusKey() {
+        const active = this.shadowRoot.activeElement;
+        if (!active || active.tagName !== "Y-BUTTON") return null;
+
+        const page = active.getAttribute("data-page");
+        if (page) return { kind: "page", value: page };
+
+        const part = active.getAttribute("part")?.split(" ")[0];
+        if (part?.startsWith("nav-")) return { kind: "part", value: part };
+
+        return null;
+    }
+
+    _gapPx() {
+        const styles = getComputedStyle(this);
+        const raw = styles
+            .getPropertyValue(`--component-paginator-spacing-${this.size}`)
+            .trim();
+        const parsed = parseFloat(raw);
+        return Number.isFinite(parsed) && parsed >= 0 ? parsed : 4;
     }
 
     _getPageList(current, total, pageCount, boundaryCount) {
@@ -664,6 +725,51 @@ export class YumePaginator extends HTMLElement {
         }
     }
 
+    _fitToWidth() {
+        // Guard against runaway iterations if the layout never settles.
+        if (this._fitIterations >= 6) return;
+
+        const root = this.shadowRoot.querySelector(".root");
+        if (!root) return;
+
+        const hostWidth = this.clientWidth;
+        if (!hostWidth) return;
+
+        // Only the default/detailed variants render a paginated page list
+        // whose count we can shrink. Compact has a fixed-size nav and a
+        // single status label.
+        if (this.variant === "compact") return;
+
+        const declared = this.pageCount;
+        const current = this._effectivePageCount ?? declared;
+        const contentWidth = root.scrollWidth;
+        const slot = this._buttonSizePx() + this._gapPx();
+        if (slot <= 0) return;
+
+        if (contentWidth > hostWidth + 1) {
+            if (current <= 1) return;
+            const overflow = contentWidth - hostWidth;
+            const toShrink = Math.max(1, Math.ceil(overflow / slot));
+            const next = Math.max(1, current - toShrink);
+            if (next === current) return;
+            this._applyEffectivePageCount(next);
+            return;
+        }
+
+        // Room to grow back toward the declared maximum. Require a full slot
+        // of slack plus a small buffer (hysteresis) before adding a button so
+        // we don't bounce in and out at the threshold.
+        if (current < declared) {
+            const slack = hostWidth - contentWidth;
+            const buffer = slot * 0.5;
+            if (slack < slot + buffer) return;
+            const grow = Math.floor((slack - buffer) / slot);
+            const next = Math.min(declared, current + grow);
+            if (next === current) return;
+            this._applyEffectivePageCount(next);
+        }
+    }
+
     _focusableButtons() {
         return Array.from(
             this.shadowRoot.querySelectorAll("y-button:not([disabled])"),
@@ -748,6 +854,13 @@ export class YumePaginator extends HTMLElement {
         if (pageSize) root.appendChild(pageSize);
 
         this.shadowRoot.appendChild(root);
+
+        // Capture post-layout width so the ResizeObserver can ignore the
+        // dimension change caused by our own render and only react to genuine
+        // external resizes.
+        this._lastObservedWidth = this.getBoundingClientRect().width;
+
+        this._scheduleFit();
     }
 
     _requestPageSizeChange(nextSize) {
@@ -779,6 +892,64 @@ export class YumePaginator extends HTMLElement {
         }
 
         this.itemsPerPage = nextSize;
+    }
+
+    _restoreFocusKey(key) {
+        if (!key) return;
+
+        let el = null;
+        if (key.kind === "page") {
+            el = this.shadowRoot.querySelector(
+                `y-button[data-page="${key.value}"]`,
+            );
+        } else if (key.kind === "part") {
+            el = this.shadowRoot.querySelector(
+                `y-button[part^="${key.value}"]`,
+            );
+        }
+
+        if (el) this._focusYButton(el);
+    }
+
+    _scheduleFit() {
+        if (this._fitPending) return;
+        if (typeof requestAnimationFrame !== "function") return;
+
+        this._fitPending = true;
+        requestAnimationFrame(() => {
+            this._fitPending = false;
+            if (this.isConnected) this._fitToWidth();
+        });
+    }
+
+    _setupResizeObserver() {
+        if (typeof ResizeObserver === "undefined") return;
+        if (this._ro) return;
+
+        this._ro = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+
+            const width =
+                entry.contentBoxSize?.[0]?.inlineSize ??
+                entry.contentRect?.width ??
+                0;
+
+            // Ignore the resize triggered by our own render — width matches
+            // what we measured at the end of _render.
+            if (Math.abs(width - this._lastObservedWidth) < 1) return;
+
+            this._lastObservedWidth = width;
+            this._effectivePageCount = null;
+            this._fitIterations = 0;
+            if (this.isConnected) this._render();
+        });
+        this._ro.observe(this);
+    }
+
+    _teardownResizeObserver() {
+        this._ro?.disconnect();
+        this._ro = null;
     }
 
     _requestPageChange(nextPage) {

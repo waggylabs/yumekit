@@ -31,7 +31,17 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.5.0]
+## [0.5.1]
+
+### Added
+
+- `y-stepper` — `responsive` and `responsive-breakpoint` attributes; auto-flips horizontal layouts to vertical below the breakpoint (600px default). Enabled by default; set `responsive="false"` to opt out.
+
+### Changed
+
+- `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
+
+## [0.5.0] - 2026-05-25
 
 ### Added
 

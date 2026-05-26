@@ -1256,15 +1256,17 @@ Deprecated slots (still functional, emit `console.warn`; use `leftIcon`/`rightIc
 
 Multi-step wizard that guides users through a sequential flow. Step content is provided via named slots.
 
-| Attribute     | Values / Notes                                                        |
-| ------------- | --------------------------------------------------------------------- |
-| `items`       | JSON array of `{ label, slot, description?, icon?, status? }` objects |
-| `current`     | number — zero-based active step index (default: `0`)                  |
-| `orientation` | `horizontal` (default) \| `vertical`                                  |
-| `position`    | `start` (default) \| `end` — indicators before or after the content   |
-| `size`        | `small` \| `medium` (default) \| `large`                              |
-| `linear`      | boolean — restricts free navigation; must use `next()` / `complete()` |
-| `editable`    | boolean — allows clicking completed steps to return to them           |
+| Attribute               | Values / Notes                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `items`                 | JSON array of `{ label, slot, description?, icon?, status? }` objects                                       |
+| `current`               | number — zero-based active step index (default: `0`)                                                        |
+| `orientation`           | `horizontal` (default) \| `vertical`                                                                        |
+| `position`              | `start` (default) \| `end` — indicators before or after the content                                         |
+| `size`                  | `small` \| `medium` (default) \| `large`                                                                    |
+| `linear`                | boolean — restricts free navigation; must use `next()` / `complete()`                                       |
+| `editable`              | boolean — allows clicking completed steps to return to them                                                 |
+| `responsive`            | defaults to `true` — auto-flips a declared horizontal layout to vertical below `responsive-breakpoint`. Pass `responsive="false"` to opt out. |
+| `responsive-breakpoint` | number (px) — host-width threshold below which the responsive flip triggers (default `600`)                 |
 
 Items shape: `{ label: string, slot: string, description?: string, icon?: string, status?: "complete" | "error" | "pending" }`
 

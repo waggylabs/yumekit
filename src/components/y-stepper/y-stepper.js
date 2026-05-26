@@ -11,6 +11,8 @@ export class YumeStepper extends HTMLElement {
             "size",
             "linear",
             "editable",
+            "responsive",
+            "responsive-breakpoint",
         ];
     }
 
@@ -22,11 +24,17 @@ export class YumeStepper extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this._stepStates = [];
+        this._lastObservedWidth = 0;
     }
 
     connectedCallback() {
         this._syncStepStates();
+        if (this.responsive) this._setupResizeObserver();
         this.render();
+    }
+
+    disconnectedCallback() {
+        this._teardownResizeObserver();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -34,6 +42,11 @@ export class YumeStepper extends HTMLElement {
 
         if (name === "items") {
             this._syncStepStates();
+        }
+
+        if (name === "responsive") {
+            if (this.responsive) this._setupResizeObserver();
+            else this._teardownResizeObserver();
         }
 
         this.render();
@@ -102,6 +115,33 @@ export class YumeStepper extends HTMLElement {
     }
     set position(val) {
         this.setAttribute("position", val);
+    }
+
+    /**
+     * Auto-switches to vertical orientation below `responsiveBreakpoint`
+     * even if `orientation="horizontal"` is declared. Enabled by default;
+     * set `responsive="false"` to opt out.
+     */
+    get responsive() {
+        const v = this.getAttribute("responsive");
+        return v === null ? true : v !== "false";
+    }
+    set responsive(val) {
+        if (val === false || val === "false") {
+            this.setAttribute("responsive", "false");
+        } else {
+            this.removeAttribute("responsive");
+        }
+    }
+
+    /** Host-width threshold (px) below which responsive mode flips to vertical. */
+    get responsiveBreakpoint() {
+        const val = parseInt(this.getAttribute("responsive-breakpoint"), 10);
+        return Number.isFinite(val) && val > 0 ? val : 600;
+    }
+    set responsiveBreakpoint(val) {
+        if (val == null) this.removeAttribute("responsive-breakpoint");
+        else this.setAttribute("responsive-breakpoint", String(val));
     }
 
     /** Controls indicator size, font size, and spacing. */
@@ -182,6 +222,8 @@ export class YumeStepper extends HTMLElement {
             return;
         }
 
+        this.dataset.effectiveOrientation = this._effectiveOrientation();
+
         this.shadowRoot.innerHTML = "";
 
         const style = document.createElement("style");
@@ -198,6 +240,10 @@ export class YumeStepper extends HTMLElement {
             this.shadowRoot.appendChild(indicators);
             this.shadowRoot.appendChild(panels);
         }
+
+        // Capture post-layout width so the ResizeObserver can distinguish
+        // self-induced size changes from genuine external resizes.
+        this._lastObservedWidth = this.getBoundingClientRect().width;
     }
 
     /** Returns all steps to pending and sets current back to 0. */
@@ -231,12 +277,12 @@ export class YumeStepper extends HTMLElement {
                 background: var(--component-stepper-connector-color-complete, var(--primary-content--, #1976d2));
             }
 
-            :host([orientation="horizontal"]) .connector-line {
+            :host([data-effective-orientation="horizontal"]) .connector-line {
                 height: 2px;
                 width: 100%;
             }
 
-            :host([orientation="vertical"]) .connector-line {
+            :host([data-effective-orientation="vertical"]) .connector-line {
                 width: 2px;
                 height: 100%;
             }
@@ -251,7 +297,7 @@ export class YumeStepper extends HTMLElement {
                 font-weight: var(--font-weight-body, 300);
             }
 
-            :host([orientation="vertical"]) {
+            :host([data-effective-orientation="vertical"]) {
                 display: flex;
             }
 
@@ -448,7 +494,7 @@ export class YumeStepper extends HTMLElement {
                 list-style: none;
             }
 
-            :host([orientation="vertical"]) .indicators {
+            :host([data-effective-orientation="vertical"]) .indicators {
                 flex-direction: column;
                 align-items: flex-start;
             }
@@ -459,7 +505,7 @@ export class YumeStepper extends HTMLElement {
                 flex-shrink: 0;
             }
 
-            :host([orientation="vertical"]) .indicator {
+            :host([data-effective-orientation="vertical"]) .indicator {
                 flex-direction: row;
             }
 
@@ -555,13 +601,13 @@ export class YumeStepper extends HTMLElement {
                 margin-bottom: var(--spacing-medium, 16px);
             }
 
-            :host([orientation="vertical"]) .panels {
+            :host([data-effective-orientation="vertical"]) .panels {
                 margin-top: 0;
                 margin-left: var(--spacing-medium, 16px);
                 flex: 1;
             }
 
-            :host([orientation="vertical"][position="end"]) .panels {
+            :host([data-effective-orientation="vertical"][position="end"]) .panels {
                 margin-left: 0;
                 margin-right: var(--spacing-medium, 16px);
             }
@@ -600,6 +646,19 @@ export class YumeStepper extends HTMLElement {
             this._buildConnectorStyles(),
             this._buildPanelStyles(),
         ].join("\n");
+    }
+
+    _effectiveOrientation() {
+        const declared = this.orientation;
+        if (!this.responsive || declared === "vertical") return declared;
+
+        const width =
+            this._lastObservedWidth ||
+            this.getBoundingClientRect?.().width ||
+            0;
+
+        if (width > 0 && width < this.responsiveBreakpoint) return "vertical";
+        return "horizontal";
     }
 
     _fireChangeAndApply(nextIndex) {
@@ -659,7 +718,7 @@ export class YumeStepper extends HTMLElement {
         );
         const currentIdx = indicators.indexOf(e.currentTarget);
 
-        const isHorizontal = this.orientation === "horizontal";
+        const isHorizontal = this._effectiveOrientation() === "horizontal";
         const nextKey = isHorizontal ? "ArrowRight" : "ArrowDown";
         const prevKey = isHorizontal ? "ArrowLeft" : "ArrowUp";
 
@@ -690,6 +749,33 @@ export class YumeStepper extends HTMLElement {
         }
     }
 
+    _setupResizeObserver() {
+        if (typeof ResizeObserver === "undefined") return;
+        if (this._ro) return;
+
+        this._ro = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+
+            const width =
+                entry.contentBoxSize?.[0]?.inlineSize ??
+                entry.contentRect?.width ??
+                0;
+
+            // Skip the resize event triggered by our own re-render — width
+            // matches the value we captured at the end of render().
+            if (Math.abs(width - this._lastObservedWidth) < 1) return;
+
+            this._lastObservedWidth = width;
+
+            const next = this._effectiveOrientation();
+            if (next === this.dataset.effectiveOrientation) return;
+
+            this.render();
+        });
+        this._ro.observe(this);
+    }
+
     _syncStepStates() {
         const items = this.items;
         const existing = this._stepStates;
@@ -697,6 +783,11 @@ export class YumeStepper extends HTMLElement {
         this._stepStates = items.map(
             (item, i) => existing[i] || item.status || "pending",
         );
+    }
+
+    _teardownResizeObserver() {
+        this._ro?.disconnect();
+        this._ro = null;
     }
 }
 

@@ -1286,6 +1286,8 @@ Attributes:
 - `size` — `"small"` | `"medium"` (default) | `"large"`
 - `linear` — boolean, restricts navigation to `next()` / `complete()` only
 - `editable` — boolean, allows clicking completed steps to go back
+- `responsive` — defaults to `true`. When enabled, the stepper auto-flips a declared horizontal layout to vertical when host width is below `responsive-breakpoint`. Pass `responsive="false"` to opt out.
+- `responsive-breakpoint` — host-width threshold (px) below which the responsive flip triggers. Default `600`.
 
 Events: `change` (cancelable, `{ index, previousIndex, step }`), `complete` (`{ step, index }`), `finish`
 
@@ -1357,7 +1359,7 @@ Tag: `<y-paginator>`
 Attributes:
 - `current-page` — currently active page (1-indexed). Clamped to `[1, total-pages]` when `total-pages >= 1`, and reports `0` when `total-pages = 0` (no-data state). Default `1` (or `0` when there is no data).
 - `total-pages` — total number of pages. `0` indicates no data; in that state the page list is omitted and `current-page` reads as `0`. Default `0`.
-- `page-count` — maximum page buttons displayed at once, excluding ellipses. Default `5`.
+- `page-count` — maximum page buttons displayed at once, excluding ellipses. Default `5`. The rendered count auto-shrinks to fit narrower host widths and grows back up to this maximum as space allows.
 - `boundary-count` — number of pages always shown at each end. Default `1`.
 - `variant` — `"default"` (default — page-number buttons with prev/next), `"compact"` (first / prev / "n of n pages" status / next / last; no page list), or `"detailed"` (default layout plus prev/next text labels).
 - `size` — `"small"` | `"medium"` (default) | `"large"`. Forwarded to the page `y-button`s and the items-per-page `y-select`.
