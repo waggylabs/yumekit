@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- New `y-code` component — lightweight code-block container. Renders slotted text with optional line numbers, copy-to-clipboard button (block + per-line), `max-lines` collapse, and an optional filename header. Default-slot source can be authored either as plain text or wrapped in a `<template>` child so HTML / XML / SVG samples don't need to be escaped. A built-in regex-based tokenizer covers JavaScript (aliases: `js` / `jsx` / `mjs` / `cjs`), TypeScript (aliases: `ts` / `tsx` / `mts` / `cts`), JSON, CSS, Python (aliases: `py` / `python3`), Bash (aliases: `sh` / `shell` / `zsh`), and HTML (aliases: `htm` / `xml` / `svg`) — additional languages fall back to plain text. The HTML tokenizer treats `<style>` and `<script>` bodies as text rather than recursively tokenizing them. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through a sanitized `highlighted` slot, which takes precedence when present. Emitted classes are Prism-compatible (`token keyword`, `token string`, etc.) so existing Prism stylesheets layer on cleanly.
+
 - New `y-shape` component — presentational container that clips its slotted content into a geometric shape (rectangle, circle, ellipse, star, heart, chat-bubble, times, cross, or a custom `polygon`) via CSS `clip-path`. Suitable for avatar masks, decorative panels, and non-rectangular skeletons.
 
 - `y-stepper` — `responsive` and `responsive-breakpoint` attributes; auto-flips horizontal layouts to vertical below the breakpoint (600px default). Enabled by default; set `responsive="false"` to opt out.
