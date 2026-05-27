@@ -945,17 +945,23 @@ function tokenizeHtml(source) {
             out.push({ type: "punctuation", text: "<" });
             i++;
             // Optional `/` for closing tag.
-            if (source[i] === "/") {
+            const isClosingTag = source[i] === "/";
+            if (isClosingTag) {
                 out.push({ type: "punctuation", text: "/" });
                 i++;
             }
             // Tag name.
             const tagStart = i;
             while (i < len && /[a-zA-Z0-9:-]/.test(source[i])) i++;
+            let tagName = "";
             if (i > tagStart) {
-                out.push({ type: "tag", text: source.slice(tagStart, i) });
+                tagName = source.slice(tagStart, i);
+                out.push({ type: "tag", text: tagName });
             }
-            // Attributes until `>` or `/>`.
+            // Attributes until `>` or `/>`. Track whether the tag self-closes
+            // (the last significant token before `>` was `/`) so we don't
+            // enter raw-text mode on `<script />`.
+            let selfClosing = false;
             while (i < len && source[i] !== ">") {
                 if (isWhitespace(source[i])) {
                     const wStart = i;
@@ -966,12 +972,14 @@ function tokenizeHtml(source) {
                 if (source[i] === "/") {
                     out.push({ type: "punctuation", text: "/" });
                     i++;
+                    selfClosing = true;
                     continue;
                 }
                 // Attribute name.
                 const aStart = i;
                 while (i < len && /[a-zA-Z0-9:_-]/.test(source[i])) i++;
                 if (i > aStart) {
+                    selfClosing = false;
                     out.push({
                         type: "attr-name",
                         text: source.slice(aStart, i),
@@ -979,6 +987,7 @@ function tokenizeHtml(source) {
                     continue;
                 }
                 if (source[i] === "=") {
+                    selfClosing = false;
                     out.push({ type: "operator", text: "=" });
                     i++;
                     // Value: quoted or unquoted.
@@ -1007,12 +1016,35 @@ function tokenizeHtml(source) {
                     continue;
                 }
                 // Unknown character inside a tag — pass through.
+                selfClosing = false;
                 out.push({ type: null, text: source[i] });
                 i++;
             }
             if (source[i] === ">") {
                 out.push({ type: "punctuation", text: ">" });
                 i++;
+
+                // Raw-text elements: <script> / <style> bodies must NOT be
+                // re-tokenized as HTML. Once we've emitted the opening tag,
+                // capture everything up to the matching closer (case-
+                // insensitive) as a single typeless text token. Tag-looking
+                // substrings inside JS / CSS literals stay as text.
+                const lowerName = tagName.toLowerCase();
+                if (
+                    !isClosingTag &&
+                    !selfClosing &&
+                    (lowerName === "script" || lowerName === "style")
+                ) {
+                    const bodyStart = i;
+                    const endIdx = findRawTextEnd(source, i, lowerName);
+                    if (endIdx > bodyStart) {
+                        out.push({
+                            type: null,
+                            text: source.slice(bodyStart, endIdx),
+                        });
+                    }
+                    i = endIdx;
+                }
             }
             continue;
         }
@@ -1047,6 +1079,26 @@ function tokenizeHtml(source) {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+function findRawTextEnd(source, start, tagName) {
+    // Scan forward for the matching `</tagName` (case-insensitive). Returns
+    // the index of `<` of the closer, or `source.length` if not found.
+    const closer = "</" + tagName;
+    const closerLen = closer.length;
+    const len = source.length;
+    let j = start;
+    while (j < len) {
+        const next = source.indexOf("<", j);
+        if (next === -1 || next + closerLen > len) return len;
+        if (
+            source.slice(next, next + closerLen).toLowerCase() === closer
+        ) {
+            return next;
+        }
+        j = next + 1;
+    }
+    return len;
+}
 
 function isWhitespace(c) {
     return c === " " || c === "\t" || c === "\n" || c === "\r" || c === "\f";

@@ -449,5 +449,72 @@ fi`;
             const t = tokenize("html", src);
             expect(t.map((tok) => tok.text).join("")).to.equal(src);
         });
+
+        it("treats <script> body as plain text (does not tokenize tag-like substrings)", () => {
+            const src = `<script>const s = "<div>";</script>`;
+            const t = tokenize("html", src);
+            // Exactly one `<div>`-shaped string in the source — it must appear
+            // as part of a typeless text token (the body), not as a `tag` token.
+            expect(
+                t.find((tok) => tok.type === "tag" && tok.text === "div"),
+            ).to.be.undefined;
+            // The closing `</script>` is still tokenized normally.
+            const tags = t.filter((tok) => tok.type === "tag");
+            expect(tags.map((x) => x.text)).to.deep.equal([
+                "script",
+                "script",
+            ]);
+            // The body text token contains the JS source verbatim.
+            const bodyText = t
+                .filter((tok) => tok.type === null)
+                .map((tok) => tok.text)
+                .join("");
+            expect(bodyText).to.include('const s = "<div>";');
+        });
+
+        it("treats <style> body as plain text (does not tokenize CSS-looking spans)", () => {
+            const src = `<style>.btn { color: red; }</style>`;
+            const t = tokenize("html", src);
+            // No CSS classification should leak into the HTML token stream.
+            expect(t.find((tok) => tok.type === "property")).to.be.undefined;
+            expect(t.find((tok) => tok.type === "selector")).to.be.undefined;
+            const bodyText = t
+                .filter((tok) => tok.type === null)
+                .map((tok) => tok.text)
+                .join("");
+            expect(bodyText).to.include(".btn { color: red; }");
+        });
+
+        it("matches the closing </script> case-insensitively", () => {
+            const src = `<SCRIPT>alert("<div>")</SCRIPT>`;
+            const t = tokenize("html", src);
+            expect(t.find((tok) => tok.type === "tag" && tok.text === "div"))
+                .to.be.undefined;
+            // Source reconstructs exactly.
+            expect(t.map((tok) => tok.text).join("")).to.equal(src);
+        });
+
+        it("preserves the source for <script>/<style> bodies", () => {
+            const src = `<html>
+    <head>
+        <style>.btn { color: red; }</style>
+        <script>
+            const arr = [1, 2, 3];
+            const html = "<p>x</p>";
+        </script>
+    </head>
+</html>`;
+            const t = tokenize("html", src);
+            expect(t.map((tok) => tok.text).join("")).to.equal(src);
+        });
+
+        it("does not enter raw-text mode for a self-closing <script />", () => {
+            const src = `<script /><p>after</p>`;
+            const t = tokenize("html", src);
+            // After the self-closed script, normal HTML parsing resumes —
+            // the <p> tag should appear as a `tag` token.
+            expect(t.find((tok) => tok.type === "tag" && tok.text === "p"))
+                .to.exist;
+        });
     });
 });

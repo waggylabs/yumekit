@@ -181,13 +181,13 @@ export class YumeCode extends HTMLElement {
 
     /** Copies the full code block to the clipboard. */
     async copyBlock() {
-        const text = this._collectRawText();
+        const text = this._collectDisplayText();
         await this._writeClipboard(text, { target: "block" });
     }
 
     /** Copies the line at `index` (0-based) to the clipboard. */
     async copyLine(index) {
-        const lines = this._collectRawText().split("\n");
+        const lines = this._collectDisplayText().split("\n");
         if (index < 0 || index >= lines.length) return;
         await this._writeClipboard(lines[index], {
             target: "line",
@@ -472,6 +472,20 @@ export class YumeCode extends HTMLElement {
         `;
     }
 
+    _collectDisplayText() {
+        // Returns the text that's actually shown in the code block, matched
+        // to the active render path. Public copy methods route through here
+        // so highlighted-only mode (no default-slot text) still copies the
+        // visible source instead of an empty string.
+        if (this._hasHighlightedSlot()) {
+            const lines = this._sanitizedHighlightedLines();
+            return lines
+                .map((tokens) => tokens.map((t) => t.text).join(""))
+                .join("\n");
+        }
+        return this._collectRawText();
+    }
+
     _collectRawText() {
         const txt = this._readDefaultSlotText();
         return this._dedent(txt);
@@ -561,8 +575,8 @@ export class YumeCode extends HTMLElement {
 
     _onLineActivate(index) {
         if (this.disabled) return;
+
         this.copyLine(index);
-        this._flashLineCopied(index);
     }
 
     _readDefaultSlotText() {
@@ -791,6 +805,9 @@ export class YumeCode extends HTMLElement {
             );
 
             if (info.target === "block") this._announceCopy();
+            else if (info.target === "line") {
+                this._flashLineCopied(info.lineIndex);
+            }
         } catch (error) {
             this.dispatchEvent(
                 new CustomEvent("copy-fail", {

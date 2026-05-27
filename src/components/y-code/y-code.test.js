@@ -144,6 +144,52 @@ third</y-code>`);
         }
     });
 
+    it("flashes the line as copied when a line-copy succeeds", async () => {
+        const el = await fixture(html`<y-code line-numbers>first
+second</y-code>`);
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: { writeText: async () => {} },
+            configurable: true,
+        });
+        try {
+            await el.copyLine(1);
+            const line = el.shadowRoot.querySelector('.line[data-line="1"]');
+            expect(line.classList.contains("is-copied")).to.be.true;
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
+    });
+
+    it("does not flash the line when a line-copy fails", async () => {
+        const el = await fixture(html`<y-code line-numbers>first
+second</y-code>`);
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: {
+                writeText: async () => {
+                    throw new Error("denied");
+                },
+            },
+            configurable: true,
+        });
+        try {
+            const failPromise = oneEvent(el, "copy-fail");
+            await el.copyLine(1);
+            await failPromise;
+            const line = el.shadowRoot.querySelector('.line[data-line="1"]');
+            expect(line.classList.contains("is-copied")).to.be.false;
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
+    });
+
     it("fires `copy-fail` when clipboard write throws", async () => {
         const el = await fixture(html`<y-code>x</y-code>`);
         const originalClipboard = navigator.clipboard;
@@ -389,6 +435,58 @@ d</y-code>`);
             html`<y-code language="ruby">puts "hi"</y-code>`,
         );
         expect(el.shadowRoot.querySelector(".line-content .token")).to.not.exist;
+    });
+
+    it("copyBlock() copies the highlighted-slot text when default slot is empty", async () => {
+        const el = await fixture(html`
+            <y-code language="javascript">
+                <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
+            </y-code>
+        `);
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: { writeText: async () => {} },
+            configurable: true,
+        });
+        try {
+            const ev = oneEvent(el, "copy");
+            el.copyBlock();
+            const detail = (await ev).detail;
+            expect(detail.target).to.equal("block");
+            expect(detail.source).to.equal("const x = 1;");
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
+    });
+
+    it("copyLine() copies the indexed line from the highlighted slot", async () => {
+        const el = await fixture(html`
+            <y-code language="javascript">
+                <div slot="highlighted"><span class="token keyword">const</span> a = 1;
+<span class="token keyword">const</span> b = 2;</div>
+            </y-code>
+        `);
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: { writeText: async () => {} },
+            configurable: true,
+        });
+        try {
+            const ev = oneEvent(el, "copy");
+            el.copyLine(1);
+            const detail = (await ev).detail;
+            expect(detail.target).to.equal("line");
+            expect(detail.lineIndex).to.equal(1);
+            expect(detail.source).to.equal("const b = 2;");
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
     });
 
     it("prefers the highlighted slot over the tokenizer when both could apply", async () => {
