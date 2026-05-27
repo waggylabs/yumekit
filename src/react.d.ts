@@ -127,6 +127,17 @@ declare module "react" {
                 color?: string;
                 raised?: boolean | string;
             }>;
+            "y-code": El<{
+                language?: string;
+                "line-numbers"?: boolean | string;
+                "max-lines"?: number | string;
+                wrap?: boolean | string;
+                filename?: string;
+                copyable?: boolean | string;
+                disabled?: boolean | string;
+                "copy-label"?: string;
+                "copied-label"?: string;
+            }>;
             "y-checkbox": El<{
                 name?: string;
                 value?: string;

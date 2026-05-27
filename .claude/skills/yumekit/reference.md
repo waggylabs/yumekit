@@ -723,6 +723,45 @@ Slot: default (trigger element)
 
 ---
 
+## y-code
+
+Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. Syntax highlighting is not done in v1 — consumers who want colored output run their own highlighter (Prism, shiki, etc.) and pipe the result through a sanitized `highlighted` slot.
+
+| Attribute       | Values / Notes                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| `language`      | string — display label, also used in the `aria-label` (default `"text"`)                             |
+| `line-numbers`  | boolean — when set, line numbers render and each line becomes a click/keyboard target that copies it |
+| `max-lines`     | number — caps visible lines; an expand toggle reveals the rest                                       |
+| `wrap`          | boolean — wraps long lines (otherwise the block scrolls horizontally)                                |
+| `filename`      | string — renders a header bar with the filename and copy button                                      |
+| `copyable`      | defaults to `true` — copy button shown by default; `copyable="false"` to hide                        |
+| `disabled`      | boolean — suppresses interactive affordances; source still renders                                   |
+| `copy-label`    | string — idle copy-button text (default `"Copy"`)                                                    |
+| `copied-label`  | string — post-copy feedback text (default `"Copied!"`)                                               |
+
+Slots: (default) raw source code (HTML-escape `<` and `&`); `highlighted` — sanitized pre-highlighted markup (allowlist: `<span>` with class names from common highlighter tokens); `header` — extra header content.
+
+Events (non-cancelable): `copy` (`{ source, target: "block" | "line", lineIndex? }`), `copy-fail` (`{ error }`), `language-change` (`{ language }`).
+
+Methods: `copyBlock()`, `copyLine(index)`, `setLanguage(lang)`.
+
+CSS Parts: `header`, `filename`, `copy-button`, `copy-feedback`, `pre`, `code`, `line`, `line-number`, `expand-toggle`.
+
+```html
+<y-code language="javascript" filename="hello.js" line-numbers>
+function hello() {
+    return "world";
+}
+</y-code>
+
+<!-- Pre-highlighted via an external highlighter -->
+<y-code language="javascript">
+    <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
+</y-code>
+```
+
+---
+
 ## y-card
 
 | Attribute | Values / Notes    |

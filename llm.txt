@@ -361,6 +361,57 @@ Events: `change`
 
 ---
 
+### y-code
+Lightweight, dependency-free code block. Renders slotted source text with optional line numbers, a copy-to-clipboard button, a `max-lines` collapse, and an optional filename header. Syntax highlighting is **not** performed in v1; consumers who want colored output run their own highlighter (Prism, shiki, etc.) and pass the resulting HTML through the `highlighted` slot. Span markup in that slot is sanitized to an allowlist of tag (`<span>`) + class names matching common highlighter conventions.
+
+Tag: `<y-code>`
+Attributes:
+- `language` — string. Display label for the block (used in the `aria-label` and as a future styling hook). Case-insensitive. Default `"text"`.
+- `line-numbers` — boolean. Renders line numbers on the left and makes each line a focusable / clickable target that copies the line text.
+- `max-lines` — number. When set, only this many lines render and the block shows a "Show N more lines" toggle.
+- `wrap` — boolean. When set, long lines wrap; otherwise the block scrolls horizontally.
+- `filename` — string. Renders a header bar containing the filename and the copy button. Empty hides the header.
+- `copyable` — defaults to `true`. The copy button is shown by default; pass `copyable="false"` to hide it.
+- `disabled` — boolean. Suppresses interactive controls (copy button, line click). Source code still renders.
+- `copy-label` — string. Idle text on the copy button. Default `"Copy"`.
+- `copied-label` — string. Text shown briefly after a successful copy. Default `"Copied!"`.
+
+Slots:
+- (default) — raw source code as plain text. Consumer must HTML-escape `<` and `&`. Common leading whitespace is automatically stripped (so indented authoring like `<y-code>\n    const x = 1;\n</y-code>` renders flush-left).
+- `highlighted` — pre-highlighted markup (consumer-provided). Sanitized to allow only `<span>` with class names in the allowlist (Prism / common highlighter tokens: `keyword`, `string`, `comment`, `function`, `number`, `operator`, `punctuation`, `tag`, `attr-name`, `attr-value`, `selector`, `regex`, `boolean`, `constant`, `class-name`, `type`, `builtin`, `variable`, `property`, `namespace`, `token`, `deleted`, `inserted`, `important`, `italic`, `bold`). Other tags and other class names are stripped. Replaces the default-slot rendering when present.
+- `header` — extra header content (e.g., a timestamp or status tag) rendered next to the filename.
+
+Events (bubble + composed, non-cancelable):
+- `copy` — `{ source, target: "block" | "line", lineIndex? }`. Fires on successful clipboard write.
+- `copy-fail` — `{ error }`. Fires when clipboard access is denied or otherwise throws.
+- `language-change` — `{ language }`. Fires when `setLanguage()` is called.
+
+Methods: `copyBlock()` → Promise, `copyLine(index)` → Promise, `setLanguage(lang)`.
+
+CSS Parts: `header`, `filename`, `copy-button`, `copy-feedback`, `pre`, `code`, `line`, `line-number`, `expand-toggle`.
+
+Accessibility:
+- `<pre>` has `role="region"` with `aria-label="<language> code, <N> lines"`.
+- Copy button has `aria-label` and an `aria-live="polite"` label that updates to the `copied-label` on success.
+- Each line, when `line-numbers` is set, has `role="button"`, `tabindex="0"`, and `aria-label="Copy line N of M"`; Enter/Space activate.
+
+CSS Custom Properties: `--component-code-bg-color`, `--component-code-text-color`, `--component-code-font-family`, `--component-code-font-size`, `--component-code-line-height`, `--component-code-border-radius`, `--component-code-header-bg-color`, `--component-code-copy-bg-color`, `--component-code-copy-hover-bg-color`, `--component-code-copy-text-color`, `--component-code-line-number-color`, `--component-code-line-number-width`, `--component-code-line-number-font-size`, `--component-code-line-hover-bg`, `--component-code-line-copied-bg`, `--component-code-scrollbar-color`, `--component-code-scrollbar-bg`, plus per-syntax color hooks (`--component-code-keyword-color`, `--component-code-string-color`, `--component-code-comment-color`, `--component-code-function-color`, `--component-code-number-color`, `--component-code-operator-color`) used by the sanitized highlighted-slot markup.
+
+```html
+<y-code language="javascript" filename="hello.js" line-numbers>
+function hello() {
+    return "world";
+}
+</y-code>
+
+<!-- Pre-highlighted via Prism / shiki -->
+<y-code language="javascript">
+    <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
+</y-code>
+```
+
+---
+
 ### y-color
 Form-associated color input with trigger/popup pattern (like `y-date`). Shows a color swatch and value string; opens a `y-colorpicker` popup on click.
 
