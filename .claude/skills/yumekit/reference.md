@@ -725,11 +725,11 @@ Slot: default (trigger element)
 
 ## y-code
 
-Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. A built-in tokenizer covers **JavaScript** (aliases: `js` / `jsx` / `mjs` / `cjs`), **JSON**, and **CSS**; other languages fall back to plain text. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through the sanitized `highlighted` slot — that path takes precedence when present.
+Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. A built-in tokenizer covers **JavaScript** (aliases: `js` / `jsx` / `mjs` / `cjs`), **TypeScript** (aliases: `ts` / `tsx` / `mts` / `cts`), **JSON**, **CSS**, **Python** (aliases: `py` / `python3`), **Bash** (aliases: `sh` / `shell` / `zsh`), and **HTML** (aliases: `htm` / `xml` / `svg`); other languages fall back to plain text. The HTML tokenizer treats `<style>` and `<script>` bodies as text rather than recursively tokenizing them. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through the sanitized `highlighted` slot — that path takes precedence when present.
 
 | Attribute       | Values / Notes                                                                                       |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
-| `language`      | string — `javascript` / `js` / `jsx` / `mjs` / `cjs` / `json` / `css` trigger built-in tokenizing; anything else renders as plain text. Also used in the `aria-label`. Default `"text"`. |
+| `language`      | string — built-in tokenizers: `javascript` (`js` / `jsx` / `mjs` / `cjs`), `typescript` (`ts` / `tsx` / `mts` / `cts`), `json`, `css`, `python` (`py` / `python3`), `bash` (`sh` / `shell` / `zsh`), `html` (`htm` / `xml` / `svg`). Anything else renders as plain text. Also used in the `aria-label`. Default `"text"`. |
 | `line-numbers`  | boolean — when set, line numbers render and each line becomes a click/keyboard target that copies it |
 | `max-lines`     | number — caps visible lines; an expand toggle reveals the rest                                       |
 | `wrap`          | boolean — wraps long lines (otherwise the block scrolls horizontally)                                |
@@ -739,13 +739,15 @@ Lightweight, dependency-free code block. Renders slotted text with optional line
 | `copy-label`    | string — idle copy-button text (default `"Copy"`)                                                    |
 | `copied-label`  | string — post-copy feedback text (default `"Copied!"`)                                               |
 
-Slots: (default) raw source code (HTML-escape `<` and `&`); `highlighted` — sanitized pre-highlighted markup (allowlist: `<span>` with class names from common highlighter tokens); `header` — extra header content.
+Slots: (default) raw source code — plain text (escape `<` and `&`) **or** wrap the source in a `<template>` child so the browser preserves it verbatim without escaping (preferred for HTML / XML / SVG samples; if any `<template>` is present it becomes the source). `highlighted` — sanitized pre-highlighted markup (allowlist: `<span>` with class names from common highlighter tokens). `header` — extra header content.
 
 Events (non-cancelable): `copy` (`{ source, target: "block" | "line", lineIndex? }`), `copy-fail` (`{ error }`), `language-change` (`{ language }`).
 
 Methods: `copyBlock()`, `copyLine(index)`, `setLanguage(lang)`.
 
 CSS Parts: `header`, `filename`, `copy-button`, `copy-feedback`, `pre`, `code`, `line`, `line-number`, `expand-toggle`.
+
+**Security / trust model.** The default slot is safe with any input — text is read via `textContent` (or `template.innerHTML` for the `<template>` shortcut) and rendered into shadow DOM via `createTextNode`, so the source string is never re-parsed as HTML. The **`highlighted` slot requires markup from a trusted source**: the sanitizer protects what y-code renders into shadow DOM (allowlist of `<span>` + token class names), but the browser parses the slotted light-DOM children before this component upgrades, so any `<script>` tag inside the slot will execute regardless of our sanitizer. Pipe Prism / shiki output through it; never wire it directly to untrusted user input. The `<template>` shortcut is a DX convenience, not a security boundary.
 
 ```html
 <y-code language="javascript" filename="hello.js" line-numbers>

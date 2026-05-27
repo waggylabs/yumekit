@@ -566,8 +566,25 @@ export class YumeCode extends HTMLElement {
     }
 
     _readDefaultSlotText() {
-        // Default-slot children are light-DOM nodes that don't carry a `slot`
-        // attribute. Concatenate their textContent.
+        // If the consumer provides one or more <template> children, read raw
+        // source from `.content.textContent`. The browser parses <template>
+        // bodies but doesn't render or execute them, which lets HTML / XML /
+        // SVG samples be authored without escaping `<`, `>`, or `&`.
+        const templates = Array.from(this.children).filter(
+            (child) =>
+                child.tagName === "TEMPLATE" && !child.hasAttribute("slot"),
+        );
+        if (templates.length) {
+            // `innerHTML` returns the serialized HTML of the template's
+            // content fragment — i.e., the markup the author wrote, with
+            // `<` / `&` / `"` re-escaped to entities. Using `textContent`
+            // would drop the tag structure and only keep text node values.
+            return templates.map((tpl) => tpl.innerHTML).join("");
+        }
+
+        // Fallback: concatenate text from non-slotted light-DOM children.
+        // In this path, the consumer is responsible for HTML-escaping `<` and
+        // `&` so the browser doesn't interpret them as markup.
         let text = "";
         for (const child of this.childNodes) {
             if (

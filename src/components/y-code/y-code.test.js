@@ -245,6 +245,71 @@ d</y-code>`);
         expect(lines[2].textContent.trim()).to.equal("c");
     });
 
+    // ── <template> shortcut ────────────────────────────────────────────
+
+    it("reads raw source from a <template> child without escaping", async () => {
+        const el = await fixture(html`
+            <y-code language="html">
+                <template>
+                    <div class="hi">Hello, &world;</div>
+                </template>
+            </y-code>
+        `);
+        const tag = el.shadowRoot.querySelector(".line-content .token.tag");
+        const attr = el.shadowRoot.querySelector(
+            ".line-content .token.attr-name",
+        );
+        expect(tag).to.exist;
+        expect(tag.textContent).to.equal("div");
+        expect(attr).to.exist;
+        expect(attr.textContent).to.equal("class");
+    });
+
+    it("concatenates content from multiple <template> children", async () => {
+        const el = await fixture(
+            html`<y-code language="html"
+                ><template><a></a></template><template><b></b></template></y-code>`,
+        );
+        const code = el.shadowRoot.querySelector("code.code-inner");
+        expect(code.textContent).to.equal("<a></a><b></b>");
+    });
+
+    it("ignores stray text content when a <template> is present", async () => {
+        const el = await fixture(html`
+            <y-code language="html">
+                stray text that should not render
+                <template><span>real</span></template>
+            </y-code>
+        `);
+        const code = el.shadowRoot.querySelector("code.code-inner");
+        expect(code.textContent).to.not.include("stray");
+        expect(code.textContent).to.include("<span>real</span>");
+    });
+
+    it("copies raw source from a <template> on copyBlock()", async () => {
+        const el = await fixture(html`
+            <y-code language="html">
+                <template><p>hi</p></template>
+            </y-code>
+        `);
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: { writeText: async () => {} },
+            configurable: true,
+        });
+        try {
+            const ev = oneEvent(el, "copy");
+            el.copyBlock();
+            const detail = (await ev).detail;
+            expect(detail.source).to.equal("<p>hi</p>");
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
+    });
+
     // ── Tokenizer integration ──────────────────────────────────────────
 
     it("auto-tokenizes JavaScript and renders keyword spans", async () => {
@@ -261,6 +326,54 @@ d</y-code>`);
         expect(property.textContent).to.equal('"name"');
     });
 
+    it("auto-tokenizes TypeScript (interface keyword)", async () => {
+        const el = await fixture(
+            html`<y-code language="typescript">interface X {}</y-code>`,
+        );
+        const keyword = el.shadowRoot.querySelector(
+            ".line-content .token.keyword",
+        );
+        expect(keyword).to.exist;
+        expect(keyword.textContent).to.equal("interface");
+    });
+
+    it("auto-tokenizes Python (def keyword)", async () => {
+        const el = await fixture(
+            html`<y-code language="python">def add(): pass</y-code>`,
+        );
+        const keyword = el.shadowRoot.querySelector(
+            ".line-content .token.keyword",
+        );
+        expect(keyword).to.exist;
+        expect(keyword.textContent).to.equal("def");
+    });
+
+    it("auto-tokenizes Bash (variable + builtin)", async () => {
+        const el = await fixture(
+            html`<y-code language="bash">echo $HOME</y-code>`,
+        );
+        const fn = el.shadowRoot.querySelector(".line-content .token.function");
+        const variable = el.shadowRoot.querySelector(
+            ".line-content .token.variable",
+        );
+        expect(fn.textContent).to.equal("echo");
+        expect(variable.textContent).to.equal("$HOME");
+    });
+
+    it("auto-tokenizes HTML (tag + attribute)", async () => {
+        const el = await fixture(html`<y-code language="html">
+            ${'<a href="/x">click</a>'}
+        </y-code>`);
+        const tag = el.shadowRoot.querySelector(".line-content .token.tag");
+        const attr = el.shadowRoot.querySelector(
+            ".line-content .token.attr-name",
+        );
+        expect(tag).to.exist;
+        expect(tag.textContent).to.equal("a");
+        expect(attr).to.exist;
+        expect(attr.textContent).to.equal("href");
+    });
+
     it("auto-tokenizes CSS and tags selectors + properties", async () => {
         const el = await fixture(html`<y-code language="css">.btn { color: red; }</y-code>`);
         const property = el.shadowRoot.querySelector(".line-content .token.property");
@@ -272,7 +385,9 @@ d</y-code>`);
     });
 
     it("falls back to plain text rendering for unsupported languages", async () => {
-        const el = await fixture(html`<y-code language="python">print("hi")</y-code>`);
+        const el = await fixture(
+            html`<y-code language="ruby">puts "hi"</y-code>`,
+        );
         expect(el.shadowRoot.querySelector(".line-content .token")).to.not.exist;
     });
 

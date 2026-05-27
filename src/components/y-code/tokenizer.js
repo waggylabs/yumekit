@@ -54,19 +54,159 @@ const JS_KEYWORDS = new Set([
     "yield",
 ]);
 
+const TS_EXTRA_KEYWORDS = [
+    "abstract",
+    "any",
+    "asserts",
+    "boolean",
+    "declare",
+    "enum",
+    "implements",
+    "infer",
+    "interface",
+    "is",
+    "keyof",
+    "module",
+    "namespace",
+    "never",
+    "number",
+    "object",
+    "override",
+    "package",
+    "private",
+    "protected",
+    "public",
+    "readonly",
+    "satisfies",
+    "string",
+    "symbol",
+    "type",
+    "undefined",
+    "unique",
+    "unknown",
+];
+
+const TS_KEYWORDS = new Set([...JS_KEYWORDS, ...TS_EXTRA_KEYWORDS]);
+
+const PY_KEYWORDS = new Set([
+    "False",
+    "None",
+    "True",
+    "and",
+    "as",
+    "assert",
+    "async",
+    "await",
+    "break",
+    "case",
+    "class",
+    "continue",
+    "def",
+    "del",
+    "elif",
+    "else",
+    "except",
+    "finally",
+    "for",
+    "from",
+    "global",
+    "if",
+    "import",
+    "in",
+    "is",
+    "lambda",
+    "match",
+    "nonlocal",
+    "not",
+    "or",
+    "pass",
+    "raise",
+    "return",
+    "try",
+    "while",
+    "with",
+    "yield",
+]);
+
+const BASH_KEYWORDS = new Set([
+    "if",
+    "then",
+    "else",
+    "elif",
+    "fi",
+    "for",
+    "in",
+    "do",
+    "done",
+    "while",
+    "until",
+    "case",
+    "esac",
+    "function",
+    "return",
+    "break",
+    "continue",
+    "select",
+    "time",
+    "declare",
+    "local",
+    "export",
+    "readonly",
+    "source",
+]);
+
+const BASH_BUILTINS = new Set([
+    "echo",
+    "printf",
+    "read",
+    "cd",
+    "pwd",
+    "exit",
+    "true",
+    "false",
+    "test",
+    "set",
+    "unset",
+    "alias",
+    "trap",
+    "shift",
+    "eval",
+    "exec",
+    "command",
+    "type",
+    "which",
+]);
+
 const ALIASES = {
     js: "javascript",
     jsx: "javascript",
     mjs: "javascript",
     cjs: "javascript",
+    ts: "typescript",
+    tsx: "typescript",
+    mts: "typescript",
+    cts: "typescript",
     json: "json",
     css: "css",
+    py: "python",
+    python3: "python",
+    sh: "bash",
+    shell: "bash",
+    zsh: "bash",
+    html: "html",
+    htm: "html",
+    xml: "html",
+    svg: "html",
 };
 
 const LANGUAGES = {
-    javascript: tokenizeJavascript,
+    javascript: (src) => tokenizeJsLike(src, JS_KEYWORDS),
+    typescript: (src) => tokenizeJsLike(src, TS_KEYWORDS),
     json: tokenizeJson,
     css: tokenizeCss,
+    python: tokenizePython,
+    bash: tokenizeBash,
+    html: tokenizeHtml,
 };
 
 export function isSupportedLanguage(language) {
@@ -86,7 +226,7 @@ export function tokenize(language, source) {
 // JavaScript
 // ---------------------------------------------------------------------------
 
-function tokenizeJavascript(source) {
+function tokenizeJsLike(source, keywords) {
     const out = [];
     const len = source.length;
     let i = 0;
@@ -134,7 +274,7 @@ function tokenizeJavascript(source) {
         }
 
         // Template literals — treat as one `string` chunk including any
-        // `${…}` expressions. A v3 follow-up could re-enter JS within the
+        // `${…}` expressions. A later phase could re-enter JS within the
         // expression slots.
         if (c === "`") {
             i = consumeTemplate(source, i, out);
@@ -169,7 +309,7 @@ function tokenizeJavascript(source) {
             const word = source.slice(start, i);
 
             let type;
-            if (JS_KEYWORDS.has(word)) type = "keyword";
+            if (keywords.has(word)) type = "keyword";
             else if (word === "true" || word === "false") type = "boolean";
             else if (
                 word === "null" ||
@@ -433,6 +573,472 @@ function tokenizeCss(source) {
 
         out.push({ type: null, text: c });
         i++;
+    }
+
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+// Python
+// ---------------------------------------------------------------------------
+
+function tokenizePython(source) {
+    const out = [];
+    const len = source.length;
+    let i = 0;
+
+    while (i < len) {
+        const c = source[i];
+        const c2 = source[i + 1];
+
+        if (isWhitespace(c)) {
+            const start = i;
+            while (i < len && isWhitespace(source[i])) i++;
+            out.push({ type: null, text: source.slice(start, i) });
+            continue;
+        }
+
+        // Comment.
+        if (c === "#") {
+            const start = i;
+            while (i < len && source[i] !== "\n") i++;
+            out.push({ type: "comment", text: source.slice(start, i) });
+            continue;
+        }
+
+        // String prefixes (r, b, f, rb, fr, etc.) followed by a quote.
+        if (/[rbufRBUF]/.test(c)) {
+            // Look ahead: 1- or 2-character prefix then quote.
+            let p = 1;
+            if (p < 3 && /[rbufRBUF]/.test(source[i + p])) p++;
+            const quote = source[i + p];
+            if (quote === '"' || quote === "'") {
+                i = consumePythonString(source, i, out);
+                continue;
+            }
+        }
+
+        // Plain string (single, double, or triple-quoted).
+        if (c === '"' || c === "'") {
+            i = consumePythonString(source, i, out);
+            continue;
+        }
+
+        // Decorator: `@name`.
+        if (c === "@" && /[a-zA-Z_]/.test(c2)) {
+            const start = i;
+            i++;
+            while (i < len && /[a-zA-Z0-9_.]/.test(source[i])) i++;
+            out.push({ type: "function", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Numbers (including hex / oct / bin / imaginary suffix).
+        if (isDigit(c) || (c === "." && isDigit(c2))) {
+            const start = i;
+            if (
+                source[i] === "0" &&
+                i + 1 < len &&
+                /[xXbBoO]/.test(source[i + 1])
+            ) {
+                i += 2;
+                while (i < len && /[0-9a-fA-F_]/.test(source[i])) i++;
+            } else {
+                while (i < len && /[0-9_]/.test(source[i])) i++;
+                if (source[i] === ".") {
+                    i++;
+                    while (i < len && /[0-9_]/.test(source[i])) i++;
+                }
+                if (i < len && /[eE]/.test(source[i])) {
+                    i++;
+                    if (/[+-]/.test(source[i])) i++;
+                    while (i < len && /[0-9_]/.test(source[i])) i++;
+                }
+            }
+            if (i < len && /[jJ]/.test(source[i])) i++; // imaginary
+            out.push({ type: "number", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Identifiers / keywords / function names / class names.
+        if (/[a-zA-Z_]/.test(c)) {
+            const start = i;
+            while (i < len && /[a-zA-Z0-9_]/.test(source[i])) i++;
+            const word = source.slice(start, i);
+
+            let type;
+            if (PY_KEYWORDS.has(word)) {
+                if (word === "True" || word === "False") type = "boolean";
+                else if (word === "None") type = "constant";
+                else type = "keyword";
+            } else if (/^[A-Z]/.test(word)) {
+                type = "class-name";
+            } else {
+                let j = i;
+                while (j < len && isWhitespace(source[j])) j++;
+                type = source[j] === "(" ? "function" : null;
+            }
+
+            out.push({ type, text: word });
+            continue;
+        }
+
+        if ("{}[]();,:.".includes(c)) {
+            out.push({ type: "punctuation", text: c });
+            i++;
+            continue;
+        }
+
+        if ("=+-*/%<>!&|^~".includes(c)) {
+            out.push({ type: "operator", text: c });
+            i++;
+            continue;
+        }
+
+        out.push({ type: null, text: c });
+        i++;
+    }
+
+    return out;
+}
+
+function consumePythonString(source, start, out) {
+    const len = source.length;
+    let i = start;
+    // Skip a 1- or 2-character prefix (r, b, f, u, and combinations like `rb` / `fr`).
+    while (i < len && /[rbufRBUF]/.test(source[i]) && i - start < 2) i++;
+    const quote = source[i];
+    if (quote !== '"' && quote !== "'") {
+        // Not a string after all — emit the prefix as plain text.
+        out.push({ type: null, text: source.slice(start, i) });
+        return i;
+    }
+    // Triple-quoted?
+    const triple =
+        source[i + 1] === quote && source[i + 2] === quote
+            ? quote.repeat(3)
+            : null;
+    if (triple) {
+        i += 3;
+        while (i < len) {
+            if (
+                source[i] === quote &&
+                source[i + 1] === quote &&
+                source[i + 2] === quote
+            ) {
+                i += 3;
+                break;
+            }
+            if (source[i] === "\\") {
+                i += 2;
+                continue;
+            }
+            i++;
+        }
+    } else {
+        i++;
+        while (i < len) {
+            const ch = source[i];
+            if (ch === "\\") {
+                i += 2;
+                continue;
+            }
+            if (ch === quote || ch === "\n") break;
+            i++;
+        }
+        if (source[i] === quote) i++;
+    }
+    out.push({ type: "string", text: source.slice(start, i) });
+    return i;
+}
+
+// ---------------------------------------------------------------------------
+// Bash
+// ---------------------------------------------------------------------------
+
+function tokenizeBash(source) {
+    const out = [];
+    const len = source.length;
+    let i = 0;
+    // Tracks whether the next identifier starts a new command (so the first
+    // word on a line / after `;` / `|` / `&&` etc. gets the `function` class).
+    let atCommandStart = true;
+
+    while (i < len) {
+        const c = source[i];
+        const c2 = source[i + 1];
+
+        // Comment runs to end-of-line; respects start-of-token only.
+        if (c === "#" && (i === 0 || /[\s|&;()]/.test(source[i - 1]))) {
+            const start = i;
+            while (i < len && source[i] !== "\n") i++;
+            out.push({ type: "comment", text: source.slice(start, i) });
+            continue;
+        }
+
+        if (isWhitespace(c)) {
+            const start = i;
+            while (i < len && isWhitespace(source[i])) i++;
+            const ws = source.slice(start, i);
+            // Newlines reset us to command-start; spaces/tabs do not.
+            if (ws.includes("\n")) atCommandStart = true;
+            out.push({ type: null, text: ws });
+            continue;
+        }
+
+        // Variables: $var, ${var}, $1, $@, etc.
+        if (c === "$") {
+            const start = i;
+            i++;
+            if (source[i] === "{") {
+                while (i < len && source[i] !== "}") i++;
+                if (i < len) i++;
+            } else if (/[a-zA-Z_]/.test(source[i])) {
+                while (i < len && /[a-zA-Z0-9_]/.test(source[i])) i++;
+            } else if (/[0-9@*#?$!-]/.test(source[i])) {
+                i++;
+            }
+            out.push({ type: "variable", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Double-quoted string (may contain variable expansions but we
+        // tokenize as a single string for v3 simplicity).
+        if (c === '"') {
+            const start = i;
+            i++;
+            while (i < len && source[i] !== '"') {
+                if (source[i] === "\\") {
+                    i += 2;
+                    continue;
+                }
+                i++;
+            }
+            if (source[i] === '"') i++;
+            out.push({ type: "string", text: source.slice(start, i) });
+            atCommandStart = false;
+            continue;
+        }
+
+        // Single-quoted string — no interpolation, no escapes.
+        if (c === "'") {
+            const start = i;
+            i++;
+            while (i < len && source[i] !== "'") i++;
+            if (source[i] === "'") i++;
+            out.push({ type: "string", text: source.slice(start, i) });
+            atCommandStart = false;
+            continue;
+        }
+
+        // Numbers (simple — no scientific).
+        if (isDigit(c)) {
+            const start = i;
+            while (i < len && /[0-9]/.test(source[i])) i++;
+            out.push({ type: "number", text: source.slice(start, i) });
+            atCommandStart = false;
+            continue;
+        }
+
+        // Identifier / keyword / command / builtin.
+        if (/[a-zA-Z_]/.test(c)) {
+            const start = i;
+            while (i < len && /[a-zA-Z0-9_-]/.test(source[i])) i++;
+            const word = source.slice(start, i);
+
+            let type;
+            if (BASH_KEYWORDS.has(word)) type = "keyword";
+            else if (BASH_BUILTINS.has(word)) type = "function";
+            else if (atCommandStart) {
+                // Assignment? `FOO=...` is not a command.
+                if (source[i] === "=") type = "variable";
+                else type = "function";
+            } else type = null;
+
+            out.push({ type, text: word });
+            atCommandStart = false;
+            continue;
+        }
+
+        // Pipes and command separators reset command-start.
+        if (c === "|" || c === ";" || c === "&") {
+            const start = i;
+            // Multi-char: ||, &&, ;;
+            if (
+                (c === "|" && c2 === "|") ||
+                (c === "&" && c2 === "&") ||
+                (c === ";" && c2 === ";")
+            ) {
+                i += 2;
+            } else {
+                i++;
+            }
+            out.push({ type: "operator", text: source.slice(start, i) });
+            atCommandStart = true;
+            continue;
+        }
+
+        // Redirects.
+        if (c === ">" || c === "<") {
+            const start = i;
+            i++;
+            if (source[i] === ">" || source[i] === "<") i++;
+            out.push({ type: "operator", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Punctuation.
+        if ("(){}[]".includes(c)) {
+            out.push({ type: "punctuation", text: c });
+            i++;
+            continue;
+        }
+
+        // Other operators.
+        if ("=+-*/%!~?".includes(c)) {
+            out.push({ type: "operator", text: c });
+            i++;
+            atCommandStart = false;
+            continue;
+        }
+
+        out.push({ type: null, text: c });
+        i++;
+    }
+
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+// HTML / XML / SVG (naive — does not recurse into <style> or <script>).
+// ---------------------------------------------------------------------------
+
+function tokenizeHtml(source) {
+    const out = [];
+    const len = source.length;
+    let i = 0;
+
+    while (i < len) {
+        // Comment.
+        if (source.startsWith("<!--", i)) {
+            const start = i;
+            i += 4;
+            while (i < len - 2 && !(source[i] === "-" && source[i + 1] === "-" && source[i + 2] === ">")) {
+                i++;
+            }
+            i = Math.min(i + 3, len);
+            out.push({ type: "comment", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Doctype / processing instructions.
+        if (source[i] === "<" && (source[i + 1] === "!" || source[i + 1] === "?")) {
+            const start = i;
+            while (i < len && source[i] !== ">") i++;
+            if (source[i] === ">") i++;
+            out.push({ type: "keyword", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Opening tag bracket.
+        if (source[i] === "<" && /[a-zA-Z/]/.test(source[i + 1])) {
+            out.push({ type: "punctuation", text: "<" });
+            i++;
+            // Optional `/` for closing tag.
+            if (source[i] === "/") {
+                out.push({ type: "punctuation", text: "/" });
+                i++;
+            }
+            // Tag name.
+            const tagStart = i;
+            while (i < len && /[a-zA-Z0-9:-]/.test(source[i])) i++;
+            if (i > tagStart) {
+                out.push({ type: "tag", text: source.slice(tagStart, i) });
+            }
+            // Attributes until `>` or `/>`.
+            while (i < len && source[i] !== ">") {
+                if (isWhitespace(source[i])) {
+                    const wStart = i;
+                    while (i < len && isWhitespace(source[i])) i++;
+                    out.push({ type: null, text: source.slice(wStart, i) });
+                    continue;
+                }
+                if (source[i] === "/") {
+                    out.push({ type: "punctuation", text: "/" });
+                    i++;
+                    continue;
+                }
+                // Attribute name.
+                const aStart = i;
+                while (i < len && /[a-zA-Z0-9:_-]/.test(source[i])) i++;
+                if (i > aStart) {
+                    out.push({
+                        type: "attr-name",
+                        text: source.slice(aStart, i),
+                    });
+                    continue;
+                }
+                if (source[i] === "=") {
+                    out.push({ type: "operator", text: "=" });
+                    i++;
+                    // Value: quoted or unquoted.
+                    if (source[i] === '"' || source[i] === "'") {
+                        const q = source[i];
+                        const vStart = i;
+                        i++;
+                        while (i < len && source[i] !== q) i++;
+                        if (source[i] === q) i++;
+                        out.push({
+                            type: "attr-value",
+                            text: source.slice(vStart, i),
+                        });
+                    } else {
+                        const vStart = i;
+                        while (i < len && !isWhitespace(source[i]) && source[i] !== ">" && source[i] !== "/") {
+                            i++;
+                        }
+                        if (i > vStart) {
+                            out.push({
+                                type: "attr-value",
+                                text: source.slice(vStart, i),
+                            });
+                        }
+                    }
+                    continue;
+                }
+                // Unknown character inside a tag — pass through.
+                out.push({ type: null, text: source[i] });
+                i++;
+            }
+            if (source[i] === ">") {
+                out.push({ type: "punctuation", text: ">" });
+                i++;
+            }
+            continue;
+        }
+
+        // Entity reference (e.g., &lt; / &amp; / &#x27;).
+        if (source[i] === "&") {
+            const start = i;
+            i++;
+            while (i < len && /[a-zA-Z0-9#]/.test(source[i])) i++;
+            if (source[i] === ";") i++;
+            out.push({ type: "constant", text: source.slice(start, i) });
+            continue;
+        }
+
+        // Plain text — accumulate up to the next significant character.
+        const tStart = i;
+        while (i < len && source[i] !== "<" && source[i] !== "&") i++;
+        if (i > tStart) {
+            out.push({ type: null, text: source.slice(tStart, i) });
+        }
+        // Don't get stuck if we somehow landed on `<` but the next char
+        // didn't match any tag-start pattern above.
+        if (i < len && i === tStart) {
+            out.push({ type: null, text: source[i] });
+            i++;
+        }
     }
 
     return out;

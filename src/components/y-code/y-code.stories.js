@@ -7,8 +7,9 @@ const SAMPLE_JS = `function greet(name) {
 
 greet("world");`;
 
-const SAMPLE_LONG = Array.from({ length: 18 }, (_, i) =>
-    `console.log("line ${i + 1}");`,
+const SAMPLE_LONG = Array.from(
+    { length: 18 },
+    (_, i) => `console.log("line ${i + 1}");`,
 ).join("\n");
 
 const SAMPLE_HIGHLIGHTED_HTML = `<span class="token keyword">const</span> <span class="token function">add</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token variable">a</span><span class="token punctuation">,</span> <span class="token variable">b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token variable">a</span> <span class="token operator">+</span> <span class="token variable">b</span><span class="token punctuation">;</span>
@@ -16,7 +17,7 @@ const SAMPLE_HIGHLIGHTED_HTML = `<span class="token keyword">const</span> <span 
 <span class="token function">add</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>`;
 
 export default {
-    title: "Display/Code",
+    title: "Utility/Code",
     tags: ["autodocs"],
     argTypes: {
         language: { control: "text" },
@@ -62,9 +63,7 @@ export const WithFilename = {
 export const WrappedLines = {
     args: { wrap: true, filename: "wide.js" },
     render: () =>
-        `<y-code wrap filename="wide.js">${
-            'const veryLongVariableName = "this is a deliberately long string of text that demonstrates the wrap attribute and how lines flow across the available width when wrap is enabled instead of horizontal scrolling";'
-        }</y-code>`,
+        `<y-code wrap filename="wide.js">${'const veryLongVariableName = "this is a deliberately long string of text that demonstrates the wrap attribute and how lines flow across the available width when wrap is enabled instead of horizontal scrolling";'}</y-code>`,
 };
 
 export const Collapsed = {
@@ -127,6 +126,70 @@ export const HighlightedCss = {
             "    .btn { width: 100% !important; }",
             "}",
         ].join("\n")}</y-code>
+    `,
+};
+
+export const HighlightedTypescript = {
+    render: () => `
+        <y-code language="typescript" filename="user.ts" line-numbers>${[
+            "interface User {",
+            "    name: string;",
+            "    age: number;",
+            "}",
+            "",
+            "function greet(u: User): string {",
+            "    return `Hello, ${u.name}!`;",
+            "}",
+        ].join("\n")}</y-code>
+    `,
+};
+
+export const HighlightedPython = {
+    render: () => `
+        <y-code language="python" filename="add.py" line-numbers>${[
+            "@dataclass",
+            "class Adder:",
+            "    base: int = 0",
+            "",
+            "    def add(self, x: int) -> int:",
+            "        # add to base",
+            "        return self.base + x",
+        ].join("\n")}</y-code>
+    `,
+};
+
+export const HighlightedBash = {
+    render: () => `
+        <y-code language="bash" filename="deploy.sh" line-numbers>${[
+            "#!/usr/bin/env bash",
+            'if [ -z "$1" ]; then',
+            '    echo "usage: deploy <env>"',
+            "    exit 1",
+            "fi",
+            "",
+            "TARGET=$1",
+            'echo "deploying to $TARGET"',
+        ].join("\n")}</y-code>
+    `,
+};
+
+// Note the `<template>` wrapper — the browser parses but does not render
+// or execute its contents, so HTML / XML / SVG samples can be authored
+// here verbatim without escaping `<`, `>`, or `&`.
+export const HighlightedHtml = {
+    render: () => `
+        <y-code language="html" filename="index.html" line-numbers>
+            <template>
+<!DOCTYPE html>
+<html lang="en">
+    <head><title>Hi</title></head>
+    <body>
+        <!-- main -->
+        <p class="lead">Hello</p>
+    </body>
+</html>
+            </template>
+        </y-code>
     `,
 };
 
