@@ -444,6 +444,23 @@ declare module "react" {
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
             }>;
+            "y-shape": El<{
+                type?:
+                    | "rectangle"
+                    | "circle"
+                    | "ellipse"
+                    | "star"
+                    | "heart"
+                    | "chat-bubble"
+                    | "times"
+                    | "cross"
+                    | "polygon";
+                "polygon-points"?: string;
+                radius?: string | number;
+                fit?: "contain" | "cover" | "fill";
+                "preserve-aspect"?: boolean | string;
+                size?: "sm" | "md" | "lg";
+            }>;
             "y-slider": El<{
                 name?: string;
                 value?: string | number;
