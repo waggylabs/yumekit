@@ -1,5 +1,6 @@
 import "../y-icon/y-icon.js";
 import { createElement as _el } from "../../modules/helpers.js";
+import { isSupportedLanguage, tokenize } from "./tokenizer.js";
 
 // Allowlist of class names we permit on slotted highlighted spans. Matches
 // the common Prism / shiki / chroma token names so consumers can pipe their
@@ -599,6 +600,11 @@ export class YumeCode extends HTMLElement {
             lineEls = lines.map((tokens, i) =>
                 this._buildLineFromTokens(tokens, i, lines.length),
             );
+        } else if (isSupportedLanguage(this.language)) {
+            const lines = this._tokenizedLines(this._collectRawText());
+            lineEls = lines.map((tokens, i) =>
+                this._buildLineFromTokens(tokens, i, lines.length),
+            );
         } else {
             const text = this._collectRawText();
             const lines = text === "" ? [""] : text.split("\n");
@@ -703,6 +709,39 @@ export class YumeCode extends HTMLElement {
         // ends in \n inside a wrapper element).
         while (lines.length > 1 && lines[lines.length - 1].length === 0) {
             lines.pop();
+        }
+        return lines;
+    }
+
+    _tokenizedLines(source) {
+        // Run the language tokenizer, then split the flat token stream into
+        // per-line arrays of `{ spans, text }` so the existing line renderer
+        // (`_buildLineFromTokens`) can consume the result. A token's text
+        // may contain `\n`; we split on each newline, dropping zero-length
+        // segments while still closing/opening line buckets.
+        const tokens = tokenize(this.language, source) || [];
+        const lines = [];
+        let current = [];
+
+        for (const tok of tokens) {
+            const spans = tok.type ? [`token ${tok.type}`] : [];
+            const parts = String(tok.text || "").split("\n");
+            for (let p = 0; p < parts.length; p++) {
+                if (parts[p] !== "") {
+                    current.push({ spans, text: parts[p] });
+                }
+                if (p < parts.length - 1) {
+                    lines.push(current);
+                    current = [];
+                }
+            }
+        }
+        lines.push(current);
+
+        // An empty source should still produce one empty line so the layout
+        // matches the plain-text path.
+        if (lines.length === 1 && lines[0].length === 0 && source === "") {
+            return [[]];
         }
         return lines;
     }

@@ -89,6 +89,47 @@ export const Disabled = {
     args: { disabled: true, "line-numbers": true },
 };
 
+export const HighlightedJavaScript = {
+    render: () => `
+        <y-code language="javascript" filename="add.js" line-numbers>${[
+            "function add(a, b) {",
+            "    // sum two numbers",
+            "    return a + b;",
+            "}",
+            "",
+            "add(1, 2);",
+        ].join("\n")}</y-code>
+    `,
+};
+
+export const HighlightedJson = {
+    render: () => `
+        <y-code language="json" filename="package.json" line-numbers>${[
+            "{",
+            '    "name": "yumekit",',
+            '    "version": "0.5.1",',
+            '    "main": "dist/index.js"',
+            "}",
+        ].join("\n")}</y-code>
+    `,
+};
+
+export const HighlightedCss = {
+    render: () => `
+        <y-code language="css" filename="button.css" line-numbers>${[
+            ".btn {",
+            "    color: var(--primary-content--);",
+            "    background: #f6f8fa;",
+            "    padding: 8px 16px;",
+            "}",
+            "",
+            "@media (max-width: 600px) {",
+            "    .btn { width: 100% !important; }",
+            "}",
+        ].join("\n")}</y-code>
+    `,
+};
+
 export const HeaderSlot = {
     render: () => `
         <y-code filename="config.json" language="json">

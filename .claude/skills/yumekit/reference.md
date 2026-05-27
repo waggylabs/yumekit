@@ -725,11 +725,11 @@ Slot: default (trigger element)
 
 ## y-code
 
-Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. Syntax highlighting is not done in v1 — consumers who want colored output run their own highlighter (Prism, shiki, etc.) and pipe the result through a sanitized `highlighted` slot.
+Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. A built-in tokenizer covers **JavaScript** (aliases: `js` / `jsx` / `mjs` / `cjs`), **JSON**, and **CSS**; other languages fall back to plain text. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through the sanitized `highlighted` slot — that path takes precedence when present.
 
 | Attribute       | Values / Notes                                                                                       |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
-| `language`      | string — display label, also used in the `aria-label` (default `"text"`)                             |
+| `language`      | string — `javascript` / `js` / `jsx` / `mjs` / `cjs` / `json` / `css` trigger built-in tokenizing; anything else renders as plain text. Also used in the `aria-label`. Default `"text"`. |
 | `line-numbers`  | boolean — when set, line numbers render and each line becomes a click/keyboard target that copies it |
 | `max-lines`     | number — caps visible lines; an expand toggle reveals the rest                                       |
 | `wrap`          | boolean — wraps long lines (otherwise the block scrolls horizontally)                                |

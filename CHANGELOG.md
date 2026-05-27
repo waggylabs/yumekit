@@ -35,7 +35,7 @@ Delete any empty sections before publishing.
 
 ### Added
 
-- New `y-code` component — lightweight code-block container. Renders slotted text with optional line numbers, copy-to-clipboard button (block + per-line), `max-lines` collapse, and an optional filename header. Syntax highlighting is left to the consumer in v1: pre-highlighted markup can be piped through a sanitized `highlighted` slot (allowlist of `<span>` + common token class names).
+- New `y-code` component — lightweight code-block container. Renders slotted text with optional line numbers, copy-to-clipboard button (block + per-line), `max-lines` collapse, and an optional filename header. A built-in regex-based tokenizer covers JavaScript (aliases: `js` / `jsx` / `mjs` / `cjs`), JSON, and CSS — additional languages fall back to plain text. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through a sanitized `highlighted` slot, which takes precedence when present. Emitted classes are Prism-compatible (`token keyword`, `token string`, etc.) so existing Prism stylesheets layer on cleanly.
 
 - New `y-shape` component — presentational container that clips its slotted content into a geometric shape (rectangle, circle, ellipse, star, heart, chat-bubble, times, cross, or a custom `polygon`) via CSS `clip-path`. Suitable for avatar masks, decorative panels, and non-rectangular skeletons.
 

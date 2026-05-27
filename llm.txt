@@ -362,11 +362,11 @@ Events: `change`
 ---
 
 ### y-code
-Lightweight, dependency-free code block. Renders slotted source text with optional line numbers, a copy-to-clipboard button, a `max-lines` collapse, and an optional filename header. Syntax highlighting is **not** performed in v1; consumers who want colored output run their own highlighter (Prism, shiki, etc.) and pass the resulting HTML through the `highlighted` slot. Span markup in that slot is sanitized to an allowlist of tag (`<span>`) + class names matching common highlighter conventions.
+Lightweight, dependency-free code block. Renders slotted source text with optional line numbers, a copy-to-clipboard button, a `max-lines` collapse, and an optional filename header. Built-in tokenizer covers **JavaScript** (alias: `js` / `jsx` / `mjs` / `cjs`), **JSON**, and **CSS**; other languages fall back to plain text. Consumers can also pipe the output of an external highlighter (Prism, shiki, etc.) through the sanitized `highlighted` slot — that path wins when both are available. Span markup is sanitized to an allowlist of `<span>` + token class names; emitted classes are Prism-compatible (`token keyword`, `token string`, etc.) so existing Prism stylesheets layer on cleanly.
 
 Tag: `<y-code>`
 Attributes:
-- `language` — string. Display label for the block (used in the `aria-label` and as a future styling hook). Case-insensitive. Default `"text"`.
+- `language` — string. Triggers built-in syntax highlighting when set to a supported language (`javascript`, `js`, `jsx`, `mjs`, `cjs`, `json`, `css`); falls back to plain text otherwise. Also used in the `aria-label`. Case-insensitive. Default `"text"`.
 - `line-numbers` — boolean. Renders line numbers on the left and makes each line a focusable / clickable target that copies the line text.
 - `max-lines` — number. When set, only this many lines render and the block shows a "Show N more lines" toggle.
 - `wrap` — boolean. When set, long lines wrap; otherwise the block scrolls horizontally.

@@ -245,6 +245,71 @@ d</y-code>`);
         expect(lines[2].textContent.trim()).to.equal("c");
     });
 
+    // ── Tokenizer integration ──────────────────────────────────────────
+
+    it("auto-tokenizes JavaScript and renders keyword spans", async () => {
+        const el = await fixture(html`<y-code language="javascript">const x = 1;</y-code>`);
+        const keyword = el.shadowRoot.querySelector(".line-content .token.keyword");
+        expect(keyword).to.exist;
+        expect(keyword.textContent).to.equal("const");
+    });
+
+    it("auto-tokenizes JSON and tags property names", async () => {
+        const el = await fixture(html`<y-code language="json">{"name":"yumekit"}</y-code>`);
+        const property = el.shadowRoot.querySelector(".line-content .token.property");
+        expect(property).to.exist;
+        expect(property.textContent).to.equal('"name"');
+    });
+
+    it("auto-tokenizes CSS and tags selectors + properties", async () => {
+        const el = await fixture(html`<y-code language="css">.btn { color: red; }</y-code>`);
+        const property = el.shadowRoot.querySelector(".line-content .token.property");
+        const string = el.shadowRoot.querySelector(".line-content .token.attr-value");
+        expect(property).to.exist;
+        expect(property.textContent).to.equal("color");
+        expect(string).to.exist;
+        expect(string.textContent).to.equal("red");
+    });
+
+    it("falls back to plain text rendering for unsupported languages", async () => {
+        const el = await fixture(html`<y-code language="python">print("hi")</y-code>`);
+        expect(el.shadowRoot.querySelector(".line-content .token")).to.not.exist;
+    });
+
+    it("prefers the highlighted slot over the tokenizer when both could apply", async () => {
+        // language=javascript would normally trigger tokenization, but the
+        // sanitized highlighted slot wins so consumers can override the
+        // built-in tokenizer with their own pipeline.
+        const el = await fixture(html`
+            <y-code language="javascript">
+                <div slot="highlighted"><span class="comment">manual override</span></div>
+            </y-code>
+        `);
+        const comment = el.shadowRoot.querySelector(".line-content .comment");
+        expect(comment).to.exist;
+        expect(comment.textContent).to.equal("manual override");
+    });
+
+    it("copy block on a tokenized language still copies the raw text", async () => {
+        const el = await fixture(html`<y-code language="javascript">const x = 1;</y-code>`);
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: { writeText: async () => {} },
+            configurable: true,
+        });
+        try {
+            const ev = oneEvent(el, "copy");
+            el.copyBlock();
+            const detail = (await ev).detail;
+            expect(detail.source).to.equal("const x = 1;");
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
+    });
+
     // ── Language change event ──────────────────────────────────────────
 
     it("fires `language-change` when setLanguage() is called", async () => {
