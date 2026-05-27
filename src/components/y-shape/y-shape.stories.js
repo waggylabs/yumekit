@@ -23,9 +23,9 @@ export default {
         },
         size: {
             control: "select",
-            options: ["sm", "md", "lg"],
+            options: ["small", "medium", "large"],
             description: "Container size token.",
-            table: { defaultValue: { summary: "md" } },
+            table: { defaultValue: { summary: "medium" } },
         },
         radius: {
             control: "text",
@@ -49,7 +49,7 @@ export default {
     },
     args: {
         type: "star",
-        size: "md",
+        size: "medium",
         fit: "cover",
     },
     render: (args) => `
@@ -91,16 +91,16 @@ export const AllShapes = {
 export const Sizes = {
     render: () => `
         <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
-            <y-shape type="circle" size="sm" style="background: var(--primary-content--);"></y-shape>
-            <y-shape type="circle" size="md" style="background: var(--primary-content--);"></y-shape>
-            <y-shape type="circle" size="lg" style="background: var(--primary-content--);"></y-shape>
+            <y-shape type="circle" size="small" style="background: var(--primary-content--);"></y-shape>
+            <y-shape type="circle" size="medium" style="background: var(--primary-content--);"></y-shape>
+            <y-shape type="circle" size="large" style="background: var(--primary-content--);"></y-shape>
         </div>
     `,
 };
 
 export const RoundedRectangle = {
     render: () => `
-        <y-shape type="rectangle" radius="20px" size="lg" style="background: var(--secondary-content--);">
+        <y-shape type="rectangle" radius="20px" size="large" style="background: var(--secondary-content--);">
             <img src="https://placehold.co/256x256/14b8a6/ffffff?text=YK" alt="" />
         </y-shape>
     `,
@@ -126,7 +126,7 @@ export const CustomPolygon = {
     args: {
         type: "polygon",
         "polygon-points": "50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%",
-        size: "lg",
+        size: "large",
     },
     render: ({ type, size, "polygon-points": pts }) => `
         <y-shape
@@ -140,7 +140,7 @@ export const CustomPolygon = {
 
 export const TextContent = {
     render: () => `
-        <y-shape type="chat-bubble" size="lg" style="background: var(--base-background-component); color: var(--base-content--); font-family: var(--font-family-body); padding: 12px; box-sizing: border-box;">
+        <y-shape type="chat-bubble" size="large" style="background: var(--base-background-component); color: var(--base-content--); font-family: var(--font-family-body); padding: 12px; box-sizing: border-box;">
             <div style="text-align:center;padding:8px 12px;">Hello!</div>
         </y-shape>
     `,

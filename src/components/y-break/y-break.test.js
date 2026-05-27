@@ -162,8 +162,8 @@ describe("YumeBreak", () => {
         expect(el.inset).to.equal("none");
     });
 
-    it("applies sm inset via spacing token", async () => {
-        const el = await fixture(html`<y-break inset="sm"></y-break>`);
+    it("applies small inset via spacing token", async () => {
+        const el = await fixture(html`<y-break inset="small"></y-break>`);
         const hostRule = [...el.shadowRoot.adoptedStyleSheets[0].cssRules].find(
             (r) => r.selectorText === ":host",
         );

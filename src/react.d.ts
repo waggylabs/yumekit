@@ -68,7 +68,7 @@ declare module "react" {
                 variant?: "solid" | "dashed" | "dotted";
                 label?: string;
                 icon?: string;
-                inset?: "none" | "sm" | "md" | "lg";
+                inset?: "none" | "small" | "medium" | "large";
             }>;
             "y-breadcrumbs": El<{
                 items?: string;
@@ -459,7 +459,7 @@ declare module "react" {
                 radius?: string | number;
                 fit?: "contain" | "cover" | "fill";
                 "preserve-aspect"?: boolean | string;
-                size?: "sm" | "md" | "lg";
+                size?: "small" | "medium" | "large";
             }>;
             "y-slider": El<{
                 name?: string;

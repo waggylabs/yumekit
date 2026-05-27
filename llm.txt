@@ -108,7 +108,7 @@ Attributes:
 - `variant` — `"solid"` (default) | `"dashed"` | `"dotted"` — line style.
 - `label` — string, plain text rendered in the center.
 - `icon` — registered icon name rendered in the center (icon then label when both are set).
-- `inset` — `"none"` (default) | `"sm"` | `"md"` | `"lg"` — padding applied to the outer ends of the line(s).
+- `inset` — `"none"` (default) | `"small"` | `"medium"` | `"large"` — padding applied to the outer ends of the line(s).
 
 Slots: default — slotted content takes precedence over `label` / `icon`.
 CSS Parts: `line`, `line-start`, `line-end`, `content`.
@@ -121,7 +121,7 @@ The host receives `role="separator"`, plus `aria-orientation="vertical"` when ve
 <y-break></y-break>
 <y-break label="OR"></y-break>
 <y-break icon="star" variant="dashed"></y-break>
-<y-break align="start" inset="md"><y-tag color="primary">New section</y-tag></y-break>
+<y-break align="start" inset="medium"><y-tag color="primary">New section</y-tag></y-break>
 ```
 
 ---
@@ -449,9 +449,9 @@ Attributes:
 - `type` — `"rectangle"` (default) | `"circle"` | `"ellipse"` | `"star"` | `"heart"` | `"chat-bubble"` | `"times"` | `"cross"` | `"polygon"`
 - `polygon-points` — required when `type="polygon"`. Comma-separated coordinate list (e.g. `"50% 0%, 100% 50%, 50% 100%, 0% 50%"`). Validated against a safe character set.
 - `radius` — shape radius for `circle` / `ellipse`, or corner radius for `rectangle` (e.g. `"50%"`, `"12px"`).
-- `fit` — `"contain"` (default) | `"cover"` | `"fill"` — `object-fit` applied to slotted `<img>` / `<video>` / `<picture>`.
+- `fit` — `"contain"` (default) | `"cover"` | `"fill"` — `object-fit` applied to slotted `<img>` / `<video>`. `<picture>` is not a replaced element, so `object-fit` does not apply to it; style the inner `<img>` directly if you slot a `<picture>`.
 - `preserve-aspect` — boolean; locks the container to a 1:1 aspect ratio.
-- `size` — `"sm"` | `"md"` (default) | `"lg"` — container size token.
+- `size` — `"small"` | `"medium"` (default) | `"large"` — container size token (matches the size scale used across other components).
 
 Events: `ready` (`detail: { clipPath }`)
 Slots: default — content to be clipped (commonly an image, but any element works).
@@ -463,7 +463,7 @@ CSS Parts: `host`, `content`.
 <y-shape type="circle">
     <img src="avatar.jpg" alt="" />
 </y-shape>
-<y-shape type="rectangle" radius="16px" size="lg" style="background: var(--primary-content--);"></y-shape>
+<y-shape type="rectangle" radius="16px" size="large" style="background: var(--primary-content--);"></y-shape>
 <y-shape type="polygon" polygon-points="50% 0%, 100% 50%, 50% 100%, 0% 50%"></y-shape>
 ```
 

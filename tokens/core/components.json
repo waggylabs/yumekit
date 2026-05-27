@@ -769,15 +769,15 @@
             }
         },
         "shape": {
-            "size-sm": {
+            "size-small": {
                 "$type": "sizing",
                 "$value": "64px"
             },
-            "size-md": {
+            "size-medium": {
                 "$type": "sizing",
                 "$value": "128px"
             },
-            "size-lg": {
+            "size-large": {
                 "$type": "sizing",
                 "$value": "192px"
             }

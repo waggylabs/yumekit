@@ -43,6 +43,8 @@ Delete any empty sections before publishing.
 
 - `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
 
+- **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
+
 ### Fixed
 
 - `y-droplist` — touch drag now works reliably on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time instead of from inside `pointerdown`, so mobile browsers stop preempting the press as a scroll gesture.

@@ -4,13 +4,13 @@ import "../y-icon/y-icon.js";
 const VALID_ORIENTATIONS = new Set(["horizontal", "vertical"]);
 const VALID_ALIGNMENTS = new Set(["start", "center", "end"]);
 const VALID_VARIANTS = new Set(["solid", "dashed", "dotted"]);
-const VALID_INSETS = new Set(["none", "sm", "md", "lg"]);
+const VALID_INSETS = new Set(["none", "small", "medium", "large"]);
 
 const INSET_TOKENS = {
     none: "0",
-    sm: "var(--spacing-x-small)",
-    md: "var(--spacing-medium)",
-    lg: "var(--spacing-x-large)",
+    small: "var(--spacing-x-small)",
+    medium: "var(--spacing-medium)",
+    large: "var(--spacing-x-large)",
 };
 
 export class YumeBreak extends HTMLElement {
@@ -62,7 +62,7 @@ export class YumeBreak extends HTMLElement {
         else this.removeAttribute("icon");
     }
 
-    /** Outer end padding token: "none" | "sm" | "md" | "lg". */
+    /** Outer end padding token: "none" (default) | "small" | "medium" | "large". */
     get inset() {
         const v = this.getAttribute("inset");
         return VALID_INSETS.has(v) ? v : "none";

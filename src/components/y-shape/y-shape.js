@@ -22,16 +22,15 @@ const VALID_TYPES = new Set([
 ]);
 
 const VALID_FITS = new Set(["contain", "cover", "fill"]);
-const VALID_SIZES = new Set(["sm", "md", "lg"]);
+const VALID_SIZES = new Set(["small", "medium", "large"]);
 
 const SIZE_VAR = {
-    sm: "var(--component-shape-size-sm, 64px)",
-    md: "var(--component-shape-size-md, 128px)",
-    lg: "var(--component-shape-size-lg, 192px)",
+    small: "var(--component-shape-size-small, 64px)",
+    medium: "var(--component-shape-size-medium, 128px)",
+    large: "var(--component-shape-size-large, 192px)",
 };
 
 const SAFE_LENGTH_RE = /^-?\d+(\.\d+)?(%|px|em|rem|vh|vw)?$/;
-const SAFE_POLYGON_RE = /^[\d\s.,%\-pxem]+$/i;
 
 export class YumeShape extends HTMLElement {
     static get observedAttributes() {
@@ -85,7 +84,12 @@ export class YumeShape extends HTMLElement {
         else this.removeAttribute("polygon-points");
     }
 
-    /** If true, lock the container to a 1:1 aspect ratio. */
+    /**
+     * When set, only width is anchored to the size token and height is
+     * derived from `aspect-ratio: 1 / 1`. This lets a consumer override
+     * width (e.g. `width: 100%`) and get a square that scales with the
+     * container. When unset, both dimensions are fixed to the size token.
+     */
     get preserveAspect() {
         return this.hasAttribute("preserve-aspect");
     }
@@ -107,10 +111,10 @@ export class YumeShape extends HTMLElement {
         else this.removeAttribute("radius");
     }
 
-    /** Container size token: "sm" | "md" | "lg" (default "md"). */
+    /** Container size token: "small" | "medium" (default) | "large". */
     get size() {
         const v = this.getAttribute("size");
-        return VALID_SIZES.has(v) ? v : "md";
+        return VALID_SIZES.has(v) ? v : "medium";
     }
     set size(val) {
         this.setAttribute("size", val);
@@ -152,16 +156,24 @@ export class YumeShape extends HTMLElement {
         const sheet = new CSSStyleSheet();
         const sizeVar = SIZE_VAR[this.size];
         const fit = this.fit;
-        const aspect = this.preserveAspect ? "aspect-ratio: 1 / 1;" : "";
+
+        // With preserve-aspect we deliberately leave height computed so a
+        // consumer can override only width (e.g. `width: 100%`) and have the
+        // shape stay square via aspect-ratio. Without it, both dimensions
+        // are anchored to the size token so the shape is a fixed square.
+        const sizingStyles = this.preserveAspect
+            ? `width: var(--component-shape-size, ${sizeVar});
+                height: auto;
+                aspect-ratio: 1 / 1;`
+            : `width: var(--component-shape-size, ${sizeVar});
+                height: var(--component-shape-size, ${sizeVar});`;
 
         sheet.replaceSync(`
             :host {
                 --component-shape-clip-path: ${clipPath};
                 display: inline-block;
                 box-sizing: border-box;
-                width: var(--component-shape-size, ${sizeVar});
-                height: var(--component-shape-size, ${sizeVar});
-                ${aspect}
+                ${sizingStyles}
                 color: var(--component-shape-color, inherit);
                 background: var(--component-shape-background, transparent);
                 clip-path: var(--component-shape-clip-path);
@@ -183,9 +195,11 @@ export class YumeShape extends HTMLElement {
                 justify-content: center;
             }
 
+            /* object-fit only applies to replaced elements; <picture> is not
+               one, so consumers who slot a <picture> should style its inner
+               <img> directly. */
             ::slotted(img),
-            ::slotted(video),
-            ::slotted(picture) {
+            ::slotted(video) {
                 width: 100%;
                 height: 100%;
                 object-fit: ${fit === "fill" ? "fill" : fit};
@@ -200,9 +214,8 @@ export class YumeShape extends HTMLElement {
         const radius = this.radius;
 
         if (type === "polygon") {
-            const pts = this.polygonPoints;
-            if (pts && SAFE_POLYGON_RE.test(pts)) return `polygon(${pts})`;
-            return "inset(0)";
+            const pts = this._safePolygonPoints(this.polygonPoints);
+            return pts ? `polygon(${pts})` : "inset(0)";
         }
 
         if (type === "circle") {
@@ -211,7 +224,7 @@ export class YumeShape extends HTMLElement {
         }
 
         if (type === "ellipse") {
-            const r = radius && SAFE_POLYGON_RE.test(radius) ? radius : "50% 50%";
+            const r = this._safeEllipseRadii(radius) || "50% 50%";
             return `ellipse(${r} at 50% 50%)`;
         }
 
@@ -234,10 +247,51 @@ export class YumeShape extends HTMLElement {
         );
     }
 
+    _safeEllipseRadii(value) {
+        // Ellipse takes radii as whitespace-separated lengths; commas are
+        // not valid in the radii portion of `ellipse(rx ry at cx cy)`.
+        if (value === "" || value == null) return "";
+        const str = String(value).trim();
+        if (!str || str.includes(",")) return "";
+
+        const tokens = str.split(/\s+/);
+        if (tokens.length !== 2) return "";
+
+        for (const token of tokens) {
+            if (!SAFE_LENGTH_RE.test(token)) return "";
+        }
+
+        return `${tokens[0]} ${tokens[1]}`;
+    }
+
     _safeLength(value) {
         if (value === "" || value == null) return "";
         const str = String(value).trim();
         return SAFE_LENGTH_RE.test(str) ? str : "";
+    }
+
+    _safePolygonPoints(value) {
+        // Each comma-separated point must be exactly two whitespace-separated
+        // lengths. Empty segments (trailing/double commas) and stray tokens
+        // are rejected outright rather than coerced into invalid CSS.
+        if (value === "" || value == null) return "";
+        const str = String(value).trim();
+        if (!str) return "";
+
+        const segments = str.split(",").map((s) => s.trim());
+        if (segments.length < 3) return "";
+        if (segments.some((s) => s === "")) return "";
+
+        const safePoints = [];
+        for (const segment of segments) {
+            const tokens = segment.split(/\s+/);
+            if (tokens.length !== 2) return "";
+            if (!SAFE_LENGTH_RE.test(tokens[0])) return "";
+            if (!SAFE_LENGTH_RE.test(tokens[1])) return "";
+            safePoints.push(`${tokens[0]} ${tokens[1]}`);
+        }
+
+        return safePoints.join(", ");
     }
 }
 
