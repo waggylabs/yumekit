@@ -768,6 +768,20 @@
                 "$value": 6000
             }
         },
+        "shape": {
+            "size-small": {
+                "$type": "sizing",
+                "$value": "64px"
+            },
+            "size-medium": {
+                "$type": "sizing",
+                "$value": "128px"
+            },
+            "size-large": {
+                "$type": "sizing",
+                "$value": "192px"
+            }
+        },
         "sidebar": {
             "border-radius": {
                 "$type": "borderRadius",

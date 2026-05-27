@@ -65,7 +65,7 @@ A divider that draws a line, optionally broken by centered content (text, icon, 
 | `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                      |
 | `label`       | Convenience text rendered in the center                                                     |
 | `icon`        | Convenience icon name rendered in the center (icon then label when both are set)            |
-| `inset`       | `none` (default) \| `sm` \| `md` \| `lg` — outer end padding                                |
+| `inset`       | `none` (default) \| `small` \| `medium` \| `large` — outer end padding                       |
 
 **Slots:** default — content rendered in the center; takes precedence over `label` / `icon`.
 

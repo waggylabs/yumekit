@@ -68,7 +68,7 @@ declare module "react" {
                 variant?: "solid" | "dashed" | "dotted";
                 label?: string;
                 icon?: string;
-                inset?: "none" | "sm" | "md" | "lg";
+                inset?: "none" | "small" | "medium" | "large";
             }>;
             "y-breadcrumbs": El<{
                 items?: string;
@@ -443,6 +443,23 @@ declare module "react" {
                 "label-position"?: "top" | "bottom";
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
+            }>;
+            "y-shape": El<{
+                type?:
+                    | "rectangle"
+                    | "circle"
+                    | "ellipse"
+                    | "star"
+                    | "heart"
+                    | "chat-bubble"
+                    | "times"
+                    | "cross"
+                    | "polygon";
+                "polygon-points"?: string;
+                radius?: string | number;
+                fit?: "contain" | "cover" | "fill";
+                "preserve-aspect"?: boolean | string;
+                size?: "small" | "medium" | "large";
             }>;
             "y-slider": El<{
                 name?: string;
