@@ -768,6 +768,48 @@
                 "$value": 6000
             }
         },
+        "help": {
+            "highlight-padding": {
+                "$type": "dimension",
+                "$value": "8px"
+            },
+            "highlight-border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "tooltip-border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.medium}"
+            },
+            "tooltip-padding": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "tooltip-max-width": {
+                "$type": "dimension",
+                "$value": "320px"
+            },
+            "tooltip-offset": {
+                "$type": "dimension",
+                "$value": "12px"
+            },
+            "arrow-size": {
+                "$type": "dimension",
+                "$value": "10px"
+            },
+            "nav-arrow-size": {
+                "$type": "dimension",
+                "$value": "44px"
+            },
+            "overlay-z-index": {
+                "$type": "number",
+                "$value": 9000
+            },
+            "transition-duration": {
+                "$type": "duration",
+                "$value": "180ms"
+            }
+        },
         "code": {
             "border-radius": {
                 "$type": "borderRadius",

@@ -304,6 +304,37 @@ declare module "react" {
                 responsive?: boolean | string;
                 dense?: boolean | string;
             }>;
+            "y-help": El<{
+                steps?: unknown[] | string;
+                open?: boolean | string;
+                index?: number | string;
+                "default-position"?:
+                    | "top"
+                    | "bottom"
+                    | "left"
+                    | "right"
+                    | "center"
+                    | "auto";
+                "untargeted-position"?:
+                    | "top"
+                    | "bottom"
+                    | "left"
+                    | "right"
+                    | "center"
+                    | "auto";
+                "default-anchor"?: "bounds" | "first" | "last" | number | string;
+                "highlight-padding"?: number | string;
+                "show-progress"?: boolean | string;
+                "show-arrows"?: boolean | string;
+                "close-on-escape"?: boolean | string;
+                "close-on-overlay-click"?: boolean | string;
+                "disable-target-interaction"?: boolean | string;
+                "prev-label"?: string;
+                "next-label"?: string;
+                "finish-label"?: string;
+                "close-label"?: string;
+                loop?: boolean | string;
+            }>;
             "y-icon": El<{
                 name?: string;
                 size?: "x-small" | "small" | "medium" | "large" | "x-large";

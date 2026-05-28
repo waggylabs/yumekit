@@ -1352,6 +1352,73 @@ Light-DOM children of `<y-menu>` (without a `slot` attribute) become additional 
 
 ---
 
+### y-help
+Guided product-tour / onboarding overlay. Given an ordered list of steps, dims the page, highlights one or more targeted elements per step (single SVG mask for clean multi-target cutouts), and anchors a tooltip with helper text to them. Steps without a target render a centered tooltip for general messages. Users advance with prev/next, large overlay-edge arrows, or arrow-key shortcuts until the tour completes or they dismiss it.
+
+Tag: `<y-help>`
+Attributes:
+- `steps` — `HelpStep[]` (property; also accepts a JSON string via attribute). Each step: `{ target?: string | string[], title?: string, content: string, position?: "top" | "bottom" | "left" | "right" | "center" | "auto", anchor?: "bounds" | "first" | "last" | number, highlightPadding?: number }`. `target` is either an element `id` (no `#`) or a CSS selector, or an array of either.
+- `open` — reflects whether the tour is active. Toggling it starts / stops the tour.
+- `index` — 0-based active step index. Reflected.
+- `default-position` — `"auto"` (default) | `"top"` | `"bottom"` | `"left"` | `"right"` | `"center"`. Used when a step does not specify `position`.
+- `untargeted-position` — `"center"` (default) | other positions. Used when a step has no `target` or none of its targets resolve.
+- `default-anchor` — `"bounds"` (default) | `"first"` | `"last"` | numeric index. Multi-target anchor when a step does not specify `anchor`.
+- `highlight-padding` — number (px, default `8`). Pixel padding around each highlighted element. Overridable per step via `highlightPadding`.
+- `show-progress` — defaults to `true`. Shows "N of M" inside the tooltip.
+- `show-arrows` — defaults to `true`. Renders large prev/next arrow buttons on the overlay edges in addition to the tooltip controls.
+- `close-on-escape` — defaults to `true`. Pressing Escape closes the tour.
+- `close-on-overlay-click` — defaults to `false`. Clicking the dim area closes the tour.
+- `disable-target-interaction` — defaults to `true`. When `false`, highlighted elements remain clickable; the rest of the page is still blocked.
+- `prev-label` / `next-label` / `finish-label` / `close-label` — control button text (`finish-label` is shown on the next button on the last step when `loop` is unset).
+- `loop` — when present, advancing past the last step returns to the first instead of firing `y-help-complete`.
+
+Slots:
+- `header`, `title`, `content`, `prev-button`, `next-button`, `close-button`, `progress` — override the default rendering of those tooltip regions.
+- (default) — `<y-help-step>` children for a declarative API are planned but not in v1; pass `steps` as a property/attribute for now.
+
+Events (bubble + composed):
+- `y-help-open` — cancelable. Fired before the tour opens. `detail: { index }`.
+- `y-help-start` — non-cancelable. Fired after the first step renders. `detail: { index, step }`.
+- `y-help-step-change` — cancelable. Fired before moving between steps. `detail: { from, to, step, direction: "next" | "prev" | "goto" }`. Cancelling lets authors gate progression on an external action.
+- `y-help-complete` — non-cancelable. Fired when the user advances past the last step (only when `loop` is unset). `detail: { totalSteps }`.
+- `y-help-close` — cancelable. Fired before the tour closes. `detail: { index, reason: "user" | "escape" | "overlay" | "complete" | "api" }`.
+
+Methods: `start(index = 0)`, `next()`, `prev()`, `goto(index)`, `close(reason = "api")`. Methods other than `start` are no-ops when the tour isn't open.
+
+CSS Parts: `overlay`, `highlight` (every cutout in a multi-target step receives this part), `tooltip`, `tooltip-title`, `tooltip-content`, `tooltip-actions`, `prev-button`, `next-button`, `close-button`, `progress`, `arrow-prev`, `arrow-next`, `pointer`.
+
+Accessibility:
+- The tooltip is `role="dialog"` with `aria-modal="true"`, linked to title/content via `aria-labelledby` / `aria-describedby`.
+- Buttons carry aria-labels from `prev-label` / `next-label` / `close-label`. Progress is `aria-live="polite"`.
+- Focus is captured into the tooltip on open and restored to the previously-focused element on close. Tab cycles within the tooltip's interactive controls.
+- Arrow keys advance/retreat; Enter advances; Escape closes (when `close-on-escape` is on).
+- Respects `prefers-reduced-motion` — disables transitions when set.
+
+CSS Custom Properties: `--component-help-overlay-bg`, `--component-help-overlay-blur`, `--component-help-overlay-z-index`, `--component-help-highlight-padding`, `--component-help-highlight-border-radius`, `--component-help-highlight-outline`, `--component-help-highlight-shadow`, `--component-help-tooltip-bg`, `--component-help-tooltip-color`, `--component-help-tooltip-border-radius`, `--component-help-tooltip-padding`, `--component-help-tooltip-max-width`, `--component-help-tooltip-shadow`, `--component-help-tooltip-offset`, `--component-help-arrow-size`, `--component-help-nav-arrow-size`, `--component-help-nav-arrow-color`, `--component-help-transition-duration`.
+
+```html
+<button id="launch">Take the tour</button>
+<y-help id="tour"></y-help>
+
+<script type="module">
+    const help = document.getElementById("tour");
+    help.steps = [
+        { target: "btn-create", title: "Start here", content: "Spin up a new agent." },
+        { target: ["card-1", "card-2"], anchor: "bounds", content: "Each agent gets a card." },
+        { title: "All set!", content: "You can replay this any time from Settings." },
+    ];
+    document.getElementById("launch").addEventListener("click", () => help.start());
+</script>
+```
+
+Notes:
+- The overlay and tooltip are portaled to `document.body`, so they escape ancestor `overflow` / `transform` / `z-index` contexts. Don't expect to find them inside `<y-help>` itself.
+- Tooltip positioning uses a flip-only collision strategy in v1: try the requested side, fall back to the opposite, then `bottom` / `top` / `right` / `left`. Untargeted tooltips center in the viewport.
+- Persistence ("has the user seen this tour?") is the caller's responsibility — read/write storage and pass `open`/`index` accordingly.
+- Step `content` and `title` are rendered via `textContent` and never re-parsed as HTML. For rich content, use the `content` / `title` slots or wait for `<y-help-step>` in a future release.
+
+---
+
 ### y-toast
 Notification toast messages.
 
