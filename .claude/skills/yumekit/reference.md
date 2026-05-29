@@ -1246,7 +1246,7 @@ Guided product-tour / onboarding overlay. Given an ordered list of steps, dims t
 | `prev-label` / `next-label` / `finish-label` / `close-label` | button text; `finish-label` is shown on the next button on the last step (when `loop` is unset)                          |
 | `loop`                          | boolean — when set, advancing past the last step returns to the first                                                                                |
 
-Slots: `header`, `title`, `content`, `prev-button`, `next-button`, `close-button`, `progress` — override the corresponding tooltip region. (Declarative `<y-help-step>` children are planned but not in v1; pass `steps` as a property/attribute.)
+Slots: none in v1. Step title/content come from each step's `title` / `content` fields, button text from the `prev-label` / `next-label` / `finish-label` / `close-label` attributes. Per-region slot overrides and declarative `<y-help-step>` children are planned for a future release; style the existing rendering via the documented CSS parts in the meantime.
 
 Events (bubble + composed): `y-help-open` (cancelable, `{ index }`), `y-help-start` (`{ index, step }`), `y-help-step-change` (cancelable, `{ from, to, step, direction }`), `y-help-complete` (`{ totalSteps }`), `y-help-close` (cancelable, `{ index, reason }`).
 

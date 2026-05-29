@@ -415,6 +415,25 @@ describe("YumeHelp", () => {
         await teardown(help, container);
     });
 
+    it("forces teardown on disconnect even when y-help-close is cancelled", async () => {
+        // Reproduces the regression where a y-help-close listener that
+        // called preventDefault() could keep the portaled overlay and the
+        // window listeners alive after the host element had been removed
+        // from the DOM. disconnectedCallback must bypass the cancelable
+        // close path.
+        const { help, container } = await setupTour([{ content: "x" }]);
+        help.addEventListener("y-help-close", (e) => e.preventDefault());
+        help.start();
+        await aTimeout(0);
+        expect(getPortal()).to.exist;
+
+        help.remove();
+        await aTimeout(0);
+
+        expect(getPortal()).to.equal(null);
+        await teardown(help, container);
+    });
+
     it("preventDefault on y-help-close keeps the tour open", async () => {
         const { help, container } = await setupTour([{ content: "a" }]);
         help.start();
@@ -470,6 +489,93 @@ describe("YumeHelp", () => {
         window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
         await aTimeout(0);
         expect(help.getAttribute("index")).to.equal("0");
+        await teardown(help, container);
+    });
+
+    // ── Next-button label / aria-label sync ──────────────────────────
+
+    it("updates the next-button's aria-label to match its visible text on the last step", async () => {
+        // Regression: screen readers were announcing "Next" while the button
+        // visually read "Done" on the last step because aria-label was set
+        // once at construction time and never refreshed.
+        const { help, container } = await setupTour(
+            [{ content: "a" }, { content: "b" }],
+            { "finish-label": "All done" },
+        );
+        help.start();
+        await aTimeout(0);
+        const portal = getPortal();
+        const next = portal.querySelector('[part="next-button"]');
+        // On the first step the next button is "Next".
+        expect(next.textContent.trim()).to.equal("Next");
+        expect(next.getAttribute("aria-label")).to.equal("Next");
+
+        help.next();
+        await aTimeout(0);
+
+        // On the last step (non-loop) the text switches to finish-label,
+        // and aria-label must follow.
+        expect(next.textContent.trim()).to.equal("All done");
+        expect(next.getAttribute("aria-label")).to.equal("All done");
+
+        // The overlay-edge "next" arrow has no visible text but its
+        // aria-label should still flip to reflect the action.
+        const arrowNext = portal.querySelector('[part="arrow-next"]');
+        expect(arrowNext.getAttribute("aria-label")).to.equal("All done");
+        await teardown(help, container);
+    });
+
+    // ── Target resolution ─────────────────────────────────────────────
+
+    it("falls back to querySelector when a bare tag-shaped target has no matching id", async () => {
+        // Regression: identifier-shaped strings like "button" were treated
+        // exclusively as element ids, so a documented CSS tag-selector
+        // target like target: "button" returned null even when the page
+        // had a matching <button>.
+        const container = document.createElement("div");
+        container.innerHTML = `<button>Lonely</button>`;
+        document.body.appendChild(container);
+        // Sanity: no element with id="button" exists on the page.
+        expect(document.getElementById("button")).to.equal(null);
+
+        const help = document.createElement("y-help");
+        help.steps = [{ target: "button", content: "tag selector step" }];
+        document.body.appendChild(help);
+        help.start();
+        await aTimeout(0);
+
+        const portal = getPortal();
+        // The cutout indicates the bare "button" selector resolved.
+        expect(portal.querySelectorAll(".y-help-highlight").length).to.equal(1);
+        await teardown(help, container);
+    });
+
+    it("prefers the element with matching id when one exists", async () => {
+        // Confirms the fast path: when both an id and a tag-selector could
+        // match, the id wins (same behavior as before the fallback was added).
+        const container = document.createElement("div");
+        container.innerHTML = `
+            <button>Generic</button>
+            <div id="button">Targeted</div>
+        `;
+        document.body.appendChild(container);
+
+        const help = document.createElement("y-help");
+        help.steps = [{ target: "button", content: "id wins" }];
+        document.body.appendChild(help);
+        help.start();
+        await aTimeout(0);
+
+        const portal = getPortal();
+        const cutouts = portal.querySelectorAll(".y-help-highlight");
+        expect(cutouts.length).to.equal(1);
+        // Verify the highlight bounds match the #button div, not the <button> tag.
+        const targetDiv = document.getElementById("button");
+        const targetRect = targetDiv.getBoundingClientRect();
+        const cutoutX = parseFloat(cutouts[0].getAttribute("x"));
+        // The cutout has padding applied around the target so the rect's
+        // left edge sits slightly left of the target's left.
+        expect(cutoutX).to.be.closeTo(targetRect.left - 8, 1);
         await teardown(help, container);
     });
 
@@ -542,6 +648,33 @@ describe("YumeHelp", () => {
         const blocker = getPortal().querySelector(".y-help-blocker");
         expect(blocker).to.exist;
         expect(blocker.classList.contains("y-help-blocker--off")).to.be.false;
+        await teardown(help, container);
+    });
+
+    it("still honors close-on-overlay-click when disable-target-interaction is false", async () => {
+        // Regression: the close handler used to live only on the blocker
+        // element, which gets pointer-events: none when
+        // disable-target-interaction="false" — so dim-area clicks couldn't
+        // close the tour in that configuration. The handler is now also
+        // attached to the SVG dim rect (whose visiblePainted pointer-events
+        // catch clicks in dim regions but pass cutouts through to targets).
+        const { help, container } = await setupTour(
+            [{ target: "btn-a", content: "a" }],
+            {
+                "close-on-overlay-click": true,
+                "disable-target-interaction": false,
+            },
+        );
+        help.start();
+        await aTimeout(0);
+        expect(getPortal()).to.exist;
+
+        const dim = getPortal().querySelector(".y-help-overlay-dim");
+        dim.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await aTimeout(0);
+
+        expect(help.open).to.be.false;
+        expect(getPortal()).to.equal(null);
         await teardown(help, container);
     });
 

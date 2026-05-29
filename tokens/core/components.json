@@ -769,10 +769,6 @@
             }
         },
         "help": {
-            "highlight-padding": {
-                "$type": "dimension",
-                "$value": "8px"
-            },
             "highlight-border-radius": {
                 "$type": "borderRadius",
                 "$value": "{radii.small}"
@@ -804,10 +800,6 @@
             "overlay-z-index": {
                 "$type": "number",
                 "$value": 9000
-            },
-            "transition-duration": {
-                "$type": "duration",
-                "$value": "180ms"
             }
         },
         "code": {

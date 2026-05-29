@@ -74,7 +74,7 @@ export class YumeHelp extends HTMLElement {
     }
 
     disconnectedCallback() {
-        this._unmount("api");
+        this._teardown();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -457,7 +457,17 @@ export class YumeHelp extends HTMLElement {
         blocker.className = "y-help-blocker";
         overlay.appendChild(blocker);
 
+        const onOverlayClick = (e) => {
+            if (this.closeOnOverlayClick) {
+                e.preventDefault();
+                this._userClose("overlay");
+            }
+        };
+        blocker.addEventListener("click", onOverlayClick);
+        dim.addEventListener("click", onOverlayClick);
+
         this._overlaySvg = svg;
+        this._overlayDim = dim;
         this._overlayMask = mask;
         this._overlayBlocker = blocker;
         return overlay;
@@ -854,7 +864,9 @@ export class YumeHelp extends HTMLElement {
         window.addEventListener("resize", this._onWindowChange);
         window.addEventListener("scroll", this._onWindowChange, true);
 
-        this._resizeObserver = new ResizeObserver(this._onTargetMutation);
+        if (typeof ResizeObserver !== "undefined") {
+            this._resizeObserver = new ResizeObserver(this._onTargetMutation);
+        }
 
         this._suppressAttrEcho = true;
         this.setAttribute("open", "");
@@ -1169,7 +1181,11 @@ export class YumeHelp extends HTMLElement {
         // changes don't leak stale references.
         this._unobserveTargets();
         this._activeTargets = this._resolveTargets(step.target);
-        for (const el of this._activeTargets) this._resizeObserver.observe(el);
+        if (this._resizeObserver) {
+            for (const el of this._activeTargets) {
+                this._resizeObserver.observe(el);
+            }
+        }
 
         const hadTargets = (step.target ? this._activeTargets.length : 0) > 0;
         const position = hadTargets
@@ -1185,9 +1201,15 @@ export class YumeHelp extends HTMLElement {
         this._focusTip();
 
         const isLast = this._currentIndex === this.steps.length - 1;
-        this._tipNext.textContent =
+        const nextActionLabel =
             isLast && !this.loop ? this.finishLabel : this.nextLabel;
+        this._tipNext.textContent = nextActionLabel;
+        this._tipNext.setAttribute("aria-label", nextActionLabel);
         this._tipNext.dataset.last = isLast ? "true" : "false";
+
+        if (this._arrowNext) {
+            this._arrowNext.setAttribute("aria-label", nextActionLabel);
+        }
     }
 
     _resolveAnchorRect(step) {
@@ -1225,8 +1247,13 @@ export class YumeHelp extends HTMLElement {
     _resolveOne(t) {
         if (typeof t !== "string" || !t) return null;
 
+        // For identifier-shaped strings (bare words like "btn-create"), try
+        // the element-id shorthand first as a fast path. If nothing matches,
+        // fall through to querySelector so documented CSS tag selectors
+        // ("button", "main", "nav") still resolve correctly.
         if (/^[A-Za-z][\w-]*$/.test(t)) {
-            return document.getElementById(t);
+            const byId = document.getElementById(t);
+            if (byId) return byId;
         }
 
         try {
@@ -1322,6 +1349,21 @@ export class YumeHelp extends HTMLElement {
         });
         if (!this.dispatchEvent(event)) return;
 
+        this._teardown();
+    }
+
+    /**
+     * Performs the actual cleanup — separated from `_unmount` so paths that
+     * must clean up unconditionally (e.g. `disconnectedCallback`, where the
+     * host element is being removed from the DOM) can bypass the cancelable
+     * `y-help-close` event. A consumer's `preventDefault()` is meaningful
+     * for an explicit close attempt, but not when the component itself is
+     * disappearing — letting it block teardown would leak the portaled
+     * root and the document-level window listeners.
+     */
+    _teardown() {
+        if (!this._mounted) return;
+
         this._mounted = false;
         this._unobserveTargets();
 
@@ -1341,6 +1383,7 @@ export class YumeHelp extends HTMLElement {
         this._portalRoot = null;
         this._tooltip = null;
         this._overlaySvg = null;
+        this._overlayDim = null;
         this._overlayMask = null;
         this._overlayBlocker = null;
         this._tipPointer = null;
@@ -1474,12 +1517,6 @@ export class YumeHelp extends HTMLElement {
                 "y-help-blocker--off",
                 !this.disableTargetInteraction,
             );
-            blocker.onclick = (e) => {
-                if (this.closeOnOverlayClick) {
-                    e.preventDefault();
-                    this._userClose("overlay");
-                }
-            };
         }
     }
 
