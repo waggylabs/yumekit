@@ -1225,6 +1225,54 @@ Events:
 
 ---
 
+## y-help
+
+Guided product-tour / onboarding overlay. Given an ordered list of steps, dims the page, highlights one or more targets per step (single SVG mask for clean multi-target cutouts), and anchors a tooltip with helper text. Untargeted steps render a centered tooltip. The overlay and tooltip are portaled to `document.body` to escape ancestor `overflow` / `transform` / `z-index` contexts.
+
+| Attribute                       | Values / Notes                                                                                                                                       |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `steps`                         | `HelpStep[]` (property; JSON string via attribute). Each step `{ target?: string \| string[], title?, content, position?, anchor?, highlightPadding? }` |
+| `open`                          | boolean — reflects whether the tour is active                                                                                                        |
+| `index`                         | number — 0-based active step, reflected                                                                                                              |
+| `default-position`              | `auto` (default) \| `top` \| `bottom` \| `left` \| `right` \| `center`                                                                                |
+| `untargeted-position`           | `center` (default) \| other positions — fallback when no target resolves                                                                             |
+| `default-anchor`                | `bounds` (default) \| `first` \| `last` \| numeric index — multi-target anchor                                                                       |
+| `highlight-padding`             | number (px, default `8`) — pixel padding around each highlight                                                                                       |
+| `show-progress`                 | defaults to `true` — show "N of M" in the tooltip                                                                                                    |
+| `show-arrows`                   | defaults to `true` — large overlay-edge prev/next arrows                                                                                             |
+| `close-on-escape`               | defaults to `true`                                                                                                                                   |
+| `close-on-overlay-click`        | defaults to `false`                                                                                                                                  |
+| `disable-target-interaction`    | defaults to `true` — when `false`, highlighted elements remain clickable                                                                             |
+| `prev-label` / `next-label` / `finish-label` / `close-label` | button text; `finish-label` is shown on the next button on the last step (when `loop` is unset)                          |
+| `loop`                          | boolean — when set, advancing past the last step returns to the first                                                                                |
+
+Slots: none in v1. Step title/content come from each step's `title` / `content` fields, button text from the `prev-label` / `next-label` / `finish-label` / `close-label` attributes. Per-region slot overrides and declarative `<y-help-step>` children are planned for a future release; style the existing rendering via the documented CSS parts in the meantime.
+
+Events (bubble + composed): `y-help-open` (cancelable, `{ index }`), `y-help-start` (`{ index, step }`), `y-help-step-change` (cancelable, `{ from, to, step, direction }`), `y-help-complete` (`{ totalSteps }`), `y-help-close` (cancelable, `{ index, reason }`).
+
+Methods: `start(index = 0)`, `next()`, `prev()`, `goto(index)`, `close(reason = "api")`.
+
+CSS Parts: `overlay`, `highlight`, `tooltip`, `tooltip-title`, `tooltip-content`, `tooltip-actions`, `prev-button`, `next-button`, `close-button`, `progress`, `arrow-prev`, `arrow-next`, `pointer`.
+
+Accessibility: tooltip is `role="dialog"` `aria-modal="true"`, focus is trapped while open and restored on close, arrow keys + Enter advance, Escape closes (when on). Respects `prefers-reduced-motion`.
+
+```html
+<button id="launch">Take the tour</button>
+<y-help id="tour"></y-help>
+
+<script type="module">
+    const help = document.getElementById("tour");
+    help.steps = [
+        { target: "btn-create", title: "Start here", content: "Spin up a new agent." },
+        { target: ["card-1", "card-2"], anchor: "bounds", content: "Each agent gets a card." },
+        { title: "All set!", content: "You can replay this any time." },
+    ];
+    document.getElementById("launch").addEventListener("click", () => help.start());
+</script>
+```
+
+---
+
 ## y-toast
 
 | Attribute  | Values / Notes                                                                                            |
