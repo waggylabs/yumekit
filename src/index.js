@@ -43,6 +43,7 @@ export * from "./components/y-menu/y-menu.js";
 export * from "./components/y-paginator/y-paginator.js";
 export * from "./components/y-panel/y-panel.js";
 export * from "./components/y-panelbar/y-panelbar.js";
+export * from "./components/y-popover/y-popover.js";
 export * from "./components/y-progress/y-progress.js";
 export * from "./components/y-rating/y-rating.js";
 export * from "./components/y-radio/y-radio.js";

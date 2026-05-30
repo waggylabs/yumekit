@@ -418,6 +418,39 @@ declare module "react" {
             "y-panelbar": El<{
                 exclusive?: boolean | string;
             }>;
+            "y-popover": El<{
+                open?: boolean | string;
+                anchor?: string;
+                position?:
+                    | "auto"
+                    | "top"
+                    | "bottom"
+                    | "left"
+                    | "right"
+                    | "top-start"
+                    | "top-end"
+                    | "bottom-start"
+                    | "bottom-end"
+                    | "left-start"
+                    | "left-end"
+                    | "right-start"
+                    | "right-end";
+                offset?: number | string;
+                pointer?: boolean | string;
+                text?: string;
+                color?: string;
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                trigger?: string;
+                "delay-show"?: number | string;
+                "delay-hide"?: number | string;
+                "close-on-escape"?: boolean | string;
+                "close-on-outside-click"?: boolean | string;
+                "close-on-anchor-click"?: boolean | string;
+                modal?: boolean | string;
+                "show-backdrop"?: boolean | string;
+                portal?: boolean | string;
+            }>;
             "y-sidebar": El<{
                 collapsed?: boolean | string;
                 items?: unknown[] | string;
