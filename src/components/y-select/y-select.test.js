@@ -797,4 +797,57 @@ describe("<y-select>", () => {
             expect(hostileItem.style.background).to.equal("");
         });
     });
+
+    describe("portal positioning", () => {
+        it("moves the dropdown into a body portal with position: fixed when portal is set", async () => {
+            const el = await fixture(html`
+                <y-select
+                    portal
+                    options='[{"value":"a","label":"A"},{"value":"b","label":"B"}]'
+                ></y-select>
+            `);
+            el.toggleDropdown();
+
+            // Dropdown should no longer live in the y-select's shadow root.
+            expect(el.shadowRoot.querySelector(".dropdown")).to.be.null;
+
+            // It now lives in a .y-select-portal element under document.body.
+            const portal = document.body.querySelector(".y-select-portal");
+            expect(portal).to.exist;
+            const dropdown = portal.shadowRoot.querySelector(".dropdown");
+            expect(dropdown).to.exist;
+            expect(dropdown.style.position).to.equal("fixed");
+            expect(dropdown.style.width).to.not.equal("");
+            expect(dropdown.style.left).to.not.equal("");
+            expect(dropdown.style.right).to.equal("auto");
+        });
+
+        it("returns the dropdown to the wrapper when the portal closes", async () => {
+            const el = await fixture(html`
+                <y-select
+                    portal
+                    options='[{"value":"a","label":"A"},{"value":"b","label":"B"}]'
+                ></y-select>
+            `);
+            el.toggleDropdown();
+            expect(document.body.querySelector(".y-select-portal")).to.exist;
+
+            el.closeDropdown();
+            expect(document.body.querySelector(".y-select-portal")).to.be.null;
+            expect(el.shadowRoot.querySelector(".dropdown")).to.exist;
+        });
+
+        it("falls back to absolute positioning when portal is not set", async () => {
+            const el = await fixture(html`
+                <y-select
+                    options='[{"value":"a","label":"A"},{"value":"b","label":"B"}]'
+                ></y-select>
+            `);
+            el.toggleDropdown();
+
+            const dropdown = el.shadowRoot.querySelector(".dropdown");
+            // The base CSS uses position: absolute; we shouldn't have overridden it.
+            expect(dropdown.style.position).to.not.equal("fixed");
+        });
+    });
 });

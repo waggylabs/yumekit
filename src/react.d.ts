@@ -654,6 +654,37 @@ declare module "react" {
                 striped?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-data-grid": El<{
+                columns?: unknown[] | string;
+                data?: unknown[] | string;
+                mode?: "client" | "server";
+                "page-size"?: string | number;
+                "current-page"?: string | number;
+                "total-rows"?: string | number;
+                loading?: boolean | string;
+                striped?: boolean | string;
+                hover?: boolean | string;
+                "fixed-header"?: boolean | string;
+                filtering?: "inline" | "advanced";
+                "enable-sorting"?: boolean | string;
+                "enable-pagination"?: boolean | string;
+                "show-item-count"?: boolean | string;
+                "enable-selection"?: boolean | string;
+                "enable-editing"?: boolean | string;
+                "selection-mode"?: "single" | "multi";
+                "edit-on"?: "click" | "focus";
+                "row-key"?: string;
+                selected?: string | unknown[];
+                "empty-message"?: string;
+                "row-height"?: string | number;
+                "global-search"?: string;
+                "group-by"?: string | string[];
+                aggregates?: string | Record<string, "sum" | "avg" | "min" | "max" | "count">;
+                virtual?: boolean | string;
+                "viewport-height"?: string | number;
+                "buffer-size"?: string | number;
+                "enable-header-menu"?: boolean | string;
+            }>;
             "y-tabs": El<{
                 options?:
                     | Array<{

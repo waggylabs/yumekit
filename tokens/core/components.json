@@ -1100,6 +1100,52 @@
                 "$value": "{spacing.small}"
             }
         },
+        "data-grid": {
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "border-width-header": {
+                "$type": "borderWidth",
+                "$value": "{border.thin}"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.large}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.small}"
+            },
+            "row-height": {
+                "$type": "sizing",
+                "$value": "40px"
+            },
+            "row-height-small": {
+                "$type": "sizing",
+                "$value": "32px"
+            },
+            "row-height-large": {
+                "$type": "sizing",
+                "$value": "48px"
+            },
+            "group-indent": {
+                "$type": "spacing",
+                "$value": "{spacing.x-large}"
+            },
+            "scrollbar-width": {
+                "$type": "sizing",
+                "$value": "12px"
+            }
+        },
         "tag": {
             "border-radius-circle": {
                 "$type": "borderRadius",

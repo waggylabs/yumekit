@@ -36,6 +36,7 @@ export class YumeSelect extends HTMLElement {
             "size",
             "searchable",
             "clearable",
+            "portal",
         ];
     }
 
@@ -48,6 +49,7 @@ export class YumeSelect extends HTMLElement {
         this._internals = this.attachInternals();
         this.selectedValues = new Set();
         this._onDocumentClick = this._onDocumentClick.bind(this);
+        this._portalContainer = null;
 
         this.attachShadow({ mode: "open" });
         this.render();
@@ -64,6 +66,7 @@ export class YumeSelect extends HTMLElement {
 
     disconnectedCallback() {
         this.closeDropdown();
+        this._deactivatePortal();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -212,6 +215,20 @@ export class YumeSelect extends HTMLElement {
         else this.removeAttribute("searchable");
     }
 
+    /**
+     * When true, the dropdown is positioned with `position: fixed` (viewport
+     * coordinates) so it escapes any ancestor with `overflow: auto/hidden/scroll`.
+     * Useful when the select sits inside a scrollable container (e.g. a data
+     * grid cell editor) and the dropdown would otherwise be clipped.
+     */
+    get portal() {
+        return this.hasAttribute("portal");
+    }
+    set portal(val) {
+        if (val) this.setAttribute("portal", "");
+        else this.removeAttribute("portal");
+    }
+
     /** @type {string} Select size: "small" | "medium" | "large" (default "medium"). */
     get size() {
         return this.getAttribute("size") || "medium";
@@ -275,6 +292,7 @@ export class YumeSelect extends HTMLElement {
             window.removeEventListener("resize", this._onScrollOrResize);
             this._onScrollOrResize = null;
         }
+        this._deactivatePortal();
     }
 
     render() {
@@ -808,14 +826,48 @@ export class YumeSelect extends HTMLElement {
         if (this.getAttribute("close-on-click-outside") === "false") return;
 
         const path = e.composedPath();
+        const insideHost = path.includes(this);
+        // When portaled, the dropdown lives in document.body — treat clicks on
+        // the portal container (and its shadow descendants) as "inside" too.
+        const insidePortal = this._portalContainer && path.includes(this._portalContainer);
 
-        if (!path.includes(this) && this.dropdown?.classList.contains("open")) {
+        if (!insideHost && !insidePortal && this.dropdown?.classList.contains("open")) {
             this.closeDropdown();
         }
     }
 
+    _activatePortal() {
+        if (this._portalContainer) return;
+        if (!this.dropdown) return;
+
+        const portal = document.createElement("div");
+        portal.className = "y-select-portal";
+        const shadow = portal.attachShadow({ mode: "open" });
+        shadow.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets;
+
+        // Move the dropdown into the portal's shadow root. The wrapper still
+        // references `this.dropdown`, so positioning math and event handlers
+        // continue working unchanged.
+        shadow.appendChild(this.dropdown);
+        document.body.appendChild(portal);
+        this._portalContainer = portal;
+    }
+
+    _deactivatePortal() {
+        if (!this._portalContainer) return;
+        // Move the dropdown back to the wrapper before removing the portal,
+        // so subsequent `render()` cycles can locate and replace it cleanly.
+        const wrapper = this.shadowRoot.querySelector(".select-wrapper");
+        if (wrapper && this.dropdown && this.dropdown.parentNode !== wrapper) {
+            wrapper.appendChild(this.dropdown);
+        }
+        this._portalContainer.remove();
+        this._portalContainer = null;
+    }
+
     _openDropdown() {
         if (this.dropdown.classList.contains("open")) return;
+        if (this.portal) this._activatePortal();
         this.dropdown.classList.add("open");
         this.selectContainer.classList.add("open");
         this._positionDropdown();
@@ -844,8 +896,25 @@ export class YumeSelect extends HTMLElement {
         const gap = 4;
         const maxH = 200;
         const spaceBelow = window.innerHeight - rect.bottom - gap;
-        const wrapper = this.selectContainer.parentElement;
 
+        if (this.portal) {
+            // Viewport-relative positioning so the dropdown escapes any ancestor
+            // with `overflow: auto/hidden/scroll`.
+            this.dropdown.style.position = "fixed";
+            this.dropdown.style.left = `${rect.left}px`;
+            this.dropdown.style.right = "auto";
+            this.dropdown.style.width = `${rect.width}px`;
+            if (spaceBelow >= maxH || spaceBelow >= rect.top) {
+                this.dropdown.style.top = `${rect.bottom + gap}px`;
+                this.dropdown.style.bottom = "auto";
+            } else {
+                this.dropdown.style.top = "auto";
+                this.dropdown.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+            }
+            return;
+        }
+
+        const wrapper = this.selectContainer.parentElement;
         if (spaceBelow >= maxH || spaceBelow >= rect.top) {
             this.dropdown.style.top = `${this.selectContainer.offsetTop + this.selectContainer.offsetHeight + gap}px`;
             this.dropdown.style.bottom = "auto";

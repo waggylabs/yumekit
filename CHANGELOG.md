@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- New `y-data-grid` component — interactive grid for large or dynamic datasets with client- or server-side sorting, filtering, and pagination, single/multi row selection, inline cell editing, nested row grouping with aggregates, multi-column header groups, virtual scrolling, an optional per-column header menu (filter, sort, visibility, reorder), and a sticky header.
+
 - New `y-popover` component — target-anchored floating panel with rich slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and an opt-in `portal` mode that renders into `<body>` to escape ancestor stacking contexts.
 
 - New `y-help` component — guided product-tour / onboarding overlay. Walks users through an ordered list of steps with a dimmed SVG highlight, anchored tooltip, prev/next controls, overlay-edge arrows, and keyboard shortcuts.
@@ -48,6 +50,8 @@ Delete any empty sections before publishing.
 ### Changed
 
 - `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
+
+- `y-select` — new opt-in `portal` attribute renders the dropdown into `<body>` so it escapes scrollable or clipped ancestors (e.g. inside a data-grid cell editor).
 
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 

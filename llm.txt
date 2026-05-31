@@ -1771,6 +1771,71 @@ CSS Custom Properties: `--component-table-color`, `--component-table-color-light
 
 ---
 
+### y-data-grid
+Interactive data grid for large datasets. Adds client-side or server-side sorting, filtering, and pagination on top of the visual language of `<y-table>`, plus row selection and inline cell editing. Use `<y-table>` for static reports; use `<y-data-grid>` for admin panels, CRMs, and any list users need to slice, page, select, or edit.
+
+Tag: `<y-data-grid>`
+Attributes:
+- `columns` — JSON tree of column definitions. Leaves: `{"key": "name", "label": "Name", "type": "text", "sortable": true, "filterable": true, "editable": true, "editor": "text", "options": [...], "required": true, "min": 0, "max": 100, "pattern": "^...$", "width": "200px", "align": "left"}`. Groups (multi-column headers): `{"label": "Address", "align": "center", "children": [<leaf or group>, ...]}` — groups can nest arbitrarily, producing one extra header row per nesting level with the right `colspan`/`rowspan` so leaf headers extend to the bottom of the header. `sortable`, `filterable`, and `editable` default to true; set false to disable per column. `type` can be `"text"`, `"number"`, `"date"`, `"checkbox"` and drives both the filter and editor input type unless an explicit `editor` is given (one of `"text"`, `"number"`, `"date"`, `"select"`, `"checkbox"`). `options` is required for `select` editors. Validation: `required`, `min`/`max` (numbers), `pattern` (regex string).
+- `data` — JSON array of row objects keyed by column `key`.
+- `mode` — `"client"` (default) or `"server"`. In `client` mode sort/filter/page happen locally and edits mutate the local row. In `server` mode the grid passes data through unchanged and the parent must respond to `page-change`, `sort-change`, `filter-change`, and `cell-edit-end` events.
+- `page-size` — rows per page (default `20`).
+- `current-page` — 1-indexed current page (default `1`).
+- `total-rows` — required in `server` mode for pagination math.
+- `loading` — boolean, shows a loading overlay and sets `aria-busy`.
+- `striped` — boolean, defaults to false; add the `striped` attribute to enable alternating row backgrounds.
+- `hover` — boolean, defaults to true; pass `hover="false"` to disable.
+- `fixed-header` — boolean, defaults to true; sticky header on scroll.
+- `filtering` — `"inline"` | `"advanced"` | (omitted). `"inline"` renders a per-column filter input row (uses `y-input`) beneath the header. `"advanced"` adds a funnel trigger to each leaf header that opens a filter popover (operator picker + value input + Clear/Apply buttons). Omitted (default) means no filtering UI — column filters can still be set programmatically via `el.filters = { ... }`.
+- `enable-sorting` — boolean, defaults to true. Click a header to cycle asc → desc → none; shift-click to add a column to the multi-sort stack.
+- `enable-pagination` — boolean, defaults to true.
+- `show-item-count` — boolean, defaults to false. Adds a row count to the right edge of the footer. The paginator (when shown) stays on the left; both can be visible at once. Format: `"1–10 of 100"` when paginated, `"100 items"` when not, `"0 items"` when empty.
+- `enable-selection` — boolean, renders a checkbox column (uses `y-checkbox`) and enables row selection (also via Ctrl/Cmd+click on the row).
+- `enable-editing` — boolean, enables inline cell editing.
+- `selection-mode` — `"multi"` (default) or `"single"`. In `single` mode the select-all header checkbox is hidden.
+- `edit-on` — `"click"` (default) or `"focus"`.
+- `row-key` — column key to use as the stable per-row identifier for selection and edit tracking. Falls back to the row's array index.
+- `selected` — JSON array of row keys to mark selected (mirrored to the `selectedKeys` property).
+- `empty-message` — fallback text when no rows are visible (default `"No data available"`).
+- `row-height` — pixels per row (default `40`). Required for `virtual` mode; sets a fixed height on each row.
+- `global-search` — string, search query applied across all column values.
+- `group-by` — JSON array of column keys, e.g. `'["department","role"]'`. Renders collapsible group header rows; nested when multiple keys. Pagination is hidden while grouping is active.
+- `aggregates` — JSON map of column key → aggregate kind (`"sum"` | `"avg"` | `"min"` | `"max"` | `"count"`). Aggregates render inside the group header row's column cells.
+- `virtual` — boolean. When set alongside `viewport-height`, only the visible window + buffer is rendered. Pagination is hidden in virtual mode. Not compatible with `group-by`.
+- `viewport-height` — pixels of scrollable viewport height (required for virtualization).
+- `buffer-size` — extra rows rendered above and below the viewport (default `10`).
+- `enable-header-menu` — boolean. Adds a kebab trigger to each leaf header that opens a column menu popover with sort ascending / sort descending / clear sort, a hover-opened "Columns" submenu (checkbox list to toggle column visibility — last visible column protected, changes staged until the submenu closes), and move-column-next / move-column-previous (within the leaf's sibling group when nested headers are used). Independent of `filtering`; combine `filtering="advanced"` with `enable-header-menu` to show both the funnel and kebab triggers. Filter operators (for `filtering="advanced"`): `contains`/`equals`/`startsWith`/`endsWith` for text, `equals`/`ne`/`gt`/`gte`/`lt`/`lte` for number, `equals`/`before`/`after` for date.
+
+Slots: `header-before`, `header-after`, `footer-before`, `footer-after`, `empty`, `loading`, `pagination`.
+
+Events:
+- `page-change` (cancelable) — `{ page, pageSize }`. Cancel in `server` mode to suppress the local page update.
+- `sort-change` (cancelable) — `{ column, direction, sorts }`. `sorts` is the full multi-sort stack.
+- `filter-change` (cancelable) — `{ filters, operators, globalSearch }`. `operators` mirrors the per-column operator picked via the header menu.
+- `row-select` (cancelable) — `{ rows, keys, event }`. Cancel to roll back the selection change.
+- `cell-edit-start` — `{ row, column, value }`.
+- `cell-edit-end` (cancelable) — `{ row, column, value, oldValue }`. Cancel to reject the commit and show the error state.
+- `cell-edit-cancel` — `{ row, column, oldValue }`.
+- `row-click`, `row-dblclick` — `{ row, event }`.
+- `group-toggle` — `{ path, groupKey, expanded }`. Fires when a group header is clicked.
+
+Properties / methods: `selectedRows`, `selectedKeys`, `filters`, `sortState`, `groupBy`, `aggregates`, `clearFilters()`, `clearSort()`, `clearSelection()`, `selectRows(rows)`, `commitEdit()`, `cancelEdit()`, `expandGroup(path)`, `collapseGroup(path)`, `expandAllGroups()`, `collapseAllGroups()`, `refresh()`.
+
+CSS parts: `grid-container`, `header`, `header-row`, `header-cell`, `body`, `row`, `cell`, `pagination`, `loading-overlay`, `empty-state`, `filter-input`, `filter-row`, `cell-editor`, `group-header`, `header-menu-trigger`, `header-filter-trigger`, `header-menu-popover`, `header-menu-submenu`, `header-filter-popover`.
+
+CSS Custom Properties: `--component-data-grid-border`, `--component-data-grid-border-radius`, `--component-data-grid-border-width`, `--component-data-grid-border-width-header`, `--component-data-grid-padding-{small|medium|large}`, `--component-data-grid-row-height`, `--component-data-grid-row-height-{small|large}`, `--component-data-grid-row-stripe-bg`, `--component-data-grid-row-hover-bg`, `--component-data-grid-row-selected-bg`, `--component-data-grid-header-bg`, `--component-data-grid-header-hover-bg`, `--component-data-grid-header-text`, `--component-data-grid-filter-bg`, `--component-data-grid-edit-input-border`, `--component-data-grid-pagination-bg`, `--component-data-grid-loading-spinner-color`, `--component-data-grid-group-indent`, `--component-data-grid-scrollbar-width`.
+
+```html
+<y-data-grid
+  columns='[{"key":"name","label":"Name"},{"key":"age","label":"Age","type":"number"}]'
+  data='[{"name":"Alice","age":30},{"name":"Bob","age":25}]'
+  filtering="inline"
+  page-size="10"
+></y-data-grid>
+```
+
+---
+
 ### y-animate
 Lightweight wrapper that applies a preset CSS-based entrance/exit animation to its children using the Web Animations API. Useful for adding visual polish to list items, modals, cards, or anything that enters / leaves the DOM.
 
