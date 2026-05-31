@@ -320,7 +320,8 @@ export class YumePopover extends HTMLElement {
     /** Pixel gap between the anchor and the popover edge. */
     get offset() {
         const v = parseInt(this.getAttribute("offset"), 10);
-        return Number.isFinite(v) && v >= 0 ? v : 8;
+        if (Number.isFinite(v) && v >= 0) return v;
+        return this._cssNumber("--component-popover-offset", 8);
     }
     set offset(v) {
         if (v == null) this.removeAttribute("offset");
@@ -675,18 +676,19 @@ export class YumePopover extends HTMLElement {
         // For "base" (or unknown) the popover wears its default surface
         // tokens — a white/dark themed background, not a content fill. Only
         // tinted schemes (primary/error/…) and safe CSS literals override
-        // the bg + fg pair on the host.
+        // the bg + fg pair. Set the vars on the surface itself (not the
+        // host) so the tint follows it into the portal's shadow root.
         const color = this.color;
         if (
             color === "base" ||
             (!NAMED_COLORS.has(color) && !isSafeCssColor(color))
         ) {
-            this.style.removeProperty("--_popover-bg");
-            this.style.removeProperty("--_popover-color");
+            surface.style.removeProperty("--_popover-bg");
+            surface.style.removeProperty("--_popover-color");
         } else {
             const [bg, fg] = getColorVarPair(color);
-            this.style.setProperty("--_popover-bg", bg);
-            this.style.setProperty("--_popover-color", fg);
+            surface.style.setProperty("--_popover-bg", bg);
+            surface.style.setProperty("--_popover-color", fg);
         }
 
         // Pointer visibility is decided on every reposition (also tied to
