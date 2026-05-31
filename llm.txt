@@ -844,6 +844,100 @@ Slots: default (trigger element)
 
 ---
 
+### y-popover
+Target-anchored, slot-based floating panel. Bridges `<y-tooltip>` (hover/focus text popups) and `<y-dialog>` (centered modal panels) — the primitive for rich, positioned popovers like confirmation prompts, action menus, combobox dropdowns, inline help, and any UI that points at an existing element without taking over the viewport. Used internally by `<y-help>` for its tour-step surface.
+
+Tag: `<y-popover>`
+Attributes:
+- `open` — reflects whether the popover is currently visible. Toggle to show/hide.
+- `anchor` — element `id` (no `#`) or CSS selector. Also accepts a direct `Element` reference via the property. If both unset and a `[slot="trigger"]` child is present, the trigger is used.
+- `position` — `"auto"` (default) | `"top"` | `"bottom"` | `"left"` | `"right"` plus aligned variants (`"top-start"`, `"top-end"`, `"bottom-start"`, `"bottom-end"`, `"left-start"`, `"left-end"`, `"right-start"`, `"right-end"`). `"auto"` walks `bottom → top → right → left`; an explicit side tries `requested → opposite → perpendiculars`.
+- `offset` — pixel gap between the anchor and the popover (default `8`).
+- `pointer` — render the arrow that visually attaches the popover to the anchor (default `true`; set `pointer="false"` to hide).
+- `trigger` — space-separated list of activation modes: any subset of `"click"`, `"hover"`, `"focus"`, `"context-menu"`, `"manual"`. Default `"manual"` — only `show()` / `hide()` / `open` attribute control visibility. Combine modes with `trigger="click hover focus"`.
+- `delay-show` / `delay-hide` — milliseconds before opening / closing on hover or focus (default `0`).
+- `modal` — when set, applies `role="dialog"` + `aria-modal="true"`, traps focus inside the popover, and forces Escape to always close. Off by default.
+- `show-backdrop` — render the dim backdrop. Implicitly `true` when `modal` is set unless `show-backdrop="false"` is passed. Defaults to off otherwise.
+- `close-on-escape` — defaults to `true`. Modal popovers honor Escape regardless of this attribute.
+- `close-on-outside-click` — defaults to `true`. Clicks outside the popover *and* outside the anchor close it.
+- `close-on-anchor-click` — defaults to `false`. When `true`, clicking the anchor again toggles the popover closed (otherwise the `"click"` trigger only opens).
+- `portal` — render the surface into `document.body`, escaping ancestor stacking / transform / clip-path / overflow contexts. Off by default. Tradeoff: the surface loses CSS-variable inheritance from its original ancestor chain.
+- `text` — simple text content for the body. Equivalent to slotting a `<span>` into the default slot — provides a migration path from `<y-tooltip>`'s `text` attribute.
+- `color` — `"base"` (default) | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"` or any safe CSS color literal (`#hex`, `rgb()`/`rgba()`, `hsl()`/`hsla()`).
+- `size` — `"small"` | `"medium"` (default) | `"large"`.
+- `disabled` — all triggers become inert; programmatic `show()` is a no-op; an open popover closes.
+
+Slots:
+- default — body content (falls back to the `text` attribute when empty)
+- `trigger` — optional. When present, this child becomes the anchor automatically and trigger listeners attach to it.
+- `header` — optional title row, divider rendered below.
+- `footer` — optional action row, divider rendered above. Typical home for confirm/cancel buttons.
+- `pointer` — override the default pointer/arrow with custom markup.
+
+Events (bubble + composed; cancelable events have `cancelable: true`):
+- `popover-open` — cancelable. `detail: { trigger: "click" | "hover" | "focus" | "context-menu" | "manual" }`.
+- `popover-opened` — non-cancelable. Fired after positioning. `detail: { position }` reports the side it actually landed on after flip.
+- `popover-close` — cancelable. `detail: { reason: "user" | "escape" | "outside" | "anchor-click" | "blur" | "api" }`.
+- `popover-closed` — non-cancelable. `detail: { reason }`.
+- `popover-anchor-change` — non-cancelable. `detail: { from, to }`.
+
+Methods:
+- `show(detail?)` → `Promise<boolean>` — open the popover; resolves `false` if cancelled or already open. Awaits one frame after positioning so callers can read `getBoundingClientRect` synchronously after.
+- `hide(reason = "api")` → `Promise<boolean>` — close with the given reason.
+- `toggle()` → `Promise<boolean>` — flip state.
+- `updatePosition()` → resolved side or `null` — recompute position immediately. Use after content size changes the observers might miss.
+- `setAnchor(element | selector)` — programmatic anchor change. Fires `popover-anchor-change`.
+
+CSS Parts: `surface`, `header`, `body`, `footer`, `pointer`, `backdrop`, `trigger`.
+
+Accessibility:
+- Non-modal popovers use `role="tooltip"`; modal popovers use `role="dialog"` + `aria-modal="true"`.
+- Header (when present) is referenced via `aria-labelledby`; the body is referenced via `aria-describedby`.
+- The anchor receives `aria-describedby="<popover-id>"` while the popover is open.
+- Modal mode focuses the first focusable inside the popover on open (drilling into custom-element shadow roots) and restores focus on close. Tab cycles within the popover boundary.
+- Non-modal mode does not move focus; focus restoration only fires when focus was inside the popover at close time.
+- Escape closes when `close-on-escape` is on (always for modal).
+- Respects `prefers-reduced-motion` — disables enter/exit transitions when set.
+
+CSS Custom Properties: `--component-popover-background`, `--component-popover-color`, `--component-popover-border-color`, `--component-popover-border-width`, `--component-popover-border-radius`, `--component-popover-padding-{small,medium,large}`, `--component-popover-font-size-{small,medium,large}`, `--component-popover-max-width`, `--component-popover-min-width`, `--component-popover-shadow`, `--component-popover-offset`, `--component-popover-pointer-size`, `--component-popover-pointer-color`, `--component-popover-pointer-border-color`, `--component-popover-backdrop`, `--component-popover-backdrop-blur`, `--component-popover-z-index`, `--component-popover-header-divider-color`, `--component-popover-transition-duration`.
+
+```html
+<!-- Click-triggered popover with rich content -->
+<button id="save-btn">Save layout</button>
+<y-popover anchor="save-btn" trigger="click" position="bottom">
+    <strong slot="header">Confirm change</strong>
+    <p>Saving will overwrite the existing layout.</p>
+    <div slot="footer">
+        <y-button size="small" style-type="outlined">Cancel</y-button>
+        <y-button size="small" color="primary">Save</y-button>
+    </div>
+</y-popover>
+
+<!-- Hover tooltip-style popover -->
+<y-popover trigger="hover focus" text="Helpful description" position="top">
+    <y-button slot="trigger">Hover me</y-button>
+</y-popover>
+
+<!-- Modal confirmation popover, anchored to the trigger -->
+<y-popover id="confirm" anchor="delete-btn" modal>
+    <strong slot="header">Delete this item?</strong>
+    <p>This action cannot be undone.</p>
+    <div slot="footer">
+        <y-button onclick="confirm.hide('user')">Cancel</y-button>
+        <y-button color="error" onclick="confirm.hide('user')">Delete</y-button>
+    </div>
+</y-popover>
+```
+
+Notes:
+- Positioning uses a flip-and-shift strategy: try the requested side → opposite → perpendiculars; cross-axis shift keeps the popover in view but is skipped entirely when the anchor itself is off-screen. Best-fit fallback when no side fits (pointer hidden).
+- Detects transformed/filtered/clip-pathed ancestors and adjusts coords so `position: fixed` still lands on the viewport correctly (Storybook docs, animated panels, etc.).
+- `portal="true"` moves the surface (plus backdrop and slotted body/header/footer children) into a `<div class="y-popover-portal">` appended to `<body>`. The trigger stays in place.
+- Detached or removed anchors during the open lifecycle re-resolve on every reposition.
+- Body / header / footer content is rendered as DOM (slotted), not via `textContent`, so consumers can put rich markup in slots.
+
+---
+
 ### y-card
 Content container card.
 

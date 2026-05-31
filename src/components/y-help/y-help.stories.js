@@ -61,7 +61,7 @@ function tourRender({ prefix, attrs = "", steps }) {
 }
 
 export default {
-    title: "Overlay/Help",
+    title: "Utility/Help",
     tags: ["autodocs"],
 };
 
@@ -70,11 +70,31 @@ export const Default = {
         tourRender({
             prefix: "default",
             steps: [
-                { target: "default-title", title: "Welcome", content: "This is your dashboard." },
-                { target: "default-create", title: "Create agents", content: "Tap here to spin up a new agent." },
-                { target: "default-filter", title: "Filter your view", content: "Narrow the list by status or capability." },
-                { target: "default-grid", title: "Your agents", content: "Each card represents a configured agent." },
-                { title: "All set", content: "You can re-open this tour any time from Settings." },
+                {
+                    target: "default-title",
+                    title: "Welcome",
+                    content: "This is your dashboard.",
+                },
+                {
+                    target: "default-create",
+                    title: "Create agents",
+                    content: "Tap here to spin up a new agent.",
+                },
+                {
+                    target: "default-filter",
+                    title: "Filter your view",
+                    content: "Narrow the list by status or capability.",
+                },
+                {
+                    target: "default-grid",
+                    title: "Your agents",
+                    content: "Each card represents a configured agent.",
+                },
+                {
+                    title: "All set",
+                    content:
+                        "You can re-open this tour any time from Settings.",
+                },
             ],
         }),
 };
@@ -95,7 +115,8 @@ export const MultiTarget = {
                     anchor: "bounds",
                     position: "bottom",
                     title: "Agent grid",
-                    content: "Every agent gets its own card with stats and a quick-action menu.",
+                    content:
+                        "Every agent gets its own card with stats and a quick-action menu.",
                 },
             ],
         }),
@@ -106,9 +127,19 @@ export const UntargetedCenterStep = {
         tourRender({
             prefix: "center",
             steps: [
-                { title: "Welcome to Yume", content: "Walk through a few highlights." },
-                { target: "center-create", title: "Create", content: "Spin up new agents from here." },
-                { title: "Tour complete", content: "You are ready to explore." },
+                {
+                    title: "Welcome to Yume",
+                    content: "Walk through a few highlights.",
+                },
+                {
+                    target: "center-create",
+                    title: "Create",
+                    content: "Spin up new agents from here.",
+                },
+                {
+                    title: "Tour complete",
+                    content: "You are ready to explore.",
+                },
             ],
         }),
 };
@@ -119,8 +150,16 @@ export const NoOverlayArrows = {
             prefix: "noarrows",
             attrs: `show-arrows="false"`,
             steps: [
-                { target: "noarrows-title", title: "Title", content: "Tooltip-only navigation." },
-                { target: "noarrows-create", title: "Create", content: "No giant overlay arrows in this variant." },
+                {
+                    target: "noarrows-title",
+                    title: "Title",
+                    content: "Tooltip-only navigation.",
+                },
+                {
+                    target: "noarrows-create",
+                    title: "Create",
+                    content: "No giant overlay arrows in this variant.",
+                },
             ],
         }),
 };
@@ -131,7 +170,11 @@ export const CloseOnOverlayClick = {
             prefix: "overlay",
             attrs: "close-on-overlay-click",
             steps: [
-                { target: "overlay-title", content: "Click anywhere in the dim area to dismiss the tour." },
+                {
+                    target: "overlay-title",
+                    content:
+                        "Click anywhere in the dim area to dismiss the tour.",
+                },
             ],
         }),
 };
@@ -144,7 +187,10 @@ export const Looping = {
             steps: [
                 { target: "loop-card-1", content: "First card." },
                 { target: "loop-card-2", content: "Second card." },
-                { target: "loop-card-3", content: "Third card — Next wraps to the first." },
+                {
+                    target: "loop-card-3",
+                    content: "Third card — Next wraps to the first.",
+                },
             ],
         }),
 };

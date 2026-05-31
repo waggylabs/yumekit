@@ -1,5 +1,6 @@
 import "../y-icon/y-icon.js";
 import "../y-button/y-button.js";
+import "../y-popover/y-popover.js";
 import { createElement as _el } from "../../modules/helpers.js";
 
 const VALID_POSITIONS = new Set([
@@ -10,15 +11,6 @@ const VALID_POSITIONS = new Set([
     "center",
     "auto",
 ]);
-
-const OPPOSITE_POSITION = {
-    top: "bottom",
-    bottom: "top",
-    left: "right",
-    right: "left",
-};
-
-const FALLBACK_ORDER = ["bottom", "top", "right", "left"];
 
 let _instanceCount = 0;
 
@@ -615,29 +607,14 @@ export class YumeHelp extends HTMLElement {
             .y-help-nav-arrow--next { right: var(--spacing-large, 16px); }
             .y-help-nav-arrows[hidden] { display: none; }
 
-            .y-help-tooltip {
-                position: absolute;
-                pointer-events: auto;
-                background: var(--component-help-tooltip-bg, var(--base-background-component, #fff));
-                color: var(--component-help-tooltip-color, var(--base-content--, #1a1a1a));
-                /* Border separates the tooltip from the dimmed page in dark
-                   themes where the tooltip bg and scrim resolve to similar
-                   darks. Mirrors y-dialog's panel treatment. */
-                border: 1px solid var(--component-help-tooltip-border-color, var(--base-border, rgba(0, 0, 0, 0.12)));
-                border-radius: var(--component-help-tooltip-border-radius, 8px);
-                padding: var(--component-help-tooltip-padding, 16px);
-                max-width: var(--component-help-tooltip-max-width, 320px);
-                box-shadow: var(--component-help-tooltip-shadow, 0 8px 32px rgba(0, 0, 0, 0.35));
-                box-sizing: border-box;
-                /* No transition on top/left: tour anchor snaps cleanly to
-                   each step rather than animating across the page. */
-            }
+            /* y-help styles the slotted children of the inner <y-popover>.
+               Surface chrome (background, border, padding, shadow, pointer
+               rendering) lives in the popover's own shadow root. */
 
             .y-help-tooltip-header {
                 display: flex;
                 align-items: flex-start;
                 gap: 8px;
-                margin-bottom: 8px;
             }
 
             .y-help-tooltip-title {
@@ -666,10 +643,10 @@ export class YumeHelp extends HTMLElement {
             .y-help-tooltip-content:empty { display: none; }
 
             .y-help-tooltip-actions {
-                margin-top: 12px;
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                flex: 1;
             }
 
             .y-help-tooltip-progress {
@@ -679,65 +656,33 @@ export class YumeHelp extends HTMLElement {
             }
 
             .y-help-tooltip-progress[hidden] { display: none; }
-
-            .y-help-pointer {
-                position: absolute;
-                width: var(--component-help-arrow-size, 10px);
-                height: var(--component-help-arrow-size, 10px);
-                background: var(--component-help-tooltip-bg, var(--base-background-component, #fff));
-                /* Same border color as the tooltip; only the two
-                   outward-facing edges of the rotated square are visible —
-                   the inner two are made transparent per data-side below,
-                   so the pointer reads as a tail extending the tooltip's
-                   border rather than a standalone diamond. */
-                border: 1px solid var(--component-help-tooltip-border-color, var(--base-border, rgba(0, 0, 0, 0.12)));
-                transform: rotate(45deg);
-                pointer-events: none;
-            }
-
-            /* Pointer below tooltip pointing down; outer post-rotation edges
-               are SE + SW which come from the original right + bottom. */
-            .y-help-pointer[data-side="top"] {
-                border-top-color: transparent;
-                border-left-color: transparent;
-            }
-            /* Pointer above tooltip pointing up; outer = NE + NW = top + left. */
-            .y-help-pointer[data-side="bottom"] {
-                border-right-color: transparent;
-                border-bottom-color: transparent;
-            }
-            /* Pointer at tooltip's right edge pointing right; outer = NE + SE
-               = top + right. */
-            .y-help-pointer[data-side="left"] {
-                border-bottom-color: transparent;
-                border-left-color: transparent;
-            }
-            /* Pointer at tooltip's left edge pointing left; outer = NW + SW
-               = left + bottom. */
-            .y-help-pointer[data-side="right"] {
-                border-top-color: transparent;
-                border-right-color: transparent;
-            }
-
-            .y-help-pointer[hidden] { display: none; }
         `;
     }
 
     _buildTooltip() {
-        const tip = document.createElement("div");
-        tip.className = "y-help-tooltip";
-        tip.setAttribute("part", "tooltip");
-        tip.setAttribute("role", "dialog");
-        tip.setAttribute("aria-modal", "true");
-        tip.setAttribute("tabindex", "-1");
-        tip.id = `y-help-tooltip-${this._instanceId}`;
-
+        // y-help delegates tooltip surface, positioning, pointer rendering,
+        // and focus management to <y-popover>. y-help still owns step state,
+        // the SVG overlay/highlight, and the large overlay-edge nav arrows.
         const titleId = `y-help-title-${this._instanceId}`;
         const contentId = `y-help-content-${this._instanceId}`;
-        tip.setAttribute("aria-labelledby", titleId);
-        tip.setAttribute("aria-describedby", contentId);
 
-        const header = _el("div", { class: "y-help-tooltip-header" });
+        const popover = _el("y-popover", {
+            class: "y-help-tooltip",
+            part: "tooltip",
+            id: `y-help-tooltip-${this._instanceId}`,
+            modal: "",
+            trigger: "manual",
+            // The SVG dim layer is y-help's backdrop; opt out of the
+            // popover's own backdrop so the two do not stack.
+            "show-backdrop": "false",
+            "close-on-escape": "false",
+            "close-on-outside-click": "false",
+        });
+
+        const header = _el("div", {
+            slot: "header",
+            class: "y-help-tooltip-header",
+        });
         const title = _el("h2", {
             class: "y-help-tooltip-title",
             part: "tooltip-title",
@@ -771,6 +716,7 @@ export class YumeHelp extends HTMLElement {
         });
 
         const actions = _el("div", {
+            slot: "footer",
             class: "y-help-tooltip-actions",
             part: "tooltip-actions",
         });
@@ -809,15 +755,11 @@ export class YumeHelp extends HTMLElement {
         actions.appendChild(prev);
         actions.appendChild(next);
 
-        const pointer = _el("div", {
-            class: "y-help-pointer",
-            part: "pointer",
-        });
-        tip.appendChild(pointer);
-
-        tip.appendChild(header);
-        tip.appendChild(content);
-        tip.appendChild(actions);
+        // Header slot gets the title+close wrapper; default slot gets the
+        // body; footer slot gets the actions wrapper.
+        popover.appendChild(header);
+        popover.appendChild(content);
+        popover.appendChild(actions);
 
         this._tipTitle = title;
         this._tipContent = content;
@@ -825,10 +767,9 @@ export class YumeHelp extends HTMLElement {
         this._tipPrev = prev;
         this._tipNext = next;
         this._tipClose = close;
-        this._tipPointer = pointer;
-        this._tipFocusables = [close, prev, next];
+        this._popover = popover;
 
-        return tip;
+        return popover;
     }
 
     _clampIndex(index) {
@@ -855,9 +796,8 @@ export class YumeHelp extends HTMLElement {
             "(prefers-reduced-motion: reduce)",
         );
 
-        const { root, tooltip } = this._buildContainer();
+        const { root } = this._buildContainer();
         this._portalRoot = root;
-        this._tooltip = tooltip;
         document.body.appendChild(root);
 
         window.addEventListener("keydown", this._onKeydown, true);
@@ -909,39 +849,16 @@ export class YumeHelp extends HTMLElement {
         );
     }
 
-    _focusTip() {
-        if (!this._tooltip) return;
-
-        // Focus the tooltip container so screen readers announce the dialog,
-        // then let the next button take focus for keyboard interaction.
-        this._tooltip.focus({ preventScroll: true });
-
-        const focusables = this._focusableNodes();
-        const first = focusables.find((el) => !el.disabled);
-        if (first) this._focusEl(first);
-    }
-
-    _focusEl(el) {
-        if (!el) return;
-        // y-button (and other host elements that don't use `delegatesFocus`)
-        // need to forward focus into their shadow root, otherwise focus()
-        // is a no-op on a non-tabbable host.
-        const inner = el.shadowRoot?.querySelector("button, a, [tabindex]");
-        (inner || el).focus({ preventScroll: true });
-    }
-
-    _focusableNodes() {
-        return this._tipFocusables.filter(
-            (el) => el && !el.hidden && el.offsetParent !== null,
-        );
-    }
-
     _onKeydown(e) {
         if (!this._mounted) return;
 
-        if (e.key === "Escape" && this.closeOnEscape) {
+        if (e.key === "Escape") {
+            // Always swallow Escape at the window capture phase so the
+            // popover's own modal-Escape handler never fires — y-help owns
+            // the cancelable close lifecycle.
             e.preventDefault();
-            this._userClose("escape");
+            e.stopPropagation();
+            if (this.closeOnEscape) this._userClose("escape");
             return;
         }
 
@@ -963,21 +880,7 @@ export class YumeHelp extends HTMLElement {
             this.prev();
             return;
         }
-
-        if (e.key === "Tab") {
-            const focusables = this._focusableNodes();
-            if (focusables.length === 0) return;
-            const first = focusables[0];
-            const last = focusables[focusables.length - 1];
-            const active = document.activeElement;
-            if (e.shiftKey && active === first) {
-                e.preventDefault();
-                this._focusEl(last);
-            } else if (!e.shiftKey && active === last) {
-                e.preventDefault();
-                this._focusEl(first);
-            }
-        }
+        // Tab cycling is delegated to y-popover's modal focus trap.
     }
 
     _onTargetMutation() {
@@ -986,172 +889,6 @@ export class YumeHelp extends HTMLElement {
 
     _onWindowChange() {
         this._scheduleReposition();
-    }
-
-    _positionTooltip(anchorRect, requestedPosition) {
-        if (!this._tooltip) return;
-
-        const tip = this._tooltip;
-        // Lay out at viewport origin first so we can read accurate width/height
-        // unaffected by previous positioning.
-        tip.style.transform = "";
-        tip.style.top = "0px";
-        tip.style.left = "0px";
-        const tipRect = tip.getBoundingClientRect();
-        const offset = this._cssNumber("--component-help-tooltip-offset", 12);
-        const viewportW = window.innerWidth;
-        const viewportH = window.innerHeight;
-
-        const position = requestedPosition;
-        if (position === "center") {
-            const top = Math.max(8, (viewportH - tipRect.height) / 2);
-            const left = Math.max(8, (viewportW - tipRect.width) / 2);
-
-            tip.style.top = `${top}px`;
-            tip.style.left = `${left}px`;
-            this._tipPointer.hidden = true;
-
-            return;
-        }
-
-        if (!anchorRect) {
-            const top = Math.max(8, (viewportH - tipRect.height) / 2);
-            const left = Math.max(8, (viewportW - tipRect.width) / 2);
-
-            tip.style.top = `${top}px`;
-            tip.style.left = `${left}px`;
-            this._tipPointer.hidden = true;
-
-            return;
-        }
-
-        const tryPositions = (() => {
-            if (position === "auto") {
-                return FALLBACK_ORDER.slice();
-            }
-
-            const order = [position];
-            const opp = OPPOSITE_POSITION[position];
-
-            if (opp) order.push(opp);
-            for (const p of FALLBACK_ORDER) {
-                if (!order.includes(p)) order.push(p);
-            }
-
-            return order;
-        })();
-
-        let placed = null;
-        for (const p of tryPositions) {
-            const candidate = this._placementFor(
-                p,
-                anchorRect,
-                tipRect,
-                offset,
-            );
-
-            if (
-                this._fitsInViewport(candidate, tipRect, viewportW, viewportH)
-            ) {
-                placed = { ...candidate, side: p };
-                break;
-            }
-        }
-        if (!placed) {
-            const fallback = this._placementFor(
-                tryPositions[0],
-                anchorRect,
-                tipRect,
-                offset,
-            );
-            placed = { ...fallback, side: tryPositions[0] };
-        }
-
-        // Shift horizontally / vertically to stay in viewport.
-        const margin = 8;
-        const maxLeft = viewportW - tipRect.width - margin;
-        const maxTop = viewportH - tipRect.height - margin;
-        const top = Math.max(margin, Math.min(maxTop, placed.top));
-        const left = Math.max(margin, Math.min(maxLeft, placed.left));
-
-        tip.style.top = `${top}px`;
-        tip.style.left = `${left}px`;
-
-        this._positionPointer(placed.side, anchorRect, top, left, tipRect);
-    }
-
-    _placementFor(side, anchor, tipRect, offset) {
-        const centerX = anchor.left + anchor.width / 2 - tipRect.width / 2;
-        const centerY = anchor.top + anchor.height / 2 - tipRect.height / 2;
-
-        switch (side) {
-            case "top":
-                return {
-                    top: anchor.top - tipRect.height - offset,
-                    left: centerX,
-                };
-            case "bottom":
-                return { top: anchor.bottom + offset, left: centerX };
-            case "left":
-                return {
-                    top: centerY,
-                    left: anchor.left - tipRect.width - offset,
-                };
-            case "right":
-            default:
-                return { top: centerY, left: anchor.right + offset };
-        }
-    }
-
-    _fitsInViewport(placement, tipRect, vw, vh) {
-        return (
-            placement.top >= 0 &&
-            placement.left >= 0 &&
-            placement.top + tipRect.height <= vh &&
-            placement.left + tipRect.width <= vw
-        );
-    }
-
-    _positionPointer(side, anchorRect, tipTop, tipLeft, tipRect) {
-        const ptr = this._tipPointer;
-        if (!ptr) return;
-
-        const size = this._cssNumber("--component-help-arrow-size", 10);
-        const half = size / 2;
-        ptr.hidden = false;
-        ptr.dataset.side = side;
-        ptr.style.top = "";
-        ptr.style.left = "";
-        ptr.style.right = "";
-        ptr.style.bottom = "";
-
-        switch (side) {
-            case "top": {
-                const anchorCenter = anchorRect.left + anchorRect.width / 2;
-                ptr.style.bottom = `-${half}px`;
-                ptr.style.left = `${Math.max(half, Math.min(tipRect.width - half - size, anchorCenter - tipLeft - half))}px`;
-                break;
-            }
-            case "bottom": {
-                const anchorCenter = anchorRect.left + anchorRect.width / 2;
-                ptr.style.top = `-${half}px`;
-                ptr.style.left = `${Math.max(half, Math.min(tipRect.width - half - size, anchorCenter - tipLeft - half))}px`;
-                break;
-            }
-            case "left": {
-                const anchorCenter = anchorRect.top + anchorRect.height / 2;
-                ptr.style.right = `-${half}px`;
-                ptr.style.top = `${Math.max(half, Math.min(tipRect.height - half - size, anchorCenter - tipTop - half))}px`;
-                break;
-            }
-            case "right":
-            default: {
-                const anchorCenter = anchorRect.top + anchorRect.height / 2;
-                ptr.style.left = `-${half}px`;
-                ptr.style.top = `${Math.max(half, Math.min(tipRect.height - half - size, anchorCenter - tipTop - half))}px`;
-                break;
-            }
-        }
     }
 
     _cssNumber(varName, fallback) {
@@ -1188,17 +925,34 @@ export class YumeHelp extends HTMLElement {
         }
 
         const hadTargets = (step.target ? this._activeTargets.length : 0) > 0;
-        const position = hadTargets
+        const stepPosition = hadTargets
             ? step.position && VALID_POSITIONS.has(step.position)
                 ? step.position
                 : this.defaultPosition
             : this.untargetedPosition;
 
         this._updateOverlay(step);
-        const anchor = this._resolveAnchorRect(step);
-        if (anchor) this._scrollAnchorIntoView(anchor);
-        this._positionTooltip(anchor, position);
-        this._focusTip();
+
+        // Translate the y-help position vocabulary to y-popover's. y-help's
+        // "center" means "render mid-viewport, no pointer" — y-popover does
+        // exactly that when no anchor is set, so we null the anchor.
+        const anchorEl =
+            stepPosition === "center"
+                ? null
+                : this._resolveAnchorElement(step);
+        const popoverPosition =
+            stepPosition === "center" ? "auto" : stepPosition;
+
+        if (anchorEl) {
+            this._scrollAnchorIntoView(anchorEl.getBoundingClientRect());
+        }
+        this._popover.setAttribute("position", popoverPosition);
+        this._popover.setAnchor(anchorEl);
+        if (!this._popover.open) {
+            this._popover.show();
+        } else {
+            this._popover.updatePosition();
+        }
 
         const isLast = this._currentIndex === this.steps.length - 1;
         const nextActionLabel =
@@ -1212,22 +966,41 @@ export class YumeHelp extends HTMLElement {
         }
     }
 
-    _resolveAnchorRect(step) {
+    _resolveAnchorElement(step) {
         const targets = this._activeTargets;
         if (!targets.length) return null;
 
         const anchorPref = step.anchor ?? this.defaultAnchor;
-        if (anchorPref === "first") return targets[0].getBoundingClientRect();
-
-        if (anchorPref === "last") {
-            return targets[targets.length - 1].getBoundingClientRect();
-        }
-
+        if (anchorPref === "first") return targets[0];
+        if (anchorPref === "last") return targets[targets.length - 1];
         if (typeof anchorPref === "number" && targets[anchorPref]) {
-            return targets[anchorPref].getBoundingClientRect();
+            return targets[anchorPref];
         }
 
-        return this._unionRect(targets);
+        // Default: union of all targets. y-popover needs a real Element with
+        // a bounding rect; we maintain a hidden phantom div positioned to
+        // match the union and pass that as the anchor.
+        return this._ensurePhantomAnchor(targets);
+    }
+
+    _ensurePhantomAnchor(targets) {
+        const rect = this._unionRect(targets);
+        let phantom = this._phantomAnchor;
+        if (!phantom) {
+            phantom = document.createElement("div");
+            phantom.className = "y-help-phantom-anchor";
+            phantom.setAttribute("aria-hidden", "true");
+            phantom.style.position = "fixed";
+            phantom.style.pointerEvents = "none";
+            phantom.style.visibility = "hidden";
+            this._portalRoot.appendChild(phantom);
+            this._phantomAnchor = phantom;
+        }
+        phantom.style.top = `${rect.top}px`;
+        phantom.style.left = `${rect.left}px`;
+        phantom.style.width = `${rect.width}px`;
+        phantom.style.height = `${rect.height}px`;
+        return phantom;
     }
 
     _resolveTargets(target) {
@@ -1274,15 +1047,21 @@ export class YumeHelp extends HTMLElement {
             if (!step) return;
 
             this._updateOverlay(step);
-            const anchor = this._resolveAnchorRect(step);
-            const hadTargets =
-                (step.target ? this._activeTargets.length : 0) > 0;
-            const position = hadTargets
-                ? step.position && VALID_POSITIONS.has(step.position)
-                    ? step.position
-                    : this.defaultPosition
-                : this.untargetedPosition;
-            this._positionTooltip(anchor, position);
+
+            // For the union-anchor case the phantom div is positioned in
+            // viewport coordinates, so it needs an explicit refresh as the
+            // underlying real targets move on scroll/resize. The popover's
+            // own ResizeObserver covers single-element anchors.
+            if (this._phantomAnchor && this._activeTargets.length) {
+                const rect = this._unionRect(this._activeTargets);
+                this._phantomAnchor.style.top = `${rect.top}px`;
+                this._phantomAnchor.style.left = `${rect.left}px`;
+                this._phantomAnchor.style.width = `${rect.width}px`;
+                this._phantomAnchor.style.height = `${rect.height}px`;
+            }
+            if (this._popover && this._popover.open) {
+                this._popover.updatePosition();
+            }
         });
     }
 
@@ -1381,12 +1160,12 @@ export class YumeHelp extends HTMLElement {
         }
 
         this._portalRoot = null;
-        this._tooltip = null;
+        this._popover = null;
         this._overlaySvg = null;
         this._overlayDim = null;
         this._overlayMask = null;
         this._overlayBlocker = null;
-        this._tipPointer = null;
+        this._phantomAnchor = null;
         this._activeTargets = [];
 
         this._suppressAttrEcho = true;

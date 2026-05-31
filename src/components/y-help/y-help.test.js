@@ -40,6 +40,18 @@ function getTooltip() {
     return portal && portal.querySelector(".y-help-tooltip");
 }
 
+// The tooltip surface and pointer live in the inner <y-popover>'s shadow
+// root since y-help delegates the visual chrome to y-popover.
+function getTooltipSurface() {
+    const popover = getTooltip();
+    return popover && popover.shadowRoot.querySelector("[part='surface']");
+}
+
+function getTooltipPointer() {
+    const popover = getTooltip();
+    return popover && popover.shadowRoot.querySelector("[part='pointer']");
+}
+
 describe("YumeHelp", () => {
     // Aggressively clean up any leftover state between tests so a failing
     // assertion in one test doesn't leave portals or helpers in body that
@@ -194,7 +206,7 @@ describe("YumeHelp", () => {
         const portal = getPortal();
         const cutouts = portal.querySelectorAll(".y-help-highlight");
         expect(cutouts.length).to.equal(0);
-        expect(portal.querySelector(".y-help-pointer").hidden).to.be.true;
+        expect(getTooltipPointer().hidden).to.be.true;
         await teardown(help, container);
     });
 
@@ -598,7 +610,7 @@ describe("YumeHelp", () => {
             "position:fixed;top:100px;left:200px;width:60px;height:30px";
         help.start();
         await aTimeout(0);
-        const tipRect = getTooltip().getBoundingClientRect();
+        const tipRect = getTooltipSurface().getBoundingClientRect();
         const btnBRect = document
             .getElementById("btn-b")
             .getBoundingClientRect();
@@ -631,9 +643,8 @@ describe("YumeHelp", () => {
         ]);
         help.start();
         await aTimeout(0);
-        const portal = getPortal();
         // Pointer is hidden in center/untargeted mode.
-        expect(portal.querySelector(".y-help-pointer").hidden).to.be.true;
+        expect(getTooltipPointer().hidden).to.be.true;
         await teardown(help, container);
     });
 
