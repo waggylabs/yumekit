@@ -26,6 +26,7 @@ export * from "./components/y-card/y-card.js";
 export * from "./components/y-checkbox/y-checkbox.js";
 export * from "./components/y-color/y-color.js";
 export * from "./components/y-colorpicker/y-colorpicker.js";
+export * from "./components/y-data-grid/y-data-grid.js";
 export * from "./components/y-date/y-date.js";
 export * from "./components/y-datepicker/y-datepicker.js";
 export * from "./components/y-dialog/y-dialog.js";
