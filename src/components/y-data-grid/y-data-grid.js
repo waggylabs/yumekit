@@ -2178,7 +2178,11 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _groupPathKey(path) {
-        return path.map((p) => String(p)).join("");
+        // Escape backslashes and the delimiter so distinct paths can never
+        // serialize to the same key (e.g. ["a","bc"] vs ["ab","c"]).
+        return path
+            .map((p) => String(p).replace(/\\/g, "\\\\").replace(/\//g, "\\/"))
+            .join("/");
     }
 
     _toggleGroup(path) {
