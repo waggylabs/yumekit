@@ -64,7 +64,7 @@ if (this.querySelector('[slot="my-slot"]')) { ... }
 
 Two cases need extra care — `_el` alone doesn't cover them:
 
-- **CSS color literals.** When painting a user-supplied color into any CSS context (inline `style`, `<style>` block, CSS variable), gate the value through `isSafeCssColor` from `src/modules/helpers.js` and fall back to a semantic theme default when it fails. The helper accepts only `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()` literals. See `y-badge` and `y-select` (per-option `color`) for the pattern.
+- **CSS color literals.** When painting a user-supplied color into any CSS context (inline `style`, `<style>` block, CSS variable), gate the value through `isSafeCssColor` from `src/modules/helpers.js` and fall back to a semantic theme default when it fails. The helper accepts `#hex` and the browser-native color functions (`rgb()`/`rgba()`, `hsl()`/`hsla()`, `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, `color()`). See `y-badge` and `y-select` (per-option `color`) for the pattern.
 - **SVG markup.** Anything that ultimately came from `registerIcon(name, svg)` must go through the shared sanitizer in `src/modules/svg-sanitizer.js` before it touches `innerHTML`. Prefer `<y-icon name="…">`; if you need raw markup, call `getSanitizedIcon(name)`.
 
 ## New Component Checklist

@@ -1,4 +1,4 @@
-import { contrastTextColor } from "../../modules/helpers.js";
+import { contrastTextColor, isSafeCssColor } from "../../modules/helpers.js";
 
 export class YumeButton extends HTMLElement {
     static get observedAttributes() {
@@ -519,12 +519,12 @@ export class YumeButton extends HTMLElement {
         const { color, size, styleType } = this;
         const colorVars = this._getColorVarsMap();
 
-        if (!colorVars[color] && color && (color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl"))) {
+        if (!colorVars[color] && isSafeCssColor(color)) {
             this._applyCustomColorStyles(color, styleType, size);
             return;
         }
 
-        const vars = colorVars[color];
+        const vars = colorVars[color] || colorVars.base;
 
         const styleVars = {
             outlined: {

@@ -130,7 +130,7 @@ describe("YumeRating", () => {
         expect(rules).to.include("--error-content--");
     });
 
-    it("applies the thickest stroke width to filled icons", async () => {
+    it("falls back to the thickest stroke width when no filled variant is registered", async () => {
         const el = await fixture(html`<y-rating value="1"></y-rating>`);
         const rules = Array.from(
             el.shadowRoot.adoptedStyleSheets[0].cssRules,
@@ -138,8 +138,34 @@ describe("YumeRating", () => {
             .map((r) => r.cssText)
             .join(" ");
         expect(rules).to.match(
-            /\.icon\.filled svg[\s\S]*stroke-width:\s*3/,
+            /\.icon\.filled \.glyph-line svg[\s\S]*stroke-width:\s*3/,
         );
+    });
+
+    it("swaps in the registered filled variant for selected icons", async () => {
+        registerIcon(
+            "heart-fill",
+            `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z"/></svg>`,
+        );
+        registerIcon(
+            "heart",
+            `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s-8-5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6-8 11-8 11z" fill="none"/></svg>`,
+        );
+        const el = await fixture(
+            html`<y-rating icon="heart" value="1"></y-rating>`,
+        );
+
+        // Both glyph layers exist; CSS toggles which one is visible per state.
+        expect(el.shadowRoot.querySelector(".glyph-filled")).to.exist;
+
+        const rules = Array.from(
+            el.shadowRoot.adoptedStyleSheets[0].cssRules,
+        )
+            .map((r) => r.cssText)
+            .join(" ");
+        // The filled-variant path swaps glyphs rather than thickening the stroke.
+        expect(rules).to.not.match(/stroke-width:\s*3/);
+        expect(rules).to.match(/\.icon\.filled \.glyph-filled[\s\S]*display:\s*inline-flex/);
     });
 
     // ── Size ──────────────────────────────────────────────────

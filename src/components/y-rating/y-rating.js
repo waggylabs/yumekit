@@ -1,3 +1,4 @@
+import { isSafeCssColor } from "../../modules/helpers.js";
 import { getSanitizedIcon } from "../../modules/svg-sanitizer.js";
 
 export class YumeRating extends HTMLElement {
@@ -89,13 +90,14 @@ export class YumeRating extends HTMLElement {
 
     render() {
         const isInteractive = !this.disabled && !this.readonly;
-        const iconSvg = getSanitizedIcon(this.icon);
+        const lineSvg = getSanitizedIcon(this.icon);
+        const filledSvg = getSanitizedIcon(`${this.icon}-fill`);
         const filledColor = this._getFilledColor(this.color);
         const iconSizePx = this._getIconSize(this.size);
         const gapPx = this._getIconGap(this.size);
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx)];
-        this.shadowRoot.innerHTML = this._buildHTML(isInteractive, iconSvg);
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx, !!filledSvg)];
+        this.shadowRoot.innerHTML = this._buildHTML(isInteractive, lineSvg, filledSvg);
         this._attachIconListeners();
     }
 
@@ -138,8 +140,11 @@ export class YumeRating extends HTMLElement {
         });
     }
 
-    _buildHTML(isInteractive, iconSvg) {
+    _buildHTML(isInteractive, lineSvg, filledSvg) {
         const { max, value } = this;
+        const glyph = filledSvg
+            ? `<span class="glyph glyph-line">${lineSvg}</span><span class="glyph glyph-filled">${filledSvg}</span>`
+            : `<span class="glyph glyph-line">${lineSvg}</span>`;
         const icons = Array.from({ length: max }, (_, i) => {
             const idx = i + 1;
             const isFilled = idx <= value;
@@ -148,13 +153,13 @@ export class YumeRating extends HTMLElement {
                 data-index="${idx}"
                 part="icon"
                 ${isInteractive ? `role="radio" aria-label="${idx} of ${max}" tabindex="0"` : `aria-hidden="true"`}
-            >${iconSvg}</span>`;
+            >${glyph}</span>`;
         }).join("");
 
         return `<div class="rating" part="rating" role="${isInteractive ? "radiogroup" : "img"}" aria-label="Rating: ${value} of ${max}">${icons}</div>`;
     }
 
-    _buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx) {
+    _buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx, hasFilledVariant) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
@@ -186,17 +191,45 @@ export class YumeRating extends HTMLElement {
                 color: ${filledColor};
             }
 
-            /* Selected icons use the thickest stroke (matches y-icon's "x-thick")
-               so they read as bolder than the unselected outlines. */
-            .icon.filled svg,
-            .icon.filled svg * {
-                stroke-width: 3 !important;
-            }
-
-            .icon svg {
+            .glyph {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
                 width: 100%;
                 height: 100%;
             }
+
+            .glyph svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            ${hasFilledVariant ? `
+            /* Selected icons swap in the registered "filled" weight variant.
+               Line icons carry a stroke that overhangs their path, so scale the
+               filled glyph up slightly to read at the same optical size. */
+            .glyph-filled {
+                display: none;
+                transform: scale(1.1);
+                transform-origin: center;
+            }
+
+            .icon.filled .glyph-line {
+                display: none;
+            }
+
+            .icon.filled .glyph-filled {
+                display: inline-flex;
+            }
+            ` : `
+            /* No filled variant registered for this icon — fall back to the
+               thickest stroke (matches y-icon's "x-thick") so selected icons
+               still read as bolder than the unselected outlines. */
+            .icon.filled .glyph-line svg,
+            .icon.filled .glyph-line svg * {
+                stroke-width: 3 !important;
+            }
+            `}
 
             ${isInteractive ? `
             .icon:hover,
@@ -209,8 +242,7 @@ export class YumeRating extends HTMLElement {
     }
 
     _getFilledColor(color) {
-        const isCustomColor = color.startsWith("#") || color.startsWith("rgb") || color.startsWith("hsl");
-        return isCustomColor ? color : `var(--${color}-content--)`;
+        return isSafeCssColor(color) ? color : `var(--${color}-content--)`;
     }
 
     _getIconGap(size) {

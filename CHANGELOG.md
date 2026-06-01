@@ -51,6 +51,10 @@ Delete any empty sections before publishing.
 
 ### Changed
 
+- Custom color support expanded to the browser-native color functions — `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()` — in addition to `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()`. The shared `isSafeCssColor` gate now also tightens its argument allowlist (rejecting semicolons, braces, angle brackets, and nested functions). Applies anywhere a `color` accepts a custom value, including `y-badge`, `y-select`, `y-popover`, `y-button`, `y-tag`, `y-icon`, and `y-rating`.
+
+- `y-rating` — selected icons now swap in the registered `filled` weight variant instead of just thickening the line stroke, falling back to the thick stroke when no filled variant is available.
+
 - `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
 
 - `y-select` — new opt-in `portal` attribute renders the dropdown into `<body>` so it escapes scrollable or clipped ancestors (e.g. inside a data-grid cell editor).
@@ -58,6 +62,8 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
+
+- `y-button` — no longer throws when `color` is set to an unrecognized value that isn't a valid custom color; it now falls back to the `base` theme instead of crashing while reading the color-token map.
 
 - `y-droplist` — touch drag now works reliably on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time instead of from inside `pointerdown`, so mobile browsers stop preempting the press as a scroll gesture.
 

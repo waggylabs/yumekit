@@ -3,6 +3,7 @@ import {
     parseColor,
     luminance,
     contrastTextColor,
+    isSafeCssColor,
     getColorVarPair,
     clamp,
     hsvToRgb,
@@ -98,6 +99,66 @@ describe("helpers", () => {
             expect(contrastTextColor("hsl(120, 100%, 50%)")).to.include(
                 "white",
             );
+        });
+    });
+
+    // ── isSafeCssColor ────────────────────────────────────────
+    describe("isSafeCssColor", () => {
+        it("accepts hex literals (3/4/6/8 digits)", () => {
+            ["#f00", "#f00f", "#ff0000", "#ff000080"].forEach((c) =>
+                expect(isSafeCssColor(c), c).to.be.true,
+            );
+        });
+
+        it("accepts rgb/rgba and hsl/hsla, comma and space syntax", () => {
+            [
+                "rgb(255, 0, 0)",
+                "rgba(255, 0, 0, 0.5)",
+                "rgb(255 0 0 / 50%)",
+                "hsl(120, 100%, 50%)",
+                "hsla(120, 100%, 50%, 0.5)",
+                "hsl(120deg 100% 50%)",
+            ].forEach((c) => expect(isSafeCssColor(c), c).to.be.true);
+        });
+
+        it("accepts modern color functions (hwb, lab, lch, oklab, oklch, color)", () => {
+            [
+                "hwb(194 0% 0%)",
+                "hwb(194 0% 0% / .5)",
+                "lab(52.2% 40.16 59.99)",
+                "lch(52.2% 72.2 50)",
+                "oklab(0.4 0.1 0.05)",
+                "oklch(0.628 0.225 29.234)",
+                "oklch(0.628 0.225 29.234 / 0.5)",
+                "oklch(none none none)",
+                "color(display-p3 1 0.5 0)",
+                "color(srgb-linear 0 0 0)",
+            ].forEach((c) => expect(isSafeCssColor(c), c).to.be.true);
+        });
+
+        it("rejects named colors, currentColor, and var()", () => {
+            ["red", "currentColor", "var(--primary-content--)"].forEach((c) =>
+                expect(isSafeCssColor(c), c).to.be.false,
+            );
+        });
+
+        it("rejects non-string input", () => {
+            [null, undefined, 42, {}, ["#fff"]].forEach((c) =>
+                expect(isSafeCssColor(c)).to.be.false,
+            );
+        });
+
+        it("rejects injection attempts that try to escape the function", () => {
+            [
+                "rgb(0,0,0);background:url(x)",
+                "rgb(</style><img src=x onerror=alert(1)>)",
+                "rgb(0,0,0)/**/",
+                "oklch(0 0 0) red",
+                "url(evil)",
+                "expression(alert(1))",
+                "oklch(var(--x) 0 0)",
+                "#fff;",
+            ].forEach((c) => expect(isSafeCssColor(c), c).to.be.false);
         });
     });
 

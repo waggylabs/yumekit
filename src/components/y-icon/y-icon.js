@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, isSafeCssColor } from "../../modules/helpers.js";
 import { getSanitizedIcon } from "../../modules/svg-sanitizer.js";
 
 export class YumeIcon extends HTMLElement {
@@ -139,14 +139,7 @@ export class YumeIcon extends HTMLElement {
             help: "var(--help-content--, #5405ff)",
         };
         if (map[color]) return map[color];
-        if (
-            color &&
-            (color.startsWith("#") ||
-                color.startsWith("rgb") ||
-                color.startsWith("hsl"))
-        ) {
-            return color;
-        }
+        if (isSafeCssColor(color)) return color;
         return map.base;
     }
 
