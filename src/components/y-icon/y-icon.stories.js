@@ -1,5 +1,15 @@
 ﻿import "./y-icon.js";
 import "../../icons/all.js";
+import { getIconNames } from "../../icons/registry.js";
+
+// Derived from the registry at load time so these lists never go stale.
+// Filled variants are registered under `<name>-fill`; the base names are the
+// selectable icons, and the `-fill` keys identify which have a filled version.
+const ALL_REGISTERED = getIconNames().sort();
+const ICON_NAMES = ALL_REGISTERED.filter((n) => !n.endsWith("-fill"));
+const FILLED_ICONS = ALL_REGISTERED
+    .filter((n) => n.endsWith("-fill"))
+    .map((n) => n.replace(/-fill$/, ""));
 
 export default {
     title: "Data/Icon",
@@ -7,27 +17,7 @@ export default {
     argTypes: {
         name: {
             control: "select",
-            options: [
-                "accessibility", "ai", "archive", "arrow-down", "arrow-left",
-                "arrow-right", "arrow-up", "bell", "bolt", "bookmark",
-                "briefcase", "calendar", "campfire", "chart", "check",
-                "chevron-down", "chevron-left", "chevron-right", "chevron-up",
-                "circle-exclamation", "circle-info", "circle-question",
-                "clock", "close", "cloud", "code", "comments", "compass",
-                "diagram", "discord", "down-from-bracket", "down-to-bracket",
-                "ellipsis-h", "ellipsis-v", "expand-down", "expand-left",
-                "expand-right", "expand-up", "face-frown", "face-neutral",
-                "face-smile", "figma", "filter", "flask", "folder", "github",
-                "globe", "grid", "heart", "home", "image", "layout",
-                "left-from-bracket", "left-to-bracket", "link", "list-bullet",
-                "list-check", "lock", "mail", "map-marker", "menu", "minus",
-                "monitor", "moon", "palette", "paper-airplane", "pencil",
-                "plus", "puzzle", "right-from-bracket", "right-to-bracket",
-                "save", "search", "settings", "share", "shield", "smartphone",
-                "stack", "star", "sun", "swap", "tablet", "tag", "thumbs-down",
-                "thumbs-up", "thumbtack", "trash", "up-from-bracket",
-                "up-to-bracket", "user", "users", "warning",
-            ],
+            options: ICON_NAMES,
             description: "The registered icon name to display.",
         },
         size: {
@@ -44,8 +34,8 @@ export default {
         },
         weight: {
             control: "select",
-            options: ["x-thin", "thin", "regular", "thick", "x-thick"],
-            description: "Stroke weight.",
+            options: ["x-thin", "thin", "regular", "thick", "x-thick", "filled"],
+            description: "Stroke weight, or \"filled\" for the filled variant (falls back to line when none exists).",
             table: { defaultValue: { summary: "regular" } },
         },
         label: {
@@ -107,6 +97,24 @@ export const Weights = {
             <y-icon name="star" size="large" weight="regular"></y-icon>
             <y-icon name="star" size="large" weight="thick"></y-icon>
             <y-icon name="star" size="large" weight="x-thick"></y-icon>
+            <y-icon name="star" size="large" weight="filled"></y-icon>
+        </div>
+    `,
+};
+
+export const LineVsFilled = {
+    name: "Line vs Filled",
+    render: () => `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px">
+            ${FILLED_ICONS.map((name) => `
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                    <div style="display:flex;gap:12px;align-items:center">
+                        <y-icon name="${name}" size="large"></y-icon>
+                        <y-icon name="${name}" size="large" weight="filled"></y-icon>
+                    </div>
+                    <span style="font-size:12px;opacity:0.7">${name}</span>
+                </div>
+            `).join("")}
         </div>
     `,
 };

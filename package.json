@@ -18,6 +18,7 @@
         },
         "./components/*": "./dist/components/*",
         "./icons/all.js": "./dist/icons/all.js",
+        "./icons/all-filled.js": "./dist/icons/all-filled.js",
         "./icons/registry.js": "./dist/icons/registry.js",
         "./styles/*": "./dist/styles/*",
         "./CHANGELOG.md": "./CHANGELOG.md",

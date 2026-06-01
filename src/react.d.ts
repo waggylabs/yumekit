@@ -340,7 +340,7 @@ declare module "react" {
                 size?: "x-small" | "small" | "medium" | "large" | "x-large";
                 color?: string;
                 label?: string;
-                weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick";
+                weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick" | "filled";
             }>;
             "y-input": El<{
                 type?: string;

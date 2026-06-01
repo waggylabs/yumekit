@@ -47,6 +47,8 @@ Delete any empty sections before publishing.
 
 - `y-stepper` — `responsive` and `responsive-breakpoint` attributes; auto-flips horizontal layouts to vertical below the breakpoint (600px default). Enabled by default; set `responsive="false"` to opt out.
 
+- Filled icon variants for `y-icon` via a new `weight="filled"` value, with automatic fallback to the line icon when no filled version is registered. 116 filled icons ship under `icons/all-filled.js` (also pulled in by `icons/all.js`); the remaining component-illustration icons fall back to their line versions.
+
 ### Changed
 
 - `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
@@ -58,6 +60,8 @@ Delete any empty sections before publishing.
 ### Fixed
 
 - `y-droplist` — touch drag now works reliably on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time instead of from inside `pointerdown`, so mobile browsers stop preempting the press as a scroll gesture.
+
+- Corrected the arrow direction on the `left-from-bracket`, `right-from-bracket`, and `left-to-bracket` icons, which previously pointed the wrong way relative to their bracket (the `*-from-*` arrows now exit the bracket and the `*-to-*` arrow enters it).
 
 ## [0.5.0] - 2026-05-25
 

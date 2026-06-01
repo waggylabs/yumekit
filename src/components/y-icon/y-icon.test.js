@@ -354,4 +354,59 @@ describe("YumeIcon", () => {
         const style = getCSS(el);
         expect(style).to.include("--component-icon-size-x-large");
     });
+
+    it("renders the line icon by default", async () => {
+        const el = await fixture(html`<y-icon name="heart"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg.getAttribute("fill")).to.equal("none");
+    });
+
+    it("renders the filled variant when weight=filled", async () => {
+        const el = await fixture(
+            html`<y-icon name="heart" weight="filled"></y-icon>`,
+        );
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg.getAttribute("fill")).to.equal("currentColor");
+    });
+
+    it("falls back to the line icon when no filled variant is registered", async () => {
+        // `table` is a component-illustration icon with no filled variant.
+        const el = await fixture(
+            html`<y-icon name="table" weight="filled"></y-icon>`,
+        );
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg).to.exist;
+        expect(svg.getAttribute("fill")).to.equal("none");
+    });
+
+    it("does not apply a stroke-width when weight=filled", async () => {
+        const el = await fixture(
+            html`<y-icon name="heart" weight="filled"></y-icon>`,
+        );
+        const style = getCSS(el);
+        expect(style).to.not.include("stroke-width");
+    });
+
+    it("updates SVG when weight changes to filled", async () => {
+        const el = await fixture(html`<y-icon name="heart"></y-icon>`);
+        const fillBefore = el.shadowRoot.querySelector("svg").getAttribute("fill");
+        el.setAttribute("weight", "filled");
+        const fillAfter = el.shadowRoot.querySelector("svg").getAttribute("fill");
+        expect(fillBefore).to.equal("none");
+        expect(fillAfter).to.equal("currentColor");
+    });
+
+    it("upscales filled icons to match the optical size of line icons", async () => {
+        const filled = await fixture(html`<y-icon name="heart" weight="filled"></y-icon>`);
+        expect(getCSS(filled)).to.include("scale(1.1)");
+        const line = await fixture(html`<y-icon name="heart"></y-icon>`);
+        expect(getCSS(line)).to.not.include("scale(");
+    });
+
+    it("preserves <mask> in filled icons through sanitization", async () => {
+        const el = await fixture(html`<y-icon name="globe" weight="filled"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg.querySelector("mask")).to.exist;
+        expect(svg.querySelector("[mask]")).to.exist;
+    });
 });

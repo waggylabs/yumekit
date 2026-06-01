@@ -31,7 +31,8 @@ npm install @waggylabs/yumekit
 - `@waggylabs/yumekit` — full ESM bundle
 - `@waggylabs/yumekit/react` — React JSX type declarations
 - `@waggylabs/yumekit/components/y-{name}` — individual components
-- `@waggylabs/yumekit/icons/all.js` — all pre-built icons
+- `@waggylabs/yumekit/icons/all.js` — all pre-built icons (line + filled variants)
+- `@waggylabs/yumekit/icons/all-filled.js` — filled icon variants only
 - `@waggylabs/yumekit/icons/registry` — icon registry API
 - `@waggylabs/yumekit/styles/{name}.css` — theme CSS files (e.g. `blue-dark.css`, `purple-light.css`, `olive-dark.css`)
 
@@ -60,7 +61,7 @@ import "@waggylabs/yumekit/components/y-datepicker";
 
 ### Icons
 ```javascript
-import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
+import { registerIcon, registerIcons, getIcon, getIconNames } from "@waggylabs/yumekit";
 import "@waggylabs/yumekit/icons/all.js"; // load all 100+ pre-built icons
 ```
 
@@ -606,11 +607,12 @@ Attributes:
 - `name` — registered icon name (required)
 - `size` — `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"`
 - `color` — predefined scheme or CSS color (`#hex`, `rgb()`, `hsl()`)
-- `weight` — `"thin"` | `"regular"` (default) | `"thick"`
+- `weight` — `"x-thin"` | `"thin"` | `"regular"` (default) | `"thick"` | `"x-thick"` set line stroke width; `"filled"` swaps in the filled variant (falls back to the line icon when no filled variant is registered)
 - `label` — accessible label (sets aria-label)
 
 ```html
 <y-icon name="arrow-right" size="large" color="primary"></y-icon>
+<y-icon name="heart" weight="filled"></y-icon>
 ```
 
 ---
@@ -1997,7 +1999,7 @@ For cross-origin theme files, add the `cross-origin` attribute:
 ## Icon Registry API
 
 ```javascript
-import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
+import { registerIcon, registerIcons, getIcon, getIconNames } from "@waggylabs/yumekit";
 
 // Register one icon (raw SVG string)
 registerIcon("my-icon", `<svg viewBox="0 0 24 24">...</svg>`);
@@ -2010,6 +2012,9 @@ registerIcons([
 
 // Retrieve
 const svg = getIcon("my-icon");
+
+// List every registered icon name (line names + `<name>-fill` variants)
+const names = getIconNames();
 ```
 
 `getIcon` returns the raw registered string. `<y-icon>` and `<y-rating>` render through the shared SVG sanitizer (see _SVG Sanitizer_ below), so script tags, event-handler attributes (`onload`, `onclick`, …), and any element outside the allowlist are stripped before the markup reaches the DOM — registering hostile SVG cannot lead to script execution through these components.
