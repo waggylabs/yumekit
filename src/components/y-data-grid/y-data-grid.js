@@ -444,6 +444,11 @@ export class YumeDataGrid extends HTMLElement {
     // Public
     // -------------------------------------------------------------------------
 
+
+    /** Cancel the active edit (if any) without committing. */
+    cancelEdit() {
+        if (this._editing) this._cancelActiveEditor();
+    }
     /** Clear all per-column filters and the global search query. */
     clearFilters() {
         this._columnFilters = {};
@@ -453,10 +458,59 @@ export class YumeDataGrid extends HTMLElement {
         this._render();
     }
 
+    /** Clear the current selection. */
+    clearSelection() {
+        if (this._selectedKeys.size === 0) return;
+        this._selectedKeys = new Set();
+        this._emitRowSelect(null);
+        this._render();
+    }
+
     /** Clear the sort stack. */
     clearSort() {
         this._sorts = [];
         this._emitSortChange(null, "none");
+        this._render();
+    }
+
+    /** Collapse every group. */
+    collapseAllGroups() {
+        const entries = this._buildRowEntries({ respectCollapse: false });
+        entries.forEach((e) => {
+            if (e.kind === "group") {
+                this._collapsedGroups.add(this._groupPathKey(e.path));
+            }
+        });
+        this._render();
+    }
+
+    /** Collapse a group by its path (array of values). */
+    collapseGroup(path) {
+        const key = this._groupPathKey(path);
+        if (this._collapsedGroups.has(key)) return;
+        this._collapsedGroups.add(key);
+        this._emitGroupToggle(path, false);
+        this._render();
+    }
+
+    /** Commit the active edit (if any). */
+    commitEdit() {
+        if (this._editing) this._commitActiveEditor();
+    }
+
+    /** Expand every group. */
+    expandAllGroups() {
+        if (this._collapsedGroups.size === 0) return;
+        this._collapsedGroups.clear();
+        this._render();
+    }
+
+    /** Expand a group by its path (array of values). */
+    expandGroup(path) {
+        const key = this._groupPathKey(path);
+        if (!this._collapsedGroups.has(key)) return;
+        this._collapsedGroups.delete(key);
+        this._emitGroupToggle(path, true);
         this._render();
     }
 
@@ -475,64 +529,15 @@ export class YumeDataGrid extends HTMLElement {
         this._render();
     }
 
-    /** Clear the current selection. */
-    clearSelection() {
-        if (this._selectedKeys.size === 0) return;
-        this._selectedKeys = new Set();
-        this._emitRowSelect(null);
-        this._render();
-    }
-
-    /** Commit the active edit (if any). */
-    commitEdit() {
-        if (this._editing) this._commitActiveEditor();
-    }
-
-    /** Cancel the active edit (if any) without committing. */
-    cancelEdit() {
-        if (this._editing) this._cancelActiveEditor();
-    }
-
-    /** Expand a group by its path (array of values). */
-    expandGroup(path) {
-        const key = this._groupPathKey(path);
-        if (!this._collapsedGroups.has(key)) return;
-        this._collapsedGroups.delete(key);
-        this._emitGroupToggle(path, true);
-        this._render();
-    }
-
-    /** Collapse a group by its path (array of values). */
-    collapseGroup(path) {
-        const key = this._groupPathKey(path);
-        if (this._collapsedGroups.has(key)) return;
-        this._collapsedGroups.add(key);
-        this._emitGroupToggle(path, false);
-        this._render();
-    }
-
-    /** Expand every group. */
-    expandAllGroups() {
-        if (this._collapsedGroups.size === 0) return;
-        this._collapsedGroups.clear();
-        this._render();
-    }
-
-    /** Collapse every group. */
-    collapseAllGroups() {
-        const entries = this._buildRowEntries({ respectCollapse: false });
-        entries.forEach((e) => {
-            if (e.kind === "group") {
-                this._collapsedGroups.add(this._groupPathKey(e.path));
-            }
-        });
-        this._render();
-    }
-
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
+
+    _absoluteRowIndex(displayIdx) {
+        if (this.mode === "server" || !this.enablePagination) return displayIdx;
+        return (this._currentPage - 1) * this._pageSize + displayIdx;
+    }
     _applyClientFilters(rows) {
         const cols = this._parsedColumns;
         const query = (this._globalQuery || "").trim().toLowerCase();
@@ -559,53 +564,6 @@ export class YumeDataGrid extends HTMLElement {
             }
             return true;
         });
-    }
-
-    _defaultOperatorFor(col) {
-        if (!col) return "contains";
-        if (col.type === "number") return "equals";
-        if (col.type === "date") return "equals";
-        return "contains";
-    }
-
-    _matchesFilter(cellValue, filterValue, op, col) {
-        const type = col?.type;
-        if (type === "number") {
-            const a = Number(cellValue);
-            const b = Number(filterValue);
-            if (!Number.isFinite(b)) return true;
-            if (!Number.isFinite(a)) return false;
-            switch (op) {
-                case "equals": return a === b;
-                case "ne": return a !== b;
-                case "gt": return a > b;
-                case "gte": return a >= b;
-                case "lt": return a < b;
-                case "lte": return a <= b;
-                default: return a === b;
-            }
-        }
-        if (type === "date") {
-            const a = cellValue == null ? NaN : new Date(cellValue).getTime();
-            const b = filterValue ? new Date(filterValue).getTime() : NaN;
-            if (Number.isNaN(b)) return true;
-            if (Number.isNaN(a)) return false;
-            switch (op) {
-                case "before": return a < b;
-                case "after": return a > b;
-                case "equals":
-                default: return a === b;
-            }
-        }
-        const cell = String(cellValue ?? "").toLowerCase();
-        const needle = String(filterValue).toLowerCase();
-        switch (op) {
-            case "equals": return cell === needle;
-            case "startsWith": return cell.startsWith(needle);
-            case "endsWith": return cell.endsWith(needle);
-            case "contains":
-            default: return cell.includes(needle);
-        }
     }
 
     _applyClientSort(rows) {
@@ -636,6 +594,36 @@ export class YumeDataGrid extends HTMLElement {
         });
     }
 
+    _applyPendingColumnVisibility() {
+        if (this._pendingColumnHidden.size === 0) return;
+        for (const [key, hidden] of this._pendingColumnHidden) {
+            const ctx = this._findColumnContext(key);
+            if (!ctx) continue;
+            if (hidden) ctx.node.hidden = true;
+            else delete ctx.node.hidden;
+        }
+        this._pendingColumnHidden.clear();
+        this._parsedColumns = this._flattenColumnTree(this._workingTree);
+        this._render();
+    }
+
+    _beginEdit(row, rowKey, col) {
+        if (this._editing) {
+            if (this._editing.rowKey === rowKey && this._editing.columnKey === col.key) {
+                return;
+            }
+            this._commitActiveEditor();
+        }
+        const oldValue = row[col.key];
+        this._editing = { rowKey, columnKey: col.key, oldValue, row, col };
+        this.dispatchEvent(new CustomEvent("cell-edit-start", {
+            detail: { row, column: col.key, value: oldValue },
+            bubbles: true,
+            composed: true,
+        }));
+        this._render();
+    }
+
     _buildBody(columns, entries, leadingSpacerPx, trailingSpacerPx) {
         const tbody = _el("tbody", { part: "body" });
 
@@ -663,133 +651,6 @@ export class YumeDataGrid extends HTMLElement {
         }
 
         return tbody;
-    }
-
-    _buildDataRow(columns, entry, displayIdx) {
-        const { row, absoluteIndex, depth } = entry;
-        const key = this._rowKeyFor(row, absoluteIndex);
-        const isSelected = this._selectedKeys.has(key);
-        const tr = _el("tr", {
-            part: "row",
-            role: "row",
-            "data-row-index": displayIdx,
-            "data-row-key": key,
-            "data-depth": depth ? String(depth) : null,
-            "aria-selected": this.enableSelection ? String(isSelected) : null,
-            class: isSelected ? "selected" : null,
-        });
-        if (this.virtual) tr.style.height = `${this.rowHeight}px`;
-        tr.addEventListener("click", (e) => this._onRowClick(row, key, e));
-        tr.addEventListener("dblclick", (e) => this._onRowDblClick(row, e));
-
-        if (this.enableSelection) {
-            tr.appendChild(this._buildSelectCell(row, key, isSelected));
-        }
-
-        columns.forEach((col, colIdx) => {
-            const cell = this._buildCell(row, key, col);
-            if (colIdx === 0 && depth) {
-                cell.style.paddingLeft =
-                    `calc(var(--component-data-grid-group-indent, 16px) * ${depth + 1})`;
-            }
-            tr.appendChild(cell);
-        });
-        return tr;
-    }
-
-    _buildSpacerRow(colspan, height) {
-        const tr = _el("tr", { class: "spacer-row", "aria-hidden": "true" });
-        const td = _el("td", { colspan: String(Math.max(1, colspan)) });
-        td.style.height = `${height}px`;
-        td.style.padding = "0";
-        td.style.border = "0";
-        tr.appendChild(td);
-        return tr;
-    }
-
-    _buildGroupHeaderRow(columns, entry) {
-        const { path, depth, count, aggregates, collapsed, groupCol } = entry;
-        const tr = _el("tr", {
-            part: "group-header",
-            class: "group-header",
-            role: "row",
-            "data-depth": String(depth),
-            "data-group-path": this._groupPathKey(path),
-            "aria-expanded": String(!collapsed),
-        });
-
-        if (this.enableSelection) {
-            tr.appendChild(_el("td", { class: "select-cell", part: "cell" }));
-        }
-
-        const indent = `calc(var(--component-data-grid-group-indent, 16px) * ${depth})`;
-        const totalCols = columns.length;
-        const aggCols = new Set();
-        if (aggregates) {
-            for (const k of Object.keys(aggregates)) aggCols.add(k);
-        }
-
-        columns.forEach((col, idx) => {
-            const cell = _el("td", { part: "cell", role: "gridcell" });
-            if (idx === 0) {
-                cell.classList.add("group-header-label");
-                cell.style.paddingLeft = indent;
-                cell.appendChild(this._buildGroupToggle(path, collapsed));
-                const label = groupCol?.label || groupCol?.key || "";
-                const valueText = path[path.length - 1];
-                cell.appendChild(_el("span", { class: "group-label" }, [
-                    `${label ? label + ": " : ""}${valueText}`,
-                ]));
-                cell.appendChild(_el("span", { class: "group-count" }, [
-                    ` (${count})`,
-                ]));
-                if (aggCols.size === 0 && totalCols > 1) {
-                    cell.setAttribute("colspan", String(totalCols));
-                }
-            } else if (aggCols.size > 0) {
-                if (aggregates[col.key] != null) {
-                    const aggKind = this.aggregates[col.key];
-                    cell.classList.add("group-header-agg");
-                    cell.appendChild(_el("span", { class: "group-agg-kind" }, [
-                        `${aggKind}: `,
-                    ]));
-                    cell.appendChild(document.createTextNode(
-                        this._formatAggregate(aggregates[col.key]),
-                    ));
-                    if (col.align) cell.style.textAlign = col.align;
-                }
-            } else {
-                return;
-            }
-            tr.appendChild(cell);
-        });
-
-        const toggle = () => this._toggleGroup(path);
-        tr.addEventListener("click", (e) => {
-            e.stopPropagation();
-            toggle();
-        });
-        return tr;
-    }
-
-    _buildGroupToggle(path, collapsed) {
-        const btn = _el("span", {
-            class: "group-toggle",
-            role: "button",
-            "aria-label": collapsed ? "Expand group" : "Collapse group",
-            tabindex: "0",
-        });
-        btn.appendChild(_el("y-icon", {
-            name: collapsed ? "chevron-right" : "chevron-down",
-            size: "small",
-        }));
-        btn.addEventListener("keydown", (e) => {
-            if (e.key === " " || e.key === "Enter") {
-                e.preventDefault();
-                this._toggleGroup(path);
-            }
-        });
-        return btn;
     }
 
     _buildCell(row, rowKey, col) {
@@ -840,85 +701,83 @@ export class YumeDataGrid extends HTMLElement {
         return cell;
     }
 
-    _renderCellValue(col, value) {
-        const isBool = col.type === "checkbox" || typeof value === "boolean";
-        const wrap = _el("span", {
-            class: isBool ? "cell-value cell-value--boolean" : "cell-value",
+    _buildColumnsSubmenuItem() {
+        const btn = _el("button", {
+            type: "button",
+            role: "menuitem",
+            class: "menu-item menu-item--submenu",
+            "aria-haspopup": "menu",
+            "aria-expanded": "false",
         });
-        if (isBool) {
-            wrap.appendChild(_el("y-icon", {
-                name: value ? "check" : "x",
-                size: "small",
-                "aria-label": value ? "true" : "false",
-            }));
-        } else {
-            wrap.textContent = value == null ? "" : String(value);
+        btn.appendChild(_el("y-icon", { name: "grid", size: "small" }));
+        btn.appendChild(_el("span", { class: "menu-item-label" }, ["Columns"]));
+        btn.appendChild(_el("y-icon", {
+            name: "chevron-right",
+            size: "small",
+            class: "submenu-chevron",
+        }));
+
+        const toggle = () => {
+            const sub = this._columnsSubmenuPopover;
+            if (sub?.open) sub.hide("api");
+            else this._openColumnsSubmenu(btn);
+        };
+
+        // Hover opens; re-click on the trigger toggles it closed.
+        btn.addEventListener("mouseenter", () => {
+            if (!this._columnsSubmenuPopover?.open) this._openColumnsSubmenu(btn);
+        });
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggle();
+        });
+        return btn;
+    }
+
+    _buildColumnsSubmenuPopover() {
+        ensureHeaderMenuStyles();
+        const popover = _el("y-popover", {
+            part: "header-menu-submenu",
+            trigger: "manual",
+            position: "right-start",
+            portal: "",
+            "close-on-outside-click": "true",
+            "close-on-escape": "true",
+        });
+        popover.classList.add("header-menu-popover", "header-menu-submenu");
+        return popover;
+    }
+
+    _buildDataRow(columns, entry, displayIdx) {
+        const { row, absoluteIndex, depth } = entry;
+        const key = this._rowKeyFor(row, absoluteIndex);
+        const isSelected = this._selectedKeys.has(key);
+        const tr = _el("tr", {
+            part: "row",
+            role: "row",
+            "data-row-index": displayIdx,
+            "data-row-key": key,
+            "data-depth": depth ? String(depth) : null,
+            "aria-selected": this.enableSelection ? String(isSelected) : null,
+            class: isSelected ? "selected" : null,
+        });
+        if (this.virtual) tr.style.height = `${this.rowHeight}px`;
+        tr.addEventListener("click", (e) => this._onRowClick(row, key, e));
+        tr.addEventListener("dblclick", (e) => this._onRowDblClick(row, e));
+
+        if (this.enableSelection) {
+            tr.appendChild(this._buildSelectCell(row, key, isSelected));
         }
-        return wrap;
-    }
 
-    _buildStatusIndicator(status) {
-        const span = _el("span", { class: `edit-status edit-status--${status.kind}` });
-        const iconName =
-            status.kind === "saving" ? "clock" :
-                status.kind === "success" ? "check" :
-                    "x";
-        span.appendChild(_el("y-icon", { name: iconName, size: "small" }));
-        if (status.message) span.setAttribute("title", status.message);
-        return span;
-    }
-
-    _buildSelectAllHeader() {
-        const visibleRows = this._getDisplayDataRows();
-        const visibleKeys = visibleRows.map((row) =>
-            this._rowKeyFor(row, this._parsedData.indexOf(row)),
-        );
-        const selectedCount = visibleKeys.filter((k) => this._selectedKeys.has(k)).length;
-        const allChecked = visibleKeys.length > 0 && selectedCount === visibleKeys.length;
-        const someChecked = selectedCount > 0 && !allChecked;
-
-        const th = _el("th", {
-            scope: "col",
-            part: "header-cell",
-            class: "select-cell",
+        columns.forEach((col, colIdx) => {
+            const cell = this._buildCell(row, key, col);
+            if (colIdx === 0 && depth) {
+                cell.style.paddingLeft =
+                    `calc(var(--component-data-grid-group-indent, 16px) * ${depth + 1})`;
+            }
+            tr.appendChild(cell);
         });
-
-        if (this.selectionMode === "single") return th;
-
-        const checkbox = _el("y-checkbox", {
-            "aria-label": "Select all rows",
-            "label-position": "right",
-        });
-        if (allChecked) checkbox.setAttribute("checked", "");
-        if (someChecked) checkbox.setAttribute("indeterminate", "");
-
-        checkbox.addEventListener("change", (e) => {
-            e.stopPropagation();
-            this._toggleAllVisible(!allChecked, visibleKeys, visibleRows);
-        });
-        th.appendChild(checkbox);
-        return th;
-    }
-
-    _buildSelectCell(row, rowKey, isSelected) {
-        const td = _el("td", {
-            part: "cell",
-            role: "gridcell",
-            class: "select-cell",
-        });
-        const checkbox = _el("y-checkbox", {
-            "aria-label": "Select row",
-            "label-position": "right",
-        });
-        if (isSelected) checkbox.setAttribute("checked", "");
-
-        checkbox.addEventListener("change", (e) => {
-            e.stopPropagation();
-            this._toggleRowSelection(row, rowKey, e);
-        });
-        checkbox.addEventListener("click", (e) => e.stopPropagation());
-        td.appendChild(checkbox);
-        return td;
+        return tr;
     }
 
     _buildEditor(row, rowKey, col) {
@@ -1009,201 +868,6 @@ export class YumeDataGrid extends HTMLElement {
         return tr;
     }
 
-    _buildFilterRow(columns) {
-        const tr = _el("tr", { part: "filter-row", class: "filter-row" });
-
-        if (this.enableSelection) {
-            tr.appendChild(_el("th", { scope: "col", class: "select-cell" }));
-        }
-
-        columns.forEach((col) => {
-            const cell = _el("th", { scope: "col" });
-            if (col.filterable === false) {
-                tr.appendChild(cell);
-                return;
-            }
-
-            const inputType = col.type === "number" ? "number"
-                : col.type === "date" ? "date"
-                    : "text";
-            const input = _el("y-input", {
-                part: "filter-input",
-                type: inputType,
-                size: "small",
-                "aria-label": `Filter ${col.label || col.key}`,
-                placeholder: col.filterPlaceholder || "",
-            });
-            const existing = this._columnFilters[col.key];
-            if (existing != null) input.setAttribute("value", String(existing));
-
-            input.addEventListener("input", (e) => {
-                this._setColumnFilter(col.key, e.detail?.value ?? "");
-            });
-            cell.appendChild(input);
-            tr.appendChild(cell);
-        });
-        return tr;
-    }
-
-    _buildHeader(leafColumns) {
-        const thead = _el("thead", { part: "header" });
-        const { rows, maxDepth } = this._buildHeaderMatrix(this._workingTree);
-
-        rows.forEach((nodes, depth) => {
-            const headerRow = _el("tr", {
-                part: "header-row",
-                role: "row",
-                "data-header-depth": String(depth),
-            });
-
-            if (this.enableSelection && depth === 0) {
-                const selTh = this._buildSelectAllHeader();
-                if (maxDepth > 1) selTh.setAttribute("rowspan", String(maxDepth));
-                headerRow.appendChild(selTh);
-            }
-
-            nodes.forEach((node) => {
-                headerRow.appendChild(
-                    this._isColumnGroup(node)
-                        ? this._buildGroupHeaderCell(node, depth, maxDepth)
-                        : this._buildLeafHeaderCell(node, depth, maxDepth),
-                );
-            });
-
-            thead.appendChild(headerRow);
-        });
-
-        if (this.filtering === "inline") thead.appendChild(this._buildFilterRow(leafColumns));
-        return thead;
-    }
-
-    _buildGroupHeaderCell(node, depth, maxDepth) {
-        const span = this._leafCount(node);
-        const th = _el("th", {
-            part: "header-cell",
-            scope: "colgroup",
-            colspan: String(span),
-            class: "group-column-header",
-            "data-header-depth": String(depth),
-        });
-        if (node.align) th.style.textAlign = node.align;
-        const inner = _el("span", { class: "th-content" });
-        inner.appendChild(document.createTextNode(node.label || ""));
-        th.appendChild(inner);
-        // Quiet unused-arg lint complaint; maxDepth reserved for future styling.
-        void maxDepth;
-        return th;
-    }
-
-    _buildLeafHeaderCell(col, depth, maxDepth) {
-        const isSortable = this.enableSorting && col.sortable !== false;
-        const sortIdx = this._sorts.findIndex((s) => s.column === col.key);
-        const direction = sortIdx >= 0 ? this._sorts[sortIdx].direction : "none";
-        const ariaSort =
-            direction === "asc" ? "ascending" :
-                direction === "desc" ? "descending" : "none";
-
-        const remainingRows = maxDepth - depth;
-        const th = _el("th", {
-            part: "header-cell",
-            scope: "col",
-            "aria-sort": ariaSort,
-            class: isSortable ? "sortable" : null,
-            rowspan: remainingRows > 1 ? String(remainingRows) : null,
-        });
-        if (col.width) th.style.width = col.width;
-        if (col.align) th.style.textAlign = col.align;
-
-        const inner = _el("span", { class: "th-content" });
-        inner.appendChild(document.createTextNode(col.label || col.key));
-
-        if (isSortable) {
-            const indicator = _el("span", { class: "sort-icon", "aria-hidden": "true" });
-            if (direction === "asc") {
-                indicator.appendChild(_el("y-icon", { name: "arrow-up", size: "small" }));
-            } else if (direction === "desc") {
-                indicator.appendChild(_el("y-icon", { name: "arrow-down", size: "small" }));
-            } else {
-                indicator.classList.add("sort-icon--placeholder");
-            }
-            if (sortIdx >= 0 && this._sorts.length > 1) {
-                const badge = _el("span", { class: "sort-rank" }, [
-                    String(sortIdx + 1),
-                ]);
-                inner.appendChild(badge);
-            }
-            inner.appendChild(indicator);
-            th.addEventListener("click", (e) => this._onHeaderClick(col.key, e));
-        }
-
-        const showFilterTrigger = this.filtering === "advanced";
-        const showMenuTrigger = this.enableHeaderMenu;
-        if (showFilterTrigger || showMenuTrigger) {
-            const actions = _el("span", { class: "th-actions" });
-            if (showFilterTrigger) actions.appendChild(this._buildHeaderFilterTrigger(col));
-            if (showMenuTrigger) actions.appendChild(this._buildHeaderMenuTrigger(col));
-            inner.appendChild(actions);
-        }
-
-        th.appendChild(inner);
-        return th;
-    }
-
-    _buildHeaderFilterTrigger(col) {
-        const hasFilter = this._columnFilters[col.key] != null
-            && String(this._columnFilters[col.key]) !== "";
-        const btn = _el("button", {
-            type: "button",
-            class: hasFilter
-                ? "header-action-trigger header-filter-trigger is-active"
-                : "header-action-trigger header-filter-trigger",
-            part: "header-filter-trigger",
-            "aria-label": `${col.label || col.key} filter`,
-            "aria-haspopup": "dialog",
-            "aria-expanded": "false",
-        });
-        btn.appendChild(_el("y-icon", { name: "funnel", size: "small" }));
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this._openFilterPopover(col, btn);
-        });
-        return btn;
-    }
-
-    _buildHeaderMenuTrigger(col) {
-        const btn = _el("button", {
-            type: "button",
-            class: "header-action-trigger header-menu-trigger",
-            part: "header-menu-trigger",
-            "aria-label": `${col.label || col.key} column menu`,
-            "aria-haspopup": "menu",
-            "aria-expanded": "false",
-        });
-        btn.appendChild(_el("y-icon", { name: "ellipsis-v", size: "small" }));
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this._openHeaderMenu(col, btn);
-        });
-        return btn;
-    }
-
-    _buildHeaderMenuPopover() {
-        ensureHeaderMenuStyles();
-        const popover = _el("y-popover", {
-            part: "header-menu-popover",
-            trigger: "manual",
-            position: "bottom-end",
-            portal: "",
-            // Outside-click is managed by `_openHeaderMenu` so the submenu's
-            // portal counts as "inside" — otherwise a click on a column
-            // checkbox would close the main menu and prematurely commit edits.
-            "close-on-outside-click": "false",
-            "close-on-escape": "true",
-        });
-        popover.classList.add("header-menu-popover");
-        return popover;
-    }
-
     _buildFilterPopover() {
         ensureHeaderMenuStyles();
         const popover = _el("y-popover", {
@@ -1220,177 +884,6 @@ export class YumeDataGrid extends HTMLElement {
         });
         popover.classList.add("header-menu-popover", "filter-popover-host");
         return popover;
-    }
-
-    _buildColumnsSubmenuPopover() {
-        ensureHeaderMenuStyles();
-        const popover = _el("y-popover", {
-            part: "header-menu-submenu",
-            trigger: "manual",
-            position: "right-start",
-            portal: "",
-            "close-on-outside-click": "true",
-            "close-on-escape": "true",
-        });
-        popover.classList.add("header-menu-popover", "header-menu-submenu");
-        return popover;
-    }
-
-    _openFilterPopover(col, triggerBtn) {
-        if (!this._filterPopover) return;
-        const popover = this._filterPopover;
-
-        if (popover.open) {
-            popover.hide("api");
-            return;
-        }
-
-        popover.innerHTML = "";
-        popover.appendChild(
-            this._buildFilterPopoverContent(col, () => popover.hide("api")),
-        );
-
-        popover.anchor = triggerBtn;
-        triggerBtn.setAttribute("aria-expanded", "true");
-
-        const onDocClick = (e) => {
-            const path = e.composedPath();
-            const insidePortal = path.some(
-                (node) => node?.classList?.contains?.("y-popover-portal"),
-            );
-            const insideTrigger = path.includes(triggerBtn);
-            if (!insidePortal && !insideTrigger) popover.hide("api");
-        };
-        document.addEventListener("click", onDocClick, true);
-
-        const onHide = () => {
-            triggerBtn.setAttribute("aria-expanded", "false");
-            popover.removeEventListener("popover-closed", onHide);
-            document.removeEventListener("click", onDocClick, true);
-        };
-        popover.addEventListener("popover-closed", onHide);
-
-        popover.show();
-    }
-
-    _openHeaderMenu(col, triggerBtn) {
-        if (!this._headerMenuPopover) return;
-        const popover = this._headerMenuPopover;
-
-        // Clicking the same trigger again toggles the menu closed.
-        if (popover.open) {
-            popover.hide("api");
-            return;
-        }
-
-        // Reset & rebuild content for the targeted column.
-        popover.innerHTML = "";
-        popover.appendChild(this._buildHeaderMenuContent(col, () => popover.hide("api")));
-
-        popover.anchor = triggerBtn;
-        triggerBtn.setAttribute("aria-expanded", "true");
-
-        // Manual outside-click: clicks inside *any* y-popover portal (main or
-        // submenu) and clicks on the trigger itself count as "inside".
-        const onDocClick = (e) => {
-            const path = e.composedPath();
-            const insidePortal = path.some(
-                (node) => node?.classList?.contains?.("y-popover-portal"),
-            );
-            const insideTrigger = path.includes(triggerBtn);
-            if (!insidePortal && !insideTrigger) popover.hide("api");
-        };
-        document.addEventListener("click", onDocClick, true);
-
-        const onHide = () => {
-            triggerBtn.setAttribute("aria-expanded", "false");
-            popover.removeEventListener("popover-closed", onHide);
-            document.removeEventListener("click", onDocClick, true);
-        };
-        popover.addEventListener("popover-closed", onHide);
-
-        popover.show();
-    }
-
-    _buildHeaderMenuContent(col, close) {
-        const root = _el("div", { class: "header-menu", role: "menu" });
-
-        // ---- Sort section ----
-        const sortable = this.enableSorting && col.sortable !== false;
-        if (sortable) {
-            const sortSection = _el("div", { class: "menu-section" });
-            const ascBtn = this._buildMenuItem({
-                icon: "arrow-up",
-                label: "Sort ascending",
-                onSelect: () => { this._setSortFromMenu(col.key, "asc"); close(); },
-            });
-            const descBtn = this._buildMenuItem({
-                icon: "arrow-down",
-                label: "Sort descending",
-                onSelect: () => { this._setSortFromMenu(col.key, "desc"); close(); },
-            });
-            sortSection.appendChild(ascBtn);
-            sortSection.appendChild(descBtn);
-
-            const currentSort = this._sorts.find((s) => s.column === col.key);
-            if (currentSort) {
-                sortSection.appendChild(this._buildMenuItem({
-                    icon: "x",
-                    label: "Clear sort",
-                    onSelect: () => { this._clearSortFor(col.key); close(); },
-                }));
-            }
-            root.appendChild(sortSection);
-        }
-
-        // ---- Columns visibility (opens a nested popover submenu) ----
-        const colsSection = _el("div", { class: "menu-section" });
-        colsSection.appendChild(this._buildColumnsSubmenuItem());
-        root.appendChild(colsSection);
-
-        // ---- Move column section ----
-        const ctx = this._findColumnContext(col.key);
-        if (ctx) {
-            const moveSection = _el("div", { class: "menu-section" });
-            const visibleSiblings = ctx.siblings
-                .map((node, idx) => ({ node, idx }))
-                .filter(({ node }) => this._isVisibleNode(node));
-            const positionAmongVisible = visibleSiblings.findIndex(
-                (s) => s.node === ctx.node,
-            );
-            const canMovePrev = positionAmongVisible > 0;
-            const canMoveNext = positionAmongVisible >= 0
-                && positionAmongVisible < visibleSiblings.length - 1;
-
-            moveSection.appendChild(this._buildMenuItem({
-                icon: "arrow-left",
-                label: "Move column previous",
-                disabled: !canMovePrev,
-                onSelect: () => { this._moveColumn(col.key, -1); close(); },
-            }));
-            moveSection.appendChild(this._buildMenuItem({
-                icon: "arrow-right",
-                label: "Move column next",
-                disabled: !canMoveNext,
-                onSelect: () => { this._moveColumn(col.key, 1); close(); },
-            }));
-            root.appendChild(moveSection);
-        }
-
-        return root;
-    }
-
-    _buildMenuItem({ icon, label, onSelect, disabled = false }) {
-        const btn = _el("button", {
-            type: "button",
-            role: "menuitem",
-            class: "menu-item",
-            disabled: disabled || null,
-        });
-        if (icon) btn.appendChild(_el("y-icon", { name: icon, size: "small" }));
-        btn.appendChild(_el("span", {}, [label]));
-        if (!disabled) btn.addEventListener("click", onSelect);
-        return btn;
     }
 
     _buildFilterPopoverContent(col, close) {
@@ -1481,62 +974,238 @@ export class YumeDataGrid extends HTMLElement {
         return root;
     }
 
-    _buildColumnsSubmenuItem() {
-        const btn = _el("button", {
-            type: "button",
-            role: "menuitem",
-            class: "menu-item menu-item--submenu",
-            "aria-haspopup": "menu",
-            "aria-expanded": "false",
-        });
-        btn.appendChild(_el("y-icon", { name: "grid", size: "small" }));
-        btn.appendChild(_el("span", { class: "menu-item-label" }, ["Columns"]));
-        btn.appendChild(_el("y-icon", {
-            name: "chevron-right",
-            size: "small",
-            class: "submenu-chevron",
-        }));
+    _buildFilterRow(columns) {
+        const tr = _el("tr", { part: "filter-row", class: "filter-row" });
 
-        const toggle = () => {
-            const sub = this._columnsSubmenuPopover;
-            if (sub?.open) sub.hide("api");
-            else this._openColumnsSubmenu(btn);
-        };
+        if (this.enableSelection) {
+            tr.appendChild(_el("th", { scope: "col", class: "select-cell" }));
+        }
 
-        // Hover opens; re-click on the trigger toggles it closed.
-        btn.addEventListener("mouseenter", () => {
-            if (!this._columnsSubmenuPopover?.open) this._openColumnsSubmenu(btn);
+        columns.forEach((col) => {
+            const cell = _el("th", { scope: "col" });
+            if (col.filterable === false) {
+                tr.appendChild(cell);
+                return;
+            }
+
+            const inputType = col.type === "number" ? "number"
+                : col.type === "date" ? "date"
+                    : "text";
+            const input = _el("y-input", {
+                part: "filter-input",
+                type: inputType,
+                size: "small",
+                "aria-label": `Filter ${col.label || col.key}`,
+                placeholder: col.filterPlaceholder || "",
+            });
+            const existing = this._columnFilters[col.key];
+            if (existing != null) input.setAttribute("value", String(existing));
+
+            input.addEventListener("input", (e) => {
+                this._setColumnFilter(col.key, e.detail?.value ?? "");
+            });
+            cell.appendChild(input);
+            tr.appendChild(cell);
         });
-        btn.addEventListener("click", (e) => {
+        return tr;
+    }
+
+    _buildFooter(filteredCount, showPagination) {
+        const total = this.mode === "server" ? this.totalRows : filteredCount;
+        const totalPages = Math.max(1, Math.ceil(total / this._pageSize));
+        const showCount = this.showItemCount;
+        if (!showPagination && !showCount) return null;
+
+        const wrap = _el("div", { part: "pagination", class: "grid-footer" });
+
+        if (showPagination) {
+            const slot = _el("slot", { name: "pagination" });
+            const paginator = _el("y-paginator", {
+                "current-page": String(this._currentPage),
+                "total-pages": String(totalPages),
+                variant: "default",
+                size: "small",
+            });
+            paginator.addEventListener("page-change", this._onPaginatorChange);
+            paginator.addEventListener("page-size-change", this._onPaginatorPageSize);
+            slot.appendChild(paginator);
+            wrap.appendChild(slot);
+        }
+
+        if (showCount) {
+            wrap.appendChild(this._buildItemCount(total, showPagination));
+        }
+        return wrap;
+    }
+
+    _buildGroupHeaderCell(node, depth, maxDepth) {
+        const span = this._leafCount(node);
+        const th = _el("th", {
+            part: "header-cell",
+            scope: "colgroup",
+            colspan: String(span),
+            class: "group-column-header",
+            "data-header-depth": String(depth),
+        });
+        if (node.align) th.style.textAlign = node.align;
+        const inner = _el("span", { class: "th-content" });
+        inner.appendChild(document.createTextNode(node.label || ""));
+        th.appendChild(inner);
+        // Quiet unused-arg lint complaint; maxDepth reserved for future styling.
+        void maxDepth;
+        return th;
+    }
+
+    _buildGroupHeaderRow(columns, entry) {
+        const { path, depth, count, aggregates, collapsed, groupCol } = entry;
+        const tr = _el("tr", {
+            part: "group-header",
+            class: "group-header",
+            role: "row",
+            "data-depth": String(depth),
+            "data-group-path": this._groupPathKey(path),
+            "aria-expanded": String(!collapsed),
+        });
+
+        if (this.enableSelection) {
+            tr.appendChild(_el("td", { class: "select-cell", part: "cell" }));
+        }
+
+        const indent = `calc(var(--component-data-grid-group-indent, 16px) * ${depth})`;
+        const totalCols = columns.length;
+        const aggCols = new Set();
+        if (aggregates) {
+            for (const k of Object.keys(aggregates)) aggCols.add(k);
+        }
+
+        columns.forEach((col, idx) => {
+            const cell = _el("td", { part: "cell", role: "gridcell" });
+            if (idx === 0) {
+                cell.classList.add("group-header-label");
+                cell.style.paddingLeft = indent;
+                cell.appendChild(this._buildGroupToggle(path, collapsed));
+                const label = groupCol?.label || groupCol?.key || "";
+                const valueText = path[path.length - 1];
+                cell.appendChild(_el("span", { class: "group-label" }, [
+                    `${label ? label + ": " : ""}${valueText}`,
+                ]));
+                cell.appendChild(_el("span", { class: "group-count" }, [
+                    ` (${count})`,
+                ]));
+                if (aggCols.size === 0 && totalCols > 1) {
+                    cell.setAttribute("colspan", String(totalCols));
+                }
+            } else if (aggCols.size > 0) {
+                if (aggregates[col.key] != null) {
+                    const aggKind = this.aggregates[col.key];
+                    cell.classList.add("group-header-agg");
+                    cell.appendChild(_el("span", { class: "group-agg-kind" }, [
+                        `${aggKind}: `,
+                    ]));
+                    cell.appendChild(document.createTextNode(
+                        this._formatAggregate(aggregates[col.key]),
+                    ));
+                    if (col.align) cell.style.textAlign = col.align;
+                }
+            } else {
+                return;
+            }
+            tr.appendChild(cell);
+        });
+
+        const toggle = () => this._toggleGroup(path);
+        tr.addEventListener("click", (e) => {
             e.stopPropagation();
             toggle();
+        });
+        return tr;
+    }
+
+    _buildGroupToggle(path, collapsed) {
+        const btn = _el("span", {
+            class: "group-toggle",
+            role: "button",
+            "aria-label": collapsed ? "Expand group" : "Collapse group",
+            tabindex: "0",
+        });
+        btn.appendChild(_el("y-icon", {
+            name: collapsed ? "chevron-right" : "chevron-down",
+            size: "small",
+        }));
+        btn.addEventListener("keydown", (e) => {
+            if (e.key === " " || e.key === "Enter") {
+                e.preventDefault();
+                this._toggleGroup(path);
+            }
         });
         return btn;
     }
 
-    _openColumnsSubmenu(triggerBtn) {
-        const popover = this._columnsSubmenuPopover;
-        if (!popover || popover.open) return;
+    _buildHeader(leafColumns) {
+        const thead = _el("thead", { part: "header" });
+        const { rows, maxDepth } = this._buildHeaderMatrix(this._workingTree);
 
-        popover.innerHTML = "";
-        const wrap = _el("div", {
-            class: "header-menu header-submenu",
-            role: "menu",
+        rows.forEach((nodes, depth) => {
+            const headerRow = _el("tr", {
+                part: "header-row",
+                role: "row",
+                "data-header-depth": String(depth),
+            });
+
+            if (this.enableSelection && depth === 0) {
+                const selTh = this._buildSelectAllHeader();
+                if (maxDepth > 1) selTh.setAttribute("rowspan", String(maxDepth));
+                headerRow.appendChild(selTh);
+            }
+
+            nodes.forEach((node) => {
+                headerRow.appendChild(
+                    this._isColumnGroup(node)
+                        ? this._buildGroupHeaderCell(node, depth, maxDepth)
+                        : this._buildLeafHeaderCell(node, depth, maxDepth),
+                );
+            });
+
+            thead.appendChild(headerRow);
         });
-        wrap.appendChild(this._buildHeaderMenuColumnList());
-        popover.appendChild(wrap);
 
-        popover.anchor = triggerBtn;
-        triggerBtn.setAttribute("aria-expanded", "true");
+        if (this.filtering === "inline") thead.appendChild(this._buildFilterRow(leafColumns));
+        return thead;
+    }
 
-        const onHide = () => {
-            triggerBtn.setAttribute("aria-expanded", "false");
-            popover.removeEventListener("popover-closed", onHide);
-            this._applyPendingColumnVisibility();
+    _buildHeaderFilterTrigger(col) {
+        const hasFilter = this._columnFilters[col.key] != null
+            && String(this._columnFilters[col.key]) !== "";
+        const btn = _el("button", {
+            type: "button",
+            class: hasFilter
+                ? "header-action-trigger header-filter-trigger is-active"
+                : "header-action-trigger header-filter-trigger",
+            part: "header-filter-trigger",
+            "aria-label": `${col.label || col.key} filter`,
+            "aria-haspopup": "dialog",
+            "aria-expanded": "false",
+        });
+        btn.appendChild(_el("y-icon", { name: "funnel", size: "small" }));
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this._openFilterPopover(col, btn);
+        });
+        return btn;
+    }
+
+    _buildHeaderMatrix(tree) {
+        const maxDepth = this._maxColumnDepth(tree);
+        const rows = Array.from({ length: maxDepth }, () => []);
+        const walk = (nodes, depth) => {
+            nodes.forEach((node) => {
+                if (!this._isVisibleNode(node)) return;
+                rows[depth].push(node);
+                if (this._isColumnGroup(node)) walk(node.children, depth + 1);
+            });
         };
-        popover.addEventListener("popover-closed", onHide);
-
-        popover.show();
+        walk(tree, 0);
+        return { rows, maxDepth };
     }
 
     _buildHeaderMenuColumnList() {
@@ -1596,56 +1265,176 @@ export class YumeDataGrid extends HTMLElement {
         return list;
     }
 
-    _applyPendingColumnVisibility() {
-        if (this._pendingColumnHidden.size === 0) return;
-        for (const [key, hidden] of this._pendingColumnHidden) {
-            const ctx = this._findColumnContext(key);
-            if (!ctx) continue;
-            if (hidden) ctx.node.hidden = true;
-            else delete ctx.node.hidden;
+    _buildHeaderMenuContent(col, close) {
+        const root = _el("div", { class: "header-menu", role: "menu" });
+
+        // ---- Sort section ----
+        const sortable = this.enableSorting && col.sortable !== false;
+        if (sortable) {
+            const sortSection = _el("div", { class: "menu-section" });
+            const ascBtn = this._buildMenuItem({
+                icon: "arrow-up",
+                label: "Sort ascending",
+                onSelect: () => { this._setSortFromMenu(col.key, "asc"); close(); },
+            });
+            const descBtn = this._buildMenuItem({
+                icon: "arrow-down",
+                label: "Sort descending",
+                onSelect: () => { this._setSortFromMenu(col.key, "desc"); close(); },
+            });
+            sortSection.appendChild(ascBtn);
+            sortSection.appendChild(descBtn);
+
+            const currentSort = this._sorts.find((s) => s.column === col.key);
+            if (currentSort) {
+                sortSection.appendChild(this._buildMenuItem({
+                    icon: "x",
+                    label: "Clear sort",
+                    onSelect: () => { this._clearSortFor(col.key); close(); },
+                }));
+            }
+            root.appendChild(sortSection);
         }
-        this._pendingColumnHidden.clear();
-        this._parsedColumns = this._flattenColumnTree(this._workingTree);
-        this._render();
-    }
 
-    _setSortFromMenu(key, direction) {
-        const existingIdx = this._sorts.findIndex((s) => s.column === key);
-        if (existingIdx >= 0) this._sorts[existingIdx].direction = direction;
-        else this._sorts = [{ column: key, direction }];
+        // ---- Columns visibility (opens a nested popover submenu) ----
+        const colsSection = _el("div", { class: "menu-section" });
+        colsSection.appendChild(this._buildColumnsSubmenuItem());
+        root.appendChild(colsSection);
 
-        const cancelled = !this._emitSortChange(key, direction);
-        if (this.mode === "server" && cancelled) return;
-        this._render();
-    }
+        // ---- Move column section ----
+        const ctx = this._findColumnContext(col.key);
+        if (ctx) {
+            const moveSection = _el("div", { class: "menu-section" });
+            const visibleSiblings = ctx.siblings
+                .map((node, idx) => ({ node, idx }))
+                .filter(({ node }) => this._isVisibleNode(node));
+            const positionAmongVisible = visibleSiblings.findIndex(
+                (s) => s.node === ctx.node,
+            );
+            const canMovePrev = positionAmongVisible > 0;
+            const canMoveNext = positionAmongVisible >= 0
+                && positionAmongVisible < visibleSiblings.length - 1;
 
-    _clearSortFor(key) {
-        const before = this._sorts.length;
-        this._sorts = this._sorts.filter((s) => s.column !== key);
-        if (this._sorts.length === before) return;
-        const top = this._sorts[0];
-        this._emitSortChange(top ? top.column : null, top ? top.direction : "none");
-        this._render();
-    }
-
-    _moveColumn(key, direction) {
-        const ctx = this._findColumnContext(key);
-        if (!ctx) return;
-        const siblings = ctx.siblings;
-        const here = ctx.index;
-
-        // Walk to the nearest visible sibling in the requested direction.
-        let target = here + direction;
-        while (target >= 0 && target < siblings.length && !this._isVisibleNode(siblings[target])) {
-            target += direction;
+            moveSection.appendChild(this._buildMenuItem({
+                icon: "arrow-left",
+                label: "Move column previous",
+                disabled: !canMovePrev,
+                onSelect: () => { this._moveColumn(col.key, -1); close(); },
+            }));
+            moveSection.appendChild(this._buildMenuItem({
+                icon: "arrow-right",
+                label: "Move column next",
+                disabled: !canMoveNext,
+                onSelect: () => { this._moveColumn(col.key, 1); close(); },
+            }));
+            root.appendChild(moveSection);
         }
-        if (target < 0 || target >= siblings.length) return;
 
-        const [moved] = siblings.splice(here, 1);
-        siblings.splice(target, 0, moved);
+        return root;
+    }
 
-        this._parsedColumns = this._flattenColumnTree(this._workingTree);
-        this._render();
+    _buildHeaderMenuPopover() {
+        ensureHeaderMenuStyles();
+        const popover = _el("y-popover", {
+            part: "header-menu-popover",
+            trigger: "manual",
+            position: "bottom-end",
+            portal: "",
+            // Outside-click is managed by `_openHeaderMenu` so the submenu's
+            // portal counts as "inside" — otherwise a click on a column
+            // checkbox would close the main menu and prematurely commit edits.
+            "close-on-outside-click": "false",
+            "close-on-escape": "true",
+        });
+        popover.classList.add("header-menu-popover");
+        return popover;
+    }
+
+    _buildHeaderMenuTrigger(col) {
+        const btn = _el("button", {
+            type: "button",
+            class: "header-action-trigger header-menu-trigger",
+            part: "header-menu-trigger",
+            "aria-label": `${col.label || col.key} column menu`,
+            "aria-haspopup": "menu",
+            "aria-expanded": "false",
+        });
+        btn.appendChild(_el("y-icon", { name: "ellipsis-v", size: "small" }));
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this._openHeaderMenu(col, btn);
+        });
+        return btn;
+    }
+
+    _buildItemCount(total, paginated) {
+        const span = _el("div", { part: "item-count", class: "item-count" });
+        if (total === 0) {
+            span.textContent = "0 items";
+            return span;
+        }
+        if (!paginated) {
+            span.textContent = `${total.toLocaleString()} ${total === 1 ? "item" : "items"}`;
+            return span;
+        }
+        const start = (this._currentPage - 1) * this._pageSize + 1;
+        const end = Math.min(this._currentPage * this._pageSize, total);
+        span.textContent = `${start.toLocaleString()}–${end.toLocaleString()} of ${total.toLocaleString()}`;
+        return span;
+    }
+
+    _buildLeafHeaderCell(col, depth, maxDepth) {
+        const isSortable = this.enableSorting && col.sortable !== false;
+        const sortIdx = this._sorts.findIndex((s) => s.column === col.key);
+        const direction = sortIdx >= 0 ? this._sorts[sortIdx].direction : "none";
+        const ariaSort =
+            direction === "asc" ? "ascending" :
+                direction === "desc" ? "descending" : "none";
+
+        const remainingRows = maxDepth - depth;
+        const th = _el("th", {
+            part: "header-cell",
+            scope: "col",
+            "aria-sort": ariaSort,
+            class: isSortable ? "sortable" : null,
+            rowspan: remainingRows > 1 ? String(remainingRows) : null,
+        });
+        if (col.width) th.style.width = col.width;
+        if (col.align) th.style.textAlign = col.align;
+
+        const inner = _el("span", { class: "th-content" });
+        inner.appendChild(document.createTextNode(col.label || col.key));
+
+        if (isSortable) {
+            const indicator = _el("span", { class: "sort-icon", "aria-hidden": "true" });
+            if (direction === "asc") {
+                indicator.appendChild(_el("y-icon", { name: "arrow-up", size: "small" }));
+            } else if (direction === "desc") {
+                indicator.appendChild(_el("y-icon", { name: "arrow-down", size: "small" }));
+            } else {
+                indicator.classList.add("sort-icon--placeholder");
+            }
+            if (sortIdx >= 0 && this._sorts.length > 1) {
+                const badge = _el("span", { class: "sort-rank" }, [
+                    String(sortIdx + 1),
+                ]);
+                inner.appendChild(badge);
+            }
+            inner.appendChild(indicator);
+            th.addEventListener("click", (e) => this._onHeaderClick(col.key, e));
+        }
+
+        const showFilterTrigger = this.filtering === "advanced";
+        const showMenuTrigger = this.enableHeaderMenu;
+        if (showFilterTrigger || showMenuTrigger) {
+            const actions = _el("span", { class: "th-actions" });
+            if (showFilterTrigger) actions.appendChild(this._buildHeaderFilterTrigger(col));
+            if (showMenuTrigger) actions.appendChild(this._buildHeaderMenuTrigger(col));
+            inner.appendChild(actions);
+        }
+
+        th.appendChild(inner);
+        return th;
     }
 
     _buildLoadingOverlay() {
@@ -1667,47 +1456,157 @@ export class YumeDataGrid extends HTMLElement {
         return overlay;
     }
 
-    _buildFooter(filteredCount, showPagination) {
-        const total = this.mode === "server" ? this.totalRows : filteredCount;
-        const totalPages = Math.max(1, Math.ceil(total / this._pageSize));
-        const showCount = this.showItemCount;
-        if (!showPagination && !showCount) return null;
-
-        const wrap = _el("div", { part: "pagination", class: "grid-footer" });
-
-        if (showPagination) {
-            const slot = _el("slot", { name: "pagination" });
-            const paginator = _el("y-paginator", {
-                "current-page": String(this._currentPage),
-                "total-pages": String(totalPages),
-                variant: "default",
-                size: "small",
-            });
-            paginator.addEventListener("page-change", this._onPaginatorChange);
-            paginator.addEventListener("page-size-change", this._onPaginatorPageSize);
-            slot.appendChild(paginator);
-            wrap.appendChild(slot);
-        }
-
-        if (showCount) {
-            wrap.appendChild(this._buildItemCount(total, showPagination));
-        }
-        return wrap;
+    _buildMenuItem({ icon, label, onSelect, disabled = false }) {
+        const btn = _el("button", {
+            type: "button",
+            role: "menuitem",
+            class: "menu-item",
+            disabled: disabled || null,
+        });
+        if (icon) btn.appendChild(_el("y-icon", { name: icon, size: "small" }));
+        btn.appendChild(_el("span", {}, [label]));
+        if (!disabled) btn.addEventListener("click", onSelect);
+        return btn;
     }
 
-    _buildItemCount(total, paginated) {
-        const span = _el("div", { part: "item-count", class: "item-count" });
-        if (total === 0) {
-            span.textContent = "0 items";
-            return span;
+    _buildRowEntries({ respectCollapse = true } = {}) {
+        const dataRows = this._getDisplayDataRows();
+        const groupKeys = this.groupBy;
+        const cols = this._parsedColumns;
+        const dataIndex = (row) => this._parsedData.indexOf(row);
+
+        if (groupKeys.length === 0) {
+            return dataRows.map((row) => ({
+                kind: "data",
+                row,
+                depth: 0,
+                absoluteIndex: dataIndex(row),
+            }));
         }
-        if (!paginated) {
-            span.textContent = `${total.toLocaleString()} ${total === 1 ? "item" : "items"}`;
-            return span;
-        }
-        const start = (this._currentPage - 1) * this._pageSize + 1;
-        const end = Math.min(this._currentPage * this._pageSize, total);
-        span.textContent = `${start.toLocaleString()}–${end.toLocaleString()} of ${total.toLocaleString()}`;
+
+        const out = [];
+        const groupCols = groupKeys.map(
+            (k) => cols.find((c) => c.key === k) || { key: k },
+        );
+
+        const walk = (rows, depth, parentPath) => {
+            if (depth >= groupKeys.length) {
+                rows.forEach((row) => {
+                    out.push({
+                        kind: "data",
+                        row,
+                        depth,
+                        absoluteIndex: dataIndex(row),
+                    });
+                });
+                return;
+            }
+            const key = groupKeys[depth];
+            const buckets = new Map();
+            const order = [];
+            rows.forEach((row) => {
+                const v = row[key];
+                const sv = v == null ? "" : String(v);
+                if (!buckets.has(sv)) {
+                    buckets.set(sv, []);
+                    order.push(sv);
+                }
+                buckets.get(sv).push(row);
+            });
+
+            order.forEach((value) => {
+                const bucket = buckets.get(value);
+                const path = [...parentPath, value];
+                const pathKey = this._groupPathKey(path);
+                const collapsed = respectCollapse && this._collapsedGroups.has(pathKey);
+                out.push({
+                    kind: "group",
+                    path,
+                    depth,
+                    count: bucket.length,
+                    aggregates: this._computeAggregates(bucket),
+                    collapsed,
+                    groupCol: groupCols[depth],
+                });
+                if (!collapsed) walk(bucket, depth + 1, path);
+            });
+        };
+
+        walk(dataRows, 0, []);
+        return out;
+    }
+
+    _buildSelectAllHeader() {
+        const visibleRows = this._getDisplayDataRows();
+        const visibleKeys = visibleRows.map((row) =>
+            this._rowKeyFor(row, this._parsedData.indexOf(row)),
+        );
+        const selectedCount = visibleKeys.filter((k) => this._selectedKeys.has(k)).length;
+        const allChecked = visibleKeys.length > 0 && selectedCount === visibleKeys.length;
+        const someChecked = selectedCount > 0 && !allChecked;
+
+        const th = _el("th", {
+            scope: "col",
+            part: "header-cell",
+            class: "select-cell",
+        });
+
+        if (this.selectionMode === "single") return th;
+
+        const checkbox = _el("y-checkbox", {
+            "aria-label": "Select all rows",
+            "label-position": "right",
+        });
+        if (allChecked) checkbox.setAttribute("checked", "");
+        if (someChecked) checkbox.setAttribute("indeterminate", "");
+
+        checkbox.addEventListener("change", (e) => {
+            e.stopPropagation();
+            this._toggleAllVisible(!allChecked, visibleKeys, visibleRows);
+        });
+        th.appendChild(checkbox);
+        return th;
+    }
+
+    _buildSelectCell(row, rowKey, isSelected) {
+        const td = _el("td", {
+            part: "cell",
+            role: "gridcell",
+            class: "select-cell",
+        });
+        const checkbox = _el("y-checkbox", {
+            "aria-label": "Select row",
+            "label-position": "right",
+        });
+        if (isSelected) checkbox.setAttribute("checked", "");
+
+        checkbox.addEventListener("change", (e) => {
+            e.stopPropagation();
+            this._toggleRowSelection(row, rowKey, e);
+        });
+        checkbox.addEventListener("click", (e) => e.stopPropagation());
+        td.appendChild(checkbox);
+        return td;
+    }
+
+    _buildSpacerRow(colspan, height) {
+        const tr = _el("tr", { class: "spacer-row", "aria-hidden": "true" });
+        const td = _el("td", { colspan: String(Math.max(1, colspan)) });
+        td.style.height = `${height}px`;
+        td.style.padding = "0";
+        td.style.border = "0";
+        tr.appendChild(td);
+        return tr;
+    }
+
+    _buildStatusIndicator(status) {
+        const span = _el("span", { class: `edit-status edit-status--${status.kind}` });
+        const iconName =
+            status.kind === "saving" ? "clock" :
+                status.kind === "success" ? "check" :
+                    "x";
+        span.appendChild(_el("y-icon", { name: iconName, size: "small" }));
+        if (status.message) span.setAttribute("title", status.message);
         return span;
     }
 
@@ -2026,120 +1925,122 @@ export class YumeDataGrid extends HTMLElement {
         `;
     }
 
-    _emitFilterChange() {
-        const detail = {
-            filters: { ...this._columnFilters },
-            operators: { ...this._columnFilterOps },
-            globalSearch: this._globalQuery,
-        };
-        const ev = new CustomEvent("filter-change", {
-            detail,
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-        });
-        return this.dispatchEvent(ev);
+    _cancelActiveEditor() {
+        if (!this._editing) return;
+        const { row, rowKey, col } = this._editing;
+        this._cancelEdit(row, rowKey, col);
     }
 
-    _emitPageChange(page) {
-        const ev = new CustomEvent("page-change", {
-            detail: { page, pageSize: this._pageSize },
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-        });
-        return this.dispatchEvent(ev);
-    }
-
-    _emitSortChange(column, direction) {
-        const ev = new CustomEvent("sort-change", {
-            detail: { column, direction, sorts: this.sortState },
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-        });
-        return this.dispatchEvent(ev);
-    }
-
-    _getDisplayDataRows() {
-        if (this.mode === "server") return this._parsedData;
-        const filtered = this._applyClientFilters(this._parsedData);
-        const sorted = this._applyClientSort(filtered);
-        if (!this.enablePagination || this.groupBy.length > 0) return sorted;
-        const start = (this._currentPage - 1) * this._pageSize;
-        return sorted.slice(start, start + this._pageSize);
-    }
-
-    _getFilteredCount() {
-        if (this.mode === "server") return this.totalRows;
-        return this._applyClientFilters(this._parsedData).length;
-    }
-
-    _buildRowEntries({ respectCollapse = true } = {}) {
-        const dataRows = this._getDisplayDataRows();
-        const groupKeys = this.groupBy;
-        const cols = this._parsedColumns;
-        const dataIndex = (row) => this._parsedData.indexOf(row);
-
-        if (groupKeys.length === 0) {
-            return dataRows.map((row) => ({
-                kind: "data",
-                row,
-                depth: 0,
-                absoluteIndex: dataIndex(row),
-            }));
+    _cancelEdit(row, rowKey, col) {
+        if (!this._editing || this._editing.rowKey !== rowKey || this._editing.columnKey !== col.key) {
+            return;
         }
+        const oldValue = this._editing.oldValue;
+        this._editing = null;
+        this.dispatchEvent(new CustomEvent("cell-edit-cancel", {
+            detail: { row, column: col.key, oldValue },
+            bubbles: true,
+            composed: true,
+        }));
+        this._render();
+    }
 
-        const out = [];
-        const groupCols = groupKeys.map(
-            (k) => cols.find((c) => c.key === k) || { key: k },
-        );
+    _clearSortFor(key) {
+        const before = this._sorts.length;
+        this._sorts = this._sorts.filter((s) => s.column !== key);
+        if (this._sorts.length === before) return;
+        const top = this._sorts[0];
+        this._emitSortChange(top ? top.column : null, top ? top.direction : "none");
+        this._render();
+    }
 
-        const walk = (rows, depth, parentPath) => {
-            if (depth >= groupKeys.length) {
-                rows.forEach((row) => {
-                    out.push({
-                        kind: "data",
-                        row,
-                        depth,
-                        absoluteIndex: dataIndex(row),
-                    });
-                });
+    _cloneColumnTree(tree) {
+        return tree.map((node) => {
+            const copy = { ...node };
+            if (this._isColumnGroup(node)) copy.children = this._cloneColumnTree(node.children);
+            return copy;
+        });
+    }
+
+    _collectValidators(col) {
+        const list = [];
+        if (col.required) {
+            list.push((v) => {
+                if (v == null || v === "") return "This field is required";
+                return null;
+            });
+        }
+        if (col.type === "number") {
+            list.push((v) => {
+                if (v === "" || v == null) return null;
+                if (Number.isNaN(Number(v))) return "Must be a number";
+                if (col.min != null && Number(v) < col.min) return `Min ${col.min}`;
+                if (col.max != null && Number(v) > col.max) return `Max ${col.max}`;
+                return null;
+            });
+        }
+        if (col.pattern) {
+            const re = new RegExp(col.pattern);
+            list.push((v) => (re.test(String(v ?? "")) ? null : "Invalid format"));
+        }
+        if (typeof col.validate === "function") {
+            list.push(col.validate);
+        }
+        return list;
+    }
+
+    _commitActiveEditor() {
+        if (!this._editing) return;
+        const { row, rowKey, col, oldValue } = this._editing;
+        const editor = this.shadowRoot.querySelector("td.editing [part='cell-editor']");
+        const value = editor
+            ? this._readEditorValue(editor, col.editor || col.type || "text")
+            : oldValue;
+        this._commitEdit(row, rowKey, col, value, this._collectValidators(col));
+    }
+
+    _commitEdit(row, rowKey, col, value, validators) {
+        if (!this._editing || this._editing.rowKey !== rowKey || this._editing.columnKey !== col.key) {
+            return;
+        }
+        const oldValue = this._editing.oldValue;
+        const statusKey = `${rowKey}::${col.key}`;
+
+        for (const fn of validators) {
+            const msg = fn(value, row);
+            if (msg) {
+                this._editStatuses.set(statusKey, { kind: "error", message: msg });
+                this._render();
                 return;
             }
-            const key = groupKeys[depth];
-            const buckets = new Map();
-            const order = [];
-            rows.forEach((row) => {
-                const v = row[key];
-                const sv = v == null ? "" : String(v);
-                if (!buckets.has(sv)) {
-                    buckets.set(sv, []);
-                    order.push(sv);
-                }
-                buckets.get(sv).push(row);
-            });
+        }
 
-            order.forEach((value) => {
-                const bucket = buckets.get(value);
-                const path = [...parentPath, value];
-                const pathKey = this._groupPathKey(path);
-                const collapsed = respectCollapse && this._collapsedGroups.has(pathKey);
-                out.push({
-                    kind: "group",
-                    path,
-                    depth,
-                    count: bucket.length,
-                    aggregates: this._computeAggregates(bucket),
-                    collapsed,
-                    groupCol: groupCols[depth],
-                });
-                if (!collapsed) walk(bucket, depth + 1, path);
-            });
-        };
+        const ev = new CustomEvent("cell-edit-end", {
+            detail: { row, column: col.key, value, oldValue },
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        const accepted = this.dispatchEvent(ev);
+        if (!accepted) {
+            this._editStatuses.set(statusKey, { kind: "error", message: "Rejected" });
+            this._editing = null;
+            this._render();
+            return;
+        }
 
-        walk(dataRows, 0, []);
-        return out;
+        if (this.mode === "client") {
+            row[col.key] = value;
+        }
+        this._editing = null;
+        this._editStatuses.set(statusKey, { kind: "success" });
+        this._render();
+        setTimeout(() => {
+            if (this._editStatuses.get(statusKey)?.kind === "success") {
+                this._editStatuses.delete(statusKey);
+                if (this.isConnected) this._render();
+            }
+        }, EDIT_STATUS_RESET_MS);
     }
 
     _computeAggregates(rows) {
@@ -2167,6 +2068,93 @@ export class YumeDataGrid extends HTMLElement {
         return out;
     }
 
+    _defaultOperatorFor(col) {
+        if (!col) return "contains";
+        if (col.type === "number") return "equals";
+        if (col.type === "date") return "equals";
+        return "contains";
+    }
+
+    _emitFilterChange() {
+        const detail = {
+            filters: { ...this._columnFilters },
+            operators: { ...this._columnFilterOps },
+            globalSearch: this._globalQuery,
+        };
+        const ev = new CustomEvent("filter-change", {
+            detail,
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        return this.dispatchEvent(ev);
+    }
+
+    _emitGroupToggle(path, expanded) {
+        this.dispatchEvent(new CustomEvent("group-toggle", {
+            detail: { path, groupKey: path[path.length - 1], expanded },
+            bubbles: true,
+            composed: true,
+        }));
+    }
+
+    _emitPageChange(page) {
+        const ev = new CustomEvent("page-change", {
+            detail: { page, pageSize: this._pageSize },
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        return this.dispatchEvent(ev);
+    }
+
+    _emitRowSelect(event) {
+        const rows = this.selectedRows;
+        const ev = new CustomEvent("row-select", {
+            detail: { rows, keys: this.selectedKeys, event },
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        return this.dispatchEvent(ev);
+    }
+
+    _emitSortChange(column, direction) {
+        const ev = new CustomEvent("sort-change", {
+            detail: { column, direction, sorts: this.sortState },
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+        });
+        return this.dispatchEvent(ev);
+    }
+
+    _findColumnContext(key, nodes = this._workingTree, parent = null) {
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            if (!this._isColumnGroup(node) && node.key === key) {
+                return { node, parent, siblings: nodes, index: i };
+            }
+            if (this._isColumnGroup(node)) {
+                const found = this._findColumnContext(key, node.children, node);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    _flattenColumnTree(tree, { includeHidden = false } = {}) {
+        const out = [];
+        const walk = (nodes) => {
+            nodes.forEach((node) => {
+                if (this._isColumnGroup(node)) walk(node.children);
+                else if (includeHidden || !node.hidden) out.push(node);
+            });
+        };
+        walk(tree);
+        return out;
+    }
+
     _formatAggregate(value) {
         if (value == null) return "";
         if (typeof value === "number") {
@@ -2177,6 +2165,20 @@ export class YumeDataGrid extends HTMLElement {
         return String(value);
     }
 
+    _getDisplayDataRows() {
+        if (this.mode === "server") return this._parsedData;
+        const filtered = this._applyClientFilters(this._parsedData);
+        const sorted = this._applyClientSort(filtered);
+        if (!this.enablePagination || this.groupBy.length > 0) return sorted;
+        const start = (this._currentPage - 1) * this._pageSize;
+        return sorted.slice(start, start + this._pageSize);
+    }
+
+    _getFilteredCount() {
+        if (this.mode === "server") return this.totalRows;
+        return this._applyClientFilters(this._parsedData).length;
+    }
+
     _groupPathKey(path) {
         // Escape backslashes and the delimiter so distinct paths can never
         // serialize to the same key (e.g. ["a","bc"] vs ["ab","c"]).
@@ -2185,21 +2187,90 @@ export class YumeDataGrid extends HTMLElement {
             .join("/");
     }
 
-    _toggleGroup(path) {
-        const key = this._groupPathKey(path);
-        const wasCollapsed = this._collapsedGroups.has(key);
-        if (wasCollapsed) this._collapsedGroups.delete(key);
-        else this._collapsedGroups.add(key);
-        this._emitGroupToggle(path, wasCollapsed);
-        this._render();
+    _isColumnGroup(node) {
+        return node && Array.isArray(node.children) && node.children.length > 0;
     }
 
-    _emitGroupToggle(path, expanded) {
-        this.dispatchEvent(new CustomEvent("group-toggle", {
-            detail: { path, groupKey: path[path.length - 1], expanded },
-            bubbles: true,
-            composed: true,
-        }));
+    _isVisibleNode(node) {
+        if (!this._isColumnGroup(node)) return !node.hidden;
+        return node.children.some((c) => this._isVisibleNode(c));
+    }
+
+    _leafCount(node) {
+        if (!this._isColumnGroup(node)) return node.hidden ? 0 : 1;
+        return node.children.reduce((sum, c) => sum + this._leafCount(c), 0);
+    }
+
+    _matchesFilter(cellValue, filterValue, op, col) {
+        const type = col?.type;
+        if (type === "number") {
+            const a = Number(cellValue);
+            const b = Number(filterValue);
+            if (!Number.isFinite(b)) return true;
+            if (!Number.isFinite(a)) return false;
+            switch (op) {
+                case "equals": return a === b;
+                case "ne": return a !== b;
+                case "gt": return a > b;
+                case "gte": return a >= b;
+                case "lt": return a < b;
+                case "lte": return a <= b;
+                default: return a === b;
+            }
+        }
+        if (type === "date") {
+            const a = cellValue == null ? NaN : new Date(cellValue).getTime();
+            const b = filterValue ? new Date(filterValue).getTime() : NaN;
+            if (Number.isNaN(b)) return true;
+            if (Number.isNaN(a)) return false;
+            switch (op) {
+                case "before": return a < b;
+                case "after": return a > b;
+                case "equals":
+                default: return a === b;
+            }
+        }
+        const cell = String(cellValue ?? "").toLowerCase();
+        const needle = String(filterValue).toLowerCase();
+        switch (op) {
+            case "equals": return cell === needle;
+            case "startsWith": return cell.startsWith(needle);
+            case "endsWith": return cell.endsWith(needle);
+            case "contains":
+            default: return cell.includes(needle);
+        }
+    }
+
+    _maxColumnDepth(tree) {
+        const visible = tree.filter((n) => this._isVisibleNode(n));
+        if (visible.length === 0) return 1;
+        const depth = (node, d) => {
+            if (!this._isColumnGroup(node)) return d;
+            const kids = node.children.filter((c) => this._isVisibleNode(c));
+            if (kids.length === 0) return d;
+            return Math.max(...kids.map((c) => depth(c, d + 1)));
+        };
+        return Math.max(...visible.map((n) => depth(n, 1)));
+    }
+
+    _moveColumn(key, direction) {
+        const ctx = this._findColumnContext(key);
+        if (!ctx) return;
+        const siblings = ctx.siblings;
+        const here = ctx.index;
+
+        // Walk to the nearest visible sibling in the requested direction.
+        let target = here + direction;
+        while (target >= 0 && target < siblings.length && !this._isVisibleNode(siblings[target])) {
+            target += direction;
+        }
+        if (target < 0 || target >= siblings.length) return;
+
+        const [moved] = siblings.splice(here, 1);
+        siblings.splice(target, 0, moved);
+
+        this._parsedColumns = this._flattenColumnTree(this._workingTree);
+        this._render();
     }
 
     _onHeaderClick(key, event) {
@@ -2277,6 +2348,114 @@ export class YumeDataGrid extends HTMLElement {
         }));
     }
 
+    _onScroll(e) {
+        const next = e.target.scrollTop;
+        if (Math.abs(next - this._scrollTop) < this.rowHeight / 2) return;
+        this._scrollTop = next;
+        this._render();
+    }
+
+    _openColumnsSubmenu(triggerBtn) {
+        const popover = this._columnsSubmenuPopover;
+        if (!popover || popover.open) return;
+
+        popover.innerHTML = "";
+        const wrap = _el("div", {
+            class: "header-menu header-submenu",
+            role: "menu",
+        });
+        wrap.appendChild(this._buildHeaderMenuColumnList());
+        popover.appendChild(wrap);
+
+        popover.anchor = triggerBtn;
+        triggerBtn.setAttribute("aria-expanded", "true");
+
+        const onHide = () => {
+            triggerBtn.setAttribute("aria-expanded", "false");
+            popover.removeEventListener("popover-closed", onHide);
+            this._applyPendingColumnVisibility();
+        };
+        popover.addEventListener("popover-closed", onHide);
+
+        popover.show();
+    }
+
+    _openFilterPopover(col, triggerBtn) {
+        if (!this._filterPopover) return;
+        const popover = this._filterPopover;
+
+        if (popover.open) {
+            popover.hide("api");
+            return;
+        }
+
+        popover.innerHTML = "";
+        popover.appendChild(
+            this._buildFilterPopoverContent(col, () => popover.hide("api")),
+        );
+
+        popover.anchor = triggerBtn;
+        triggerBtn.setAttribute("aria-expanded", "true");
+
+        const onDocClick = (e) => {
+            const path = e.composedPath();
+            const insidePortal = path.some(
+                (node) => node?.classList?.contains?.("y-popover-portal"),
+            );
+            const insideTrigger = path.includes(triggerBtn);
+            if (!insidePortal && !insideTrigger) popover.hide("api");
+        };
+        document.addEventListener("click", onDocClick, true);
+
+        const onHide = () => {
+            triggerBtn.setAttribute("aria-expanded", "false");
+            popover.removeEventListener("popover-closed", onHide);
+            document.removeEventListener("click", onDocClick, true);
+        };
+        popover.addEventListener("popover-closed", onHide);
+
+        popover.show();
+    }
+
+    _openHeaderMenu(col, triggerBtn) {
+        if (!this._headerMenuPopover) return;
+        const popover = this._headerMenuPopover;
+
+        // Clicking the same trigger again toggles the menu closed.
+        if (popover.open) {
+            popover.hide("api");
+            return;
+        }
+
+        // Reset & rebuild content for the targeted column.
+        popover.innerHTML = "";
+        popover.appendChild(this._buildHeaderMenuContent(col, () => popover.hide("api")));
+
+        popover.anchor = triggerBtn;
+        triggerBtn.setAttribute("aria-expanded", "true");
+
+        // Manual outside-click: clicks inside *any* y-popover portal (main or
+        // submenu) and clicks on the trigger itself count as "inside".
+        const onDocClick = (e) => {
+            const path = e.composedPath();
+            const insidePortal = path.some(
+                (node) => node?.classList?.contains?.("y-popover-portal"),
+            );
+            const insideTrigger = path.includes(triggerBtn);
+            if (!insidePortal && !insideTrigger) popover.hide("api");
+        };
+        document.addEventListener("click", onDocClick, true);
+
+        const onHide = () => {
+            triggerBtn.setAttribute("aria-expanded", "false");
+            popover.removeEventListener("popover-closed", onHide);
+            document.removeEventListener("click", onDocClick, true);
+        };
+        popover.addEventListener("popover-closed", onHide);
+
+        popover.show();
+    }
+
     _parseAttributes() {
         let tree;
         try {
@@ -2301,95 +2480,13 @@ export class YumeDataGrid extends HTMLElement {
         }
     }
 
-    _cloneColumnTree(tree) {
-        return tree.map((node) => {
-            const copy = { ...node };
-            if (this._isColumnGroup(node)) copy.children = this._cloneColumnTree(node.children);
-            return copy;
-        });
-    }
-
-    _sameTreeShape(a, b) {
-        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-        for (let i = 0; i < a.length; i++) {
-            const x = a[i];
-            const y = b[i];
-            const xGroup = this._isColumnGroup(x);
-            const yGroup = this._isColumnGroup(y);
-            if (xGroup !== yGroup) return false;
-            if (xGroup) {
-                if (!this._sameTreeShape(x.children, y.children)) return false;
-            } else if (x.key !== y.key) {
-                return false;
-            }
+    _readEditorValue(editor, type) {
+        if (type === "checkbox") return editor.checked;
+        if (type === "number") {
+            const n = Number(editor.value);
+            return Number.isFinite(n) ? n : editor.value;
         }
-        return true;
-    }
-
-    _isColumnGroup(node) {
-        return node && Array.isArray(node.children) && node.children.length > 0;
-    }
-
-    _isVisibleNode(node) {
-        if (!this._isColumnGroup(node)) return !node.hidden;
-        return node.children.some((c) => this._isVisibleNode(c));
-    }
-
-    _flattenColumnTree(tree, { includeHidden = false } = {}) {
-        const out = [];
-        const walk = (nodes) => {
-            nodes.forEach((node) => {
-                if (this._isColumnGroup(node)) walk(node.children);
-                else if (includeHidden || !node.hidden) out.push(node);
-            });
-        };
-        walk(tree);
-        return out;
-    }
-
-    _leafCount(node) {
-        if (!this._isColumnGroup(node)) return node.hidden ? 0 : 1;
-        return node.children.reduce((sum, c) => sum + this._leafCount(c), 0);
-    }
-
-    _maxColumnDepth(tree) {
-        const visible = tree.filter((n) => this._isVisibleNode(n));
-        if (visible.length === 0) return 1;
-        const depth = (node, d) => {
-            if (!this._isColumnGroup(node)) return d;
-            const kids = node.children.filter((c) => this._isVisibleNode(c));
-            if (kids.length === 0) return d;
-            return Math.max(...kids.map((c) => depth(c, d + 1)));
-        };
-        return Math.max(...visible.map((n) => depth(n, 1)));
-    }
-
-    _buildHeaderMatrix(tree) {
-        const maxDepth = this._maxColumnDepth(tree);
-        const rows = Array.from({ length: maxDepth }, () => []);
-        const walk = (nodes, depth) => {
-            nodes.forEach((node) => {
-                if (!this._isVisibleNode(node)) return;
-                rows[depth].push(node);
-                if (this._isColumnGroup(node)) walk(node.children, depth + 1);
-            });
-        };
-        walk(tree, 0);
-        return { rows, maxDepth };
-    }
-
-    _findColumnContext(key, nodes = this._workingTree, parent = null) {
-        for (let i = 0; i < nodes.length; i++) {
-            const node = nodes[i];
-            if (!this._isColumnGroup(node) && node.key === key) {
-                return { node, parent, siblings: nodes, index: i };
-            }
-            if (this._isColumnGroup(node)) {
-                const found = this._findColumnContext(key, node.children, node);
-                if (found) return found;
-            }
-        }
-        return null;
+        return editor.value;
     }
 
     _render() {
@@ -2486,6 +2583,46 @@ export class YumeDataGrid extends HTMLElement {
         if (useVirtual) this._setupVirtualScroll(scroll);
     }
 
+    _renderCellValue(col, value) {
+        const isBool = col.type === "checkbox" || typeof value === "boolean";
+        const wrap = _el("span", {
+            class: isBool ? "cell-value cell-value--boolean" : "cell-value",
+        });
+        if (isBool) {
+            wrap.appendChild(_el("y-icon", {
+                name: value ? "check" : "x",
+                size: "small",
+                "aria-label": value ? "true" : "false",
+            }));
+        } else {
+            wrap.textContent = value == null ? "" : String(value);
+        }
+        return wrap;
+    }
+
+    _rowKeyFor(row, idx) {
+        const k = this.rowKey;
+        if (k && row && row[k] != null) return String(row[k]);
+        return `__idx:${idx}`;
+    }
+
+    _sameTreeShape(a, b) {
+        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) {
+            const x = a[i];
+            const y = b[i];
+            const xGroup = this._isColumnGroup(x);
+            const yGroup = this._isColumnGroup(y);
+            if (xGroup !== yGroup) return false;
+            if (xGroup) {
+                if (!this._sameTreeShape(x.children, y.children)) return false;
+            } else if (x.key !== y.key) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     _setColumnFilter(key, value) {
         if (value == null || value === "") {
             delete this._columnFilters[key];
@@ -2498,210 +2635,14 @@ export class YumeDataGrid extends HTMLElement {
         this._render();
     }
 
-    _absoluteRowIndex(displayIdx) {
-        if (this.mode === "server" || !this.enablePagination) return displayIdx;
-        return (this._currentPage - 1) * this._pageSize + displayIdx;
-    }
+    _setSortFromMenu(key, direction) {
+        const existingIdx = this._sorts.findIndex((s) => s.column === key);
+        if (existingIdx >= 0) this._sorts[existingIdx].direction = direction;
+        else this._sorts = [{ column: key, direction }];
 
-    _rowKeyFor(row, idx) {
-        const k = this.rowKey;
-        if (k && row && row[k] != null) return String(row[k]);
-        return `__idx:${idx}`;
-    }
-
-    _emitRowSelect(event) {
-        const rows = this.selectedRows;
-        const ev = new CustomEvent("row-select", {
-            detail: { rows, keys: this.selectedKeys, event },
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-        });
-        return this.dispatchEvent(ev);
-    }
-
-    _toggleRowSelection(row, rowKey, event) {
-        const previous = new Set(this._selectedKeys);
-
-        if (this.selectionMode === "single") {
-            if (this._selectedKeys.has(rowKey)) this._selectedKeys = new Set();
-            else this._selectedKeys = new Set([rowKey]);
-        } else {
-            if (this._selectedKeys.has(rowKey)) this._selectedKeys.delete(rowKey);
-            else this._selectedKeys.add(rowKey);
-        }
-
-        if (!this._emitRowSelect(event)) {
-            this._selectedKeys = previous;
-            return;
-        }
+        const cancelled = !this._emitSortChange(key, direction);
+        if (this.mode === "server" && cancelled) return;
         this._render();
-    }
-
-    _toggleAllVisible(check, visibleKeys, visibleRows) {
-        const previous = new Set(this._selectedKeys);
-        if (check) visibleKeys.forEach((k) => this._selectedKeys.add(k));
-        else visibleKeys.forEach((k) => this._selectedKeys.delete(k));
-
-        if (!this._emitRowSelect({ rows: visibleRows, all: true })) {
-            this._selectedKeys = previous;
-            return;
-        }
-        this._render();
-    }
-
-    _collectValidators(col) {
-        const list = [];
-        if (col.required) {
-            list.push((v) => {
-                if (v == null || v === "") return "This field is required";
-                return null;
-            });
-        }
-        if (col.type === "number") {
-            list.push((v) => {
-                if (v === "" || v == null) return null;
-                if (Number.isNaN(Number(v))) return "Must be a number";
-                if (col.min != null && Number(v) < col.min) return `Min ${col.min}`;
-                if (col.max != null && Number(v) > col.max) return `Max ${col.max}`;
-                return null;
-            });
-        }
-        if (col.pattern) {
-            const re = new RegExp(col.pattern);
-            list.push((v) => (re.test(String(v ?? "")) ? null : "Invalid format"));
-        }
-        if (typeof col.validate === "function") {
-            list.push(col.validate);
-        }
-        return list;
-    }
-
-    _readEditorValue(editor, type) {
-        if (type === "checkbox") return editor.checked;
-        if (type === "number") {
-            const n = Number(editor.value);
-            return Number.isFinite(n) ? n : editor.value;
-        }
-        return editor.value;
-    }
-
-    _beginEdit(row, rowKey, col) {
-        if (this._editing) {
-            if (this._editing.rowKey === rowKey && this._editing.columnKey === col.key) {
-                return;
-            }
-            this._commitActiveEditor();
-        }
-        const oldValue = row[col.key];
-        this._editing = { rowKey, columnKey: col.key, oldValue, row, col };
-        this.dispatchEvent(new CustomEvent("cell-edit-start", {
-            detail: { row, column: col.key, value: oldValue },
-            bubbles: true,
-            composed: true,
-        }));
-        this._render();
-    }
-
-    _commitActiveEditor() {
-        if (!this._editing) return;
-        const { row, rowKey, col, oldValue } = this._editing;
-        const editor = this.shadowRoot.querySelector("td.editing [part='cell-editor']");
-        const value = editor
-            ? this._readEditorValue(editor, col.editor || col.type || "text")
-            : oldValue;
-        this._commitEdit(row, rowKey, col, value, this._collectValidators(col));
-    }
-
-    _cancelActiveEditor() {
-        if (!this._editing) return;
-        const { row, rowKey, col } = this._editing;
-        this._cancelEdit(row, rowKey, col);
-    }
-
-    _commitEdit(row, rowKey, col, value, validators) {
-        if (!this._editing || this._editing.rowKey !== rowKey || this._editing.columnKey !== col.key) {
-            return;
-        }
-        const oldValue = this._editing.oldValue;
-        const statusKey = `${rowKey}::${col.key}`;
-
-        for (const fn of validators) {
-            const msg = fn(value, row);
-            if (msg) {
-                this._editStatuses.set(statusKey, { kind: "error", message: msg });
-                this._render();
-                return;
-            }
-        }
-
-        const ev = new CustomEvent("cell-edit-end", {
-            detail: { row, column: col.key, value, oldValue },
-            bubbles: true,
-            composed: true,
-            cancelable: true,
-        });
-        const accepted = this.dispatchEvent(ev);
-        if (!accepted) {
-            this._editStatuses.set(statusKey, { kind: "error", message: "Rejected" });
-            this._editing = null;
-            this._render();
-            return;
-        }
-
-        if (this.mode === "client") {
-            row[col.key] = value;
-        }
-        this._editing = null;
-        this._editStatuses.set(statusKey, { kind: "success" });
-        this._render();
-        setTimeout(() => {
-            if (this._editStatuses.get(statusKey)?.kind === "success") {
-                this._editStatuses.delete(statusKey);
-                if (this.isConnected) this._render();
-            }
-        }, EDIT_STATUS_RESET_MS);
-    }
-
-    _cancelEdit(row, rowKey, col) {
-        if (!this._editing || this._editing.rowKey !== rowKey || this._editing.columnKey !== col.key) {
-            return;
-        }
-        const oldValue = this._editing.oldValue;
-        this._editing = null;
-        this.dispatchEvent(new CustomEvent("cell-edit-cancel", {
-            detail: { row, column: col.key, oldValue },
-            bubbles: true,
-            composed: true,
-        }));
-        this._render();
-    }
-
-    _shouldVirtualize(entries) {
-        if (!this.virtual) return false;
-        if (this.viewportHeight <= 0) return false;
-        if (this.groupBy.length > 0) return false;
-        if (entries.length === 0) return false;
-        return true;
-    }
-
-    _windowEntries(entries) {
-        const rowH = this.rowHeight;
-        const viewport = this.viewportHeight;
-        const buffer = this.bufferSize;
-        const total = entries.length;
-        const scrollTop = this._scrollTop;
-
-        const firstVisible = Math.floor(scrollTop / rowH);
-        const visibleCount = Math.ceil(viewport / rowH);
-        const start = Math.max(0, firstVisible - buffer);
-        const end = Math.min(total, firstVisible + visibleCount + buffer);
-
-        return {
-            entries: entries.slice(start, end),
-            leadingPx: start * rowH,
-            trailingPx: (total - end) * rowH,
-        };
     }
 
     _setupVirtualScroll(scrollEl) {
@@ -2729,6 +2670,14 @@ export class YumeDataGrid extends HTMLElement {
         }
     }
 
+    _shouldVirtualize(entries) {
+        if (!this.virtual) return false;
+        if (this.viewportHeight <= 0) return false;
+        if (this.groupBy.length > 0) return false;
+        if (entries.length === 0) return false;
+        return true;
+    }
+
     _teardownVirtualScroll() {
         if (this._scrollEl) {
             this._scrollEl.removeEventListener("scroll", this._onScroll);
@@ -2740,11 +2689,62 @@ export class YumeDataGrid extends HTMLElement {
         }
     }
 
-    _onScroll(e) {
-        const next = e.target.scrollTop;
-        if (Math.abs(next - this._scrollTop) < this.rowHeight / 2) return;
-        this._scrollTop = next;
+    _toggleAllVisible(check, visibleKeys, visibleRows) {
+        const previous = new Set(this._selectedKeys);
+        if (check) visibleKeys.forEach((k) => this._selectedKeys.add(k));
+        else visibleKeys.forEach((k) => this._selectedKeys.delete(k));
+
+        if (!this._emitRowSelect({ rows: visibleRows, all: true })) {
+            this._selectedKeys = previous;
+            return;
+        }
         this._render();
+    }
+
+    _toggleGroup(path) {
+        const key = this._groupPathKey(path);
+        const wasCollapsed = this._collapsedGroups.has(key);
+        if (wasCollapsed) this._collapsedGroups.delete(key);
+        else this._collapsedGroups.add(key);
+        this._emitGroupToggle(path, wasCollapsed);
+        this._render();
+    }
+
+    _toggleRowSelection(row, rowKey, event) {
+        const previous = new Set(this._selectedKeys);
+
+        if (this.selectionMode === "single") {
+            if (this._selectedKeys.has(rowKey)) this._selectedKeys = new Set();
+            else this._selectedKeys = new Set([rowKey]);
+        } else {
+            if (this._selectedKeys.has(rowKey)) this._selectedKeys.delete(rowKey);
+            else this._selectedKeys.add(rowKey);
+        }
+
+        if (!this._emitRowSelect(event)) {
+            this._selectedKeys = previous;
+            return;
+        }
+        this._render();
+    }
+
+    _windowEntries(entries) {
+        const rowH = this.rowHeight;
+        const viewport = this.viewportHeight;
+        const buffer = this.bufferSize;
+        const total = entries.length;
+        const scrollTop = this._scrollTop;
+
+        const firstVisible = Math.floor(scrollTop / rowH);
+        const visibleCount = Math.ceil(viewport / rowH);
+        const start = Math.max(0, firstVisible - buffer);
+        const end = Math.min(total, firstVisible + visibleCount + buffer);
+
+        return {
+            entries: entries.slice(start, end),
+            leadingPx: start * rowH,
+            trailingPx: (total - end) * rowH,
+        };
     }
 }
 
