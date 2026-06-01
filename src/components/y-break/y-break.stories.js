@@ -15,7 +15,8 @@ export default {
         align: {
             control: "select",
             options: ["start", "center", "end"],
-            description: "Position of the slotted break content along the line.",
+            description:
+                "Position of the slotted break content along the line.",
             table: { defaultValue: { summary: "center" } },
         },
         variant: {
@@ -97,7 +98,7 @@ export const Alignments = {
 
 export const Insets = {
     render: () => `
-        <div style="display:flex;flex-direction:column;gap:24px;width:400px;background:#fafafa;padding:8px">
+        <div style="display:flex;flex-direction:column;gap:24px;width:400px;padding:8px">
             <y-break inset="none" label="None"></y-break>
             <y-break inset="small" label="Small"></y-break>
             <y-break inset="medium" label="Medium"></y-break>

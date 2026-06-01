@@ -76,26 +76,6 @@ export default {
     },
 };
 
-export const Playground = {
-    render: ({ position, color, size, offset, trigger }) => `
-        <div style="padding:80px;display:flex;justify-content:center">
-            <y-button id="pop-playground-anchor" color="primary">
-                ${trigger === "manual" ? "Toggle popover" : "Anchor"}
-            </y-button>
-            <y-popover
-                id="pop-playground"
-                anchor="pop-playground-anchor"
-                position="${position}"
-                color="${color}"
-                size="${size}"
-                offset="${offset}"
-                trigger="${trigger}"
-                text="Anchored popover content."
-            ></y-popover>
-        </div>
-    `,
-};
-
 // Manual mode: the trigger element calls toggle()/show()/hide() directly so
 // authors see how the public API drives the popover when no built-in trigger
 // is wired.
