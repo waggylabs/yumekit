@@ -885,15 +885,15 @@
             },
             "button-size-small": {
                 "$type": "dimension",
-                "$value": "24px"
+                "$value": "32px"
             },
             "button-size-medium": {
                 "$type": "dimension",
-                "$value": "32px"
+                "$value": "40px"
             },
             "button-size-large": {
                 "$type": "dimension",
-                "$value": "40px"
+                "$value": "56px"
             },
             "font-size-small": {
                 "$type": "fontSizes",
