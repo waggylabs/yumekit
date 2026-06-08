@@ -319,6 +319,7 @@ export class YumeCode extends HTMLElement {
                 font-family: var(--component-code-font-family, var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace));
                 color: var(--component-code-text-color, var(--base-content--, #1a1a1a));
                 background: var(--component-code-bg-color, var(--base-background-component, #f6f8fa));
+                border: 1px solid var(--component-code-border-color, var(--base-border, rgba(0,0,0,0.08)));
                 border-radius: var(--component-code-border-radius, var(--radii-medium, 8px));
                 overflow: hidden;
                 position: relative;
