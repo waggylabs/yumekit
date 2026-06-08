@@ -589,11 +589,9 @@ export class YumeCode extends HTMLElement {
                 child.tagName === "TEMPLATE" && !child.hasAttribute("slot"),
         );
         if (templates.length) {
-            // `innerHTML` returns the serialized HTML of the template's
-            // content fragment — i.e., the markup the author wrote, with
-            // `<` / `&` / `"` re-escaped to entities. Using `textContent`
-            // would drop the tag structure and only keep text node values.
-            return templates.map((tpl) => tpl.innerHTML).join("");
+            return templates
+                .map((tpl) => this._readTemplateSource(tpl))
+                .join("");
         }
 
         // Fallback: concatenate text from non-slotted light-DOM children.
@@ -610,6 +608,22 @@ export class YumeCode extends HTMLElement {
             text += child.textContent || "";
         }
         return text;
+    }
+
+    _readTemplateSource(tpl) {
+        if (tpl.content && tpl.content.hasChildNodes()) {
+            return tpl.innerHTML;
+        }
+
+        let out = "";
+        for (const node of tpl.childNodes) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                out += node.textContent || "";
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                out += node.outerHTML;
+            }
+        }
+        return out;
     }
 
     _render() {

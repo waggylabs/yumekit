@@ -356,6 +356,41 @@ d</y-code>`);
         }
     });
 
+    it("reads a <template> populated imperatively with a text node (React string child)", async () => {
+        // Frameworks like React append a string child to the <template>
+        // ELEMENT rather than its content fragment, so innerHTML is empty.
+        // The component reconstructs the source from the light children.
+        const el = await fixture(html`<y-code language="html"></y-code>`);
+        const tpl = document.createElement("template");
+        tpl.appendChild(
+            document.createTextNode('<div class="card">Hello</div>'),
+        );
+        el.appendChild(tpl);
+        // Appending children does not re-render; flip an attribute to force
+        // a synchronous re-render that re-reads the slot.
+        el.setAttribute("filename", "index.html");
+        const code = el.shadowRoot.querySelector("code.code-inner");
+        expect(code.textContent).to.equal('<div class="card">Hello</div>');
+        const tag = el.shadowRoot.querySelector(".line-content .token.tag");
+        expect(tag).to.exist;
+        expect(tag.textContent).to.equal("div");
+    });
+
+    it("reads a <template> populated imperatively with an element child (React JSX child)", async () => {
+        const el = await fixture(html`<y-code language="html"></y-code>`);
+        const tpl = document.createElement("template");
+        const div = document.createElement("div");
+        div.className = "card";
+        div.textContent = "Hello";
+        tpl.appendChild(div);
+        el.appendChild(tpl);
+        // Appending children does not re-render; flip an attribute to force
+        // a synchronous re-render that re-reads the slot.
+        el.setAttribute("filename", "index.html");
+        const code = el.shadowRoot.querySelector("code.code-inner");
+        expect(code.textContent).to.equal('<div class="card">Hello</div>');
+    });
+
     // ── Tokenizer integration ──────────────────────────────────────────
 
     it("auto-tokenizes JavaScript and renders keyword spans", async () => {
