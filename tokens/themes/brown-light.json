@@ -575,7 +575,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{primary.background.component}"
+          "$value": "{primary.content.inverse}"
         }
       },
       "shadow": {

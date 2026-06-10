@@ -14,7 +14,7 @@
 import StyleDictionary from "style-dictionary";
 import { register } from "@tokens-studio/sd-transforms";
 import { readFileSync } from "fs";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -192,7 +192,7 @@ function enabledSetKeys(theme) {
     return new Set(
         Object.entries(theme.selectedTokenSets)
             .filter(([, s]) => s === "enabled")
-            .map(([set]) => join(TOKENS_DIR, `${set}.json`)),
+            .map(([set]) => resolve(TOKENS_DIR, `${set}.json`)),
     );
 }
 
@@ -215,7 +215,10 @@ async function buildOne({ theme, destination, includeAll }) {
                         format: "yumekit/css-variables",
                         filter: includeAll
                             ? undefined
-                            : (token) => enabledPaths.has(token.filePath),
+                            : (token) =>
+                                  enabledPaths.has(
+                                      resolve(ROOT, token.filePath),
+                                  ),
                         options: {
                             outputReferences: true,
                             selector: ":root",

@@ -63,6 +63,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-menu` — selected items now use the primary inverse content color for their text, so the label stays readable against the primary-colored selected background across all themes.
+
 - `y-button` — no longer throws when `color` is set to an unrecognized value that isn't a valid custom color; it now falls back to the `base` theme instead of crashing while reading the color-token map.
 
 - `y-droplist` — touch drag now works reliably on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time instead of from inside `pointerdown`, so mobile browsers stop preempting the press as a scroll gesture.
