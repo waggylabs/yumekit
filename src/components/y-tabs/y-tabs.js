@@ -19,7 +19,8 @@ export class YumeTabs extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("position")) this.setAttribute("position", "top");
+        if (!this.hasAttribute("position"))
+            this.setAttribute("position", "top");
         this.render();
     }
 
@@ -54,7 +55,10 @@ export class YumeTabs extends HTMLElement {
         return ["top", "bottom", "left", "right"].includes(pos) ? pos : "top";
     }
     set position(val) {
-        this.setAttribute("position", ["top", "bottom", "left", "right"].includes(val) ? val : "top");
+        this.setAttribute(
+            "position",
+            ["top", "bottom", "left", "right"].includes(val) ? val : "top",
+        );
     }
 
     /** @type {"small"|"medium"|"large"} Controls tab button padding and gap. */
@@ -63,7 +67,10 @@ export class YumeTabs extends HTMLElement {
         return ["small", "medium", "large"].includes(sz) ? sz : "medium";
     }
     set size(val) {
-        this.setAttribute("size", ["small", "medium", "large"].includes(val) ? val : "medium");
+        this.setAttribute(
+            "size",
+            ["small", "medium", "large"].includes(val) ? val : "medium",
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -94,7 +101,11 @@ export class YumeTabs extends HTMLElement {
         style.textContent = this._getStyles();
         this.shadowRoot.appendChild(style);
 
-        const tablist = _el("div", { class: "tablist", role: "tablist", part: "tablist" });
+        const tablist = _el("div", {
+            class: "tablist",
+            role: "tablist",
+            part: "tablist",
+        });
         tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
         this.shadowRoot.appendChild(tablist);
 
@@ -117,8 +128,8 @@ export class YumeTabs extends HTMLElement {
             // eslint-disable-next-line no-console
             console.warn(
                 `[y-tabs] The "${slotName}" slot is deprecated. ` +
-                `Use the ${side}Icon property on the tab options object instead, ` +
-                `or use the "tab-content-${tabId}" slot for custom content.`
+                    `Use the ${side}Icon property on the tab options object instead, ` +
+                    `or use the "tab-content-${tabId}" slot for custom content.`,
             );
         }
 
@@ -183,7 +194,11 @@ export class YumeTabs extends HTMLElement {
 
     _findSiblingButton(buttons, fromIndex, direction) {
         for (let i = 1; i <= buttons.length; i++) {
-            const b = buttons[(fromIndex + i * direction + buttons.length) % buttons.length];
+            const b =
+                buttons[
+                    (fromIndex + i * direction + buttons.length) %
+                        buttons.length
+                ];
             if (!b.disabled) return b;
         }
         return null;
@@ -259,7 +274,6 @@ export class YumeTabs extends HTMLElement {
             }
             .tabpanel {
                 position: relative;
-                z-index: 0;
                 border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
                 border-radius: var(--component-tab-border-radius-outer);
                 padding: var(--component-tab-content-padding);
@@ -298,7 +312,9 @@ export class YumeTabs extends HTMLElement {
     }
 
     _resolveActiveTab(tabs) {
-        const currentInvalid = !this._activeTab || tabs.find((t) => t.id === this._activeTab)?.disabled;
+        const currentInvalid =
+            !this._activeTab ||
+            tabs.find((t) => t.id === this._activeTab)?.disabled;
         if (tabs.length && currentInvalid) {
             this._activeTab = tabs.find((t) => !t.disabled)?.id || "";
         }
@@ -308,8 +324,12 @@ export class YumeTabs extends HTMLElement {
         const buttons = Array.from(this.shadowRoot.querySelectorAll("button"));
         buttons.forEach((button) => {
             if (button.disabled) return;
-            button.addEventListener("click", () => this.activateTab(button.dataset.id));
-            button.addEventListener("keydown", (e) => this._handleTabKeydown(e, buttons));
+            button.addEventListener("click", () =>
+                this.activateTab(button.dataset.id),
+            );
+            button.addEventListener("keydown", (e) =>
+                this._handleTabKeydown(e, buttons),
+            );
         });
     }
 }

@@ -134,6 +134,7 @@ When `href` is set, the internal element renders as `<a>` instead of `<button>` 
 | `color`      | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`      |
 | `size`       | `small` \| `medium` \| `large`                                                         |
 | `style-type` | `outlined` (default) \| `filled` \| `flat`                                             |
+| `padding-mode` | `auto` (default) \| `square` \| `wide` — `square` forces equal block/inline padding (e.g. paginator numbers), `wide` keeps inline padding even when icon-only, `auto` squares icon-only buttons |
 | `disabled`   | boolean                                                                                |
 | `type`       | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                 |
 | `href`       | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled` |
@@ -168,6 +169,8 @@ Slots: default (label), `left-icon`, `right-icon`
 <!-- Disabled link — href removed, aria-disabled set, pointer-events blocked -->
 <y-button href="/restricted" disabled>Unavailable</y-button>
 ```
+
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` (all sides), and `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` to override the vertical / horizontal axes independently (fall back to `--component-button-padding-{size}`). The `padding-mode` attribute governs whether the inline axis collapses to the block value (default `auto` = collapse for icon-only buttons).
 
 ---
 
@@ -598,18 +601,19 @@ Pre-built icon names (loaded with `icons/all.js`): `accessible`, `eye`, `eye-off
 
 Overlays a count/status on another element.
 
-| Attribute  | Values / Notes                                                         |
-| ---------- | ---------------------------------------------------------------------- |
-| `color`    | color scheme name                                                      |
-| `position` | `top-right` (default) \| `top-left` \| `bottom-right` \| `bottom-left` |
-| `size`     | `small` \| `medium` \| `large`                                         |
+| Attribute   | Values / Notes                                  |
+| ----------- | ----------------------------------------------- |
+| `value`     | text displayed inside the badge                 |
+| `color`     | color scheme name (default `primary`)           |
+| `position`  | `top` (default) \| `bottom` — vertical          |
+| `alignment` | `left` \| `right` (default) — horizontal        |
+| `size`      | `small` (default) \| `medium` \| `large`        |
 
-Slots: default (badge label text), `anchor` (element being badged)
+Slots: default (the element the badge overlays)
 
 ```html
-<y-badge color="error" position="top-right"
-    >5
-    <y-button slot="anchor" left-icon="bell">Notifications</y-button>
+<y-badge color="error" value="5" position="top" alignment="right">
+    <y-button>Notifications</y-button>
 </y-badge>
 ```
 
@@ -903,28 +907,28 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
 
 ## y-drawer
 
-| Attribute    | Values / Notes                                   |
-| ------------ | ------------------------------------------------ |
-| `open`       | boolean                                          |
-| `position`   | `left` (default) \| `right` \| `top` \| `bottom` |
-| `modal`      | boolean — shows backdrop                         |
-| `persistent` | boolean — backdrop click does not close          |
+| Attribute   | Values / Notes                                                                       |
+| ----------- | ------------------------------------------------------------------------------------ |
+| `visible`   | boolean — toggle to open/close (also a property: `el.visible = true`)                |
+| `anchor`    | element ID (no `#`) of a trigger element; clicking it toggles the drawer automatically |
+| `position`  | `left` (default) \| `right` \| `top` \| `bottom`                                     |
+| `resizable` | boolean — adds a drag handle for resizing                                            |
 
 Events: `open`, `close`
-Methods: `.show()`, `.hide()`
 
-Slot: default (drawer content)
+Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
 ```html
-<y-drawer id="nav-drawer" position="left" modal>
-    <nav>
+<y-drawer id="nav-drawer" position="left" anchor="open-nav-btn">
+    <strong slot="header">Navigation</strong>
+    <nav slot="body">
         <y-button style-type="flat">Dashboard</y-button>
         <y-button style-type="flat">Settings</y-button>
     </nav>
 </y-drawer>
 
 <script type="module">
-    document.getElementById("nav-drawer").show();
+    document.getElementById("nav-drawer").visible = true;
 </script>
 ```
 
@@ -1091,26 +1095,29 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 
 ## y-dialog
 
-| Attribute    | Values / Notes                          |
-| ------------ | --------------------------------------- |
-| `open`       | boolean                                 |
-| `persistent` | boolean — backdrop click does not close |
+| Attribute       | Values / Notes                                                                        |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `visible`       | boolean — toggle to open/close (also a property: `el.visible = true`)                 |
+| `anchor`        | element ID (no `#`) of a trigger element; clicking it opens the dialog automatically  |
+| `closable`      | controls the built-in close button                                                    |
+| `show-backdrop` | controls the backdrop                                                                 |
+| `animate`       | open/close animation                                                                  |
+| `position`      | dialog placement                                                                      |
 
 Events: `open`, `close`
-Methods: `.show()`, `.hide()`
 
-Slots: `header`, `footer`, default (body)
+Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
 ```html
 <y-dialog id="confirm-dialog">
     <span slot="header">Confirm Delete</span>
-    <p>This action cannot be undone.</p>
+    <p slot="body">This action cannot be undone.</p>
     <y-button slot="footer" style-type="outlined">Cancel</y-button>
     <y-button slot="footer" color="error">Delete</y-button>
 </y-dialog>
 
 <script type="module">
-    document.getElementById("confirm-dialog").show();
+    document.getElementById("confirm-dialog").visible = true;
 </script>
 ```
 
@@ -1186,7 +1193,7 @@ Positioned relative to an `anchor` element. Items can be defined via the `items`
 | Attribute   | Values / Notes                                                                                     |
 | ----------- | -------------------------------------------------------------------------------------------------- |
 | `items`     | JSON: `[{"text":"Edit","value":"...","href":"...","icon":"...","selected":true,"children":[...]}]` |
-| `anchor`    | CSS selector or element ID of the trigger element                                                  |
+| `anchor`    | element ID (no `#`) of the trigger element; clicking the anchor toggles the menu automatically     |
 | `visible`   | boolean                                                                                            |
 | `direction` | `down` (default) \| `up` \| `left` \| `right`                                                      |
 | `size`      | `small` \| `medium` \| `large`                                                                     |
@@ -1206,17 +1213,15 @@ Events:
 - `navigate` — cancelable; `detail.href`. Fires before navigation when an item with `href` is clicked. Cancel to handle navigation in app code.
 
 ```html
-<y-button id="opts-btn" right-icon="chevron-down">Options</y-button>
+<y-button id="opts-btn">Options<y-icon slot="right-icon" name="chevron-down" size="small"></y-icon></y-button>
+<!-- anchor is a plain element ID; the menu wires the anchor's click itself -->
 <y-menu
     id="opts-menu"
-    anchor="#opts-btn"
-    items='[{"text":"Edit","value":"edit","icon":"edit"},{"text":"Delete","value":"delete","icon":"trash"}]'
+    anchor="opts-btn"
+    items='[{"text":"Edit","value":"edit","icon":"pencil"},{"text":"Delete","value":"delete","icon":"trash"}]'
 ></y-menu>
 
 <script type="module">
-    document.getElementById("opts-btn").addEventListener("click", () => {
-        document.getElementById("opts-menu").visible = true;
-    });
     document.getElementById("opts-menu").addEventListener("select", (e) => {
         console.log("selected:", e.detail.value);
     });
@@ -1277,19 +1282,19 @@ Accessibility: tooltip is `role="dialog"` `aria-modal="true"`, focus is trapped 
 
 | Attribute  | Values / Notes                                                                                            |
 | ---------- | --------------------------------------------------------------------------------------------------------- |
-| `position` | `top-right` (default) \| `top-left` \| `top-center` \| `bottom-right` \| `bottom-left` \| `bottom-center` |
-| `duration` | number (ms); `0` for persistent                                                                           |
-| `color`    | color scheme name                                                                                         |
+| `position` | `bottom-right` (default) \| `top-right` \| `top-left` \| `top-center` \| `bottom-left` \| `bottom-center` |
+| `duration` | default ms per toast (default `4000`); `0` for persistent                                                 |
+| `max`      | maximum simultaneous toasts (default `5`; oldest removed first)                                           |
 
-Methods: `.show(message, options?)`, `.hide()`
+Methods: `.show(opts)` — **single options object**: `{ message, color, duration, dismissible, icon }`. Returns the toast element.
 
 ```html
 <y-toast id="toast" position="bottom-right"></y-toast>
 
 <script type="module">
     const toast = document.getElementById("toast");
-    toast.show("Saved successfully!", { color: "success", duration: 3000 });
-    toast.show("Something went wrong.", { color: "error", duration: 0 }); // persistent
+    toast.show({ message: "Saved successfully!", color: "success", duration: 3000 });
+    toast.show({ message: "Something went wrong.", color: "error", duration: 0 }); // persistent
 </script>
 ```
 

@@ -288,6 +288,9 @@ export class YumePaginator extends HTMLElement {
             "style-type": isCurrent ? "filled" : "flat",
             color: isCurrent ? "primary" : "base",
             size: this.size,
+            // Number buttons stay square/circular even in themes (e.g. Material)
+            // that give labeled buttons wide inline padding.
+            "padding-mode": "square",
             "data-page": String(page),
             "aria-label": `Go to page ${page}`,
         };

@@ -203,18 +203,67 @@ describe("KeplerButton", () => {
         expect(assigned.length).to.be.greaterThan(0);
     });
 
-    it("applies small size padding CSS variable when size is small", async () => {
+    it("applies small size padding CSS variables when size is small", async () => {
         const el = await fixture(html`<y-button size="small">Test</y-button>`);
         const shadowButton = el.shadowRoot.querySelector("button");
-        const padding = shadowButton.style.getPropertyValue("--button-padding");
-        expect(padding).to.include("--component-button-padding-small");
+        const block = shadowButton.style.getPropertyValue("--button-padding-block");
+        const inline = shadowButton.style.getPropertyValue("--button-padding-inline");
+        expect(block).to.include("--component-button-padding-block-small");
+        expect(block).to.include("--component-button-padding-small");
+        expect(inline).to.include("--component-button-padding-inline-small");
+        expect(inline).to.include("--component-button-padding-small");
     });
 
-    it("applies large size padding CSS variable when size is large", async () => {
+    it("applies large size padding CSS variables when size is large", async () => {
         const el = await fixture(html`<y-button size="large">Test</y-button>`);
         const shadowButton = el.shadowRoot.querySelector("button");
-        const padding = shadowButton.style.getPropertyValue("--button-padding");
-        expect(padding).to.include("--component-button-padding-large");
+        const block = shadowButton.style.getPropertyValue("--button-padding-block");
+        const inline = shadowButton.style.getPropertyValue("--button-padding-inline");
+        expect(block).to.include("--component-button-padding-block-large");
+        expect(inline).to.include("--component-button-padding-inline-large");
+    });
+
+    it("applies square padding (auto) when an icon is present without a label", async () => {
+        const el = await fixture(html`
+            <y-button>
+                <svg slot="left-icon" width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>
+            </y-button>
+        `);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.true;
+    });
+
+    it("does not apply square padding (auto) when both an icon and a label are present", async () => {
+        const el = await fixture(html`
+            <y-button>
+                <svg slot="left-icon" width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>
+                Save
+            </y-button>
+        `);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.false;
+    });
+
+    it("does not apply square padding (auto) for a label-only button", async () => {
+        const el = await fixture(html`<y-button>Save</y-button>`);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.false;
+    });
+
+    it("padding-mode='square' forces square padding on a label-only button", async () => {
+        const el = await fixture(html`<y-button padding-mode="square">5</y-button>`);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.true;
+    });
+
+    it("padding-mode='wide' keeps wide padding on an icon-only button", async () => {
+        const el = await fixture(html`
+            <y-button padding-mode="wide">
+                <svg slot="left-icon" width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>
+            </y-button>
+        `);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.false;
     });
 
     it("applies filled style background color from theme color vars", async () => {

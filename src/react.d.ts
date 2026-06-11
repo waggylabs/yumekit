@@ -99,6 +99,7 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 "style-type"?: "outlined" | "filled" | "flat";
+                "padding-mode"?: "auto" | "square" | "wide";
                 type?: string;
                 disabled?: boolean | string;
                 name?: string;

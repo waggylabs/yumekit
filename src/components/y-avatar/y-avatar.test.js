@@ -94,6 +94,16 @@ describe("YumeAvatar", () => {
         expect(cssText).to.include("--component-avatar-border-radius-square");
     });
 
+    it("applies rounded border-radius when shape=rounded", async () => {
+        const el = await fixture(
+            html`<y-avatar alt="AB" shape="rounded"></y-avatar>`,
+        );
+
+        const sheet = el.shadowRoot.adoptedStyleSheets[0];
+        const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+        expect(cssText).to.include("--component-avatar-border-radius-rounded");
+    });
+
     it("applies small size variable when size=small", async () => {
         const el = await fixture(
             html`<y-avatar alt="AB" size="small"></y-avatar>`,

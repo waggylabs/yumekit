@@ -21,6 +21,8 @@ import brownLightCSS from "../../../styles/brown-light.css";
 import brownDarkCSS from "../../../styles/brown-dark.css";
 import oliveLightCSS from "../../../styles/olive-light.css";
 import oliveDarkCSS from "../../../styles/olive-dark.css";
+import materialBlueLightCSS from "../../../styles/material-blue-light.css";
+import materialBlueDarkCSS from "../../../styles/material-blue-dark.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
@@ -45,6 +47,17 @@ const THEMES = {
     "brown-dark": brownDarkCSS,
     "olive-light": oliveLightCSS,
     "olive-dark": oliveDarkCSS,
+    "material-blue-light": materialBlueLightCSS,
+    "material-blue-dark": materialBlueDarkCSS,
+};
+
+// Google Fonts `family=` query for each theme's typography. Themes not listed
+// fall back to DEFAULT_FONT. The family name (before `:`) is used to de-dupe the
+// injected <link>, so multiple themes requesting the same font load it once.
+const DEFAULT_FONT = "Lexend:wght@100..900";
+const THEME_FONTS = {
+    "material-blue-light": "Roboto:wght@300;400;500;700",
+    "material-blue-dark": "Roboto:wght@300;400;500;700",
 };
 
 export class YumeTheme extends HTMLElement {
@@ -111,6 +124,7 @@ export class YumeTheme extends HTMLElement {
     // -------------------------------------------------------------------------
 
     async _applyTheme() {
+        this._injectThemeFont();
         const themeCSS = await this._resolveThemeCSS();
         this._buildShadowDOM(themeCSS);
         this._applyVariablesToHost(variablesCSS + themeCSS);
@@ -161,18 +175,24 @@ export class YumeTheme extends HTMLElement {
     _injectPageStyles() {
         if (document.querySelector("[data-yumekit-page-styles]")) return;
 
-        if (!this.hasAttribute("no-default-font")) {
-            const link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.href =
-                "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap";
-            link.setAttribute("data-yumekit-font", "");
-            document.head.appendChild(link);
-        }
-
         const style = document.createElement("style");
         style.setAttribute("data-yumekit-page-styles", "");
         document.head.appendChild(style);
+    }
+
+    _injectThemeFont() {
+        if (this.hasAttribute("no-default-font")) return;
+
+        const query = THEME_FONTS[this.theme] || DEFAULT_FONT;
+        const family = query.split(":")[0];
+        if (document.querySelector(`link[data-yumekit-font="${family}"]`))
+            return;
+
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = `https://fonts.googleapis.com/css2?family=${query}&display=swap`;
+        link.setAttribute("data-yumekit-font", family);
+        document.head.appendChild(link);
     }
 
     /**

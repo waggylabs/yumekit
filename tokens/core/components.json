@@ -97,9 +97,13 @@
                 "$type": "borderRadius",
                 "$value": "{radii.full}"
             },
+            "border-radius-rounded": {
+                "$type": "borderRadius",
+                "$value": "{radii.large}"
+            },
             "border-radius-square": {
                 "$type": "borderRadius",
-                "$value": "{radii.small}"
+                "$value": "{radii.none}"
             },
             "size-large": {
                 "$type": "sizing",
@@ -557,7 +561,7 @@
             },
             "expand-z-index": {
                 "$type": "number",
-                "$value": 1000
+                "$value": 9000
             },
             "expand-background": {
                 "$type": "color",
@@ -1157,15 +1161,15 @@
             },
             "padding-large": {
                 "$type": "spacing",
-                "$value": "{spacing.small}"
+                "$value": "{spacing.medium}"
             },
             "padding-medium": {
                 "$type": "spacing",
-                "$value": "{spacing.x-small}"
+                "$value": "{spacing.small}"
             },
             "padding-small": {
                 "$type": "spacing",
-                "$value": "{spacing.2x-small}"
+                "$value": "{spacing.x-small}"
             },
             "height-large": {
                 "$type": "sizing",

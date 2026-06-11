@@ -414,7 +414,7 @@ export class YumeDatepicker extends HTMLElement {
         });
     }
 
-_buildDayGrid(vd) {
+    _buildDayGrid(vd) {
         const year = vd.getFullYear();
         const month = vd.getMonth();
         const firstDow = new Date(year, month, 1).getDay();
@@ -449,6 +449,7 @@ _buildDayGrid(vd) {
                 style-type="${styleType}"
                 color="${color}"
                 size="medium"
+                padding-mode="square"
                 data-date="${date.toISOString()}"
                 ${disabled ? "disabled" : ""}
                 aria-label="${date.toDateString()}"
@@ -508,16 +509,16 @@ _buildDayGrid(vd) {
         return `
             <div class="cal-header">
                 <div class="nav-start">
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" data-side="${side}" style-type="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" data-side="${side}" style-type="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" padding-mode="square"data-side="${side}" style-type="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
                 </div>
                 <div class="header-selects">
                     ${this.showMonths ? `<y-select class="month-sel" data-side="${side}" size="small" value="${month}" options='${monthOptions}'></y-select>` : ""}
                     ${this.showYears ? `<y-select class="year-sel" data-side="${side}" size="small" value="${year}" options='${yearOptions}'></y-select>` : ""}
                 </div>
                 <div class="nav-end">
-                    ${showNext ? `<y-button class="nav-btn" data-action="next-month" data-side="${side}" style-type="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
-                    ${showNext ? `<y-button class="nav-btn" data-action="next-year" data-side="${side}" style-type="flat" size="small" aria-label="Next year"><y-icon name="expand-right" size="small"></y-icon></y-button>` : ""}
+                    ${showNext ? `<y-button class="nav-btn" data-action="next-month" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
+                    ${showNext ? `<y-button class="nav-btn" data-action="next-year" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Next year"><y-icon name="expand-right" size="small"></y-icon></y-button>` : ""}
                 </div>
             </div>
         `;
@@ -538,6 +539,7 @@ _buildDayGrid(vd) {
                         style-type="${isSelected ? "filled" : "flat"}"
                         color="${isSelected ? this.color : "base"}"
                         size="small"
+                        padding-mode="square"
                         data-month="${i}"
                         data-side="${side}"
                         ${disabled ? "disabled" : ""}
@@ -854,6 +856,7 @@ _buildDayGrid(vd) {
                     style-type="${y === selected ? "filled" : "flat"}"
                     color="${y === selected ? this.color : "base"}"
                     size="small"
+                    padding-mode="square"
                     data-year="${y}"
                 >${y}</y-button>`,
                     )
@@ -1044,7 +1047,7 @@ _buildDayGrid(vd) {
         }
     }
 
-_sameDay(a, b) {
+    _sameDay(a, b) {
         if (!a || !b) return false;
         return (
             a.getFullYear() === b.getFullYear() &&

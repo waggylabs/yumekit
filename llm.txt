@@ -21,7 +21,7 @@ npm install @waggylabs/yumekit
 - Tree-shakeable ESM modules
 - ARIA-compliant and keyboard-navigable
 - Design token system via CSS custom properties
-- 22 built-in themes across 11 color families (blue, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive) × dark and light variants
+- 24 built-in themes: 11 color families (blue, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive) × dark and light variants, plus a Material Design 3 blue theme (`material-blue-light` / `material-blue-dark`) that also overrides shape (radii, pill buttons, larger dialogs) and Roboto typography, not just color
 - React JSX type declarations included
 - Form-associated components with native HTML form API support
 - Security-focused SVG icon sanitization (allowlist-based)
@@ -87,7 +87,7 @@ All custom elements are prefixed with `y-`.
 Theme provider. Wraps your app and injects design tokens as CSS custom properties.
 
 Attributes:
-- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"`
+- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"` | `"material-blue-light"` | `"material-blue-dark"`
 - `cross-origin` — boolean, enables CORS for remote theme URLs
 - `no-default-font` — boolean, skips injecting the default Lexend font from Google Fonts
 
@@ -159,6 +159,7 @@ Attributes:
 - `color` — predefined scheme (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"`) or any CSS color (`#hex`, `rgb()`, `hsl()`)
 - `size` — `"small"` | `"medium"` (default) | `"large"`
 - `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
+- `padding-mode` — `"auto"` (default) | `"square"` | `"wide"`. Controls whether the inline padding collapses to the block value: `auto` does so for icon-only buttons; `square` forces it (e.g. paginator number buttons); `wide` never does
 - `left-icon` — icon name (from registry)
 - `right-icon` — icon name (from registry)
 - `disabled` — boolean
@@ -167,6 +168,8 @@ Attributes:
 ```html
 <y-button color="primary" size="large" left-icon="check">Save</y-button>
 ```
+
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material themes use this for wide pill buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons).
 
 ---
 
@@ -622,15 +625,17 @@ Status badge, often positioned over another element.
 
 Tag: `<y-badge>`
 Attributes:
-- `color` — color scheme name
-- `position` — `"top-right"` | `"top-left"` | `"bottom-right"` | `"bottom-left"`
-- `size` — `"small"` | `"medium"` | `"large"`
+- `value` — text displayed inside the badge
+- `color` — color scheme name (default `"primary"`)
+- `position` — `"top"` (default) | `"bottom"` — vertical placement
+- `alignment` — `"left"` | `"right"` (default) — horizontal placement
+- `size` — `"small"` (default) | `"medium"` | `"large"`
 
-Slots: default (badge label), `anchor` (element to badge-over)
+Slots: default (the element the badge overlays)
 
 ```html
-<y-badge color="error" position="top-right">3
-  <y-button slot="anchor">Inbox</y-button>
+<y-badge color="error" value="3" position="top" alignment="right">
+  <y-button>Inbox</y-button>
 </y-badge>
 ```
 
@@ -1017,16 +1022,21 @@ Side panel / sidebar.
 
 Tag: `<y-drawer>`
 Attributes:
-- `open` — boolean
+- `visible` — boolean; toggle to open/close (also available as a property: `el.visible = true`)
+- `anchor` — element ID (no `#`) of a trigger element; clicking it toggles the drawer automatically
 - `position` — `"left"` (default) | `"right"` | `"top"` | `"bottom"`
-- `modal` — boolean, shows backdrop
-- `persistent` — boolean, backdrop click does not close
+- `resizable` — boolean, adds a drag handle for resizing
 
 Events: `open`, `close`
 
-Methods: `show()`, `hide()`
+Slots: `header`, `body`, `footer` — named slots only; content without a `slot` attribute is not rendered
 
-Slots: default (drawer content)
+```html
+<y-drawer id="panel" position="right" anchor="open-panel-btn">
+  <strong slot="header">Details</strong>
+  <div slot="body">Drawer content here.</div>
+</y-drawer>
+```
 
 ---
 
@@ -1352,26 +1362,28 @@ Modal dialog.
 
 Tag: `<y-dialog>`
 Attributes:
-- `open` — boolean
-- `persistent` — boolean, prevents closing on backdrop click
+- `visible` — boolean; toggle to open/close (also available as a property: `el.visible = true`)
+- `anchor` — element ID (no `#`) of a trigger element; clicking it opens the dialog automatically
+- `closable` — controls the built-in close button
+- `show-backdrop` — controls the backdrop
+- `animate` — open/close animation
+- `position` — dialog placement
 
 Events: `open`, `close`
 
-Methods: `show()`, `hide()`
-
-Slots: `header`, `footer`, default (body)
+Slots: `header`, `body`, `footer` — named slots only; content without a `slot` attribute is not rendered
 
 CSS Custom Properties: `--component-dialog-background`, `--component-dialog-color`, `--component-dialog-accent`, `--component-dialog-border-color`, `--component-dialog-border-width`, `--component-dialog-inner-border-width`, `--component-dialog-border-radius-outer`, `--component-dialog-border-radius-inner`, `--component-dialog-padding`, `--component-dialog-footer-gap`, `--component-dialog-offset`, `--component-dialog-backdrop-blur`, `--component-dialog-animation-duration`, `--component-dialog-shadow`, `--component-dialog-hover-background`, `--component-dialog-z-index`
 
 ```html
 <y-dialog id="my-dialog">
   <span slot="header">Confirm</span>
-  <p>Are you sure?</p>
+  <p slot="body">Are you sure?</p>
   <y-button slot="footer" color="error">Delete</y-button>
 </y-dialog>
 
 <script>
-  document.getElementById("my-dialog").show();
+  document.getElementById("my-dialog").visible = true;
 </script>
 ```
 
@@ -1407,7 +1419,7 @@ Dropdown menu. Positioned relative to an anchor element. Items can be defined vi
 Tag: `<y-menu>`
 Attributes:
 - `items` — JSON string: `[{"text": "Edit", "value": "edit", "href": "...", "icon": "edit", "slot": "name", "selected": true, "children": [...]}, ...]`
-- `anchor` — CSS selector or element ID of the trigger element
+- `anchor` — element ID (no `#`) of the trigger element; clicking the anchor toggles the menu automatically (no manual listener needed)
 - `visible` — boolean
 - `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
@@ -1518,14 +1530,14 @@ Notification toast messages.
 
 Tag: `<y-toast>`
 Attributes:
-- `position` — `"top-right"` (default) | `"top-left"` | `"top-center"` | `"bottom-right"` | `"bottom-left"` | `"bottom-center"`
-- `duration` — number (ms), 0 for persistent
-- `color` — predefined scheme or CSS color (per `show()` call option); text is auto-contrasted
+- `position` — `"bottom-right"` (default) | `"top-right"` | `"top-left"` | `"top-center"` | `"bottom-left"` | `"bottom-center"`
+- `duration` — default ms per toast (default `4000`); 0 for persistent
+- `max` — maximum simultaneous toasts (default `5`; oldest is removed first)
 
-Methods: `show(opts)` — `{ message, color, duration, dismissible, icon }` — `hide()`
+Methods: `show(opts)` — single options object: `{ message, color, duration, dismissible, icon }`. Returns the toast element.
 
 ```javascript
-document.querySelector("y-toast").show("Saved successfully!", { color: "success" });
+document.querySelector("y-toast").show({ message: "Saved successfully!", color: "success" });
 ```
 
 ---
@@ -1659,7 +1671,7 @@ Accordion container. Groups y-panel elements.
 
 Tag: `<y-panelbar>`
 Attributes:
-- `multi` — boolean, allows multiple panels open simultaneously
+- `exclusive` — boolean; expanding one panel collapses its siblings
 
 Slots: default (y-panel elements)
 
@@ -1670,18 +1682,25 @@ Individual accordion panel, used inside y-panelbar.
 
 Tag: `<y-panel>`
 Attributes:
-- `label` — header text
-- `open` — boolean
+- `expanded` — boolean; children slot is visible
+- `selected` — boolean; active/highlighted state
+- `href` — URL; clicking the header navigates
+- `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page navigation
 
-Slots: default (panel body content)
+Events: `expand`, `collapse`, `toggle`, `select`, `navigate` (cancelable when `href` set)
+Methods: `expand()`, `collapse()`, `toggle()`
+
+Slots: `icon`, `label` (or default for label text), `children` (panel body / nested panels)
 
 ```html
-<y-panelbar>
-  <y-panel label="Section 1" open>
-    <p>Content 1</p>
+<y-panelbar exclusive>
+  <y-panel expanded>
+    <span slot="label">Section 1</span>
+    <div slot="children"><p>Content 1</p></div>
   </y-panel>
-  <y-panel label="Section 2">
-    <p>Content 2</p>
+  <y-panel>
+    <span slot="label">Section 2</span>
+    <div slot="children"><p>Content 2</p></div>
   </y-panel>
 </y-panelbar>
 ```

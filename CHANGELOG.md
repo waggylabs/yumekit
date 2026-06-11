@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- Two new built-in themes, `material-blue-light` and `material-blue-dark`, applying Material Design 3 — a Material palette (Blue primary, Material status colors, grey surfaces), Roboto typography, and the M3 shape scale (4/8/12/28px radii, pill buttons, 28px dialogs, 4px text fields, 1px borders) applied across all components. `y-theme` now loads the Roboto webfont automatically when one of these themes is active.
+
 - New `y-data-grid` component — interactive grid for large or dynamic datasets with client- or server-side sorting, filtering, and pagination, single/multi row selection, inline cell editing, nested row grouping with aggregates, multi-column header groups, virtual scrolling, an optional per-column header menu (filter, sort, visibility, reorder), and a sticky header.
 
 - New `y-popover` component — target-anchored floating panel with rich slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and an opt-in `portal` mode that renders into `<body>` to escape ancestor stacking contexts.
@@ -51,6 +53,8 @@ Delete any empty sections before publishing.
 
 ### Changed
 
+- `y-button` — padding can now be set per-axis via `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` (overriding, and falling back to, the all-sides `--component-button-padding-{size}`), plus a new `padding-mode` attribute (`auto` (default) / `square` / `wide`) controlling whether the inline axis collapses to the block value. `auto` makes icon-only buttons square automatically; `square`/`wide` force it. The Material themes use this for wide pill buttons that stay round when icon-only; `y-paginator` number buttons and `y-datepicker` day / month / year buttons set `padding-mode="square"` so they don't bloat under the wide Material padding.
+
 - Custom color support expanded to the browser-native color functions — `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()` — in addition to `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()`. The shared `isSafeCssColor` gate now also tightens its argument allowlist (rejecting semicolons, braces, angle brackets, and nested functions). Applies anywhere a `color` accepts a custom value, including `y-badge`, `y-select`, `y-popover`, `y-button`, `y-tag`, `y-icon`, and `y-rating`.
 
 - `y-rating` — selected icons now swap in the registered `filled` weight variant instead of just thickening the line stroke, falling back to the thick stroke when no filled variant is available.
@@ -62,6 +66,14 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
+
+- `y-avatar` — the three `shape` values are now visually distinct. Added a `--component-avatar-border-radius-rounded` token (medium radius) and changed `square` to a zero radius (sharp corners); `circle` is unchanged.
+
+- `y-tag` — Increased the inline padding size for all sizes of `y-tag` component.
+
+- `y-tabs` — the tab panel no longer creates a stacking context (`z-index: 0` removed), which was trapping `position: fixed` overlays rendered by slotted components (e.g. `y-gallery`'s lightbox) underneath the tab strip and surrounding page content.
+
+- `y-gallery` — the lightbox overlay's default z-index was raised from 1000 to 9000 so it layers above fixed chrome like `y-dock` (8000); override via `--component-gallery-expand-z-index`.
 
 - `y-menu` — selected items now use the primary inverse content color for their text, so the label stays readable against the primary-colored selected background across all themes.
 

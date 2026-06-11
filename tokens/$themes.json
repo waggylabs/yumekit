@@ -114,6 +114,28 @@
     }
   },
   {
+    "id": "themes-material-blue-dark",
+    "name": "Material Blue Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/material-blue-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-material-blue-light",
+    "name": "Material Blue Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/material-blue-light": "enabled"
+    }
+  },
+  {
     "id": "themes-olive-dark",
     "name": "Olive Dark",
     "group": "Themes",

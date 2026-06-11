@@ -3,12 +3,32 @@ import { contrastTextColor, isSafeCssColor } from "../../modules/helpers.js";
 export class YumeButton extends HTMLElement {
     static get observedAttributes() {
         return [
-            "left-icon", "right-icon", "color", "size", "style-type", "type",
-            "disabled", "name", "value", "autofocus", "form", "formaction",
-            "formenctype", "formmethod", "formnovalidate", "formtarget",
-            "aria-label", "aria-pressed", "aria-hidden",
-            "aria-haspopup", "aria-expanded", "aria-controls",
-            "href", "target", "rel",
+            "left-icon",
+            "right-icon",
+            "color",
+            "size",
+            "style-type",
+            "type",
+            "padding-mode",
+            "disabled",
+            "name",
+            "value",
+            "autofocus",
+            "form",
+            "formaction",
+            "formenctype",
+            "formmethod",
+            "formnovalidate",
+            "formtarget",
+            "aria-label",
+            "aria-pressed",
+            "aria-hidden",
+            "aria-haspopup",
+            "aria-expanded",
+            "aria-controls",
+            "href",
+            "target",
+            "rel",
         ];
     }
 
@@ -51,65 +71,110 @@ export class YumeButton extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** URL to navigate to. When set, the internal element renders as an <a> instead of <button>. */
-    get href() { return this.getAttribute("href"); }
+    get href() {
+        return this.getAttribute("href");
+    }
     set href(val) {
         if (val != null) this.setAttribute("href", val);
         else this.removeAttribute("href");
     }
 
     /** Anchor target (e.g. "_blank"). Only applies when href is set. */
-    get target() { return this.getAttribute("target"); }
+    get target() {
+        return this.getAttribute("target");
+    }
     set target(val) {
         if (val != null) this.setAttribute("target", val);
         else this.removeAttribute("target");
     }
 
     /** Anchor rel attribute (e.g. "noopener noreferrer"). Only applies when href is set. */
-    get rel() { return this.getAttribute("rel"); }
+    get rel() {
+        return this.getAttribute("rel");
+    }
     set rel(val) {
         if (val != null) this.setAttribute("rel", val);
         else this.removeAttribute("rel");
     }
 
     /** Color theme for the button (default "base"). */
-    get color() { return this.getAttribute("color") || "base"; }
-    set color(val) { this.setAttribute("color", val); }
+    get color() {
+        return this.getAttribute("color") || "base";
+    }
+    set color(val) {
+        this.setAttribute("color", val);
+    }
 
     /** Whether the button is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
     /** The form name of the button. */
-    get name() { return this.getAttribute("name") || ""; }
-    set name(val) { this.setAttribute("name", val); }
+    get name() {
+        return this.getAttribute("name") || "";
+    }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
+
+    /**
+     * Padding mode: "auto" (default) uses square padding only for icon-only
+     * buttons; "square" forces equal block/inline padding (e.g. paginator
+     * number buttons); "wide" always uses the inline padding even when icon-only.
+     */
+    get paddingMode() {
+        const mode = this.getAttribute("padding-mode");
+        return ["auto", "square", "wide"].includes(mode) ? mode : "auto";
+    }
+    set paddingMode(val) {
+        this.setAttribute("padding-mode", val);
+    }
 
     /** Size: "small" | "medium" | "large" (default "medium"). */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** Visual style: "filled" | "outlined" | "flat" (default "outlined"). */
-    get styleType() { return this.getAttribute("style-type") || "outlined"; }
-    set styleType(val) { this.setAttribute("style-type", val); }
+    get styleType() {
+        return this.getAttribute("style-type") || "outlined";
+    }
+    set styleType(val) {
+        this.setAttribute("style-type", val);
+    }
 
     /** Button type: "button" | "submit" | "reset" (default "button"). */
-    get type() { return this.getAttribute("type") || "button"; }
-    set type(val) { this.setAttribute("type", val); }
+    get type() {
+        return this.getAttribute("type") || "button";
+    }
+    set type(val) {
+        this.setAttribute("type", val);
+    }
 
     /** The current selected value(s), comma-separated when 'multiple' is set. */
     get value() {
         if (this.hasAttribute("multiple")) {
             return Array.from(this.selectedValues).join(",");
         } else {
-            return this.selectedValues.size ? Array.from(this.selectedValues)[0] : "";
+            return this.selectedValues.size
+                ? Array.from(this.selectedValues)[0]
+                : "";
         }
     }
     set value(newVal) {
         if (this.hasAttribute("multiple")) {
             if (typeof newVal === "string") {
-                this.selectedValues = new Set(newVal.split(",").map((s) => s.trim()));
+                this.selectedValues = new Set(
+                    newVal.split(",").map((s) => s.trim()),
+                );
             } else if (Array.isArray(newVal)) {
                 this.selectedValues = new Set(newVal);
             }
@@ -133,27 +198,35 @@ export class YumeButton extends HTMLElement {
 
     _addEventListeners() {
         this.button.addEventListener("focus", () => {
-            this.dispatchEvent(new CustomEvent("focus", { bubbles: true, composed: true }));
+            this.dispatchEvent(
+                new CustomEvent("focus", { bubbles: true, composed: true }),
+            );
         });
 
         this.button.addEventListener("blur", () => {
-            this.dispatchEvent(new CustomEvent("blur", { bubbles: true, composed: true }));
+            this.dispatchEvent(
+                new CustomEvent("blur", { bubbles: true, composed: true }),
+            );
         });
 
         this.button.addEventListener("keydown", (event) => {
-            this.dispatchEvent(new CustomEvent("keydown", {
-                detail: { key: event.key, code: event.code },
-                bubbles: true,
-                composed: true,
-            }));
+            this.dispatchEvent(
+                new CustomEvent("keydown", {
+                    detail: { key: event.key, code: event.code },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
         });
 
         this.button.addEventListener("keyup", (event) => {
-            this.dispatchEvent(new CustomEvent("keyup", {
-                detail: { key: event.key, code: event.code },
-                bubbles: true,
-                composed: true,
-            }));
+            this.dispatchEvent(
+                new CustomEvent("keyup", {
+                    detail: { key: event.key, code: event.code },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
         });
 
         this.button.addEventListener("click", (event) => {
@@ -228,15 +301,42 @@ export class YumeButton extends HTMLElement {
     }
 
     _applyFilledInteractionStyles(vars) {
-        this.button.style.setProperty("--hover-background-color", `var(${vars[1]}, #292a2b)`);
-        this.button.style.setProperty("--hover-text-color", `var(${vars[6]}, #0c0c0d)`);
-        this.button.style.setProperty("--hover-border-color", `var(${vars[1]}, #292a2b)`);
-        this.button.style.setProperty("--focus-background-color", `var(${vars[2]}, #46474a)`);
-        this.button.style.setProperty("--focus-text-color", `var(${vars[6]}, #0c0c0d)`);
-        this.button.style.setProperty("--focus-border-color", `var(${vars[2]}, #46474a)`);
-        this.button.style.setProperty("--active-background-color", `var(${vars[3]}, #0c0c0d)`);
-        this.button.style.setProperty("--active-text-color", `var(${vars[0]}, #f7f7fa)`);
-        this.button.style.setProperty("--active-border-color", `var(${vars[3]}, #0c0c0d)`);
+        this.button.style.setProperty(
+            "--hover-background-color",
+            `var(${vars[1]}, #292a2b)`,
+        );
+        this.button.style.setProperty(
+            "--hover-text-color",
+            `var(${vars[6]}, #0c0c0d)`,
+        );
+        this.button.style.setProperty(
+            "--hover-border-color",
+            `var(${vars[1]}, #292a2b)`,
+        );
+        this.button.style.setProperty(
+            "--focus-background-color",
+            `var(${vars[2]}, #46474a)`,
+        );
+        this.button.style.setProperty(
+            "--focus-text-color",
+            `var(${vars[6]}, #0c0c0d)`,
+        );
+        this.button.style.setProperty(
+            "--focus-border-color",
+            `var(${vars[2]}, #46474a)`,
+        );
+        this.button.style.setProperty(
+            "--active-background-color",
+            `var(${vars[3]}, #0c0c0d)`,
+        );
+        this.button.style.setProperty(
+            "--active-text-color",
+            `var(${vars[0]}, #f7f7fa)`,
+        );
+        this.button.style.setProperty(
+            "--active-border-color",
+            `var(${vars[3]}, #0c0c0d)`,
+        );
     }
 
     _applyInteractionStyles(vars, styleType) {
@@ -248,22 +348,31 @@ export class YumeButton extends HTMLElement {
     }
 
     _applySizeStyles(size) {
-        const sizeVars = {
-            small: "--component-button-padding-small",
-            medium: "--component-button-padding-medium",
-            large: "--component-button-padding-large",
-        };
-        const pad = sizeVars[size] || sizeVars.medium;
-        this.button.style.setProperty("--button-padding", `var(${pad}, var(--component-button-padding-medium))`);
-        this.button.style.setProperty("--button-gap", `var(${pad}, var(--component-button-padding-medium))`);
+        const s = ["small", "medium", "large"].includes(size) ? size : "medium";
+        const shared = `var(--component-button-padding-${s}, var(--component-button-padding-medium))`;
+        this.button.style.setProperty(
+            "--button-padding-block",
+            `var(--component-button-padding-block-${s}, ${shared})`,
+        );
+        this.button.style.setProperty(
+            "--button-padding-inline",
+            `var(--component-button-padding-inline-${s}, ${shared})`,
+        );
+        this.button.style.setProperty("--button-gap", shared);
 
         const minSizeMapping = {
             small: "var(--sizing-small, 32px)",
             medium: "var(--sizing-medium, 40px)",
             large: "var(--sizing-large, 56px)",
         };
-        this.button.style.setProperty("--button-min-height", minSizeMapping[size] || "40px");
-        this.button.style.setProperty("--button-min-width", minSizeMapping[size] || "40px");
+        this.button.style.setProperty(
+            "--button-min-height",
+            minSizeMapping[size] || "40px",
+        );
+        this.button.style.setProperty(
+            "--button-min-width",
+            minSizeMapping[size] || "40px",
+        );
     }
 
     _applyStyles() {
@@ -284,7 +393,7 @@ export class YumeButton extends HTMLElement {
                 width: 100%;
                 min-height: var(--button-min-height, var(--sizing-medium, 40px));
                 min-width: var(--button-min-width, var(--sizing-medium, 40px));
-                padding: var(--button-padding, var(--component-button-padding-medium));
+                padding: var(--button-padding-block, var(--component-button-padding-medium)) var(--button-padding-inline, var(--component-button-padding-medium));
                 gap: var(--button-gap, var(--component-button-padding-medium));
                 justify-content: center;
                 align-items: center;
@@ -303,6 +412,13 @@ export class YumeButton extends HTMLElement {
 
             .button {
                 text-decoration: none;
+            }
+
+            /* Square padding: the inline axis collapses to the block value, so
+               the button stays square instead of inheriting a wide label
+               padding. Driven by the padding-mode property (auto tracks icon-only). */
+            .button.square-padding {
+                padding-inline: var(--button-padding-block, var(--component-button-padding-medium));
             }
 
             .button:disabled,
@@ -349,12 +465,30 @@ export class YumeButton extends HTMLElement {
     _applyUnfilledInteractionStyles(vars, styleType) {
         const borderColor = `var(${vars[0]}, #f7f7fa)`;
 
-        this.button.style.setProperty("--hover-background-color", `var(${vars[4]}, #292a2b)`);
-        this.button.style.setProperty("--hover-text-color", `var(${vars[0]}, #f7f7fa)`);
-        this.button.style.setProperty("--focus-background-color", `var(${vars[5]}, #46474a)`);
-        this.button.style.setProperty("--focus-text-color", `var(${vars[0]}, #f7f7fa)`);
-        this.button.style.setProperty("--active-background-color", `var(${vars[0]}, #f7f7fa)`);
-        this.button.style.setProperty("--active-text-color", `var(${vars[6]}, #0c0c0d)`);
+        this.button.style.setProperty(
+            "--hover-background-color",
+            `var(${vars[4]}, #292a2b)`,
+        );
+        this.button.style.setProperty(
+            "--hover-text-color",
+            `var(${vars[0]}, #f7f7fa)`,
+        );
+        this.button.style.setProperty(
+            "--focus-background-color",
+            `var(${vars[5]}, #46474a)`,
+        );
+        this.button.style.setProperty(
+            "--focus-text-color",
+            `var(${vars[0]}, #f7f7fa)`,
+        );
+        this.button.style.setProperty(
+            "--active-background-color",
+            `var(${vars[0]}, #f7f7fa)`,
+        );
+        this.button.style.setProperty(
+            "--active-text-color",
+            `var(${vars[6]}, #0c0c0d)`,
+        );
 
         if (styleType === "outlined") {
             // Outlined buttons keep their border color across all states
@@ -363,21 +497,86 @@ export class YumeButton extends HTMLElement {
             this.button.style.setProperty("--active-border-color", borderColor);
         } else {
             // Flat buttons match border to background
-            this.button.style.setProperty("--hover-border-color", `var(${vars[4]}, #292a2b)`);
-            this.button.style.setProperty("--focus-border-color", `var(${vars[5]}, #46474a)`);
-            this.button.style.setProperty("--active-border-color", `var(${vars[0]}, #f7f7fa)`);
+            this.button.style.setProperty(
+                "--hover-border-color",
+                `var(${vars[4]}, #292a2b)`,
+            );
+            this.button.style.setProperty(
+                "--focus-border-color",
+                `var(${vars[5]}, #46474a)`,
+            );
+            this.button.style.setProperty(
+                "--active-border-color",
+                `var(${vars[0]}, #f7f7fa)`,
+            );
         }
     }
 
     _getColorVarsMap() {
         return {
-            primary: ["--primary-content--", "--primary-content-hover", "--primary-content-active", "--primary-background-component", "--primary-background-hover", "--primary-background-active", "--primary-content-inverse"],
-            secondary: ["--secondary-content--", "--secondary-content-hover", "--secondary-content-active", "--secondary-background-component", "--secondary-background-hover", "--secondary-background-active", "--secondary-content-inverse"],
-            base: ["--base-content--", "--base-content-lighter", "--base-content-lightest", "--base-background-component", "--base-background-hover", "--base-background-active", "--base-content-inverse"],
-            success: ["--success-content--", "--success-content-hover", "--success-content-active", "--success-background-component", "--success-background-hover", "--success-background-active", "--success-content-inverse"],
-            error: ["--error-content--", "--error-content-hover", "--error-content-active", "--error-background-component", "--error-background-hover", "--error-background-active", "--error-content-inverse"],
-            warning: ["--warning-content--", "--warning-content-hover", "--warning-content-active", "--warning-background-component", "--warning-background-hover", "--warning-background-active", "--warning-content-inverse"],
-            help: ["--help-content--", "--help-content-hover", "--help-content-active", "--help-background-component", "--help-background-hover", "--help-background-active", "--help-content-inverse"],
+            primary: [
+                "--primary-content--",
+                "--primary-content-hover",
+                "--primary-content-active",
+                "--primary-background-component",
+                "--primary-background-hover",
+                "--primary-background-active",
+                "--primary-content-inverse",
+            ],
+            secondary: [
+                "--secondary-content--",
+                "--secondary-content-hover",
+                "--secondary-content-active",
+                "--secondary-background-component",
+                "--secondary-background-hover",
+                "--secondary-background-active",
+                "--secondary-content-inverse",
+            ],
+            base: [
+                "--base-content--",
+                "--base-content-lighter",
+                "--base-content-lightest",
+                "--base-background-component",
+                "--base-background-hover",
+                "--base-background-active",
+                "--base-content-inverse",
+            ],
+            success: [
+                "--success-content--",
+                "--success-content-hover",
+                "--success-content-active",
+                "--success-background-component",
+                "--success-background-hover",
+                "--success-background-active",
+                "--success-content-inverse",
+            ],
+            error: [
+                "--error-content--",
+                "--error-content-hover",
+                "--error-content-active",
+                "--error-background-component",
+                "--error-background-hover",
+                "--error-background-active",
+                "--error-content-inverse",
+            ],
+            warning: [
+                "--warning-content--",
+                "--warning-content-hover",
+                "--warning-content-active",
+                "--warning-background-component",
+                "--warning-background-hover",
+                "--warning-background-active",
+                "--warning-content-inverse",
+            ],
+            help: [
+                "--help-content--",
+                "--help-content-hover",
+                "--help-content-active",
+                "--help-background-component",
+                "--help-background-hover",
+                "--help-background-active",
+                "--help-content-inverse",
+            ],
         };
     }
 
@@ -394,11 +593,13 @@ export class YumeButton extends HTMLElement {
                 detail[key] = attr.value;
             });
 
-        this.dispatchEvent(new CustomEvent(eventType, {
-            detail,
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent(eventType, {
+                detail,
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     _init() {
@@ -408,6 +609,23 @@ export class YumeButton extends HTMLElement {
         this._addEventListeners();
     }
 
+    /** Whether a slot (named, or default when slotName is "") has non-empty content. */
+    _hasSlotContent(slotName) {
+        const slot = slotName
+            ? this.shadowRoot.querySelector(`slot[name="${slotName}"]`)
+            : this.shadowRoot.querySelector("slot:not([name])");
+        if (!slot) return false;
+        return slot
+            .assignedNodes({ flatten: true })
+            .some(
+                (n) =>
+                    !(
+                        n.nodeType === Node.TEXT_NODE &&
+                        n.textContent.trim() === ""
+                    ),
+            );
+    }
+
     _manageSlotVisibility(slotName, selector) {
         const slot = slotName
             ? this.shadowRoot.querySelector(`slot[name="${slotName}"]`)
@@ -415,21 +633,38 @@ export class YumeButton extends HTMLElement {
         const container = this.shadowRoot.querySelector(selector);
 
         const updateVisibility = () => {
-            const hasContent = slot
-                .assignedNodes({ flatten: true })
-                .some((n) => !(n.nodeType === Node.TEXT_NODE && n.textContent.trim() === ""));
-            container.style.display = hasContent ? "inline-flex" : "none";
+            container.style.display = this._hasSlotContent(slotName)
+                ? "inline-flex"
+                : "none";
+            this._refreshPaddingMode();
         };
 
         updateVisibility();
         slot.addEventListener("slotchange", updateVisibility);
     }
 
+    /** Toggle square padding (inline padding collapses to the block value). In
+     *  "auto" this tracks icon-only buttons; "square"/"wide" force it on/off. */
+    _refreshPaddingMode() {
+        if (!this.button) return;
+        const mode = this.paddingMode;
+        let square = mode === "square";
+        if (mode === "auto") {
+            const hasIcon =
+                this._hasSlotContent("left-icon") ||
+                this._hasSlotContent("right-icon");
+            square = hasIcon && !this._hasSlotContent("");
+        }
+        this.button.classList.toggle("square-padding", square);
+    }
+
     _proxyNativeOnClick() {
         try {
             Object.defineProperty(this, "onclick", {
                 get: () => this.button.onclick,
-                set: (value) => { this.button.onclick = value; },
+                set: (value) => {
+                    this.button.onclick = value;
+                },
                 configurable: true,
                 enumerable: true,
             });
@@ -498,7 +733,19 @@ export class YumeButton extends HTMLElement {
     _updateButtonAttributes() {
         const isAnchor = this.button?.tagName === "A";
         // These are only meaningful on <button>
-        const buttonOnlyAttrs = new Set(["type", "disabled", "name", "value", "autofocus", "form", "formaction", "formenctype", "formmethod", "formnovalidate", "formtarget"]);
+        const buttonOnlyAttrs = new Set([
+            "type",
+            "disabled",
+            "name",
+            "value",
+            "autofocus",
+            "form",
+            "formaction",
+            "formenctype",
+            "formmethod",
+            "formnovalidate",
+            "formtarget",
+        ]);
         // These are only meaningful on <a>; href is managed separately in _render
         const anchorOnlyAttrs = new Set(["href", "target", "rel"]);
 

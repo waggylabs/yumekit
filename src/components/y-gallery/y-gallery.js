@@ -306,7 +306,7 @@ export class YumeGallery extends HTMLElement {
             .expand-overlay {
                 position: fixed;
                 inset: 0;
-                z-index: var(--component-gallery-expand-z-index, 1000);
+                z-index: var(--component-gallery-expand-z-index, 9000);
                 background: var(--component-gallery-expand-background, rgba(0,0,0,0.9));
                 display: flex;
                 align-items: center;

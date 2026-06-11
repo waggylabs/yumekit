@@ -1,5 +1,6 @@
 ﻿import "./y-button.js";
 import "../y-icon/y-icon.js";
+import "../y-theme/y-theme.js";
 import "../../icons/all.js";
 
 export default {
@@ -28,6 +29,13 @@ export default {
             description: "Button size.",
             table: { defaultValue: { summary: "medium" } },
         },
+        paddingMode: {
+            control: "select",
+            options: ["auto", "square", "wide"],
+            description:
+                "Whether inline padding collapses to the block value: auto (icon-only buttons), square (always), wide (never).",
+            table: { defaultValue: { summary: "auto" } },
+        },
         disabled: {
             control: "boolean",
             description: "Whether the button is disabled.",
@@ -45,14 +53,16 @@ export default {
         color: "primary",
         styleType: "outlined",
         size: "medium",
+        paddingMode: "auto",
         disabled: false,
         type: "button",
     },
-    render: ({ label, color, styleType, size, disabled, type }) => `
+    render: ({ label, color, styleType, size, paddingMode, disabled, type }) => `
         <y-button
             color="${color}"
             style-type="${styleType}"
             size="${size}"
+            padding-mode="${paddingMode}"
             type="${type}"
             ${disabled ? "disabled" : ""}
         >${label}</y-button>
@@ -110,6 +120,27 @@ export const WithIcons = {
                 <y-icon slot="left-icon" name="check" size="small"></y-icon>
             </y-button>
         </div>
+    `,
+};
+
+export const PaddingMode = {
+    name: "Padding Mode",
+    // Shown in a Material theme, where labeled buttons get wide inline padding,
+    // so the square/wide distinction is visible.
+    render: () => `
+        <y-theme theme="material-blue-light" style="display:block">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px">
+                <y-button color="primary" style-type="filled">Auto (label)</y-button>
+                <y-button color="primary" style-type="filled">
+                    <y-icon slot="left-icon" name="check" size="small"></y-icon>
+                </y-button>
+                <y-button color="primary" style-type="filled" padding-mode="square">5</y-button>
+                <y-button color="primary" style-type="filled" padding-mode="wide">
+                    <y-icon slot="left-icon" name="check" size="small"></y-icon>
+                    Wide icon
+                </y-button>
+            </div>
+        </y-theme>
     `,
 };
 
