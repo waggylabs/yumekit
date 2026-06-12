@@ -215,6 +215,7 @@ export class YumeCheckbox extends HTMLElement {
             .icon {
                 width: var(--component-checkbox-icon-size, 16px);
                 height: var(--component-checkbox-icon-size, 16px);
+                color: var(--component-checkbox-accent);
             }
 
             [part="label"] {
