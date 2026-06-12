@@ -81,7 +81,7 @@ export default {
     },
 };
 
-// Interactive story â€” click the button to trigger
+// Interactive story — click the button to trigger
 export const Default = {};
 
 export const Colors = {
@@ -109,7 +109,7 @@ export const Colors = {
     },
 };
 
-// Auto-show stories â€” no button needed, toast fires on render
+// Auto-show stories — no button needed, toast fires on render
 export const WithIcons = {
     render: autoShow({ message: "File saved successfully.", color: "success", icon: "check" }),
 };

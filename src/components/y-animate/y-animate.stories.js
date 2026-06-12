@@ -164,7 +164,7 @@ export const Reverse = {
     parameters: {
         docs: {
             description: {
-                story: "Plays the animation in reverse â€” useful for exit transitions.",
+                story: "Plays the animation in reverse — useful for exit transitions.",
             },
         },
     },
@@ -235,7 +235,7 @@ export const VisibilityTrigger = {
         const id = uid();
         return `
             <div style="padding:32px;display:flex;flex-direction:column;gap:600px">
-                <p>Scroll down to trigger the animation when the card enters the viewportâ€¦</p>
+                <p>Scroll down to trigger the animation when the card enters the viewport…</p>
                 <y-animate
                     id="${id}"
                     trigger="visible"

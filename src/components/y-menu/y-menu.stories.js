@@ -159,7 +159,7 @@ export const WithCustomSlotPerItem = {
                     { text: "Sign out", value: "signout" },
                 ])}'
             >
-                <strong slot="user-banner" style="color:#a78bfa">â˜… Signed in as Alex</strong>
+                <strong slot="user-banner" style="color:#a78bfa">★ Signed in as Alex</strong>
             </y-menu>
         </div>
     `,

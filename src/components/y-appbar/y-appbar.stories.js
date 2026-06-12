@@ -100,7 +100,7 @@ export const NavigateEvent = {
         log.id = "nav-log";
         log.style.cssText =
             "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px";
-        log.textContent = "Click a nav itemâ€¦";
+        log.textContent = "Click a nav item…";
 
         container.innerHTML = `
             <y-appbar

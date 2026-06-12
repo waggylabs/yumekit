@@ -140,7 +140,7 @@ export default {
 /** Default single-date picker. */
 export const SingleDate = {};
 
-/** Date range picker â€” shows two calendars side by side. */
+/** Date range picker — shows two calendars side by side. */
 export const DateRange = {
     args: { mode: "range" },
 };
@@ -178,7 +178,7 @@ export const WithMinMax = {
     args: { min: "2026-03-01", max: "2026-03-31" },
 };
 
-/** Month-only picker â€” hides the day grid. */
+/** Month-only picker — hides the day grid. */
 export const MonthPicker = {
     args: { showDays: false },
 };

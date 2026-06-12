@@ -116,7 +116,7 @@ export const BodyOnly = {
             <y-button id="dlg-body-only" color="primary">Open</y-button>
             <y-dialog anchor="dlg-body-only" closable show-backdrop animate>
                 <div slot="body">
-                    <p>A dialog with only body content â€” no header title or footer buttons.</p>
+                    <p>A dialog with only body content — no header title or footer buttons.</p>
                 </div>
             </y-dialog>
         </div>

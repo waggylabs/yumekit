@@ -3,7 +3,7 @@ import "../y-card/y-card.js";
 import "../y-tag/y-tag.js";
 
 const listWidth = "width:360px";
-// y-card brings its own background, border, and padding â€” let it own the box
+// y-card brings its own background, border, and padding — let it own the box
 // styling and zero out the droplist's per-item padding.
 const noItemPadding = "--component-droplist-item-padding:0";
 
@@ -157,7 +157,7 @@ export const Kanban = {
                     if (newIndex === -1) {
                         log.textContent = \`"\${label}" left "\${src.getAttribute("aria-label")}"\`;
                     } else if (from) {
-                        log.textContent = \`"\${label}" â†’ "\${src.getAttribute("aria-label")}" at position \${newIndex + 1}\`;
+                        log.textContent = \`"\${label}" → "\${src.getAttribute("aria-label")}" at position \${newIndex + 1}\`;
                     } else {
                         log.textContent = \`"\${label}" reordered to position \${newIndex + 1} in "\${src.getAttribute("aria-label")}"\`;
                     }
@@ -175,7 +175,7 @@ export const KanbanDropDisabled = {
             .kanban-column h3 { margin: 0 0 4px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
         </style>
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drag from <strong>Templates</strong> into a lane â€” the original stays put (<code>pull="clone"</code>).
+            Drag from <strong>Templates</strong> into a lane — the original stays put (<code>pull="clone"</code>).
         </p>
         <div class="kanban-board">
             <div class="kanban-column">
@@ -220,19 +220,19 @@ export const DragHandle = {
             .handle-row .body { flex: 1; }
         </style>
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drag is gated to the <strong>â‹®â‹®</strong> handle. Clicking elsewhere on the row does not start a drag.
+            Drag is gated to the <strong>⋮⋮</strong> handle. Clicking elsewhere on the row does not start a drag.
         </p>
         <y-droplist handle=".grip" style="display:block;${listWidth};${noItemPadding}">
             <div data-id="alpha" class="handle-row">
-                <span class="grip" aria-label="Reorder Alpha">â‹®â‹®</span>
+                <span class="grip" aria-label="Reorder Alpha">⋮⋮</span>
                 <span class="body">Alpha</span>
             </div>
             <div data-id="bravo" class="handle-row">
-                <span class="grip" aria-label="Reorder Bravo">â‹®â‹®</span>
+                <span class="grip" aria-label="Reorder Bravo">⋮⋮</span>
                 <span class="body">Bravo</span>
             </div>
             <div data-id="charlie" class="handle-row">
-                <span class="grip" aria-label="Reorder Charlie">â‹®â‹®</span>
+                <span class="grip" aria-label="Reorder Charlie">⋮⋮</span>
                 <span class="body">Charlie</span>
             </div>
         </y-droplist>
@@ -253,7 +253,7 @@ export const Swap = {
             }
         </style>
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drop one tile onto another â€” they swap positions instead of inserting between.
+            Drop one tile onto another — they swap positions instead of inserting between.
         </p>
         <y-droplist swap style="display:block;${listWidth};${noItemPadding}">
             <div data-id="one" class="swap-tile">One</div>
@@ -275,7 +275,7 @@ export const CloneToBucket = {
             }
         </style>
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drag a template into the bucket â€” the original stays in the palette (<code>clone</code>).
+            Drag a template into the bucket — the original stays in the palette (<code>clone</code>).
         </p>
         <div class="clone-board">
             <div>
@@ -310,7 +310,7 @@ export const CloneToBucket = {
 export const AutoScroll = {
     render: () => `
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drag an item and move toward the top or bottom edge of the container â€” it scrolls automatically.
+            Drag an item and move toward the top or bottom edge of the container — it scrolls automatically.
             Uses the default <code>scroll-sensitivity="30"</code> and <code>scroll-speed="10"</code>.
         </p>
         <div
@@ -336,7 +336,7 @@ export const AutoScroll = {
 export const AutoScrollDisabled = {
     render: () => `
         <p style="margin:0 0 12px;font-size:0.85em">
-            Auto-scroll is disabled with <code>scroll="false"</code> â€” the container does not scroll when
+            Auto-scroll is disabled with <code>scroll="false"</code> — the container does not scroll when
             the cursor reaches the edge.
         </p>
         <div
@@ -359,7 +359,7 @@ export const AutoScrollDisabled = {
 export const RevertOnCancel = {
     render: () => `
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drag an item and drop it outside the list (e.g., onto this paragraph) â€” the displaced items
+            Drag an item and drop it outside the list (e.g., onto this paragraph) — the displaced items
             animate back to their original positions. Uses <code>revert</code>.
         </p>
         <y-droplist revert style="display:block;${listWidth};${noItemPadding}">
@@ -443,10 +443,10 @@ export const ProgrammaticSort = {
         <div style="display:flex;flex-direction:column;gap:12px;max-width:300px">
             <div style="display:flex;gap:8px">
                 <button onclick="document.getElementById('sort-list').sort()">
-                    Sort Aâ†’Z (data-id)
+                    Sort A→Z (data-id)
                 </button>
                 <button onclick="document.getElementById('sort-list').sort((a,b)=>b.dataset.id.localeCompare(a.dataset.id))">
-                    Sort Zâ†’A
+                    Sort Z→A
                 </button>
             </div>
             <y-droplist id="sort-list" animation="200">
@@ -477,7 +477,7 @@ export const DragDropEvent = {
             <script>
                 document.getElementById('event-list').addEventListener('drag:drop', (e) => {
                     const log = document.getElementById('event-log');
-                    log.textContent = 'drag:drop â€” item: ' + e.detail.item.dataset.id + ', index: ' + e.detail.index;
+                    log.textContent = 'drag:drop — item: ' + e.detail.item.dataset.id + ', index: ' + e.detail.index;
                 });
             <\/script>
         </div>
@@ -486,7 +486,7 @@ export const DragDropEvent = {
 export const DragPreview = {
     render: () => `
         <p style="margin:0 0 12px;font-size:0.85em">
-            Drag an item â€” a cursor-following clone of the dragged card follows
+            Drag an item — a cursor-following clone of the dragged card follows
             the mouse. The in-list ghost (dashed outline) is unchanged.
         </p>
         <y-droplist drag-preview style="display:block;${listWidth};${noItemPadding}">
@@ -516,14 +516,14 @@ export const DragPreviewCustomSlot = {
         </style>
         <p style="margin:0 0 12px;font-size:0.85em">
             A custom <code>slot="drag-preview"</code> element is used instead of
-            cloning the dragged card. The badge below is the slotted node â€”
+            cloning the dragged card. The badge below is the slotted node —
             it is hidden during the drag and restored on drop.
         </p>
         <y-droplist drag-preview style="display:block;${listWidth};${noItemPadding}">
             <y-card data-id="alpha" raised>Alpha</y-card>
             <y-card data-id="bravo" raised>Bravo</y-card>
             <y-card data-id="charlie" raised>Charlie</y-card>
-            <div slot="drag-preview" class="badge-preview">Draggingâ€¦</div>
+            <div slot="drag-preview" class="badge-preview">Dragging…</div>
         </y-droplist>
     `,
 };
@@ -531,7 +531,7 @@ export const DragPreviewCustomSlot = {
 export const DragPreviewTilted = {
     render: () => `
         <p style="margin:0 0 12px;font-size:0.85em">
-            The preview is scaled to 92 % and tilted 3Â° using
+            The preview is scaled to 92 % and tilted 3° using
             <code>--component-droplist-drag-preview-rotate</code> and
             <code>--component-droplist-drag-preview-scale</code> (via
             <code>drag-preview-scale</code> attribute). Mimics a Trello-style

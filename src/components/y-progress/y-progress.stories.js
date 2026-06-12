@@ -183,7 +183,7 @@ export const Disabled = {
     args: { disabled: true, value: 40 },
 };
 
-// â”€â”€ Stacked bar (multi-value) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Stacked bar (multi-value) ─────────────────────────────
 export const StackedBar = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:8px;width:480px">
@@ -208,7 +208,7 @@ export const StackedBar = {
     },
 };
 
-// â”€â”€ Segmented bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Segmented bar ────────────────────────────────────────
 export const SegmentedBar = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:12px;width:480px">
@@ -219,7 +219,7 @@ export const SegmentedBar = {
     `,
 };
 
-// â”€â”€ Ring mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Ring mode ────────────────────────────────────────────
 export const Ring = {
     args: { mode: "ring", value: 65 },
 };
@@ -250,7 +250,7 @@ export const ConcentricRings = {
     parameters: {
         docs: {
             description: {
-                story: 'When `mode="ring"` has 2+ values, each entry renders as a concentric arc â€” outermost first.',
+                story: 'When `mode="ring"` has 2+ values, each entry renders as a concentric arc — outermost first.',
             },
         },
     },
@@ -278,7 +278,7 @@ export const RingIndeterminate = {
     args: { mode: "ring", indeterminate: true, value: 0 },
 };
 
-// â”€â”€ Pie mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Pie mode ─────────────────────────────────────────────
 export const Pie = {
     args: { mode: "pie", value: 65 },
 };

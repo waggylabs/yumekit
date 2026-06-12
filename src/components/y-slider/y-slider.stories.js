@@ -243,7 +243,7 @@ export const SnapToTicks = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:64px;width:320px;padding:24px 0">
             <label style="font-size:14px;display:flex;flex-direction:column;gap:8px">
-                Drag â€” value will snap to the nearest tick
+                Drag — value will snap to the nearest tick
                 <y-slider
                     value="50"
                     min="0"
@@ -336,7 +336,7 @@ export const TooltipWithPrefixAndSuffix = {
         <div style="width:300px;padding:48px 0 24px">
             <y-slider value="22" min="-20" max="40" show-value="always">
                 <span slot="value-prefix">~</span>
-                <span slot="value-suffix">Â°C</span>
+                <span slot="value-suffix">°C</span>
             </y-slider>
         </div>
     `,
