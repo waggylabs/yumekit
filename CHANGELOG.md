@@ -73,6 +73,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-data-grid` — selected-row colors are now readable in every theme. The row used a near-surface tint (`--primary-background-component`) for its background but the white `--primary-content-inverse` for text, so text was invisible on light themes and the background was indistinguishable from the surface on dark themes. Selected rows now use the `--primary-background-active` tint with the normal `--base-content` text (override via `--component-data-grid-row-selected-bg` / `--component-data-grid-row-selected-text`). The multi-sort priority badge and group-toggle focus ring, which shared the same mistake, now use `--primary-content`.
+
 - Form field components now share one field background. `y-select` (trigger and dropdown) used `base.background.app` while `y-input` / `y-textarea` / `y-color` / `y-date` used `base.background.component`; `select.background` is now `base.background.component` across all themes, so fields match when placed together on a form (most visible in the Material and Carbon themes). The select dropdown panel now also matches menus/popovers.
 
 - `y-avatar` — the three `shape` values are now visually distinct. Added a `--component-avatar-border-radius-rounded` token (medium radius) and changed `square` to a zero radius (sharp corners); `circle` is unchanged.

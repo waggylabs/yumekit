@@ -212,38 +212,64 @@ export class YumeDataGrid extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Column schema as JSON string or array of column definition objects. */
-    get columns() { return this.getAttribute("columns"); }
+    get columns() {
+        return this.getAttribute("columns");
+    }
     set columns(val) {
-        this.setAttribute("columns", typeof val === "string" ? val : JSON.stringify(val));
+        this.setAttribute(
+            "columns",
+            typeof val === "string" ? val : JSON.stringify(val),
+        );
     }
 
     /** Row data as JSON string or array of objects keyed by column key. */
-    get data() { return this.getAttribute("data"); }
+    get data() {
+        return this.getAttribute("data");
+    }
     set data(val) {
-        this.setAttribute("data", typeof val === "string" ? val : JSON.stringify(val));
+        this.setAttribute(
+            "data",
+            typeof val === "string" ? val : JSON.stringify(val),
+        );
     }
 
     /** Operating mode: "client" performs sort/filter/page locally, "server" emits events. */
-    get mode() { return this.getAttribute("mode") || "client"; }
-    set mode(val) { this.setAttribute("mode", val); }
+    get mode() {
+        return this.getAttribute("mode") || "client";
+    }
+    set mode(val) {
+        this.setAttribute("mode", val);
+    }
 
     /** Rows per page. */
-    get pageSize() { return this._pageSize; }
-    set pageSize(val) { this.setAttribute("page-size", String(val)); }
+    get pageSize() {
+        return this._pageSize;
+    }
+    set pageSize(val) {
+        this.setAttribute("page-size", String(val));
+    }
 
     /** Current 1-based page index. */
-    get currentPage() { return this._currentPage; }
-    set currentPage(val) { this.setAttribute("current-page", String(val)); }
+    get currentPage() {
+        return this._currentPage;
+    }
+    set currentPage(val) {
+        this.setAttribute("current-page", String(val));
+    }
 
     /** Total row count, required for server-mode pagination. */
     get totalRows() {
         const v = Number(this.getAttribute("total-rows"));
         return Number.isFinite(v) ? v : 0;
     }
-    set totalRows(val) { this.setAttribute("total-rows", String(val)); }
+    set totalRows(val) {
+        this.setAttribute("total-rows", String(val));
+    }
 
     /** When true, a loading overlay is shown. */
-    get loading() { return this.hasAttribute("loading"); }
+    get loading() {
+        return this.hasAttribute("loading");
+    }
     set loading(val) {
         if (val) this.setAttribute("loading", "");
         else this.removeAttribute("loading");
@@ -263,13 +289,17 @@ export class YumeDataGrid extends HTMLElement {
     get hover() {
         return this.getAttribute("hover") !== "false";
     }
-    set hover(val) { this.setAttribute("hover", String(Boolean(val))); }
+    set hover(val) {
+        this.setAttribute("hover", String(Boolean(val)));
+    }
 
     /** Sticky header during vertical scroll. Defaults to true unless attribute set to "false". */
     get fixedHeader() {
         return this.getAttribute("fixed-header") !== "false";
     }
-    set fixedHeader(val) { this.setAttribute("fixed-header", String(Boolean(val))); }
+    set fixedHeader(val) {
+        this.setAttribute("fixed-header", String(Boolean(val)));
+    }
 
     /**
      * Filtering UI mode: `"inline"` renders the per-column filter row beneath
@@ -283,7 +313,8 @@ export class YumeDataGrid extends HTMLElement {
         return null;
     }
     set filtering(val) {
-        if (val === "inline" || val === "advanced") this.setAttribute("filtering", val);
+        if (val === "inline" || val === "advanced")
+            this.setAttribute("filtering", val);
         else this.removeAttribute("filtering");
     }
 
@@ -291,13 +322,17 @@ export class YumeDataGrid extends HTMLElement {
     get enableSorting() {
         return this.getAttribute("enable-sorting") !== "false";
     }
-    set enableSorting(val) { this.setAttribute("enable-sorting", String(Boolean(val))); }
+    set enableSorting(val) {
+        this.setAttribute("enable-sorting", String(Boolean(val)));
+    }
 
     /** Pagination controls. Defaults to true unless attribute set to "false". */
     get enablePagination() {
         return this.getAttribute("enable-pagination") !== "false";
     }
-    set enablePagination(val) { this.setAttribute("enable-pagination", String(Boolean(val))); }
+    set enablePagination(val) {
+        this.setAttribute("enable-pagination", String(Boolean(val)));
+    }
 
     /** Show the item count in the footer's right side. Defaults to false; add the attribute (or `show-item-count="true"`) to enable. */
     get showItemCount() {
@@ -313,49 +348,76 @@ export class YumeDataGrid extends HTMLElement {
     get emptyMessage() {
         return this.getAttribute("empty-message") || "No data available";
     }
-    set emptyMessage(val) { this.setAttribute("empty-message", val); }
+    set emptyMessage(val) {
+        this.setAttribute("empty-message", val);
+    }
 
     /** Row height in pixels (used by virtual scrolling in a later phase). */
     get rowHeight() {
         const v = Number(this.getAttribute("row-height"));
         return Number.isFinite(v) && v > 0 ? v : 40;
     }
-    set rowHeight(val) { this.setAttribute("row-height", String(val)); }
+    set rowHeight(val) {
+        this.setAttribute("row-height", String(val));
+    }
 
     /** Current global search string. */
-    get globalSearch() { return this._globalQuery; }
-    set globalSearch(val) { this.setAttribute("global-search", String(val ?? "")); }
+    get globalSearch() {
+        return this._globalQuery;
+    }
+    set globalSearch(val) {
+        this.setAttribute("global-search", String(val ?? ""));
+    }
 
     /** Current column filters as a `{ [key]: value }` object. */
-    get filters() { return { ...this._columnFilters }; }
+    get filters() {
+        return { ...this._columnFilters };
+    }
     set filters(obj) {
         this._columnFilters = obj && typeof obj === "object" ? { ...obj } : {};
         if (this.isConnected) this._render();
     }
 
     /** Current sort stack as an array of `{ column, direction }`. */
-    get sortState() { return this._sorts.map((s) => ({ ...s })); }
+    get sortState() {
+        return this._sorts.map((s) => ({ ...s }));
+    }
     set sortState(arr) {
         this._sorts = Array.isArray(arr)
-            ? arr.filter((s) => s && s.column && (s.direction === "asc" || s.direction === "desc"))
+            ? arr.filter(
+                  (s) =>
+                      s &&
+                      s.column &&
+                      (s.direction === "asc" || s.direction === "desc"),
+              )
             : [];
         if (this.isConnected) this._render();
     }
 
     /** Renders a checkbox column and enables row-selection interactions. */
-    get enableSelection() { return this.hasAttribute("enable-selection"); }
+    get enableSelection() {
+        return this.hasAttribute("enable-selection");
+    }
     set enableSelection(val) {
         if (val) this.setAttribute("enable-selection", "");
         else this.removeAttribute("enable-selection");
     }
 
     /** Selection mode: "single" or "multi" (default "multi"). */
-    get selectionMode() { return this.getAttribute("selection-mode") || "multi"; }
-    set selectionMode(val) { this.setAttribute("selection-mode", val); }
+    get selectionMode() {
+        return this.getAttribute("selection-mode") || "multi";
+    }
+    set selectionMode(val) {
+        this.setAttribute("selection-mode", val);
+    }
 
     /** Column key used as a stable per-row identifier. Falls back to the row's array index. */
-    get rowKey() { return this.getAttribute("row-key") || ""; }
-    set rowKey(val) { this.setAttribute("row-key", val); }
+    get rowKey() {
+        return this.getAttribute("row-key") || "";
+    }
+    set rowKey(val) {
+        this.setAttribute("row-key", val);
+    }
 
     /** Array of selected row objects (resolved from current `_selectedKeys`). */
     get selectedRows() {
@@ -365,24 +427,30 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     /** Array of selected row keys. */
-    get selectedKeys() { return [...this._selectedKeys]; }
+    get selectedKeys() {
+        return [...this._selectedKeys];
+    }
     set selectedKeys(arr) {
-        this._selectedKeys = new Set(
-            Array.isArray(arr) ? arr.map(String) : [],
-        );
+        this._selectedKeys = new Set(Array.isArray(arr) ? arr.map(String) : []);
         if (this.isConnected) this._render();
     }
 
     /** Enables inline cell editing. */
-    get enableEditing() { return this.hasAttribute("enable-editing"); }
+    get enableEditing() {
+        return this.hasAttribute("enable-editing");
+    }
     set enableEditing(val) {
         if (val) this.setAttribute("enable-editing", "");
         else this.removeAttribute("enable-editing");
     }
 
     /** Edit trigger: "click" (single click on cell) or "focus" (default "click"). */
-    get editOn() { return this.getAttribute("edit-on") || "click"; }
-    set editOn(val) { this.setAttribute("edit-on", val); }
+    get editOn() {
+        return this.getAttribute("edit-on") || "click";
+    }
+    set editOn(val) {
+        this.setAttribute("edit-on", val);
+    }
 
     /** Column keys to group rows by (nested when more than one). */
     get groupBy() {
@@ -391,11 +459,18 @@ export class YumeDataGrid extends HTMLElement {
         try {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) return parsed.map(String);
-        } catch { /* fall through */ }
-        return raw.split(",").map((s) => s.trim()).filter(Boolean);
+        } catch {
+            /* fall through */
+        }
+        return raw
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
     }
     set groupBy(val) {
-        const next = Array.isArray(val) ? JSON.stringify(val) : String(val ?? "");
+        const next = Array.isArray(val)
+            ? JSON.stringify(val)
+            : String(val ?? "");
         this.setAttribute("group-by", next);
     }
 
@@ -413,7 +488,9 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     /** Enable virtual scrolling (only render visible rows). */
-    get virtual() { return this.hasAttribute("virtual"); }
+    get virtual() {
+        return this.hasAttribute("virtual");
+    }
     set virtual(val) {
         if (val) this.setAttribute("virtual", "");
         else this.removeAttribute("virtual");
@@ -424,17 +501,23 @@ export class YumeDataGrid extends HTMLElement {
         const v = Number(this.getAttribute("viewport-height"));
         return Number.isFinite(v) && v > 0 ? v : 0;
     }
-    set viewportHeight(val) { this.setAttribute("viewport-height", String(val)); }
+    set viewportHeight(val) {
+        this.setAttribute("viewport-height", String(val));
+    }
 
     /** Extra rows rendered above and below the viewport when virtualizing. */
     get bufferSize() {
         const v = Number(this.getAttribute("buffer-size"));
         return Number.isFinite(v) && v >= 0 ? v : 10;
     }
-    set bufferSize(val) { this.setAttribute("buffer-size", String(val)); }
+    set bufferSize(val) {
+        this.setAttribute("buffer-size", String(val));
+    }
 
     /** When set, leaf headers expose a kebab menu for filter / sort / column visibility / move actions. */
-    get enableHeaderMenu() { return this.hasAttribute("enable-header-menu"); }
+    get enableHeaderMenu() {
+        return this.hasAttribute("enable-header-menu");
+    }
     set enableHeaderMenu(val) {
         if (val) this.setAttribute("enable-header-menu", "");
         else this.removeAttribute("enable-header-menu");
@@ -443,7 +526,6 @@ export class YumeDataGrid extends HTMLElement {
     // -------------------------------------------------------------------------
     // Public
     // -------------------------------------------------------------------------
-
 
     /** Cancel the active edit (if any) without committing. */
     cancelEdit() {
@@ -523,7 +605,9 @@ export class YumeDataGrid extends HTMLElement {
     selectRows(rows) {
         const list = Array.isArray(rows) ? rows : [];
         this._selectedKeys = new Set(
-            list.map((row) => this._rowKeyFor(row, this._parsedData.indexOf(row))),
+            list.map((row) =>
+                this._rowKeyFor(row, this._parsedData.indexOf(row)),
+            ),
         );
         this._emitRowSelect(null);
         this._render();
@@ -532,7 +616,6 @@ export class YumeDataGrid extends HTMLElement {
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
-
 
     _absoluteRowIndex(displayIdx) {
         if (this.mode === "server" || !this.enablePagination) return displayIdx;
@@ -558,9 +641,10 @@ export class YumeDataGrid extends HTMLElement {
             }
             for (const [key, value] of colFilters) {
                 const col = colByKey.get(key);
-                const op = this._columnFilterOps[key]
-                    || this._defaultOperatorFor(col);
-                if (!this._matchesFilter(row[key], value, op, col)) return false;
+                const op =
+                    this._columnFilterOps[key] || this._defaultOperatorFor(col);
+                if (!this._matchesFilter(row[key], value, op, col))
+                    return false;
             }
             return true;
         });
@@ -609,18 +693,23 @@ export class YumeDataGrid extends HTMLElement {
 
     _beginEdit(row, rowKey, col) {
         if (this._editing) {
-            if (this._editing.rowKey === rowKey && this._editing.columnKey === col.key) {
+            if (
+                this._editing.rowKey === rowKey &&
+                this._editing.columnKey === col.key
+            ) {
                 return;
             }
             this._commitActiveEditor();
         }
         const oldValue = row[col.key];
         this._editing = { rowKey, columnKey: col.key, oldValue, row, col };
-        this.dispatchEvent(new CustomEvent("cell-edit-start", {
-            detail: { row, column: col.key, value: oldValue },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("cell-edit-start", {
+                detail: { row, column: col.key, value: oldValue },
+                bubbles: true,
+                composed: true,
+            }),
+        );
         this._render();
     }
 
@@ -647,7 +736,9 @@ export class YumeDataGrid extends HTMLElement {
         });
 
         if (trailingSpacerPx > 0) {
-            tbody.appendChild(this._buildSpacerRow(totalCols, trailingSpacerPx));
+            tbody.appendChild(
+                this._buildSpacerRow(totalCols, trailingSpacerPx),
+            );
         }
 
         return tbody;
@@ -711,11 +802,13 @@ export class YumeDataGrid extends HTMLElement {
         });
         btn.appendChild(_el("y-icon", { name: "grid", size: "small" }));
         btn.appendChild(_el("span", { class: "menu-item-label" }, ["Columns"]));
-        btn.appendChild(_el("y-icon", {
-            name: "chevron-right",
-            size: "small",
-            class: "submenu-chevron",
-        }));
+        btn.appendChild(
+            _el("y-icon", {
+                name: "chevron-right",
+                size: "small",
+                class: "submenu-chevron",
+            }),
+        );
 
         const toggle = () => {
             const sub = this._columnsSubmenuPopover;
@@ -725,7 +818,8 @@ export class YumeDataGrid extends HTMLElement {
 
         // Hover opens; re-click on the trigger toggles it closed.
         btn.addEventListener("mouseenter", () => {
-            if (!this._columnsSubmenuPopover?.open) this._openColumnsSubmenu(btn);
+            if (!this._columnsSubmenuPopover?.open)
+                this._openColumnsSubmenu(btn);
         });
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -772,8 +866,7 @@ export class YumeDataGrid extends HTMLElement {
         columns.forEach((col, colIdx) => {
             const cell = this._buildCell(row, key, col);
             if (colIdx === 0 && depth) {
-                cell.style.paddingLeft =
-                    `calc(var(--component-data-grid-group-indent, 16px) * ${depth + 1})`;
+                cell.style.paddingLeft = `calc(var(--component-data-grid-group-indent, 16px) * ${depth + 1})`;
             }
             tr.appendChild(cell);
         });
@@ -784,7 +877,8 @@ export class YumeDataGrid extends HTMLElement {
         const value = row[col.key];
         const editorType = col.editor || col.type || "text";
         const validators = this._collectValidators(col);
-        const commit = (raw) => this._commitEdit(row, rowKey, col, raw, validators);
+        const commit = (raw) =>
+            this._commitEdit(row, rowKey, col, raw, validators);
         const cancel = () => this._cancelEdit(row, rowKey, col);
 
         let editor;
@@ -793,7 +887,10 @@ export class YumeDataGrid extends HTMLElement {
             // plain string array in the column schema.
             const normalized = (col.options || []).map((o) =>
                 typeof o === "object" && o !== null
-                    ? { value: String(o.value), label: String(o.label ?? o.value) }
+                    ? {
+                          value: String(o.value),
+                          label: String(o.label ?? o.value),
+                      }
                     : { value: String(o), label: String(o) },
             );
             editor = _el("y-select", {
@@ -805,9 +902,14 @@ export class YumeDataGrid extends HTMLElement {
                 // open beyond the visible viewport / past the grid edge.
                 portal: "",
             });
-            editor.addEventListener("change", (e) => commit(e.detail?.value ?? editor.value));
+            editor.addEventListener("change", (e) =>
+                commit(e.detail?.value ?? editor.value),
+            );
         } else if (editorType === "checkbox") {
-            editor = _el("y-checkbox", { part: "cell-editor", "label-position": "right" });
+            editor = _el("y-checkbox", {
+                part: "cell-editor",
+                "label-position": "right",
+            });
             if (value) editor.setAttribute("checked", "");
             editor.addEventListener("change", () => commit(editor.checked));
         } else if (editorType === "date") {
@@ -816,7 +918,9 @@ export class YumeDataGrid extends HTMLElement {
                 size: "small",
                 value: value == null ? "" : String(value),
             });
-            editor.addEventListener("change", (e) => commit(e.detail?.value ?? ""));
+            editor.addEventListener("change", (e) =>
+                commit(e.detail?.value ?? ""),
+            );
         } else {
             editor = _el("y-input", {
                 part: "cell-editor",
@@ -824,14 +928,25 @@ export class YumeDataGrid extends HTMLElement {
                 type: editorType === "number" ? "number" : "text",
                 value: value == null ? "" : String(value),
             });
-            editor.addEventListener("blur", () => {
-                if (this._editing) commit(this._readEditorValue(editor, editorType));
-            }, true);
+            editor.addEventListener(
+                "blur",
+                () => {
+                    if (this._editing)
+                        commit(this._readEditorValue(editor, editorType));
+                },
+                true,
+            );
         }
 
         editor.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") { e.stopPropagation(); cancel(); }
-            else if (e.key === "Enter" && editorType !== "select" && editorType !== "checkbox") {
+            if (e.key === "Escape") {
+                e.stopPropagation();
+                cancel();
+            } else if (
+                e.key === "Enter" &&
+                editorType !== "select" &&
+                editorType !== "checkbox"
+            ) {
                 e.stopPropagation();
                 e.preventDefault();
                 commit(this._readEditorValue(editor, editorType));
@@ -839,12 +954,16 @@ export class YumeDataGrid extends HTMLElement {
         });
 
         queueMicrotask(() => {
-            const native = editor.shadowRoot?.querySelector("input, [tabindex]");
+            const native =
+                editor.shadowRoot?.querySelector("input, [tabindex]");
             (native || editor).focus?.();
             if (native && "select" in native) native.select();
             // Auto-open the dropdown for select editors so the user can pick
             // a value in one click instead of two.
-            if (editorType === "select" && typeof editor.toggleDropdown === "function") {
+            if (
+                editorType === "select" &&
+                typeof editor.toggleDropdown === "function"
+            ) {
                 editor.toggleDropdown();
             }
         });
@@ -854,7 +973,8 @@ export class YumeDataGrid extends HTMLElement {
 
     _buildEmptyRow(columns) {
         const tr = _el("tr", { part: "row", "data-empty": "" });
-        const span = Math.max(1, columns.length) + (this.enableSelection ? 1 : 0);
+        const span =
+            Math.max(1, columns.length) + (this.enableSelection ? 1 : 0);
         const td = _el("td", {
             part: "empty-state",
             colspan: String(span),
@@ -889,29 +1009,34 @@ export class YumeDataGrid extends HTMLElement {
     _buildFilterPopoverContent(col, close) {
         const root = _el("div", { class: "header-menu filter-popover" });
 
-        const type = col.type === "number" ? "number"
-            : col.type === "date" ? "date" : "text";
-        const opOptions = type === "number"
-            ? [
-                { value: "equals", label: "Equals" },
-                { value: "ne", label: "Does not equal" },
-                { value: "gt", label: "Greater than" },
-                { value: "gte", label: "Greater than or equal" },
-                { value: "lt", label: "Less than" },
-                { value: "lte", label: "Less than or equal" },
-            ]
-            : type === "date"
+        const type =
+            col.type === "number"
+                ? "number"
+                : col.type === "date"
+                  ? "date"
+                  : "text";
+        const opOptions =
+            type === "number"
                 ? [
-                    { value: "equals", label: "On" },
-                    { value: "before", label: "Before" },
-                    { value: "after", label: "After" },
-                ]
-                : [
-                    { value: "contains", label: "Contains" },
-                    { value: "equals", label: "Equals" },
-                    { value: "startsWith", label: "Starts with" },
-                    { value: "endsWith", label: "Ends with" },
-                ];
+                      { value: "equals", label: "Equals" },
+                      { value: "ne", label: "Does not equal" },
+                      { value: "gt", label: "Greater than" },
+                      { value: "gte", label: "Greater than or equal" },
+                      { value: "lt", label: "Less than" },
+                      { value: "lte", label: "Less than or equal" },
+                  ]
+                : type === "date"
+                  ? [
+                        { value: "equals", label: "On" },
+                        { value: "before", label: "Before" },
+                        { value: "after", label: "After" },
+                    ]
+                  : [
+                        { value: "contains", label: "Contains" },
+                        { value: "equals", label: "Equals" },
+                        { value: "startsWith", label: "Starts with" },
+                        { value: "endsWith", label: "Ends with" },
+                    ];
         const currentOp = this._columnFilterOps[col.key] || opOptions[0].value;
         const currentVal = this._columnFilters[col.key] ?? "";
 
@@ -988,9 +1113,12 @@ export class YumeDataGrid extends HTMLElement {
                 return;
             }
 
-            const inputType = col.type === "number" ? "number"
-                : col.type === "date" ? "date"
-                    : "text";
+            const inputType =
+                col.type === "number"
+                    ? "number"
+                    : col.type === "date"
+                      ? "date"
+                      : "text";
             const input = _el("y-input", {
                 part: "filter-input",
                 type: inputType,
@@ -1027,7 +1155,10 @@ export class YumeDataGrid extends HTMLElement {
                 size: "small",
             });
             paginator.addEventListener("page-change", this._onPaginatorChange);
-            paginator.addEventListener("page-size-change", this._onPaginatorPageSize);
+            paginator.addEventListener(
+                "page-size-change",
+                this._onPaginatorPageSize,
+            );
             slot.appendChild(paginator);
             wrap.appendChild(slot);
         }
@@ -1086,12 +1217,14 @@ export class YumeDataGrid extends HTMLElement {
                 cell.appendChild(this._buildGroupToggle(path, collapsed));
                 const label = groupCol?.label || groupCol?.key || "";
                 const valueText = path[path.length - 1];
-                cell.appendChild(_el("span", { class: "group-label" }, [
-                    `${label ? label + ": " : ""}${valueText}`,
-                ]));
-                cell.appendChild(_el("span", { class: "group-count" }, [
-                    ` (${count})`,
-                ]));
+                cell.appendChild(
+                    _el("span", { class: "group-label" }, [
+                        `${label ? label + ": " : ""}${valueText}`,
+                    ]),
+                );
+                cell.appendChild(
+                    _el("span", { class: "group-count" }, [` (${count})`]),
+                );
                 if (aggCols.size === 0 && totalCols > 1) {
                     cell.setAttribute("colspan", String(totalCols));
                 }
@@ -1099,12 +1232,16 @@ export class YumeDataGrid extends HTMLElement {
                 if (aggregates[col.key] != null) {
                     const aggKind = this.aggregates[col.key];
                     cell.classList.add("group-header-agg");
-                    cell.appendChild(_el("span", { class: "group-agg-kind" }, [
-                        `${aggKind}: `,
-                    ]));
-                    cell.appendChild(document.createTextNode(
-                        this._formatAggregate(aggregates[col.key]),
-                    ));
+                    cell.appendChild(
+                        _el("span", { class: "group-agg-kind" }, [
+                            `${aggKind}: `,
+                        ]),
+                    );
+                    cell.appendChild(
+                        document.createTextNode(
+                            this._formatAggregate(aggregates[col.key]),
+                        ),
+                    );
                     if (col.align) cell.style.textAlign = col.align;
                 }
             } else {
@@ -1128,10 +1265,12 @@ export class YumeDataGrid extends HTMLElement {
             "aria-label": collapsed ? "Expand group" : "Collapse group",
             tabindex: "0",
         });
-        btn.appendChild(_el("y-icon", {
-            name: collapsed ? "chevron-right" : "chevron-down",
-            size: "small",
-        }));
+        btn.appendChild(
+            _el("y-icon", {
+                name: collapsed ? "chevron-right" : "chevron-down",
+                size: "small",
+            }),
+        );
         btn.addEventListener("keydown", (e) => {
             if (e.key === " " || e.key === "Enter") {
                 e.preventDefault();
@@ -1154,7 +1293,8 @@ export class YumeDataGrid extends HTMLElement {
 
             if (this.enableSelection && depth === 0) {
                 const selTh = this._buildSelectAllHeader();
-                if (maxDepth > 1) selTh.setAttribute("rowspan", String(maxDepth));
+                if (maxDepth > 1)
+                    selTh.setAttribute("rowspan", String(maxDepth));
                 headerRow.appendChild(selTh);
             }
 
@@ -1169,13 +1309,15 @@ export class YumeDataGrid extends HTMLElement {
             thead.appendChild(headerRow);
         });
 
-        if (this.filtering === "inline") thead.appendChild(this._buildFilterRow(leafColumns));
+        if (this.filtering === "inline")
+            thead.appendChild(this._buildFilterRow(leafColumns));
         return thead;
     }
 
     _buildHeaderFilterTrigger(col) {
-        const hasFilter = this._columnFilters[col.key] != null
-            && String(this._columnFilters[col.key]) !== "";
+        const hasFilter =
+            this._columnFilters[col.key] != null &&
+            String(this._columnFilters[col.key]) !== "";
         const btn = _el("button", {
             type: "button",
             class: hasFilter
@@ -1210,13 +1352,16 @@ export class YumeDataGrid extends HTMLElement {
 
     _buildHeaderMenuColumnList() {
         const list = _el("div", { class: "column-list", role: "group" });
-        const allLeaves = this._flattenColumnTree(this._workingTree, { includeHidden: true });
+        const allLeaves = this._flattenColumnTree(this._workingTree, {
+            includeHidden: true,
+        });
 
         // Pending changes win over the tree's `hidden` flag — they're committed
         // when the submenu closes.
-        const effectiveHidden = (leaf) => this._pendingColumnHidden.has(leaf.key)
-            ? this._pendingColumnHidden.get(leaf.key)
-            : !!leaf.hidden;
+        const effectiveHidden = (leaf) =>
+            this._pendingColumnHidden.has(leaf.key)
+                ? this._pendingColumnHidden.get(leaf.key)
+                : !!leaf.hidden;
 
         allLeaves.forEach((leaf) => {
             const row = _el("button", {
@@ -1232,7 +1377,9 @@ export class YumeDataGrid extends HTMLElement {
                 tabindex: "-1",
             });
             if (!effectiveHidden(leaf)) cb.setAttribute("checked", "");
-            const label = _el("span", { class: "menu-item-label" }, [leaf.label || leaf.key]);
+            const label = _el("span", { class: "menu-item-label" }, [
+                leaf.label || leaf.key,
+            ]);
             row.appendChild(cb);
             row.appendChild(label);
 
@@ -1253,7 +1400,8 @@ export class YumeDataGrid extends HTMLElement {
                 }
 
                 // Stage; don't re-render the body yet.
-                if (nextHidden === !!leaf.hidden) this._pendingColumnHidden.delete(leaf.key);
+                if (nextHidden === !!leaf.hidden)
+                    this._pendingColumnHidden.delete(leaf.key);
                 else this._pendingColumnHidden.set(leaf.key, nextHidden);
 
                 row.setAttribute("aria-checked", String(!nextHidden));
@@ -1275,23 +1423,34 @@ export class YumeDataGrid extends HTMLElement {
             const ascBtn = this._buildMenuItem({
                 icon: "arrow-up",
                 label: "Sort ascending",
-                onSelect: () => { this._setSortFromMenu(col.key, "asc"); close(); },
+                onSelect: () => {
+                    this._setSortFromMenu(col.key, "asc");
+                    close();
+                },
             });
             const descBtn = this._buildMenuItem({
                 icon: "arrow-down",
                 label: "Sort descending",
-                onSelect: () => { this._setSortFromMenu(col.key, "desc"); close(); },
+                onSelect: () => {
+                    this._setSortFromMenu(col.key, "desc");
+                    close();
+                },
             });
             sortSection.appendChild(ascBtn);
             sortSection.appendChild(descBtn);
 
             const currentSort = this._sorts.find((s) => s.column === col.key);
             if (currentSort) {
-                sortSection.appendChild(this._buildMenuItem({
-                    icon: "x",
-                    label: "Clear sort",
-                    onSelect: () => { this._clearSortFor(col.key); close(); },
-                }));
+                sortSection.appendChild(
+                    this._buildMenuItem({
+                        icon: "x",
+                        label: "Clear sort",
+                        onSelect: () => {
+                            this._clearSortFor(col.key);
+                            close();
+                        },
+                    }),
+                );
             }
             root.appendChild(sortSection);
         }
@@ -1312,21 +1471,32 @@ export class YumeDataGrid extends HTMLElement {
                 (s) => s.node === ctx.node,
             );
             const canMovePrev = positionAmongVisible > 0;
-            const canMoveNext = positionAmongVisible >= 0
-                && positionAmongVisible < visibleSiblings.length - 1;
+            const canMoveNext =
+                positionAmongVisible >= 0 &&
+                positionAmongVisible < visibleSiblings.length - 1;
 
-            moveSection.appendChild(this._buildMenuItem({
-                icon: "arrow-left",
-                label: "Move column previous",
-                disabled: !canMovePrev,
-                onSelect: () => { this._moveColumn(col.key, -1); close(); },
-            }));
-            moveSection.appendChild(this._buildMenuItem({
-                icon: "arrow-right",
-                label: "Move column next",
-                disabled: !canMoveNext,
-                onSelect: () => { this._moveColumn(col.key, 1); close(); },
-            }));
+            moveSection.appendChild(
+                this._buildMenuItem({
+                    icon: "arrow-left",
+                    label: "Move column previous",
+                    disabled: !canMovePrev,
+                    onSelect: () => {
+                        this._moveColumn(col.key, -1);
+                        close();
+                    },
+                }),
+            );
+            moveSection.appendChild(
+                this._buildMenuItem({
+                    icon: "arrow-right",
+                    label: "Move column next",
+                    disabled: !canMoveNext,
+                    onSelect: () => {
+                        this._moveColumn(col.key, 1);
+                        close();
+                    },
+                }),
+            );
             root.appendChild(moveSection);
         }
 
@@ -1386,10 +1556,14 @@ export class YumeDataGrid extends HTMLElement {
     _buildLeafHeaderCell(col, depth, maxDepth) {
         const isSortable = this.enableSorting && col.sortable !== false;
         const sortIdx = this._sorts.findIndex((s) => s.column === col.key);
-        const direction = sortIdx >= 0 ? this._sorts[sortIdx].direction : "none";
+        const direction =
+            sortIdx >= 0 ? this._sorts[sortIdx].direction : "none";
         const ariaSort =
-            direction === "asc" ? "ascending" :
-                direction === "desc" ? "descending" : "none";
+            direction === "asc"
+                ? "ascending"
+                : direction === "desc"
+                  ? "descending"
+                  : "none";
 
         const remainingRows = maxDepth - depth;
         const th = _el("th", {
@@ -1406,11 +1580,18 @@ export class YumeDataGrid extends HTMLElement {
         inner.appendChild(document.createTextNode(col.label || col.key));
 
         if (isSortable) {
-            const indicator = _el("span", { class: "sort-icon", "aria-hidden": "true" });
+            const indicator = _el("span", {
+                class: "sort-icon",
+                "aria-hidden": "true",
+            });
             if (direction === "asc") {
-                indicator.appendChild(_el("y-icon", { name: "arrow-up", size: "small" }));
+                indicator.appendChild(
+                    _el("y-icon", { name: "arrow-up", size: "small" }),
+                );
             } else if (direction === "desc") {
-                indicator.appendChild(_el("y-icon", { name: "arrow-down", size: "small" }));
+                indicator.appendChild(
+                    _el("y-icon", { name: "arrow-down", size: "small" }),
+                );
             } else {
                 indicator.classList.add("sort-icon--placeholder");
             }
@@ -1421,15 +1602,19 @@ export class YumeDataGrid extends HTMLElement {
                 inner.appendChild(badge);
             }
             inner.appendChild(indicator);
-            th.addEventListener("click", (e) => this._onHeaderClick(col.key, e));
+            th.addEventListener("click", (e) =>
+                this._onHeaderClick(col.key, e),
+            );
         }
 
         const showFilterTrigger = this.filtering === "advanced";
         const showMenuTrigger = this.enableHeaderMenu;
         if (showFilterTrigger || showMenuTrigger) {
             const actions = _el("span", { class: "th-actions" });
-            if (showFilterTrigger) actions.appendChild(this._buildHeaderFilterTrigger(col));
-            if (showMenuTrigger) actions.appendChild(this._buildHeaderMenuTrigger(col));
+            if (showFilterTrigger)
+                actions.appendChild(this._buildHeaderFilterTrigger(col));
+            if (showMenuTrigger)
+                actions.appendChild(this._buildHeaderMenuTrigger(col));
             inner.appendChild(actions);
         }
 
@@ -1444,14 +1629,16 @@ export class YumeDataGrid extends HTMLElement {
             role: "status",
         });
         const slot = _el("slot", { name: "loading" });
-        slot.appendChild(_el("y-progress", {
-            mode: "ring",
-            indeterminate: true,
-            size: "large",
-            color: "primary",
-            "label-display": "false",
-            "aria-label": "Loading",
-        }));
+        slot.appendChild(
+            _el("y-progress", {
+                mode: "ring",
+                indeterminate: true,
+                size: "large",
+                color: "primary",
+                "label-display": "false",
+                "aria-label": "Loading",
+            }),
+        );
         overlay.appendChild(slot);
         return overlay;
     }
@@ -1518,7 +1705,8 @@ export class YumeDataGrid extends HTMLElement {
                 const bucket = buckets.get(value);
                 const path = [...parentPath, value];
                 const pathKey = this._groupPathKey(path);
-                const collapsed = respectCollapse && this._collapsedGroups.has(pathKey);
+                const collapsed =
+                    respectCollapse && this._collapsedGroups.has(pathKey);
                 out.push({
                     kind: "group",
                     path,
@@ -1541,8 +1729,11 @@ export class YumeDataGrid extends HTMLElement {
         const visibleKeys = visibleRows.map((row) =>
             this._rowKeyFor(row, this._parsedData.indexOf(row)),
         );
-        const selectedCount = visibleKeys.filter((k) => this._selectedKeys.has(k)).length;
-        const allChecked = visibleKeys.length > 0 && selectedCount === visibleKeys.length;
+        const selectedCount = visibleKeys.filter((k) =>
+            this._selectedKeys.has(k),
+        ).length;
+        const allChecked =
+            visibleKeys.length > 0 && selectedCount === visibleKeys.length;
         const someChecked = selectedCount > 0 && !allChecked;
 
         const th = _el("th", {
@@ -1600,11 +1791,15 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _buildStatusIndicator(status) {
-        const span = _el("span", { class: `edit-status edit-status--${status.kind}` });
+        const span = _el("span", {
+            class: `edit-status edit-status--${status.kind}`,
+        });
         const iconName =
-            status.kind === "saving" ? "clock" :
-                status.kind === "success" ? "check" :
-                    "x";
+            status.kind === "saving"
+                ? "clock"
+                : status.kind === "success"
+                  ? "check"
+                  : "x";
         span.appendChild(_el("y-icon", { name: iconName, size: "small" }));
         if (status.message) span.setAttribute("title", status.message);
         return span;
@@ -1754,7 +1949,7 @@ export class YumeDataGrid extends HTMLElement {
                 font-size: 0.75em;
                 font-weight: 600;
                 border-radius: 8px;
-                background: var(--primary-background-component, #2b6cb0);
+                background: var(--primary-content, #0f62fe);
                 color: var(--primary-content-inverse, #fff);
             }
 
@@ -1779,8 +1974,8 @@ export class YumeDataGrid extends HTMLElement {
 
             tbody tr.selected,
             tbody tr.selected:nth-child(even):not([data-empty]) {
-                background: var(--component-data-grid-row-selected-bg, var(--primary-background-component, #2b6cb0)) !important;
-                color: var(--component-data-grid-row-selected-text, var(--primary-content-inverse, #fff));
+                background: var(--component-data-grid-row-selected-bg, var(--primary-background-active, #d0e2ff)) !important;
+                color: var(--component-data-grid-row-selected-text, var(--base-content, #161616));
             }
 
             /* Center boolean cell contents (both the displayed icon and the
@@ -1838,7 +2033,7 @@ export class YumeDataGrid extends HTMLElement {
                 vertical-align: middle;
             }
             .group-toggle:focus-visible {
-                outline: 2px solid var(--primary-background-component, #2b6cb0);
+                outline: 2px solid var(--primary-content, #0f62fe);
                 outline-offset: 1px;
                 border-radius: 2px;
             }
@@ -1932,16 +2127,22 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _cancelEdit(row, rowKey, col) {
-        if (!this._editing || this._editing.rowKey !== rowKey || this._editing.columnKey !== col.key) {
+        if (
+            !this._editing ||
+            this._editing.rowKey !== rowKey ||
+            this._editing.columnKey !== col.key
+        ) {
             return;
         }
         const oldValue = this._editing.oldValue;
         this._editing = null;
-        this.dispatchEvent(new CustomEvent("cell-edit-cancel", {
-            detail: { row, column: col.key, oldValue },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("cell-edit-cancel", {
+                detail: { row, column: col.key, oldValue },
+                bubbles: true,
+                composed: true,
+            }),
+        );
         this._render();
     }
 
@@ -1950,14 +2151,18 @@ export class YumeDataGrid extends HTMLElement {
         this._sorts = this._sorts.filter((s) => s.column !== key);
         if (this._sorts.length === before) return;
         const top = this._sorts[0];
-        this._emitSortChange(top ? top.column : null, top ? top.direction : "none");
+        this._emitSortChange(
+            top ? top.column : null,
+            top ? top.direction : "none",
+        );
         this._render();
     }
 
     _cloneColumnTree(tree) {
         return tree.map((node) => {
             const copy = { ...node };
-            if (this._isColumnGroup(node)) copy.children = this._cloneColumnTree(node.children);
+            if (this._isColumnGroup(node))
+                copy.children = this._cloneColumnTree(node.children);
             return copy;
         });
     }
@@ -1974,14 +2179,18 @@ export class YumeDataGrid extends HTMLElement {
             list.push((v) => {
                 if (v === "" || v == null) return null;
                 if (Number.isNaN(Number(v))) return "Must be a number";
-                if (col.min != null && Number(v) < col.min) return `Min ${col.min}`;
-                if (col.max != null && Number(v) > col.max) return `Max ${col.max}`;
+                if (col.min != null && Number(v) < col.min)
+                    return `Min ${col.min}`;
+                if (col.max != null && Number(v) > col.max)
+                    return `Max ${col.max}`;
                 return null;
             });
         }
         if (col.pattern) {
             const re = new RegExp(col.pattern);
-            list.push((v) => (re.test(String(v ?? "")) ? null : "Invalid format"));
+            list.push((v) =>
+                re.test(String(v ?? "")) ? null : "Invalid format",
+            );
         }
         if (typeof col.validate === "function") {
             list.push(col.validate);
@@ -1992,7 +2201,9 @@ export class YumeDataGrid extends HTMLElement {
     _commitActiveEditor() {
         if (!this._editing) return;
         const { row, rowKey, col, oldValue } = this._editing;
-        const editor = this.shadowRoot.querySelector("td.editing [part='cell-editor']");
+        const editor = this.shadowRoot.querySelector(
+            "td.editing [part='cell-editor']",
+        );
         const value = editor
             ? this._readEditorValue(editor, col.editor || col.type || "text")
             : oldValue;
@@ -2000,7 +2211,11 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _commitEdit(row, rowKey, col, value, validators) {
-        if (!this._editing || this._editing.rowKey !== rowKey || this._editing.columnKey !== col.key) {
+        if (
+            !this._editing ||
+            this._editing.rowKey !== rowKey ||
+            this._editing.columnKey !== col.key
+        ) {
             return;
         }
         const oldValue = this._editing.oldValue;
@@ -2009,7 +2224,10 @@ export class YumeDataGrid extends HTMLElement {
         for (const fn of validators) {
             const msg = fn(value, row);
             if (msg) {
-                this._editStatuses.set(statusKey, { kind: "error", message: msg });
+                this._editStatuses.set(statusKey, {
+                    kind: "error",
+                    message: msg,
+                });
                 this._render();
                 return;
             }
@@ -2023,7 +2241,10 @@ export class YumeDataGrid extends HTMLElement {
         });
         const accepted = this.dispatchEvent(ev);
         if (!accepted) {
-            this._editStatuses.set(statusKey, { kind: "error", message: "Rejected" });
+            this._editStatuses.set(statusKey, {
+                kind: "error",
+                message: "Rejected",
+            });
             this._editing = null;
             this._render();
             return;
@@ -2056,14 +2277,16 @@ export class YumeDataGrid extends HTMLElement {
                 .filter((n) => Number.isFinite(n));
 
             if (kind === "count") out[key] = rows.length;
-            else if (kind === "sum") out[key] = numbers.reduce((a, b) => a + b, 0);
+            else if (kind === "sum")
+                out[key] = numbers.reduce((a, b) => a + b, 0);
             else if (kind === "avg") {
                 out[key] = numbers.length
                     ? numbers.reduce((a, b) => a + b, 0) / numbers.length
                     : 0;
-            }
-            else if (kind === "min") out[key] = numbers.length ? Math.min(...numbers) : null;
-            else if (kind === "max") out[key] = numbers.length ? Math.max(...numbers) : null;
+            } else if (kind === "min")
+                out[key] = numbers.length ? Math.min(...numbers) : null;
+            else if (kind === "max")
+                out[key] = numbers.length ? Math.max(...numbers) : null;
         }
         return out;
     }
@@ -2091,11 +2314,13 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _emitGroupToggle(path, expanded) {
-        this.dispatchEvent(new CustomEvent("group-toggle", {
-            detail: { path, groupKey: path[path.length - 1], expanded },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("group-toggle", {
+                detail: { path, groupKey: path[path.length - 1], expanded },
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     _emitPageChange(page) {
@@ -2209,13 +2434,20 @@ export class YumeDataGrid extends HTMLElement {
             if (!Number.isFinite(b)) return true;
             if (!Number.isFinite(a)) return false;
             switch (op) {
-                case "equals": return a === b;
-                case "ne": return a !== b;
-                case "gt": return a > b;
-                case "gte": return a >= b;
-                case "lt": return a < b;
-                case "lte": return a <= b;
-                default: return a === b;
+                case "equals":
+                    return a === b;
+                case "ne":
+                    return a !== b;
+                case "gt":
+                    return a > b;
+                case "gte":
+                    return a >= b;
+                case "lt":
+                    return a < b;
+                case "lte":
+                    return a <= b;
+                default:
+                    return a === b;
             }
         }
         if (type === "date") {
@@ -2224,20 +2456,27 @@ export class YumeDataGrid extends HTMLElement {
             if (Number.isNaN(b)) return true;
             if (Number.isNaN(a)) return false;
             switch (op) {
-                case "before": return a < b;
-                case "after": return a > b;
+                case "before":
+                    return a < b;
+                case "after":
+                    return a > b;
                 case "equals":
-                default: return a === b;
+                default:
+                    return a === b;
             }
         }
         const cell = String(cellValue ?? "").toLowerCase();
         const needle = String(filterValue).toLowerCase();
         switch (op) {
-            case "equals": return cell === needle;
-            case "startsWith": return cell.startsWith(needle);
-            case "endsWith": return cell.endsWith(needle);
+            case "equals":
+                return cell === needle;
+            case "startsWith":
+                return cell.startsWith(needle);
+            case "endsWith":
+                return cell.endsWith(needle);
             case "contains":
-            default: return cell.includes(needle);
+            default:
+                return cell.includes(needle);
         }
     }
 
@@ -2261,7 +2500,11 @@ export class YumeDataGrid extends HTMLElement {
 
         // Walk to the nearest visible sibling in the requested direction.
         let target = here + direction;
-        while (target >= 0 && target < siblings.length && !this._isVisibleNode(siblings[target])) {
+        while (
+            target >= 0 &&
+            target < siblings.length &&
+            !this._isVisibleNode(siblings[target])
+        ) {
             target += direction;
         }
         if (target < 0 || target >= siblings.length) return;
@@ -2333,19 +2576,23 @@ export class YumeDataGrid extends HTMLElement {
             this._toggleRowSelection(row, rowKey, event);
             event.preventDefault();
         }
-        this.dispatchEvent(new CustomEvent("row-click", {
-            detail: { row, event },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("row-click", {
+                detail: { row, event },
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     _onRowDblClick(row, event) {
-        this.dispatchEvent(new CustomEvent("row-dblclick", {
-            detail: { row, event },
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("row-dblclick", {
+                detail: { row, event },
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     _onScroll(e) {
@@ -2399,8 +2646,8 @@ export class YumeDataGrid extends HTMLElement {
 
         const onDocClick = (e) => {
             const path = e.composedPath();
-            const insidePortal = path.some(
-                (node) => node?.classList?.contains?.("y-popover-portal"),
+            const insidePortal = path.some((node) =>
+                node?.classList?.contains?.("y-popover-portal"),
             );
             const insideTrigger = path.includes(triggerBtn);
             if (!insidePortal && !insideTrigger) popover.hide("api");
@@ -2429,7 +2676,9 @@ export class YumeDataGrid extends HTMLElement {
 
         // Reset & rebuild content for the targeted column.
         popover.innerHTML = "";
-        popover.appendChild(this._buildHeaderMenuContent(col, () => popover.hide("api")));
+        popover.appendChild(
+            this._buildHeaderMenuContent(col, () => popover.hide("api")),
+        );
 
         popover.anchor = triggerBtn;
         triggerBtn.setAttribute("aria-expanded", "true");
@@ -2438,8 +2687,8 @@ export class YumeDataGrid extends HTMLElement {
         // submenu) and clicks on the trigger itself count as "inside".
         const onDocClick = (e) => {
             const path = e.composedPath();
-            const insidePortal = path.some(
-                (node) => node?.classList?.contains?.("y-popover-portal"),
+            const insidePortal = path.some((node) =>
+                node?.classList?.contains?.("y-popover-portal"),
             );
             const insideTrigger = path.includes(triggerBtn);
             if (!insidePortal && !insideTrigger) popover.hide("api");
@@ -2467,7 +2716,10 @@ export class YumeDataGrid extends HTMLElement {
         this._parsedColumnTree = tree;
         // Working tree preserves user-applied reorders + hides across re-renders;
         // rebuild it when the structural shape of `columns` changes.
-        if (!this._workingTree.length || !this._sameTreeShape(this._workingTree, tree)) {
+        if (
+            !this._workingTree.length ||
+            !this._sameTreeShape(this._workingTree, tree)
+        ) {
             this._workingTree = this._cloneColumnTree(tree);
         }
         this._parsedColumns = this._flattenColumnTree(this._workingTree);
@@ -2500,7 +2752,10 @@ export class YumeDataGrid extends HTMLElement {
 
         this.setAttribute("role", "grid");
         this.setAttribute("aria-rowcount", String(filteredCount));
-        this.setAttribute("aria-colcount", String(columns.length + (this.enableSelection ? 1 : 0)));
+        this.setAttribute(
+            "aria-colcount",
+            String(columns.length + (this.enableSelection ? 1 : 0)),
+        );
         if (this.loading) this.setAttribute("aria-busy", "true");
         else this.removeAttribute("aria-busy");
 
@@ -2511,7 +2766,10 @@ export class YumeDataGrid extends HTMLElement {
         style.textContent = this._buildStyles();
         this.shadowRoot.appendChild(style);
 
-        const container = _el("div", { part: "grid-container", class: "grid-container" });
+        const container = _el("div", {
+            part: "grid-container",
+            class: "grid-container",
+        });
 
         const toolbarWrap = _el("div", {
             class: "header-toolbar",
@@ -2522,7 +2780,13 @@ export class YumeDataGrid extends HTMLElement {
         const syncToolbar = () => {
             const has = beforeSlot
                 .assignedNodes({ flatten: true })
-                .some((n) => !(n.nodeType === Node.TEXT_NODE && n.textContent.trim() === ""));
+                .some(
+                    (n) =>
+                        !(
+                            n.nodeType === Node.TEXT_NODE &&
+                            n.textContent.trim() === ""
+                        ),
+                );
             toolbarWrap.classList.toggle("has-content", has);
         };
         beforeSlot.addEventListener("slotchange", syncToolbar);
@@ -2538,12 +2802,15 @@ export class YumeDataGrid extends HTMLElement {
         }
         const table = _el("table", { class: "grid-body" });
         table.appendChild(this._buildHeader(columns));
-        table.appendChild(this._buildBody(columns, entries, leadingPx, trailingPx));
+        table.appendChild(
+            this._buildBody(columns, entries, leadingPx, trailingPx),
+        );
 
         scroll.appendChild(table);
         container.appendChild(scroll);
 
-        const showPagination = this.enablePagination && this.groupBy.length === 0 && !useVirtual;
+        const showPagination =
+            this.enablePagination && this.groupBy.length === 0 && !useVirtual;
         const footerBefore = _el("slot", { name: "footer-before" });
         container.appendChild(footerBefore);
 
@@ -2589,11 +2856,13 @@ export class YumeDataGrid extends HTMLElement {
             class: isBool ? "cell-value cell-value--boolean" : "cell-value",
         });
         if (isBool) {
-            wrap.appendChild(_el("y-icon", {
-                name: value ? "check" : "x",
-                size: "small",
-                "aria-label": value ? "true" : "false",
-            }));
+            wrap.appendChild(
+                _el("y-icon", {
+                    name: value ? "check" : "x",
+                    size: "small",
+                    "aria-label": value ? "true" : "false",
+                }),
+            );
         } else {
             wrap.textContent = value == null ? "" : String(value);
         }
@@ -2607,7 +2876,8 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _sameTreeShape(a, b) {
-        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length)
+            return false;
         for (let i = 0; i < a.length; i++) {
             const x = a[i];
             const y = b[i];
@@ -2659,7 +2929,8 @@ export class YumeDataGrid extends HTMLElement {
                 if (
                     Math.abs(width - this._lastScrollWidth) < 1 &&
                     Math.abs(height - this._lastScrollHeight) < 1
-                ) return;
+                )
+                    return;
                 this._lastScrollWidth = width;
                 this._lastScrollHeight = height;
                 this._render();
@@ -2717,7 +2988,8 @@ export class YumeDataGrid extends HTMLElement {
             if (this._selectedKeys.has(rowKey)) this._selectedKeys = new Set();
             else this._selectedKeys = new Set([rowKey]);
         } else {
-            if (this._selectedKeys.has(rowKey)) this._selectedKeys.delete(rowKey);
+            if (this._selectedKeys.has(rowKey))
+                this._selectedKeys.delete(rowKey);
             else this._selectedKeys.add(rowKey);
         }
 

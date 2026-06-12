@@ -439,6 +439,25 @@ describe("YumeDataGrid", () => {
         expect(el.selectedRows[0].name).to.equal("Alice");
     });
 
+    it("selected row uses the base content color and primary tint (readable in light and dark)", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-selection
+                row-key="name"
+            ></y-data-grid>
+        `);
+        el.style.setProperty("--base-content", "rgb(10, 20, 30)");
+        el.style.setProperty("--primary-background-active", "rgb(200, 220, 255)");
+        el.shadowRoot.querySelector("tbody tr y-checkbox").toggle();
+        await waitFrame();
+        const cs = getComputedStyle(el.shadowRoot.querySelector("tbody tr.selected"));
+        // text is the normal content color, not the (white) primary inverse
+        expect(cs.color).to.equal("rgb(10, 20, 30)");
+        expect(cs.backgroundColor).to.equal("rgb(200, 220, 255)");
+    });
+
     it("emits a cancelable row-select event when selection changes", async () => {
         const el = await fixture(html`
             <y-data-grid
