@@ -159,6 +159,7 @@ declare module "react" {
                 clearable?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
+                variant?: "default" | "underline";
             }>;
             "y-colorpicker": El<{
                 value?: string;
@@ -187,6 +188,7 @@ declare module "react" {
                 "show-years"?: string;
                 "show-months"?: string;
                 "show-days"?: string;
+                variant?: "default" | "underline";
             }>;
             "y-datepicker": El<{
                 value?: string;
@@ -354,6 +356,7 @@ declare module "react" {
                 min?: string | number;
                 max?: string | number;
                 step?: string | number;
+                variant?: "default" | "underline";
             }>;
             "y-masonry": El<{
                 columns?: string | number;
@@ -519,6 +522,7 @@ declare module "react" {
                 "label-position"?: "top" | "bottom";
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
+                variant?: "default" | "underline";
             }>;
             "y-shape": El<{
                 type?:
@@ -648,6 +652,7 @@ declare module "react" {
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
+                variant?: "default" | "underline";
             }>;
             "y-table": El<{
                 columns?: unknown[] | string;
@@ -699,6 +704,7 @@ declare module "react" {
                     | string;
                 size?: "small" | "medium" | "large";
                 position?: "top" | "bottom" | "left" | "right";
+                variant?: "default" | "accent";
             }>;
             "y-tag": El<{
                 color?: string;

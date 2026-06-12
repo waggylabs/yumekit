@@ -37,6 +37,12 @@ Delete any empty sections before publishing.
 
 - Two new built-in themes, `material-blue-light` and `material-blue-dark`, applying Material Design 3 — a Material palette (Blue primary, Material status colors, grey surfaces), Roboto typography, and the M3 shape scale (4/8/12/28px radii, pill buttons, 28px dialogs, 4px text fields, 1px borders) applied across all components. `y-theme` now loads the Roboto webfont automatically when one of these themes is active.
 
+- Two new built-in themes, `carbon-light` and `carbon-dark`, applying IBM Carbon — the Carbon palette (Interactive Blue `#0f62fe`, IBM gray surfaces, Carbon status colors), IBM Plex Sans typography, and Carbon's sharp shape language (0px radii, 1px borders). `y-theme` loads the IBM Plex Sans webfont automatically when one of these themes is active.
+
+- `y-tabs` — new `variant="accent"` style: minimal tabs where the active tab shows a primary-colored indicator border on its content-facing edge (bottom for top tabs, etc.). The default bordered style is unchanged. Adds `--component-tabs-accent-width` (indicator thickness). The border-width token is normalized to `--component-tabs-border-width` (matching `--component-tabs-border-color`); the legacy `--component-tab-border-width` is still honored as a fallback.
+
+- Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — new `variant="underline"` style: a bottom-only border with square bottom corners (the Material/Carbon text-field look) instead of the full-border `"default"`. Hover/focus/invalid states still color the underline. Helps match design systems that use underlined fields.
+
 - New `y-data-grid` component — interactive grid for large or dynamic datasets with client- or server-side sorting, filtering, and pagination, single/multi row selection, inline cell editing, nested row grouping with aggregates, multi-column header groups, virtual scrolling, an optional per-column header menu (filter, sort, visibility, reorder), and a sticky header.
 
 - New `y-popover` component — target-anchored floating panel with rich slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and an opt-in `portal` mode that renders into `<body>` to escape ancestor stacking contexts.
@@ -66,6 +72,8 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
+
+- Form field components now share one field background. `y-select` (trigger and dropdown) used `base.background.app` while `y-input` / `y-textarea` / `y-color` / `y-date` used `base.background.component`; `select.background` is now `base.background.component` across all themes, so fields match when placed together on a form (most visible in the Material and Carbon themes). The select dropdown panel now also matches menus/popovers.
 
 - `y-avatar` — the three `shape` values are now visually distinct. Added a `--component-avatar-border-radius-rounded` token (medium radius) and changed `square` to a zero radius (sharp corners); `circle` is unchanged.
 

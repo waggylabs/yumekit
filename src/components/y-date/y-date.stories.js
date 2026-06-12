@@ -164,6 +164,16 @@ export default {
 /** Default single-date input. */
 export const Default = {};
 
+/** Underline field style — bottom border only, square bottom corners. */
+export const Underline = {
+    name: "Underline variant",
+    render: () => `
+        <y-date variant="underline" style="max-width:320px">
+            <span slot="label">Date</span>
+        </y-date>
+    `,
+};
+
 /** Date range input. */
 export const DateRange = {
     args: { mode: "range" },

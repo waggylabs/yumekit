@@ -27,6 +27,8 @@ import oliveDarkCSS from "../styles/olive-dark.css?inline";
 import oliveLightCSS from "../styles/olive-light.css?inline";
 import materialBlueDarkCSS from "../styles/material-blue-dark.css?inline";
 import materialBlueLightCSS from "../styles/material-blue-light.css?inline";
+import carbonDarkCSS from "../styles/carbon-dark.css?inline";
+import carbonLightCSS from "../styles/carbon-light.css?inline";
 
 // =============================================================================
 // Theme registry — single source of truth (toolbar order). Add a theme here and
@@ -58,6 +60,8 @@ const THEMES = [
     { key: "olive-light", name: "Olive Light", css: oliveLightCSS },
     { key: "material-blue-dark", name: "Material Blue Dark", css: materialBlueDarkCSS },
     { key: "material-blue-light", name: "Material Blue Light", css: materialBlueLightCSS },
+    { key: "carbon-dark", name: "Carbon Dark", css: carbonDarkCSS },
+    { key: "carbon-light", name: "Carbon Light", css: carbonLightCSS },
 ];
 
 const THEME_MAP = Object.fromEntries(THEMES.map((t) => [t.key, t.css]));
@@ -69,7 +73,12 @@ const THEME_STORAGE_KEY = "yumekit-storybook-theme";
 
 // Toolbar swatch behind each option label — just a light/dark chip. Material
 // themes use their real surface colors; everything else a generic light/dark.
-const SWATCH = { "material-blue-dark": "#121212", "material-blue-light": "#fafafa" };
+const SWATCH = {
+    "material-blue-dark": "#121212",
+    "material-blue-light": "#fafafa",
+    "carbon-dark": "#161616",
+    "carbon-light": "#f4f4f4",
+};
 const backdrop = (key) => SWATCH[key] ?? (key.endsWith("-dark") ? "#1a1a1a" : "#f0f0f2");
 
 // =============================================================================
@@ -161,12 +170,12 @@ function injectHeadStyles() {
         "yumekit-storybook-body",
         "body { color: var(--base-content--); font-family: var(--font-family-body, 'Lexend', sans-serif); }",
     );
-    // Lexend (default families) + Roboto (Material themes). y-theme loads these
-    // itself, but stories that don't wrap in y-theme still need them.
+    // Lexend (default families) + Roboto (Material) + IBM Plex Sans (Carbon).
+    // y-theme loads these itself, but stories that don't wrap in y-theme need them.
     const font = document.createElement("link");
     font.rel = "stylesheet";
     font.href =
-        "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Roboto:wght@300;400;500;700&display=swap";
+        "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Roboto:wght@300;400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap";
     document.head.appendChild(font);
 }
 

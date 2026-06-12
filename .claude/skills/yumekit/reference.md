@@ -222,6 +222,7 @@ Form-associated. Always set `name` inside a `<form>`.
 | `label`          | visible label text                                                        |
 | `label-position` | `top` (default) \| `bottom` \| `left` \| `right`                          |
 | `size`           | `small` \| `medium` \| `large`                                            |
+| `variant`        | `default` (full border) \| `underline` (bottom border only, square bottom corners) |
 | `disabled`       | boolean                                                                   |
 | `readonly`       | boolean                                                                   |
 | `required`       | boolean                                                                   |
@@ -258,6 +259,7 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 | `label-position` | `top` (default) \| `bottom` \| `left` \| `right` |
 | `rows`           | number of visible rows (default: `3`)            |
 | `size`           | `small` \| `medium` \| `large`                   |
+| `variant`        | `default` \| `underline` (bottom border only, square bottom corners) |
 | `disabled`       | boolean                                          |
 | `required`       | boolean                                          |
 | `invalid`        | boolean — applies error state                    |
@@ -292,6 +294,7 @@ Form-associated.
 | `name`         | form field name                                 |
 | `placeholder`  |                                                 |
 | `size`         | `small` \| `medium` \| `large`                  |
+| `variant`      | `default` \| `underline` (bottom border only on the trigger, square bottom corners) |
 | `disabled`     | boolean                                         |
 | `required`     | boolean                                         |
 | `multiple`     | boolean                                         |
@@ -1307,6 +1310,7 @@ Methods: `.show(opts)` — **single options object**: `{ message, color, duratio
 | `options`  | JSON array of tab objects (see shape below)      |
 | `position` | `top` (default) \| `bottom` \| `left` \| `right` |
 | `size`     | `small` \| `medium` \| `large`                   |
+| `variant`  | `default` (bordered boxes) \| `accent` (minimal tabs; active tab shows a primary indicator border on its content-facing edge, like Material/Carbon) |
 
 Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":false,"leftIcon":"home","rightIcon":"arrow-right"}` — `id`, `label`, and `slot` are required; `disabled`, `leftIcon`, `rightIcon` are optional.
 
@@ -1483,6 +1487,7 @@ Form-associated date input with popup calendar. Handles single dates and ranges.
 | `color`             | datepicker color theme (default: `primary`)                                  |
 | `size`              | `small` \| `medium` (default) \| `large`                                     |
 | `label-position`    | `top` (default) \| `bottom`                                                  |
+| `variant`           | `default` \| `underline` (bottom border only, square bottom corners)         |
 | `clearable`         | boolean — shows × button when value is set                                   |
 | `disabled`          | boolean                                                                      |
 | `invalid`           | boolean — error state                                                        |

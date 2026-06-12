@@ -23,6 +23,8 @@ import oliveLightCSS from "../../../styles/olive-light.css";
 import oliveDarkCSS from "../../../styles/olive-dark.css";
 import materialBlueLightCSS from "../../../styles/material-blue-light.css";
 import materialBlueDarkCSS from "../../../styles/material-blue-dark.css";
+import carbonLightCSS from "../../../styles/carbon-light.css";
+import carbonDarkCSS from "../../../styles/carbon-dark.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
@@ -49,6 +51,8 @@ const THEMES = {
     "olive-dark": oliveDarkCSS,
     "material-blue-light": materialBlueLightCSS,
     "material-blue-dark": materialBlueDarkCSS,
+    "carbon-light": carbonLightCSS,
+    "carbon-dark": carbonDarkCSS,
 };
 
 // Google Fonts `family=` query for each theme's typography. Themes not listed
@@ -58,6 +62,8 @@ const DEFAULT_FONT = "Lexend:wght@100..900";
 const THEME_FONTS = {
     "material-blue-light": "Roboto:wght@300;400;500;700",
     "material-blue-dark": "Roboto:wght@300;400;500;700",
+    "carbon-light": "IBM+Plex+Sans:wght@400;500;600;700",
+    "carbon-dark": "IBM+Plex+Sans:wght@400;500;600;700",
 };
 
 export class YumeTheme extends HTMLElement {

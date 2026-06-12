@@ -15,6 +15,7 @@ export class YumeTextarea extends HTMLElement {
             "disabled",
             "invalid",
             "name",
+            "variant",
         ];
     }
 
@@ -115,6 +116,19 @@ export class YumeTextarea extends HTMLElement {
     }
     set size(val) {
         this.setAttribute("size", val);
+    }
+
+    /**
+     * @type {"default"|"underline"} Field style. `"default"` is a full border;
+     * `"underline"` shows only a bottom border with square bottom corners.
+     */
+    get variant() {
+        return this.getAttribute("variant") === "underline"
+            ? "underline"
+            : "default";
+    }
+    set variant(val) {
+        this.setAttribute("variant", val === "underline" ? "underline" : "default");
     }
 
     /** @type {string} The current textarea value. */
@@ -241,6 +255,13 @@ export class YumeTextarea extends HTMLElement {
                 padding: var(${paddingVar});
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
+            }
+
+            /* Underline variant: bottom border only, square bottom corners. */
+            :host([variant="underline"]) .input-container {
+                border-style: none;
+                border-bottom-style: solid;
+                border-radius: var(--component-inputs-border-radius-outer) var(--component-inputs-border-radius-outer) 0 0;
             }
 
             .input-container.is-invalid {

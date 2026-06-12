@@ -37,6 +37,7 @@ export class YumeSelect extends HTMLElement {
             "searchable",
             "clearable",
             "portal",
+            "variant",
         ];
     }
 
@@ -237,6 +238,20 @@ export class YumeSelect extends HTMLElement {
         this.setAttribute("size", val);
     }
 
+    /**
+     * @type {"default"|"underline"} Field style. `"default"` is a full border;
+     * `"underline"` shows only a bottom border with square bottom corners on the
+     * trigger (the dropdown panel is unaffected).
+     */
+    get variant() {
+        return this.getAttribute("variant") === "underline"
+            ? "underline"
+            : "default";
+    }
+    set variant(val) {
+        this.setAttribute("variant", val === "underline" ? "underline" : "default");
+    }
+
     /** @type {string} The current selected value, or comma-separated values when multiple. */
     get value() {
         if (this.hasAttribute("multiple")) {
@@ -392,6 +407,14 @@ export class YumeSelect extends HTMLElement {
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
                 cursor: pointer;
+            }
+
+            /* Underline variant: bottom border only, square bottom corners
+               (trigger only — the dropdown panel keeps its full border). */
+            :host([variant="underline"]) .select-container {
+                border-style: none;
+                border-bottom-style: solid;
+                border-radius: var(--component-inputs-border-radius-outer) var(--component-inputs-border-radius-outer) 0 0;
             }
 
             .select-container:hover {

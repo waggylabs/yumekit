@@ -758,7 +758,7 @@
     "select": {
       "background": {
         "$type": "color",
-        "$value": "{base.background.app}"
+        "$value": "{base.background.component}"
       },
       "color": {
         "$type": "color",

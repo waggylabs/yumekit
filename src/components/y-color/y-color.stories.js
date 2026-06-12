@@ -66,6 +66,15 @@ export const Default = {
     `,
 };
 
+export const Underline = {
+    name: "Underline variant",
+    render: () => `
+        <y-color variant="underline" value="#2196f3" style="max-width:320px">
+            <span slot="label">Brand color</span>
+        </y-color>
+    `,
+};
+
 export const WithAlpha = {
     render: () => `
         <y-color value="#9b59b680" show-alpha>

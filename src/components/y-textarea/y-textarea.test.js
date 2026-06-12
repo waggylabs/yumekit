@@ -2,6 +2,16 @@ import { html, fixture, expect, oneEvent } from "@open-wc/testing";
 import "./y-textarea.js";
 
 describe("YumeTextarea", () => {
+    it("variant='underline' renders a bottom-only border with square bottom corners", async () => {
+        const el = await fixture(html`<y-textarea variant="underline"></y-textarea>`);
+        el.style.setProperty("--component-inputs-border-radius-outer", "6px");
+        const cs = getComputedStyle(el.shadowRoot.querySelector(".input-container"));
+        expect(cs.borderTopStyle).to.equal("none");
+        expect(cs.borderBottomStyle).to.equal("solid");
+        expect(cs.borderTopLeftRadius).to.equal("6px");
+        expect(cs.borderBottomLeftRadius).to.equal("0px");
+    });
+
     // ── Structure ─────────────────────────────────────────────
     it("renders a textarea element, not an input", async () => {
         const el = await fixture(html`<y-textarea></y-textarea>`);

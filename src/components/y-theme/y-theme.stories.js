@@ -29,6 +29,8 @@ const ALL_THEMES = [
     "olive-light",
     "material-blue-dark",
     "material-blue-light",
+    "carbon-dark",
+    "carbon-light",
 ];
 
 function themePreview(theme) {
@@ -112,6 +114,8 @@ export const OliveDark = { args: { theme: "olive-dark" } };
 export const OliveLight = { args: { theme: "olive-light" } };
 export const MaterialBlueDark = { args: { theme: "material-blue-dark" } };
 export const MaterialBlueLight = { args: { theme: "material-blue-light" } };
+export const CarbonDark = { args: { theme: "carbon-dark" } };
+export const CarbonLight = { args: { theme: "carbon-light" } };
 
 export const AllThemes = {
     name: "All Themes",

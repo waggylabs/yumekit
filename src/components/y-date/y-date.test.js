@@ -2,6 +2,16 @@ import { fixture, html, expect, oneEvent, nextFrame } from "@open-wc/testing";
 import "./y-date.js";
 
 describe("<y-date>", () => {
+    it("variant='underline' renders a bottom-only border with square bottom corners", async () => {
+        const el = await fixture(html`<y-date variant="underline"></y-date>`);
+        el.style.setProperty("--component-inputs-border-radius-outer", "6px");
+        const cs = getComputedStyle(el.shadowRoot.querySelector(".trigger"));
+        expect(cs.borderTopStyle).to.equal("none");
+        expect(cs.borderBottomStyle).to.equal("solid");
+        expect(cs.borderTopLeftRadius).to.equal("6px");
+        expect(cs.borderBottomLeftRadius).to.equal("0px");
+    });
+
     // -------------------------------------------------------------------------
     // Rendering
     // -------------------------------------------------------------------------

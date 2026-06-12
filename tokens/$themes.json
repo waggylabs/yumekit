@@ -48,6 +48,28 @@
     }
   },
   {
+    "id": "themes-carbon-dark",
+    "name": "Carbon Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/carbon-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-carbon-light",
+    "name": "Carbon Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/carbon-light": "enabled"
+    }
+  },
+  {
     "id": "themes-brown-dark",
     "name": "Brown Dark",
     "group": "Themes",

@@ -5,6 +5,8 @@
     "core/components",
     "themes/blue-dark",
     "themes/blue-light",
+    "themes/carbon-dark",
+    "themes/carbon-light",
     "themes/brown-dark",
     "themes/brown-light",
     "themes/green-dark",

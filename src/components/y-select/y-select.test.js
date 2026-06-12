@@ -3,6 +3,16 @@ import "./y-select.js";
 import "../y-tag/y-tag.js"; // Needed for tag mode
 
 describe("<y-select>", () => {
+    it("variant='underline' renders a bottom-only border with square bottom corners", async () => {
+        const el = await fixture(html`<y-select variant="underline"></y-select>`);
+        el.style.setProperty("--component-inputs-border-radius-outer", "6px");
+        const cs = getComputedStyle(el.shadowRoot.querySelector(".select-container"));
+        expect(cs.borderTopStyle).to.equal("none");
+        expect(cs.borderBottomStyle).to.equal("solid");
+        expect(cs.borderTopLeftRadius).to.equal("6px");
+        expect(cs.borderBottomLeftRadius).to.equal("0px");
+    });
+
     it("renders with placeholder", async () => {
         const el = await fixture(
             html`<y-select

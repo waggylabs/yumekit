@@ -21,7 +21,7 @@ npm install @waggylabs/yumekit
 - Tree-shakeable ESM modules
 - ARIA-compliant and keyboard-navigable
 - Design token system via CSS custom properties
-- 24 built-in themes: 11 color families (blue, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive) × dark and light variants, plus a Material Design 3 blue theme (`material-blue-light` / `material-blue-dark`) that also overrides shape (radii, pill buttons, larger dialogs) and Roboto typography, not just color
+- 26 built-in themes: 11 color families (blue, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive) × dark and light variants, plus two design-system themes that also override shape and typography, not just color: Material Design 3 (`material-blue-light` / `material-blue-dark`, rounded + Roboto) and IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans)
 - React JSX type declarations included
 - Form-associated components with native HTML form API support
 - Security-focused SVG icon sanitization (allowlist-based)
@@ -87,7 +87,7 @@ All custom elements are prefixed with `y-`.
 Theme provider. Wraps your app and injects design tokens as CSS custom properties.
 
 Attributes:
-- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"` | `"material-blue-light"` | `"material-blue-dark"`
+- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"` | `"material-blue-light"` | `"material-blue-dark"` | `"carbon-light"` | `"carbon-dark"`
 - `cross-origin` — boolean, enables CORS for remote theme URLs
 - `no-default-font` — boolean, skips injecting the default Lexend font from Google Fonts
 
@@ -185,6 +185,7 @@ Attributes:
 - `label` — visible label text
 - `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners — Material/Carbon field style)
 - `disabled` — boolean
 - `readonly` — boolean
 - `required` — boolean
@@ -217,6 +218,7 @@ Attributes:
 - `color` — color scheme for the datepicker (default: `"primary"`)
 - `size` — `"small"` | `"medium"` (default) | `"large"`
 - `label-position` — `"top"` (default) | `"bottom"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
 - `clearable` — boolean, shows a clear (×) button when a value is set
 - `disabled` — boolean
 - `invalid` — boolean, applies error state
@@ -305,6 +307,7 @@ Attributes:
 - `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `rows` — number of visible rows (default: `"3"`)
 - `size` — `"small"` | `"medium"` | `"large"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
 - `disabled` — boolean
 - `required` — boolean
 - `invalid` — boolean, applies error state
@@ -327,6 +330,7 @@ Attributes:
 - `name` — form field name
 - `placeholder`
 - `size` — `"small"` | `"medium"` | `"large"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners; trigger only — the dropdown panel keeps its border)
 - `disabled` — boolean
 - `required` — boolean
 - `multiple` — boolean; allows multiple selections
@@ -446,6 +450,7 @@ Attributes:
 - `disabled`, `invalid`, `clearable`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `label-position` — `"top"` (default) | `"bottom"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
 
 Slots: `label`
 Events: `change` (detail: `{ value, hex, rgb, hsl, hsv, alpha }`)
@@ -1593,8 +1598,11 @@ Attributes:
   - `rightIcon` — `y-icon` name rendered to the right of the label
 - `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
+- `variant` — `"default"` (default, bordered boxes) | `"accent"` (minimal tabs; the active tab shows a primary-colored indicator border on its content-facing edge — bottom for `top` tabs, top for `bottom`, etc. — like Material/Carbon)
 
 Methods: `activateTab(id)`
+
+CSS Custom Properties: `--component-tabs-border-width` (box/rail border width; falls back to the legacy `--component-tab-border-width`), `--component-tabs-border-color`, `--component-tabs-background`, `--component-tabs-color`, `--component-tabs-accent` (indicator/active color), `--component-tabs-accent-width` (indicator thickness, default 2px), `--component-tab-border-radius-outer`, `--component-tab-padding-{size}`, `--component-tab-gap-{size}`, `--component-tab-content-padding`
 
 Slots:
 - `{slot}` (named, from options) — tab panel content

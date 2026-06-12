@@ -2,23 +2,23 @@
     "radii": {
         "x-small": {
             "$type": "borderRadius",
-            "$value": "4px"
+            "$value": "0px"
         },
         "small": {
             "$type": "borderRadius",
-            "$value": "8px"
+            "$value": "0px"
         },
         "medium": {
             "$type": "borderRadius",
-            "$value": "12px"
+            "$value": "0px"
         },
         "large": {
             "$type": "borderRadius",
-            "$value": "16px"
+            "$value": "2px"
         },
         "x-large": {
             "$type": "borderRadius",
-            "$value": "28px"
+            "$value": "4px"
         }
     },
     "border": {
@@ -31,45 +31,45 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#121212"
+                "$value": "#161616"
             },
             "component": {
                 "$type": "color",
-                "$value": "#1e1e1e"
+                "$value": "#262626"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#2c2c2c"
+                "$value": "#353535"
             },
             "active": {
                 "$type": "color",
-                "$value": "#383838"
+                "$value": "#525252"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#373737"
+            "$value": "#393939"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#121212"
+                "$value": "#161616"
             },
             "light": {
                 "$type": "color",
-                "$value": "#b0b0b0"
+                "$value": "#c6c6c6"
             },
             "lighter": {
                 "$type": "color",
-                "$value": "#707070"
+                "$value": "#8d8d8d"
             },
             "lightest": {
                 "$type": "color",
-                "$value": "#5a5a5a"
+                "$value": "#6f6f6f"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#ececec"
+                "$value": "#f4f4f4"
             }
         },
         "shadow": {
@@ -88,41 +88,41 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#102338"
+                "$value": "#001d6c"
             },
             "component": {
                 "$type": "color",
-                "$value": "#0e1a2b"
+                "$value": "#001141"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#123052"
+                "$value": "#002d9c"
             },
             "active": {
                 "$type": "color",
-                "$value": "#143b66"
+                "$value": "#0043ce"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#16477a"
+            "$value": "#0f62fe"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#0a1929"
+                "$value": "#ffffff"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#bbdefb"
+                "$value": "#0353e9"
             },
             "active": {
                 "$type": "color",
-                "$value": "#e3f2fd"
+                "$value": "#002d9c"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#90caf9"
+                "$value": "#0f62fe"
             }
         }
     },
@@ -130,41 +130,41 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#103330"
+                "$value": "#004144"
             },
             "component": {
                 "$type": "color",
-                "$value": "#0e1f1d"
+                "$value": "#022b30"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#124743"
+                "$value": "#005d5d"
             },
             "active": {
                 "$type": "color",
-                "$value": "#145a55"
+                "$value": "#007d79"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#166e68"
+            "$value": "#08bdba"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#0a1f1d"
+                "$value": "#161616"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#b2dfdb"
+                "$value": "#3ddbd9"
             },
             "active": {
                 "$type": "color",
-                "$value": "#e0f2f1"
+                "$value": "#9ef0f0"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#80cbc4"
+                "$value": "#08bdba"
             }
         }
     },
@@ -172,41 +172,41 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#103316"
+                "$value": "#044317"
             },
             "component": {
                 "$type": "color",
-                "$value": "#0e1f10"
+                "$value": "#022d0d"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#12471d"
+                "$value": "#0e6027"
             },
             "active": {
                 "$type": "color",
-                "$value": "#145a24"
+                "$value": "#198038"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#166e2b"
+            "$value": "#42be65"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#0a1f0c"
+                "$value": "#161616"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#c8e6c9"
+                "$value": "#6fdc8c"
             },
             "active": {
                 "$type": "color",
-                "$value": "#e8f5e9"
+                "$value": "#a7f0ba"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#a5d6a7"
+                "$value": "#42be65"
             }
         }
     },
@@ -214,41 +214,41 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#332d10"
+                "$value": "#483700"
             },
             "component": {
                 "$type": "color",
-                "$value": "#1f1b0e"
+                "$value": "#302400"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#473e12"
+                "$value": "#684e00"
             },
             "active": {
                 "$type": "color",
-                "$value": "#5a4f14"
+                "$value": "#8e6a00"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#6e6016"
+            "$value": "#d2a106"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#1f1a00"
+                "$value": "#161616"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#ffecb3"
+                "$value": "#fddc69"
             },
             "active": {
                 "$type": "color",
-                "$value": "#fff8e1"
+                "$value": "#fcf4d6"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#ffe082"
+                "$value": "#f1c21b"
             }
         }
     },
@@ -256,41 +256,41 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#331016"
+                "$value": "#520408"
             },
             "component": {
                 "$type": "color",
-                "$value": "#1f0e11"
+                "$value": "#2d0709"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#47121d"
+                "$value": "#750e13"
             },
             "active": {
                 "$type": "color",
-                "$value": "#5a1424"
+                "$value": "#a2191f"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#6e162b"
+            "$value": "#fa4d56"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#1f0a0d"
+                "$value": "#161616"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#ffcdd2"
+                "$value": "#ff8389"
             },
             "active": {
                 "$type": "color",
-                "$value": "#ffebee"
+                "$value": "#ffb3b8"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#ef9a9a"
+                "$value": "#fa4d56"
             }
         }
     },
@@ -298,41 +298,41 @@
         "background": {
             "app": {
                 "$type": "color",
-                "$value": "#1a1c33"
+                "$value": "#31135e"
             },
             "component": {
                 "$type": "color",
-                "$value": "#12131f"
+                "$value": "#1c0f3a"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#222547"
+                "$value": "#491d8b"
             },
             "active": {
                 "$type": "color",
-                "$value": "#2a2e5a"
+                "$value": "#6929c4"
             }
         },
         "border": {
             "$type": "color",
-            "$value": "#33386e"
+            "$value": "#a56eff"
         },
         "content": {
             "inverse": {
                 "$type": "color",
-                "$value": "#0d0f1f"
+                "$value": "#161616"
             },
             "hover": {
                 "$type": "color",
-                "$value": "#c5cae9"
+                "$value": "#be95ff"
             },
             "active": {
                 "$type": "color",
-                "$value": "#e8eaf6"
+                "$value": "#d4bbff"
             },
             "DEFAULT": {
                 "$type": "color",
-                "$value": "#9fa8da"
+                "$value": "#a56eff"
             }
         }
     },
@@ -340,11 +340,11 @@
         "family": {
             "header": {
                 "$type": "fontFamilies",
-                "$value": "Roboto, sans-serif"
+                "$value": "IBM Plex Sans, sans-serif"
             },
             "body": {
                 "$type": "fontFamilies",
-                "$value": "Roboto, sans-serif"
+                "$value": "IBM Plex Sans, sans-serif"
             }
         },
         "weight": {
@@ -354,7 +354,7 @@
             },
             "heading": {
                 "$type": "fontWeights",
-                "$value": "500"
+                "$value": "600"
             }
         }
     },
@@ -474,65 +474,9 @@
                 "$type": "color",
                 "$value": "{primary.content.DEFAULT}"
             },
-            "border-radius-outer": {
-                "$type": "borderRadius",
-                "$value": "{radii.x-large}"
-            },
-            "border-radius-inner": {
-                "$type": "borderRadius",
-                "$value": "{radii.x-large}"
-            },
-            "padding": {
-                "$type": "spacing",
-                "$value": "{spacing.2x-large}"
-            },
             "shadow": {
                 "$type": "boxShadow",
                 "$value": "{base.shadow}"
-            }
-        },
-        "button": {
-            "border-radius-outer": {
-                "$type": "borderRadius",
-                "$value": "{radii.full}"
-            },
-            "border-radius-inner": {
-                "$type": "borderRadius",
-                "$value": "{radii.full}"
-            },
-            "padding-block-small": {
-                "$type": "spacing",
-                "$value": "{spacing.small}"
-            },
-            "padding-block-medium": {
-                "$type": "spacing",
-                "$value": "{spacing.medium}"
-            },
-            "padding-block-large": {
-                "$type": "spacing",
-                "$value": "{spacing.large}"
-            },
-            "padding-inline-small": {
-                "$type": "spacing",
-                "$value": "{spacing.x-large}"
-            },
-            "padding-inline-medium": {
-                "$type": "spacing",
-                "$value": "{spacing.2x-large}"
-            },
-            "padding-inline-large": {
-                "$type": "spacing",
-                "$value": "{spacing.4x-large}"
-            }
-        },
-        "inputs": {
-            "border-radius-outer": {
-                "$type": "borderRadius",
-                "$value": "{radii.x-small}"
-            },
-            "border-radius-inner": {
-                "$type": "borderRadius",
-                "$value": "{radii.x-small}"
             }
         },
         "drawer": {
@@ -966,6 +910,10 @@
             }
         },
         "tabs": {
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "0px"
+            },
             "background": {
                 "$type": "color",
                 "$value": "{base.background.component}"

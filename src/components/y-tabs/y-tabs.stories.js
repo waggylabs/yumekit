@@ -29,14 +29,22 @@ export default {
             description: "Which edge the tab strip is placed on.",
             table: { defaultValue: { summary: "top" } },
         },
+        variant: {
+            control: "select",
+            options: ["default", "accent"],
+            description:
+                "Visual style: 'default' (bordered boxes) or 'accent' (minimal tabs with a primary indicator on the active tab's content-facing edge).",
+            table: { defaultValue: { summary: "default" } },
+        },
     },
     args: {
         options: defaultOptions,
         size: "medium",
         position: "top",
+        variant: "default",
     },
-    render: ({ options, size, position }) => `
-        <y-tabs options='${options}' size="${size}" position="${position}" style="width:400px">
+    render: ({ options, size, position, variant }) => `
+        <y-tabs options='${options}' size="${size}" position="${position}" variant="${variant}" style="width:400px">
             <div slot="tab1"><p>Overview content goes here.</p></div>
             <div slot="tab2"><p>Details content goes here.</p></div>
             <div slot="tab3"><p>Settings content goes here.</p></div>
@@ -45,6 +53,24 @@ export default {
 };
 
 export const Default = {};
+
+export const Accent = {
+    name: "Accent variant",
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:32px">
+            <y-tabs options='${defaultOptions}' variant="accent" style="width:400px">
+                <div slot="tab1"><p>Accent tabs — overview.</p></div>
+                <div slot="tab2"><p>Accent tabs — details.</p></div>
+                <div slot="tab3"><p>Accent tabs — settings.</p></div>
+            </y-tabs>
+            <y-tabs options='${defaultOptions}' variant="accent" position="left" style="width:400px">
+                <div slot="tab1"><p>Left accent tabs — overview.</p></div>
+                <div slot="tab2"><p>Left accent tabs — details.</p></div>
+                <div slot="tab3"><p>Left accent tabs — settings.</p></div>
+            </y-tabs>
+        </div>
+    `,
+};
 
 export const Sizes = {
     render: () => `

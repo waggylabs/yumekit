@@ -3,7 +3,7 @@ import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
-        return ["options", "size", "position"];
+        return ["options", "size", "position", "variant"];
     }
 
     // -------------------------------------------------------------------------
@@ -59,6 +59,18 @@ export class YumeTabs extends HTMLElement {
             "position",
             ["top", "bottom", "left", "right"].includes(val) ? val : "top",
         );
+    }
+
+    /**
+     * @type {"default"|"accent"} Visual style. `"default"` renders bordered,
+     * boxed tabs; `"accent"` renders minimal tabs with a primary-colored
+     * indicator border on the active tab's content-facing edge.
+     */
+    get variant() {
+        return this.getAttribute("variant") === "accent" ? "accent" : "default";
+    }
+    set variant(val) {
+        this.setAttribute("variant", val === "accent" ? "accent" : "default");
     }
 
     /** @type {"small"|"medium"|"large"} Controls tab button padding and gap. */
@@ -235,7 +247,7 @@ export class YumeTabs extends HTMLElement {
             button {
                 background: var(--component-tabs-border-color);
                 color: var(--component-tabs-color);
-                border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
+                border: var(--component-tabs-border-width, var(--component-tab-border-width, 1px)) solid var(--component-tabs-border-color);
                 margin: 0;
                 padding: ${paddingVar};
                 cursor: pointer;
@@ -274,7 +286,7 @@ export class YumeTabs extends HTMLElement {
             }
             .tabpanel {
                 position: relative;
-                border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
+                border: var(--component-tabs-border-width, var(--component-tab-border-width, 1px)) solid var(--component-tabs-border-color);
                 border-radius: var(--component-tab-border-radius-outer);
                 padding: var(--component-tab-content-padding);
                 background: var(--component-tabs-background);
@@ -287,6 +299,34 @@ export class YumeTabs extends HTMLElement {
             :host([position="bottom"]) .tabpanel { margin-bottom: -1px; }
             :host([position="left"])   .tabpanel { margin-left: -1px; }
             :host([position="right"])  .tabpanel { margin-right: -1px; }
+
+            /* ---- Accent variant: minimal tabs with a primary indicator border
+                   on the active tab's content-facing edge ---- */
+            :host([variant="accent"]) .tablist { margin: 0; }
+            :host([variant="accent"]) button {
+                background: transparent;
+                border: none;
+                border-radius: 0;
+            }
+            :host([variant="accent"]) button[aria-selected="true"] {
+                background: transparent;
+                color: var(--component-tabs-accent);
+            }
+            :host([variant="accent"]) .tabpanel {
+                border: none;
+                border-radius: 0;
+                margin: 0;
+            }
+            /* A rail in the base border color runs along the tabs' content-facing
+               edge; the active tab switches that edge to the accent color. */
+            :host([variant="accent"][position="top"])    .tablist button { border-bottom: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="bottom"]) .tablist button { border-top: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="left"])   .tablist button { border-right: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="right"])  .tablist button { border-left: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="top"])    .tablist button[aria-selected="true"] { border-bottom-color: var(--component-tabs-accent); }
+            :host([variant="accent"][position="bottom"]) .tablist button[aria-selected="true"] { border-top-color: var(--component-tabs-accent); }
+            :host([variant="accent"][position="left"])   .tablist button[aria-selected="true"] { border-right-color: var(--component-tabs-accent); }
+            :host([variant="accent"][position="right"])  .tablist button[aria-selected="true"] { border-left-color: var(--component-tabs-accent); }
         `;
     }
 

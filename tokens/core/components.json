@@ -1045,10 +1045,6 @@
                 "$type": "borderRadius",
                 "$value": "{radii.small}"
             },
-            "border-width": {
-                "$type": "borderWidth",
-                "$value": "{border.x-thin}"
-            },
             "content-padding": {
                 "$type": "dimension",
                 "$value": "{spacing.large}"
@@ -1076,6 +1072,16 @@
             "padding-small": {
                 "$type": "spacing",
                 "$value": "{spacing.small}"
+            }
+        },
+        "tabs": {
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "accent-width": {
+                "$type": "borderWidth",
+                "$value": "2px"
             }
         },
         "table": {

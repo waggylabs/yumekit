@@ -34,6 +34,7 @@ export class YumeDate extends HTMLElement {
             "show-days",
             "mobile-breakpoint",
             "native-mobile",
+            "variant",
         ];
     }
 
@@ -307,6 +308,19 @@ export class YumeDate extends HTMLElement {
     }
     set size(v) {
         this.setAttribute("size", v);
+    }
+
+    /**
+     * @type {"default"|"underline"} Field style. `"default"` is a full border;
+     * `"underline"` shows only a bottom border with square bottom corners.
+     */
+    get variant() {
+        return this.getAttribute("variant") === "underline"
+            ? "underline"
+            : "default";
+    }
+    set variant(v) {
+        this.setAttribute("variant", v === "underline" ? "underline" : "default");
     }
 
     /** @type {string} The current value (ISO string, or "ISO,ISO" for range). */
@@ -922,6 +936,13 @@ export class YumeDate extends HTMLElement {
                 user-select: none;
                 transition: border-color 0.2s ease-in-out;
                 outline: none;
+            }
+
+            /* Underline variant: bottom border only, square bottom corners. */
+            :host([variant="underline"]) .trigger {
+                border-style: none;
+                border-bottom-style: solid;
+                border-radius: var(--component-inputs-border-radius-outer) var(--component-inputs-border-radius-outer) 0 0;
             }
 
             .trigger:hover {

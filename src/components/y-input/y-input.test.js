@@ -2,6 +2,16 @@ import { fixture, html, expect, oneEvent } from "@open-wc/testing";
 import "./y-input.js";
 
 describe("<y-input>", () => {
+    it("variant='underline' renders a bottom-only border with square bottom corners", async () => {
+        const el = await fixture(html`<y-input variant="underline"></y-input>`);
+        el.style.setProperty("--component-inputs-border-radius-outer", "6px");
+        const cs = getComputedStyle(el.shadowRoot.querySelector(".input-container"));
+        expect(cs.borderTopStyle).to.equal("none");
+        expect(cs.borderBottomStyle).to.equal("solid");
+        expect(cs.borderTopLeftRadius).to.equal("6px");
+        expect(cs.borderBottomLeftRadius).to.equal("0px");
+    });
+
     it("renders correctly with default props", async () => {
         const el = await fixture(
             html`<y-input><span slot="label">Name</span></y-input>`
