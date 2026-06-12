@@ -48,6 +48,28 @@
     }
   },
   {
+    "id": "themes-mono-dark",
+    "name": "Mono Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/mono-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-mono-light",
+    "name": "Mono Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/mono-light": "enabled"
+    }
+  },
+  {
     "id": "themes-carbon-dark",
     "name": "Carbon Dark",
     "group": "Themes",
@@ -67,6 +89,171 @@
       "core/numerics": "source",
       "core/components": "source",
       "themes/carbon-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-ant-blue-dark",
+    "name": "Ant Blue Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/ant-blue-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-ant-blue-light",
+    "name": "Ant Blue Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/ant-blue-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-shadcn-dark",
+    "name": "Shadcn Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/shadcn-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-shadcn-light",
+    "name": "Shadcn Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/shadcn-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-shadcn-blue-dark",
+    "name": "Shadcn Blue Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/shadcn-blue-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-shadcn-blue-light",
+    "name": "Shadcn Blue Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/shadcn-blue-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-primer-light",
+    "name": "Primer Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/primer-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-primer-dark",
+    "name": "Primer Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/primer-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-primer-dark-dimmed",
+    "name": "Primer Dark Dimmed",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/primer-dark-dimmed": "enabled"
+    }
+  },
+  {
+    "id": "themes-bootstrap-dark",
+    "name": "Bootstrap Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/bootstrap-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-bootstrap-light",
+    "name": "Bootstrap Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/bootstrap-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-catppuccin-latte",
+    "name": "Catppuccin Latte",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/catppuccin-latte": "enabled"
+    }
+  },
+  {
+    "id": "themes-catppuccin-frappe",
+    "name": "Catppuccin Frappe",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/catppuccin-frappe": "enabled"
+    }
+  },
+  {
+    "id": "themes-catppuccin-macchiato",
+    "name": "Catppuccin Macchiato",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/catppuccin-macchiato": "enabled"
+    }
+  },
+  {
+    "id": "themes-catppuccin-mocha",
+    "name": "Catppuccin Mocha",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/catppuccin-mocha": "enabled"
     }
   },
   {

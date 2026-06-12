@@ -5,6 +5,8 @@ import { addons } from "storybook/preview-api";
 import variablesCSS from "../styles/variables.css?inline";
 import blueDarkCSS from "../styles/blue-dark.css?inline";
 import blueLightCSS from "../styles/blue-light.css?inline";
+import monoDarkCSS from "../styles/mono-dark.css?inline";
+import monoLightCSS from "../styles/mono-light.css?inline";
 import orangeDarkCSS from "../styles/orange-dark.css?inline";
 import orangeLightCSS from "../styles/orange-light.css?inline";
 import greenDarkCSS from "../styles/green-dark.css?inline";
@@ -29,6 +31,21 @@ import materialBlueDarkCSS from "../styles/material-blue-dark.css?inline";
 import materialBlueLightCSS from "../styles/material-blue-light.css?inline";
 import carbonDarkCSS from "../styles/carbon-dark.css?inline";
 import carbonLightCSS from "../styles/carbon-light.css?inline";
+import antBlueDarkCSS from "../styles/ant-blue-dark.css?inline";
+import antBlueLightCSS from "../styles/ant-blue-light.css?inline";
+import shadcnDarkCSS from "../styles/shadcn-dark.css?inline";
+import shadcnLightCSS from "../styles/shadcn-light.css?inline";
+import shadcnBlueDarkCSS from "../styles/shadcn-blue-dark.css?inline";
+import shadcnBlueLightCSS from "../styles/shadcn-blue-light.css?inline";
+import primerLightCSS from "../styles/primer-light.css?inline";
+import primerDarkCSS from "../styles/primer-dark.css?inline";
+import primerDarkDimmedCSS from "../styles/primer-dark-dimmed.css?inline";
+import bootstrapDarkCSS from "../styles/bootstrap-dark.css?inline";
+import bootstrapLightCSS from "../styles/bootstrap-light.css?inline";
+import catppuccinLatteCSS from "../styles/catppuccin-latte.css?inline";
+import catppuccinFrappeCSS from "../styles/catppuccin-frappe.css?inline";
+import catppuccinMacchiatoCSS from "../styles/catppuccin-macchiato.css?inline";
+import catppuccinMochaCSS from "../styles/catppuccin-mocha.css?inline";
 
 // =============================================================================
 // Theme registry — single source of truth (toolbar order). Add a theme here and
@@ -38,6 +55,8 @@ import carbonLightCSS from "../styles/carbon-light.css?inline";
 const THEMES = [
     { key: "blue-dark", name: "Blue Dark", css: blueDarkCSS },
     { key: "blue-light", name: "Blue Light", css: blueLightCSS },
+    { key: "mono-dark", name: "Mono Dark", css: monoDarkCSS },
+    { key: "mono-light", name: "Mono Light", css: monoLightCSS },
     { key: "orange-dark", name: "Orange Dark", css: orangeDarkCSS },
     { key: "orange-light", name: "Orange Light", css: orangeLightCSS },
     { key: "green-dark", name: "Green Dark", css: greenDarkCSS },
@@ -62,6 +81,21 @@ const THEMES = [
     { key: "material-blue-light", name: "Material Blue Light", css: materialBlueLightCSS },
     { key: "carbon-dark", name: "Carbon Dark", css: carbonDarkCSS },
     { key: "carbon-light", name: "Carbon Light", css: carbonLightCSS },
+    { key: "ant-blue-dark", name: "Ant Blue Dark", css: antBlueDarkCSS },
+    { key: "ant-blue-light", name: "Ant Blue Light", css: antBlueLightCSS },
+    { key: "shadcn-dark", name: "Shadcn Dark", css: shadcnDarkCSS },
+    { key: "shadcn-light", name: "Shadcn Light", css: shadcnLightCSS },
+    { key: "shadcn-blue-dark", name: "Shadcn Blue Dark", css: shadcnBlueDarkCSS },
+    { key: "shadcn-blue-light", name: "Shadcn Blue Light", css: shadcnBlueLightCSS },
+    { key: "primer-light", name: "Primer Light", css: primerLightCSS },
+    { key: "primer-dark", name: "Primer Dark", css: primerDarkCSS },
+    { key: "primer-dark-dimmed", name: "Primer Dark Dimmed", css: primerDarkDimmedCSS },
+    { key: "bootstrap-dark", name: "Bootstrap Dark", css: bootstrapDarkCSS },
+    { key: "bootstrap-light", name: "Bootstrap Light", css: bootstrapLightCSS },
+    { key: "catppuccin-latte", name: "Catppuccin Latte", css: catppuccinLatteCSS },
+    { key: "catppuccin-frappe", name: "Catppuccin Frappe", css: catppuccinFrappeCSS },
+    { key: "catppuccin-macchiato", name: "Catppuccin Macchiato", css: catppuccinMacchiatoCSS },
+    { key: "catppuccin-mocha", name: "Catppuccin Mocha", css: catppuccinMochaCSS },
 ];
 
 const THEME_MAP = Object.fromEntries(THEMES.map((t) => [t.key, t.css]));
@@ -78,6 +112,21 @@ const SWATCH = {
     "material-blue-light": "#fafafa",
     "carbon-dark": "#161616",
     "carbon-light": "#f4f4f4",
+    "ant-blue-dark": "#141414",
+    "ant-blue-light": "#f5f5f5",
+    "shadcn-dark": "#020617",
+    "shadcn-light": "#f8fafc",
+    "shadcn-blue-dark": "#020617",
+    "shadcn-blue-light": "#f8fafc",
+    "primer-light": "#f6f8fa",
+    "primer-dark": "#0d1117",
+    "primer-dark-dimmed": "#22272e",
+    "bootstrap-light": "#f8f9fa",
+    "bootstrap-dark": "#212529",
+    "catppuccin-latte": "#eff1f5",
+    "catppuccin-frappe": "#303446",
+    "catppuccin-macchiato": "#24273a",
+    "catppuccin-mocha": "#1e1e2e",
 };
 const backdrop = (key) => SWATCH[key] ?? (key.endsWith("-dark") ? "#1a1a1a" : "#f0f0f2");
 
@@ -170,12 +219,13 @@ function injectHeadStyles() {
         "yumekit-storybook-body",
         "body { color: var(--base-content--); font-family: var(--font-family-body, 'Lexend', sans-serif); }",
     );
-    // Lexend (default families) + Roboto (Material) + IBM Plex Sans (Carbon).
-    // y-theme loads these itself, but stories that don't wrap in y-theme need them.
+    // Lexend (default) + Roboto (Material) + IBM Plex Sans (Carbon) + Inter
+    // (Tailwind/shadcn). y-theme loads these itself, but stories that don't wrap
+    // in y-theme need them. (Ant uses a system stack — nothing to load.)
     const font = document.createElement("link");
     font.rel = "stylesheet";
     font.href =
-        "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Roboto:wght@300;400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap";
+        "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Roboto:wght@300;400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap";
     document.head.appendChild(font);
 }
 

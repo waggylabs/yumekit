@@ -1,6 +1,8 @@
 import variablesCSS from "../../../styles/variables.css";
 import blueLightCSS from "../../../styles/blue-light.css";
 import blueDarkCSS from "../../../styles/blue-dark.css";
+import monoLightCSS from "../../../styles/mono-light.css";
+import monoDarkCSS from "../../../styles/mono-dark.css";
 import orangeLightCSS from "../../../styles/orange-light.css";
 import orangeDarkCSS from "../../../styles/orange-dark.css";
 import greenLightCSS from "../../../styles/green-light.css";
@@ -25,10 +27,27 @@ import materialBlueLightCSS from "../../../styles/material-blue-light.css";
 import materialBlueDarkCSS from "../../../styles/material-blue-dark.css";
 import carbonLightCSS from "../../../styles/carbon-light.css";
 import carbonDarkCSS from "../../../styles/carbon-dark.css";
+import antBlueLightCSS from "../../../styles/ant-blue-light.css";
+import antBlueDarkCSS from "../../../styles/ant-blue-dark.css";
+import shadcnLightCSS from "../../../styles/shadcn-light.css";
+import shadcnDarkCSS from "../../../styles/shadcn-dark.css";
+import shadcnBlueLightCSS from "../../../styles/shadcn-blue-light.css";
+import shadcnBlueDarkCSS from "../../../styles/shadcn-blue-dark.css";
+import primerLightCSS from "../../../styles/primer-light.css";
+import primerDarkCSS from "../../../styles/primer-dark.css";
+import primerDarkDimmedCSS from "../../../styles/primer-dark-dimmed.css";
+import bootstrapLightCSS from "../../../styles/bootstrap-light.css";
+import bootstrapDarkCSS from "../../../styles/bootstrap-dark.css";
+import catppuccinLatteCSS from "../../../styles/catppuccin-latte.css";
+import catppuccinFrappeCSS from "../../../styles/catppuccin-frappe.css";
+import catppuccinMacchiatoCSS from "../../../styles/catppuccin-macchiato.css";
+import catppuccinMochaCSS from "../../../styles/catppuccin-mocha.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
     "blue-dark": blueDarkCSS,
+    "mono-light": monoLightCSS,
+    "mono-dark": monoDarkCSS,
     "orange-light": orangeLightCSS,
     "orange-dark": orangeDarkCSS,
     "green-light": greenLightCSS,
@@ -53,17 +72,45 @@ const THEMES = {
     "material-blue-dark": materialBlueDarkCSS,
     "carbon-light": carbonLightCSS,
     "carbon-dark": carbonDarkCSS,
+    "ant-blue-light": antBlueLightCSS,
+    "ant-blue-dark": antBlueDarkCSS,
+    "shadcn-light": shadcnLightCSS,
+    "shadcn-dark": shadcnDarkCSS,
+    "shadcn-blue-light": shadcnBlueLightCSS,
+    "shadcn-blue-dark": shadcnBlueDarkCSS,
+    "primer-light": primerLightCSS,
+    "primer-dark": primerDarkCSS,
+    "primer-dark-dimmed": primerDarkDimmedCSS,
+    "bootstrap-light": bootstrapLightCSS,
+    "bootstrap-dark": bootstrapDarkCSS,
+    "catppuccin-latte": catppuccinLatteCSS,
+    "catppuccin-frappe": catppuccinFrappeCSS,
+    "catppuccin-macchiato": catppuccinMacchiatoCSS,
+    "catppuccin-mocha": catppuccinMochaCSS,
 };
 
 // Google Fonts `family=` query for each theme's typography. Themes not listed
 // fall back to DEFAULT_FONT. The family name (before `:`) is used to de-dupe the
 // injected <link>, so multiple themes requesting the same font load it once.
+// A `null` value means the theme uses a native system-font stack and needs no
+// webfont download.
 const DEFAULT_FONT = "Lexend:wght@100..900";
 const THEME_FONTS = {
     "material-blue-light": "Roboto:wght@300;400;500;700",
     "material-blue-dark": "Roboto:wght@300;400;500;700",
     "carbon-light": "IBM+Plex+Sans:wght@400;500;600;700",
     "carbon-dark": "IBM+Plex+Sans:wght@400;500;600;700",
+    "ant-blue-light": null,
+    "ant-blue-dark": null,
+    "shadcn-light": "Inter:wght@400;500;600;700",
+    "shadcn-dark": "Inter:wght@400;500;600;700",
+    "shadcn-blue-light": "Inter:wght@400;500;600;700",
+    "shadcn-blue-dark": "Inter:wght@400;500;600;700",
+    "primer-light": null,
+    "primer-dark": null,
+    "primer-dark-dimmed": null,
+    "bootstrap-light": null,
+    "bootstrap-dark": null,
 };
 
 export class YumeTheme extends HTMLElement {
@@ -189,7 +236,11 @@ export class YumeTheme extends HTMLElement {
     _injectThemeFont() {
         if (this.hasAttribute("no-default-font")) return;
 
-        const query = THEME_FONTS[this.theme] || DEFAULT_FONT;
+        const query =
+            this.theme in THEME_FONTS ? THEME_FONTS[this.theme] : DEFAULT_FONT;
+        // A null entry means the theme ships a native system-font stack — no
+        // webfont to fetch.
+        if (!query) return;
         const family = query.split(":")[0];
         if (document.querySelector(`link[data-yumekit-font="${family}"]`))
             return;

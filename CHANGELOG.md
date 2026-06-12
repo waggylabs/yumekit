@@ -35,9 +35,7 @@ Delete any empty sections before publishing.
 
 ### Added
 
-- Two new built-in themes, `material-blue-light` and `material-blue-dark`, applying Material Design 3 — a Material palette (Blue primary, Material status colors, grey surfaces), Roboto typography, and the M3 shape scale (4/8/12/28px radii, pill buttons, 28px dialogs, 4px text fields, 1px borders) applied across all components. `y-theme` now loads the Roboto webfont automatically when one of these themes is active.
-
-- Two new built-in themes, `carbon-light` and `carbon-dark`, applying IBM Carbon — the Carbon palette (Interactive Blue `#0f62fe`, IBM gray surfaces, Carbon status colors), IBM Plex Sans typography, and Carbon's sharp shape language (0px radii, 1px borders). `y-theme` loads the IBM Plex Sans webfont automatically when one of these themes is active.
+- Several theme color variations including the `Catppuccin` color schemes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, and Bootstrap.
 
 - `y-tabs` — new `variant="accent"` style: minimal tabs where the active tab shows a primary-colored indicator border on its content-facing edge (bottom for top tabs, etc.). The default bordered style is unchanged. Adds `--component-tabs-accent-width` (indicator thickness). The border-width token is normalized to `--component-tabs-border-width` (matching `--component-tabs-border-color`); the legacy `--component-tab-border-width` is still honored as a fallback.
 

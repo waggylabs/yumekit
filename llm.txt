@@ -21,7 +21,7 @@ npm install @waggylabs/yumekit
 - Tree-shakeable ESM modules
 - ARIA-compliant and keyboard-navigable
 - Design token system via CSS custom properties
-- 26 built-in themes: 11 color families (blue, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive) × dark and light variants, plus two design-system themes that also override shape and typography, not just color: Material Design 3 (`material-blue-light` / `material-blue-dark`, rounded + Roboto) and IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans)
+- 37 built-in themes: 12 color families (blue, mono, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive — `mono` is a shadcn-style monochrome family with a near-black/near-white primary on the default neutral surfaces) × dark and light variants, plus five design-system families that also override shape and typography, not just color: Material Design 3 (`material-blue-light` / `material-blue-dark`, rounded + Roboto), IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans), Ant Design (`ant-blue-light` / `ant-blue-dark`, 6px corners + `#1677ff` daybreak blue + native system-font stack), and Tailwind/shadcn on Slate neutrals + Inter + 8px corners — both the monochrome shadcn default (`shadcn-light` / `shadcn-dark`, near-black/near-white primary) and a Tailwind-blue variant (`shadcn-blue-light` / `shadcn-blue-dark`, `#2563eb` primary)
 - React JSX type declarations included
 - Form-associated components with native HTML form API support
 - Security-focused SVG icon sanitization (allowlist-based)
@@ -87,7 +87,7 @@ All custom elements are prefixed with `y-`.
 Theme provider. Wraps your app and injects design tokens as CSS custom properties.
 
 Attributes:
-- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"` | `"material-blue-light"` | `"material-blue-dark"` | `"carbon-light"` | `"carbon-dark"`
+- `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"mono-light"` | `"mono-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"` | `"material-blue-light"` | `"material-blue-dark"` | `"carbon-light"` | `"carbon-dark"` | `"ant-blue-light"` | `"ant-blue-dark"` | `"shadcn-light"` | `"shadcn-dark"` | `"shadcn-blue-light"` | `"shadcn-blue-dark"`
 - `cross-origin` — boolean, enables CORS for remote theme URLs
 - `no-default-font` — boolean, skips injecting the default Lexend font from Google Fonts
 
