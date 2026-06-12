@@ -95,6 +95,18 @@ export default {
             description: "Show the row count on the right edge of the footer. Defaults to false.",
             table: { defaultValue: { summary: "false" } },
         },
+        enableColumnResize: {
+            name: "enable-column-resize",
+            control: "boolean",
+            description: "Drag the inline (right) edge of a header to resize the column. Opt out per column with `resizable: false`; double-click the handle to reset. Defaults to false.",
+            table: { defaultValue: { summary: "false" } },
+        },
+        enableColumnReorder: {
+            name: "enable-column-reorder",
+            control: "boolean",
+            description: "Drag a column header onto another to reorder columns. Opt out per column with `reorderable: false`. Defaults to false.",
+            table: { defaultValue: { summary: "false" } },
+        },
         loading: {
             control: "boolean",
             description: "Show the loading overlay and set `aria-busy`.",
@@ -117,6 +129,8 @@ export default {
         enableSorting: true,
         enablePagination: true,
         showItemCount: false,
+        enableColumnResize: false,
+        enableColumnReorder: false,
         loading: false,
         emptyMessage: "No data available",
     },
@@ -133,6 +147,8 @@ export default {
                 enable-sorting="${args.enableSorting}"
                 enable-pagination="${args.enablePagination}"
                 ${args.showItemCount ? "show-item-count" : ""}
+                ${args.enableColumnResize ? "enable-column-resize" : ""}
+                ${args.enableColumnReorder ? "enable-column-reorder" : ""}
                 ${args.filtering ? `filtering="${args.filtering}"` : ""}
                 ${args.loading ? "loading" : ""}
                 empty-message="${args.emptyMessage}"
@@ -466,6 +482,59 @@ export const HeaderMenu = {
                 columns='${defaultColumns}'
                 data='${defaultData}'
                 filtering="advanced"
+                enable-header-menu
+            ></y-data-grid>
+        </div>
+    `,
+};
+
+export const ResizableColumns = {
+    render: () => `
+        <div style="${wrapStyle}">
+            <p style="margin:0 0 12px;font-family:sans-serif;color:var(--base-content,#333)">
+                Hover the inline (right) edge of any header to reveal the resize handle, then drag to
+                set the column width. Double-click a handle to reset that column to auto width.
+            </p>
+            <y-data-grid
+                columns='${defaultColumns}'
+                data='${defaultData}'
+                page-size="6"
+                enable-column-resize
+            ></y-data-grid>
+        </div>
+    `,
+};
+
+export const ReorderableColumns = {
+    render: () => `
+        <div style="${wrapStyle}">
+            <p style="margin:0 0 12px;font-family:sans-serif;color:var(--base-content,#333)">
+                Grab a column header and drag it onto another column to change the order. A drop line
+                marks where the column will land. Clicking a header (without dragging) still sorts.
+            </p>
+            <y-data-grid
+                columns='${defaultColumns}'
+                data='${defaultData}'
+                page-size="6"
+                enable-column-reorder
+            ></y-data-grid>
+        </div>
+    `,
+};
+
+export const ResizableAndReorderable = {
+    render: () => `
+        <div style="${wrapStyle}">
+            <p style="margin:0 0 12px;font-family:sans-serif;color:var(--base-content,#333)">
+                Resize and reorder together — drag the edge to size a column, drag the body of the
+                header to move it. Pairs naturally with <code>enable-header-menu</code>.
+            </p>
+            <y-data-grid
+                columns='${defaultColumns}'
+                data='${defaultData}'
+                page-size="6"
+                enable-column-resize
+                enable-column-reorder
                 enable-header-menu
             ></y-data-grid>
         </div>

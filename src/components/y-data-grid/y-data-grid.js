@@ -11,6 +11,12 @@ import { createElement as _el } from "../../modules/helpers.js";
 
 const SORT_CYCLE = { none: "asc", asc: "desc", desc: "none" };
 const EDIT_STATUS_RESET_MS = 1200;
+// Smallest width (px) a column can be dragged to, unless the column overrides
+// it with `minWidth`.
+const MIN_COLUMN_WIDTH = 48;
+// Pointer travel (px) before a header press is treated as a reorder drag rather
+// than a sort click.
+const COLUMN_DRAG_THRESHOLD = 4;
 
 // The header-menu popovers are rendered with `portal`, which relocates their
 // content into a `.y-popover-portal` element under `document.body`. Styles
@@ -136,6 +142,8 @@ export class YumeDataGrid extends HTMLElement {
             "viewport-height",
             "buffer-size",
             "enable-header-menu",
+            "enable-column-resize",
+            "enable-column-reorder",
         ];
     }
 
@@ -164,9 +172,16 @@ export class YumeDataGrid extends HTMLElement {
         this._scrollTop = 0;
         this._viewportHeight = 0;
         this._resizeObserver = null;
+        this._resizeState = null;
+        this._reorderState = null;
+        this._suppressHeaderClick = false;
         this._onPaginatorChange = this._onPaginatorChange.bind(this);
         this._onPaginatorPageSize = this._onPaginatorPageSize.bind(this);
         this._onScroll = this._onScroll.bind(this);
+        this._onColumnResizeMove = this._onColumnResizeMove.bind(this);
+        this._onColumnResizeEnd = this._onColumnResizeEnd.bind(this);
+        this._onColumnReorderMove = this._onColumnReorderMove.bind(this);
+        this._onColumnReorderEnd = this._onColumnReorderEnd.bind(this);
     }
 
     connectedCallback() {
@@ -211,6 +226,28 @@ export class YumeDataGrid extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
+    /** Per-column aggregate config — `{ columnKey: "sum" | "avg" | "min" | "max" | "count" }`. */
+    get aggregates() {
+        try {
+            const parsed = JSON.parse(this.getAttribute("aggregates") || "{}");
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch {
+            return {};
+        }
+    }
+    set aggregates(obj) {
+        this.setAttribute("aggregates", JSON.stringify(obj || {}));
+    }
+
+    /** Extra rows rendered above and below the viewport when virtualizing. */
+    get bufferSize() {
+        const v = Number(this.getAttribute("buffer-size"));
+        return Number.isFinite(v) && v >= 0 ? v : 10;
+    }
+    set bufferSize(val) {
+        this.setAttribute("buffer-size", String(val));
+    }
+
     /** Column schema as JSON string or array of column definition objects. */
     get columns() {
         return this.getAttribute("columns");
@@ -220,6 +257,14 @@ export class YumeDataGrid extends HTMLElement {
             "columns",
             typeof val === "string" ? val : JSON.stringify(val),
         );
+    }
+
+    /** Current 1-based page index. */
+    get currentPage() {
+        return this._currentPage;
+    }
+    set currentPage(val) {
+        this.setAttribute("current-page", String(val));
     }
 
     /** Row data as JSON string or array of objects keyed by column key. */
@@ -233,72 +278,81 @@ export class YumeDataGrid extends HTMLElement {
         );
     }
 
-    /** Operating mode: "client" performs sort/filter/page locally, "server" emits events. */
-    get mode() {
-        return this.getAttribute("mode") || "client";
+    /** Edit trigger: "click" (single click on cell) or "focus" (default "click"). */
+    get editOn() {
+        return this.getAttribute("edit-on") || "click";
     }
-    set mode(val) {
-        this.setAttribute("mode", val);
-    }
-
-    /** Rows per page. */
-    get pageSize() {
-        return this._pageSize;
-    }
-    set pageSize(val) {
-        this.setAttribute("page-size", String(val));
+    set editOn(val) {
+        this.setAttribute("edit-on", val);
     }
 
-    /** Current 1-based page index. */
-    get currentPage() {
-        return this._currentPage;
+    /** Empty-state message text. */
+    get emptyMessage() {
+        return this.getAttribute("empty-message") || "No data available";
     }
-    set currentPage(val) {
-        this.setAttribute("current-page", String(val));
-    }
-
-    /** Total row count, required for server-mode pagination. */
-    get totalRows() {
-        const v = Number(this.getAttribute("total-rows"));
-        return Number.isFinite(v) ? v : 0;
-    }
-    set totalRows(val) {
-        this.setAttribute("total-rows", String(val));
+    set emptyMessage(val) {
+        this.setAttribute("empty-message", val);
     }
 
-    /** When true, a loading overlay is shown. */
-    get loading() {
-        return this.hasAttribute("loading");
+    /** When set, leaf headers can be dragged to a new position to reorder columns. Opt out per column with `reorderable: false`. */
+    get enableColumnReorder() {
+        return this.hasAttribute("enable-column-reorder");
     }
-    set loading(val) {
-        if (val) this.setAttribute("loading", "");
-        else this.removeAttribute("loading");
-    }
-
-    /** Alternating row backgrounds. Defaults to false; set the attribute (or `striped="true"`) to enable. */
-    get striped() {
-        const v = this.getAttribute("striped");
-        return v != null && v !== "false";
-    }
-    set striped(val) {
-        if (val) this.setAttribute("striped", "");
-        else this.removeAttribute("striped");
+    set enableColumnReorder(val) {
+        if (val) this.setAttribute("enable-column-reorder", "");
+        else this.removeAttribute("enable-column-reorder");
     }
 
-    /** Row hover highlight. Defaults to true unless attribute set to "false". */
-    get hover() {
-        return this.getAttribute("hover") !== "false";
+    /** When set, leaf headers expose a drag handle on their inline (right) edge for resizing. Opt out per column with `resizable: false`. */
+    get enableColumnResize() {
+        return this.hasAttribute("enable-column-resize");
     }
-    set hover(val) {
-        this.setAttribute("hover", String(Boolean(val)));
+    set enableColumnResize(val) {
+        if (val) this.setAttribute("enable-column-resize", "");
+        else this.removeAttribute("enable-column-resize");
     }
 
-    /** Sticky header during vertical scroll. Defaults to true unless attribute set to "false". */
-    get fixedHeader() {
-        return this.getAttribute("fixed-header") !== "false";
+    /** Enables inline cell editing. */
+    get enableEditing() {
+        return this.hasAttribute("enable-editing");
     }
-    set fixedHeader(val) {
-        this.setAttribute("fixed-header", String(Boolean(val)));
+    set enableEditing(val) {
+        if (val) this.setAttribute("enable-editing", "");
+        else this.removeAttribute("enable-editing");
+    }
+
+    /** When set, leaf headers expose a kebab menu for filter / sort / column visibility / move actions. */
+    get enableHeaderMenu() {
+        return this.hasAttribute("enable-header-menu");
+    }
+    set enableHeaderMenu(val) {
+        if (val) this.setAttribute("enable-header-menu", "");
+        else this.removeAttribute("enable-header-menu");
+    }
+
+    /** Pagination controls. Defaults to true unless attribute set to "false". */
+    get enablePagination() {
+        return this.getAttribute("enable-pagination") !== "false";
+    }
+    set enablePagination(val) {
+        this.setAttribute("enable-pagination", String(Boolean(val)));
+    }
+
+    /** Renders a checkbox column and enables row-selection interactions. */
+    get enableSelection() {
+        return this.hasAttribute("enable-selection");
+    }
+    set enableSelection(val) {
+        if (val) this.setAttribute("enable-selection", "");
+        else this.removeAttribute("enable-selection");
+    }
+
+    /** Sorting via header click. Defaults to true unless attribute set to "false". */
+    get enableSorting() {
+        return this.getAttribute("enable-sorting") !== "false";
+    }
+    set enableSorting(val) {
+        this.setAttribute("enable-sorting", String(Boolean(val)));
     }
 
     /**
@@ -318,57 +372,6 @@ export class YumeDataGrid extends HTMLElement {
         else this.removeAttribute("filtering");
     }
 
-    /** Sorting via header click. Defaults to true unless attribute set to "false". */
-    get enableSorting() {
-        return this.getAttribute("enable-sorting") !== "false";
-    }
-    set enableSorting(val) {
-        this.setAttribute("enable-sorting", String(Boolean(val)));
-    }
-
-    /** Pagination controls. Defaults to true unless attribute set to "false". */
-    get enablePagination() {
-        return this.getAttribute("enable-pagination") !== "false";
-    }
-    set enablePagination(val) {
-        this.setAttribute("enable-pagination", String(Boolean(val)));
-    }
-
-    /** Show the item count in the footer's right side. Defaults to false; add the attribute (or `show-item-count="true"`) to enable. */
-    get showItemCount() {
-        const v = this.getAttribute("show-item-count");
-        return v != null && v !== "false";
-    }
-    set showItemCount(val) {
-        if (val) this.setAttribute("show-item-count", "");
-        else this.removeAttribute("show-item-count");
-    }
-
-    /** Empty-state message text. */
-    get emptyMessage() {
-        return this.getAttribute("empty-message") || "No data available";
-    }
-    set emptyMessage(val) {
-        this.setAttribute("empty-message", val);
-    }
-
-    /** Row height in pixels (used by virtual scrolling in a later phase). */
-    get rowHeight() {
-        const v = Number(this.getAttribute("row-height"));
-        return Number.isFinite(v) && v > 0 ? v : 40;
-    }
-    set rowHeight(val) {
-        this.setAttribute("row-height", String(val));
-    }
-
-    /** Current global search string. */
-    get globalSearch() {
-        return this._globalQuery;
-    }
-    set globalSearch(val) {
-        this.setAttribute("global-search", String(val ?? ""));
-    }
-
     /** Current column filters as a `{ [key]: value }` object. */
     get filters() {
         return { ...this._columnFilters };
@@ -378,78 +381,20 @@ export class YumeDataGrid extends HTMLElement {
         if (this.isConnected) this._render();
     }
 
-    /** Current sort stack as an array of `{ column, direction }`. */
-    get sortState() {
-        return this._sorts.map((s) => ({ ...s }));
+    /** Sticky header during vertical scroll. Defaults to true unless attribute set to "false". */
+    get fixedHeader() {
+        return this.getAttribute("fixed-header") !== "false";
     }
-    set sortState(arr) {
-        this._sorts = Array.isArray(arr)
-            ? arr.filter(
-                  (s) =>
-                      s &&
-                      s.column &&
-                      (s.direction === "asc" || s.direction === "desc"),
-              )
-            : [];
-        if (this.isConnected) this._render();
+    set fixedHeader(val) {
+        this.setAttribute("fixed-header", String(Boolean(val)));
     }
 
-    /** Renders a checkbox column and enables row-selection interactions. */
-    get enableSelection() {
-        return this.hasAttribute("enable-selection");
+    /** Current global search string. */
+    get globalSearch() {
+        return this._globalQuery;
     }
-    set enableSelection(val) {
-        if (val) this.setAttribute("enable-selection", "");
-        else this.removeAttribute("enable-selection");
-    }
-
-    /** Selection mode: "single" or "multi" (default "multi"). */
-    get selectionMode() {
-        return this.getAttribute("selection-mode") || "multi";
-    }
-    set selectionMode(val) {
-        this.setAttribute("selection-mode", val);
-    }
-
-    /** Column key used as a stable per-row identifier. Falls back to the row's array index. */
-    get rowKey() {
-        return this.getAttribute("row-key") || "";
-    }
-    set rowKey(val) {
-        this.setAttribute("row-key", val);
-    }
-
-    /** Array of selected row objects (resolved from current `_selectedKeys`). */
-    get selectedRows() {
-        return this._parsedData.filter((row, idx) =>
-            this._selectedKeys.has(this._rowKeyFor(row, idx)),
-        );
-    }
-
-    /** Array of selected row keys. */
-    get selectedKeys() {
-        return [...this._selectedKeys];
-    }
-    set selectedKeys(arr) {
-        this._selectedKeys = new Set(Array.isArray(arr) ? arr.map(String) : []);
-        if (this.isConnected) this._render();
-    }
-
-    /** Enables inline cell editing. */
-    get enableEditing() {
-        return this.hasAttribute("enable-editing");
-    }
-    set enableEditing(val) {
-        if (val) this.setAttribute("enable-editing", "");
-        else this.removeAttribute("enable-editing");
-    }
-
-    /** Edit trigger: "click" (single click on cell) or "focus" (default "click"). */
-    get editOn() {
-        return this.getAttribute("edit-on") || "click";
-    }
-    set editOn(val) {
-        this.setAttribute("edit-on", val);
+    set globalSearch(val) {
+        this.setAttribute("global-search", String(val ?? ""));
     }
 
     /** Column keys to group rows by (nested when more than one). */
@@ -474,26 +419,123 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("group-by", next);
     }
 
-    /** Per-column aggregate config — `{ columnKey: "sum" | "avg" | "min" | "max" | "count" }`. */
-    get aggregates() {
-        try {
-            const parsed = JSON.parse(this.getAttribute("aggregates") || "{}");
-            return parsed && typeof parsed === "object" ? parsed : {};
-        } catch {
-            return {};
-        }
+    /** Row hover highlight. Defaults to true unless attribute set to "false". */
+    get hover() {
+        return this.getAttribute("hover") !== "false";
     }
-    set aggregates(obj) {
-        this.setAttribute("aggregates", JSON.stringify(obj || {}));
+    set hover(val) {
+        this.setAttribute("hover", String(Boolean(val)));
     }
 
-    /** Enable virtual scrolling (only render visible rows). */
-    get virtual() {
-        return this.hasAttribute("virtual");
+    /** When true, a loading overlay is shown. */
+    get loading() {
+        return this.hasAttribute("loading");
     }
-    set virtual(val) {
-        if (val) this.setAttribute("virtual", "");
-        else this.removeAttribute("virtual");
+    set loading(val) {
+        if (val) this.setAttribute("loading", "");
+        else this.removeAttribute("loading");
+    }
+
+    /** Operating mode: "client" performs sort/filter/page locally, "server" emits events. */
+    get mode() {
+        return this.getAttribute("mode") || "client";
+    }
+    set mode(val) {
+        this.setAttribute("mode", val);
+    }
+
+    /** Rows per page. */
+    get pageSize() {
+        return this._pageSize;
+    }
+    set pageSize(val) {
+        this.setAttribute("page-size", String(val));
+    }
+
+    /** Row height in pixels (used by virtual scrolling in a later phase). */
+    get rowHeight() {
+        const v = Number(this.getAttribute("row-height"));
+        return Number.isFinite(v) && v > 0 ? v : 40;
+    }
+    set rowHeight(val) {
+        this.setAttribute("row-height", String(val));
+    }
+
+    /** Column key used as a stable per-row identifier. Falls back to the row's array index. */
+    get rowKey() {
+        return this.getAttribute("row-key") || "";
+    }
+    set rowKey(val) {
+        this.setAttribute("row-key", val);
+    }
+
+    /** Array of selected row keys. */
+    get selectedKeys() {
+        return [...this._selectedKeys];
+    }
+    set selectedKeys(arr) {
+        this._selectedKeys = new Set(Array.isArray(arr) ? arr.map(String) : []);
+        if (this.isConnected) this._render();
+    }
+
+    /** Array of selected row objects (resolved from current `_selectedKeys`). */
+    get selectedRows() {
+        return this._parsedData.filter((row, idx) =>
+            this._selectedKeys.has(this._rowKeyFor(row, idx)),
+        );
+    }
+
+    /** Selection mode: "single" or "multi" (default "multi"). */
+    get selectionMode() {
+        return this.getAttribute("selection-mode") || "multi";
+    }
+    set selectionMode(val) {
+        this.setAttribute("selection-mode", val);
+    }
+
+    /** Show the item count in the footer's right side. Defaults to false; add the attribute (or `show-item-count="true"`) to enable. */
+    get showItemCount() {
+        const v = this.getAttribute("show-item-count");
+        return v != null && v !== "false";
+    }
+    set showItemCount(val) {
+        if (val) this.setAttribute("show-item-count", "");
+        else this.removeAttribute("show-item-count");
+    }
+
+    /** Current sort stack as an array of `{ column, direction }`. */
+    get sortState() {
+        return this._sorts.map((s) => ({ ...s }));
+    }
+    set sortState(arr) {
+        this._sorts = Array.isArray(arr)
+            ? arr.filter(
+                  (s) =>
+                      s &&
+                      s.column &&
+                      (s.direction === "asc" || s.direction === "desc"),
+              )
+            : [];
+        if (this.isConnected) this._render();
+    }
+
+    /** Alternating row backgrounds. Defaults to false; set the attribute (or `striped="true"`) to enable. */
+    get striped() {
+        const v = this.getAttribute("striped");
+        return v != null && v !== "false";
+    }
+    set striped(val) {
+        if (val) this.setAttribute("striped", "");
+        else this.removeAttribute("striped");
+    }
+
+    /** Total row count, required for server-mode pagination. */
+    get totalRows() {
+        const v = Number(this.getAttribute("total-rows"));
+        return Number.isFinite(v) ? v : 0;
+    }
+    set totalRows(val) {
+        this.setAttribute("total-rows", String(val));
     }
 
     /** Scrollable viewport height in pixels — required for virtualization. */
@@ -505,22 +547,13 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("viewport-height", String(val));
     }
 
-    /** Extra rows rendered above and below the viewport when virtualizing. */
-    get bufferSize() {
-        const v = Number(this.getAttribute("buffer-size"));
-        return Number.isFinite(v) && v >= 0 ? v : 10;
+    /** Enable virtual scrolling (only render visible rows). */
+    get virtual() {
+        return this.hasAttribute("virtual");
     }
-    set bufferSize(val) {
-        this.setAttribute("buffer-size", String(val));
-    }
-
-    /** When set, leaf headers expose a kebab menu for filter / sort / column visibility / move actions. */
-    get enableHeaderMenu() {
-        return this.hasAttribute("enable-header-menu");
-    }
-    set enableHeaderMenu(val) {
-        if (val) this.setAttribute("enable-header-menu", "");
-        else this.removeAttribute("enable-header-menu");
+    set virtual(val) {
+        if (val) this.setAttribute("virtual", "");
+        else this.removeAttribute("virtual");
     }
 
     // -------------------------------------------------------------------------
@@ -678,6 +711,33 @@ export class YumeDataGrid extends HTMLElement {
         });
     }
 
+    _applyColumnReorder(sourceKey, targetKey, placeAfter) {
+        const ctx = this._findColumnContext(sourceKey);
+        if (!ctx) {
+            this._render();
+            return;
+        }
+        const siblings = ctx.siblings;
+        const from = ctx.index;
+        let targetIdx = siblings.findIndex(
+            (n) => !this._isColumnGroup(n) && n.key === targetKey,
+        );
+        if (targetIdx < 0) {
+            // Drop target lives in another group — leave the order untouched.
+            this._render();
+            return;
+        }
+
+        const [moved] = siblings.splice(from, 1);
+        if (targetIdx > from) targetIdx -= 1;
+        const insertAt = placeAfter ? targetIdx + 1 : targetIdx;
+        siblings.splice(insertAt, 0, moved);
+
+        this._parsedColumns = this._flattenColumnTree(this._workingTree);
+        this._emitColumnReorder(sourceKey, from, insertAt);
+        this._render();
+    }
+
     _applyPendingColumnVisibility() {
         if (this._pendingColumnHidden.size === 0) return;
         for (const [key, hidden] of this._pendingColumnHidden) {
@@ -688,6 +748,14 @@ export class YumeDataGrid extends HTMLElement {
         }
         this._pendingColumnHidden.clear();
         this._parsedColumns = this._flattenColumnTree(this._workingTree);
+        this._render();
+    }
+
+    _autoSizeColumn(col) {
+        const node = this._findColumnContext(col.key)?.node || col;
+        if (node.width == null) return;
+        delete node.width;
+        this._emitColumnResize(col.key, null);
         this._render();
     }
 
@@ -747,7 +815,6 @@ export class YumeDataGrid extends HTMLElement {
     _buildCell(row, rowKey, col) {
         const cell = _el("td", { part: "cell", role: "gridcell" });
         if (col.align) cell.style.textAlign = col.align;
-        if (col.width) cell.style.width = col.width;
 
         const editable = this.enableEditing && col.editable !== false;
         if (editable) cell.classList.add("editable");
@@ -790,6 +857,48 @@ export class YumeDataGrid extends HTMLElement {
 
         if (status) cell.appendChild(this._buildStatusIndicator(status));
         return cell;
+    }
+
+    _buildColgroup(columns) {
+        // A <colgroup> is the single source of truth for column widths: the
+        // selection column (when present) gets a placeholder <col> so the
+        // data columns line up, and resizing mutates one <col> live instead of
+        // every cell in the column.
+        const group = _el("colgroup");
+        if (this.enableSelection) {
+            group.appendChild(_el("col", { class: "select-col" }));
+        }
+        columns.forEach((col) => {
+            const colEl = _el("col", { "data-col-key": col.key });
+            if (col.width != null && col.width !== "") {
+                colEl.style.width =
+                    typeof col.width === "number"
+                        ? `${col.width}px`
+                        : String(col.width);
+            }
+            group.appendChild(colEl);
+        });
+        return group;
+    }
+
+    _buildColumnResizeHandle(col) {
+        const handle = _el("span", {
+            class: "col-resize-handle",
+            part: "column-resize-handle",
+            "aria-hidden": "true",
+            "data-col-key": col.key,
+        });
+        handle.addEventListener("pointerdown", (e) =>
+            this._onColumnResizeStart(e, col, handle),
+        );
+        // Swallow the click/dblclick so they don't reach the header's sort
+        // handler; double-click resets the column to auto width.
+        handle.addEventListener("click", (e) => e.stopPropagation());
+        handle.addEventListener("dblclick", (e) => {
+            e.stopPropagation();
+            this._autoSizeColumn(col);
+        });
+        return handle;
     }
 
     _buildColumnsSubmenuItem() {
@@ -1569,11 +1678,11 @@ export class YumeDataGrid extends HTMLElement {
         const th = _el("th", {
             part: "header-cell",
             scope: "col",
+            "data-col-key": col.key,
             "aria-sort": ariaSort,
             class: isSortable ? "sortable" : null,
             rowspan: remainingRows > 1 ? String(remainingRows) : null,
         });
-        if (col.width) th.style.width = col.width;
         if (col.align) th.style.textAlign = col.align;
 
         const inner = _el("span", { class: "th-content" });
@@ -1619,6 +1728,18 @@ export class YumeDataGrid extends HTMLElement {
         }
 
         th.appendChild(inner);
+
+        if (this.enableColumnReorder && col.reorderable !== false) {
+            th.classList.add("reorderable");
+            th.addEventListener("pointerdown", (e) =>
+                this._onColumnReorderStart(e, col, th),
+            );
+        }
+        if (this.enableColumnResize && col.resizable !== false) {
+            th.classList.add("resizable");
+            th.appendChild(this._buildColumnResizeHandle(col));
+        }
+
         return th;
     }
 
@@ -1860,6 +1981,7 @@ export class YumeDataGrid extends HTMLElement {
             }
 
             thead th {
+                position: relative;
                 padding: var(--component-data-grid-padding-medium, 8px);
                 text-align: left;
                 font-weight: 500;
@@ -1916,6 +2038,55 @@ export class YumeDataGrid extends HTMLElement {
             .header-action-trigger.is-active {
                 color: var(--primary-content, currentColor);
             }
+
+            /* Column resize handle — sits on the inline (right) edge of each
+               leaf header and shows a thin accent line on hover / while active. */
+            .col-resize-handle {
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 8px;
+                height: 100%;
+                cursor: col-resize;
+                user-select: none;
+                touch-action: none;
+                z-index: 3;
+            }
+            .col-resize-handle::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 2px;
+                height: 100%;
+                background: transparent;
+                transition: background 0.12s ease;
+            }
+            .col-resize-handle:hover::after,
+            .col-resize-handle.is-active::after {
+                background: var(--component-data-grid-resize-handle-color, var(--primary-content, #0f62fe));
+            }
+
+            /* Column reorder — grab affordance, dimmed source, and a drop line
+               on the target header's leading/trailing edge. */
+            thead th.reorderable { cursor: grab; }
+            thead th.reorderable.is-dragging {
+                opacity: 0.4;
+                cursor: grabbing;
+            }
+            thead th.drop-before {
+                box-shadow: inset 2px 0 0 0 var(--component-data-grid-drop-indicator-color, var(--primary-content, #0f62fe));
+            }
+            thead th.drop-after {
+                box-shadow: inset -2px 0 0 0 var(--component-data-grid-drop-indicator-color, var(--primary-content, #0f62fe));
+            }
+
+            .grid-container.is-col-resizing,
+            .grid-container.is-col-resizing * { cursor: col-resize !important; }
+            .grid-container.is-col-resizing { user-select: none; }
+            .grid-container.is-col-dragging,
+            .grid-container.is-col-dragging * { cursor: grabbing !important; }
+            .grid-container.is-col-dragging { user-select: none; }
 
             /*
              * Menu content (.header-menu and descendants) lives inside portaled
@@ -2167,6 +2338,16 @@ export class YumeDataGrid extends HTMLElement {
         });
     }
 
+    _colElementFor(key) {
+        const cols = this.shadowRoot.querySelectorAll(
+            "colgroup col[data-col-key]",
+        );
+        for (const c of cols) {
+            if (c.dataset.colKey === key) return c;
+        }
+        return null;
+    }
+
     _collectValidators(col) {
         const list = [];
         if (col.required) {
@@ -2296,6 +2477,33 @@ export class YumeDataGrid extends HTMLElement {
         if (col.type === "number") return "equals";
         if (col.type === "date") return "equals";
         return "contains";
+    }
+
+    _emitColumnReorder(column, fromIndex, toIndex) {
+        this.dispatchEvent(
+            new CustomEvent("column-reorder", {
+                detail: {
+                    column,
+                    fromIndex,
+                    toIndex,
+                    order: this._flattenColumnTree(this._workingTree, {
+                        includeHidden: true,
+                    }).map((c) => c.key),
+                },
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    _emitColumnResize(column, width) {
+        this.dispatchEvent(
+            new CustomEvent("column-resize", {
+                detail: { column, width },
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     _emitFilterChange() {
@@ -2492,6 +2700,11 @@ export class YumeDataGrid extends HTMLElement {
         return Math.max(...visible.map((n) => depth(n, 1)));
     }
 
+    _minWidthFor(col) {
+        const m = Number(col.minWidth);
+        return Number.isFinite(m) && m > 0 ? m : MIN_COLUMN_WIDTH;
+    }
+
     _moveColumn(key, direction) {
         const ctx = this._findColumnContext(key);
         if (!ctx) return;
@@ -2516,7 +2729,178 @@ export class YumeDataGrid extends HTMLElement {
         this._render();
     }
 
+    _onColumnReorderEnd() {
+        const state = this._reorderState;
+        if (!state) return;
+        const { th } = state;
+        th.removeEventListener("pointermove", this._onColumnReorderMove);
+        th.removeEventListener("pointerup", this._onColumnReorderEnd);
+        th.removeEventListener("pointercancel", this._onColumnReorderEnd);
+        try {
+            th.releasePointerCapture(state.pointerId);
+        } catch {
+            /* capture already gone */
+        }
+        this._reorderState = null;
+
+        // Below the drag threshold this was really a click — let the sort
+        // handler run as usual.
+        if (!state.dragging) return;
+
+        // A drag completed: swallow the trailing click, then rebuild on the
+        // next frame so the still-mounted source header absorbs that click (a
+        // synchronous re-render would detach it mid-event and re-target it).
+        this._suppressHeaderClick = true;
+        requestAnimationFrame(() => {
+            if (state.targetKey && state.targetKey !== state.col.key) {
+                this._applyColumnReorder(
+                    state.col.key,
+                    state.targetKey,
+                    state.placeAfter,
+                );
+            } else {
+                this._render();
+            }
+        });
+    }
+
+    _onColumnReorderMove(e) {
+        const state = this._reorderState;
+        if (!state) return;
+
+        if (!state.dragging) {
+            if (
+                Math.abs(e.clientX - state.startX) < COLUMN_DRAG_THRESHOLD &&
+                Math.abs(e.clientY - state.startY) < COLUMN_DRAG_THRESHOLD
+            ) {
+                return;
+            }
+            state.dragging = true;
+            state.th.classList.add("is-dragging");
+            this.shadowRoot
+                .querySelector(".grid-container")
+                ?.classList.add("is-col-dragging");
+        }
+
+        e.preventDefault();
+        const target = this._reorderTargetAt(e.clientX, state.col.key);
+        this._paintDropIndicator(target);
+        state.targetKey = target?.key ?? null;
+        state.placeAfter = target?.placeAfter ?? false;
+    }
+
+    _onColumnReorderStart(e, col, th) {
+        if (e.button !== 0) return;
+        // Ignore presses that begin on the resize handle or a header action
+        // trigger — those own their own gestures.
+        if (e.target.closest(".header-action-trigger, .col-resize-handle"))
+            return;
+
+        this._suppressHeaderClick = false;
+        this._reorderState = {
+            col,
+            th,
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            dragging: false,
+            targetKey: null,
+            placeAfter: false,
+        };
+        // Capture so moves keep arriving as the pointer crosses sibling
+        // headers; a tap without travel still emits its click for sorting.
+        try {
+            th.setPointerCapture(e.pointerId);
+        } catch {
+            /* non-capturable pointer */
+        }
+        th.addEventListener("pointermove", this._onColumnReorderMove);
+        th.addEventListener("pointerup", this._onColumnReorderEnd);
+        th.addEventListener("pointercancel", this._onColumnReorderEnd);
+    }
+
+    _onColumnResizeEnd() {
+        const state = this._resizeState;
+        if (!state) return;
+
+        const { handle } = state;
+        handle.removeEventListener("pointermove", this._onColumnResizeMove);
+        handle.removeEventListener("pointerup", this._onColumnResizeEnd);
+        handle.removeEventListener("pointercancel", this._onColumnResizeEnd);
+        handle.classList.remove("is-active");
+
+        try {
+            handle.releasePointerCapture(state.pointerId);
+        } catch {
+            /* capture already gone */
+        }
+
+        this._resizeState = null;
+
+        // A pure press with no travel is just a click on the handle — its own
+        // stopPropagation keeps it off the sort handler, so don't commit/redraw.
+        if (Math.round(state.width) === Math.round(state.startWidth)) return;
+
+        // Committing re-renders synchronously; the pointer may have ended over
+        // the header body (when shrinking), so swallow the trailing click that
+        // would otherwise toggle the sort.
+        this._suppressHeaderClick = true;
+        this._setColumnWidth(state.col, state.width);
+    }
+
+    _onColumnResizeMove(e) {
+        const state = this._resizeState;
+        if (!state) return;
+
+        const min = this._minWidthFor(state.col);
+        const next = Math.max(
+            min,
+            Math.round(state.startWidth + (e.clientX - state.startX)),
+        );
+        state.width = next;
+        if (state.colEl) state.colEl.style.width = `${next}px`;
+    }
+
+    _onColumnResizeStart(e, col, handle) {
+        if (e.button !== 0) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        const th = handle.closest("th");
+        if (!th) return;
+
+        this._suppressHeaderClick = false;
+        const startWidth = th.getBoundingClientRect().width;
+        this._resizeState = {
+            col,
+            handle,
+            colEl: this._colElementFor(col.key),
+            pointerId: e.pointerId,
+            startX: e.clientX,
+            startWidth,
+            width: startWidth,
+        };
+        handle.classList.add("is-active");
+        try {
+            handle.setPointerCapture(e.pointerId);
+        } catch {
+            /* non-capturable pointer */
+        }
+        handle.addEventListener("pointermove", this._onColumnResizeMove);
+        handle.addEventListener("pointerup", this._onColumnResizeEnd);
+        handle.addEventListener("pointercancel", this._onColumnResizeEnd);
+        this.shadowRoot
+            .querySelector(".grid-container")
+            ?.classList.add("is-col-resizing");
+    }
+
     _onHeaderClick(key, event) {
+        // A just-completed reorder drag emits a trailing click — swallow it so
+        // the drop doesn't also toggle the sort.
+        if (this._suppressHeaderClick) {
+            this._suppressHeaderClick = false;
+            return;
+        }
         const multi = event.shiftKey;
         const existingIdx = this._sorts.findIndex((s) => s.column === key);
 
@@ -2705,6 +3089,17 @@ export class YumeDataGrid extends HTMLElement {
         popover.show();
     }
 
+    _paintDropIndicator(target) {
+        this.shadowRoot
+            .querySelectorAll("thead th.drop-before, thead th.drop-after")
+            .forEach((th) => th.classList.remove("drop-before", "drop-after"));
+        if (!target) return;
+
+        target.th.classList.add(
+            target.placeAfter ? "drop-after" : "drop-before",
+        );
+    }
+
     _parseAttributes() {
         let tree;
         try {
@@ -2801,6 +3196,7 @@ export class YumeDataGrid extends HTMLElement {
             scroll.style.maxHeight = `${this.viewportHeight}px`;
         }
         const table = _el("table", { class: "grid-body" });
+        table.appendChild(this._buildColgroup(columns));
         table.appendChild(this._buildHeader(columns));
         table.appendChild(
             this._buildBody(columns, entries, leadingPx, trailingPx),
@@ -2869,6 +3265,33 @@ export class YumeDataGrid extends HTMLElement {
         return wrap;
     }
 
+    _reorderTargetAt(clientX, sourceKey) {
+        const ctx = this._findColumnContext(sourceKey);
+        if (!ctx) return null;
+
+        // Only leaf headers sharing the dragged column's parent group are valid
+        // drop targets, and never the column itself.
+        const targetKeys = new Set(
+            ctx.siblings
+                .filter((n) => !this._isColumnGroup(n) && n.key !== sourceKey)
+                .map((n) => n.key),
+        );
+        const headers = [
+            ...this.shadowRoot.querySelectorAll("thead th[data-col-key]"),
+        ].filter((th) => targetKeys.has(th.dataset.colKey));
+
+        for (const th of headers) {
+            const rect = th.getBoundingClientRect();
+            if (clientX < rect.left || clientX > rect.right) continue;
+            return {
+                key: th.dataset.colKey,
+                th,
+                placeAfter: clientX > rect.left + rect.width / 2,
+            };
+        }
+        return null;
+    }
+
     _rowKeyFor(row, idx) {
         const k = this.rowKey;
         if (k && row && row[k] != null) return String(row[k]);
@@ -2902,6 +3325,13 @@ export class YumeDataGrid extends HTMLElement {
         this._currentPage = 1;
         const cancelled = !this._emitFilterChange();
         if (this.mode === "server" && cancelled) return;
+        this._render();
+    }
+
+    _setColumnWidth(col, width) {
+        const node = this._findColumnContext(col.key)?.node || col;
+        node.width = `${Math.round(width)}px`;
+        this._emitColumnResize(col.key, Math.round(width));
         this._render();
     }
 

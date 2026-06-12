@@ -1403,4 +1403,251 @@ describe("YumeDataGrid", () => {
         const submenuPopover = el.shadowRoot.querySelector("[part='header-menu-submenu']");
         expect(submenuPopover.open).to.be.true;
     });
+
+    // ----------------------------------------------------- column resize
+
+    it("applies a configured column width through the colgroup", async () => {
+        const cols = JSON.stringify([
+            { key: "name", label: "Name", width: "250px" },
+            { key: "age", label: "Age" },
+        ]);
+        const el = await fixture(html`
+            <y-data-grid columns="${cols}" data="${data}"></y-data-grid>
+        `);
+        const col = el.shadowRoot.querySelector(
+            "colgroup col[data-col-key='name']",
+        );
+        expect(col.style.width).to.equal("250px");
+    });
+
+    it("renders a resize handle per leaf header when enable-column-resize is set", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-column-resize
+            ></y-data-grid>
+        `);
+        expect(
+            el.shadowRoot.querySelectorAll(".col-resize-handle").length,
+        ).to.equal(3);
+    });
+
+    it("omits the resize handle for columns with resizable:false", async () => {
+        const cols = JSON.stringify([
+            { key: "name", label: "Name", resizable: false },
+            { key: "age", label: "Age" },
+        ]);
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${cols}"
+                data="${data}"
+                enable-column-resize
+            ></y-data-grid>
+        `);
+        expect(
+            el.shadowRoot.querySelectorAll(".col-resize-handle").length,
+        ).to.equal(1);
+    });
+
+    it("dragging the resize handle widens the column and emits column-resize", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-column-resize
+            ></y-data-grid>
+        `);
+        const handle = el.shadowRoot.querySelector(
+            "thead th[data-col-key='name'] .col-resize-handle",
+        );
+        const th = handle.closest("th");
+        const startWidth = th.getBoundingClientRect().width;
+        const r = handle.getBoundingClientRect();
+
+        let detail = null;
+        el.addEventListener("column-resize", (e) => (detail = e.detail));
+
+        const opts = (x) => ({
+            bubbles: true,
+            button: 0,
+            pointerId: 7,
+            clientX: x,
+            clientY: r.top + 2,
+        });
+        handle.dispatchEvent(new PointerEvent("pointerdown", opts(r.left)));
+        handle.dispatchEvent(new PointerEvent("pointermove", opts(r.left + 60)));
+        handle.dispatchEvent(new PointerEvent("pointerup", opts(r.left + 60)));
+
+        expect(detail).to.not.be.null;
+        expect(detail.column).to.equal("name");
+        expect(detail.width).to.be.greaterThan(startWidth);
+        const col = el.shadowRoot.querySelector(
+            "colgroup col[data-col-key='name']",
+        );
+        expect(col.style.width).to.not.equal("");
+    });
+
+    it("resizing a column does not also trigger a sort", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-column-resize
+            ></y-data-grid>
+        `);
+        const handle = el.shadowRoot.querySelector(
+            "thead th[data-col-key='name'] .col-resize-handle",
+        );
+        const r = handle.getBoundingClientRect();
+        const opts = (x) => ({
+            bubbles: true,
+            button: 0,
+            pointerId: 8,
+            clientX: x,
+            clientY: r.top + 2,
+        });
+        // Shrink so the pointer ends over the header body, then fire the
+        // trailing click that a real drag would produce there.
+        handle.dispatchEvent(new PointerEvent("pointerdown", opts(r.left)));
+        handle.dispatchEvent(new PointerEvent("pointermove", opts(r.left - 40)));
+        handle.dispatchEvent(new PointerEvent("pointerup", opts(r.left - 40)));
+        el.shadowRoot.querySelector("thead th[data-col-key='name']").click();
+
+        expect(
+            el.shadowRoot
+                .querySelector("thead th[data-col-key='name']")
+                .getAttribute("aria-sort"),
+        ).to.equal("none");
+    });
+
+    it("double-clicking the resize handle clears the column width", async () => {
+        const cols = JSON.stringify([
+            { key: "name", label: "Name", width: "300px" },
+            { key: "age", label: "Age" },
+        ]);
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${cols}"
+                data="${data}"
+                enable-column-resize
+            ></y-data-grid>
+        `);
+        let detail = null;
+        el.addEventListener("column-resize", (e) => (detail = e.detail));
+
+        el.shadowRoot
+            .querySelector("thead th[data-col-key='name'] .col-resize-handle")
+            .dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+
+        expect(detail).to.deep.equal({ column: "name", width: null });
+        expect(
+            el.shadowRoot.querySelector("colgroup col[data-col-key='name']")
+                .style.width,
+        ).to.equal("");
+    });
+
+    // ---------------------------------------------------- column reorder
+
+    it("marks leaf headers reorderable only when enable-column-reorder is set", async () => {
+        const off = await fixture(html`
+            <y-data-grid columns="${columns}" data="${data}"></y-data-grid>
+        `);
+        expect(off.shadowRoot.querySelector("thead th.reorderable")).to.be.null;
+
+        const on = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-column-reorder
+            ></y-data-grid>
+        `);
+        expect(
+            on.shadowRoot.querySelectorAll("thead th.reorderable").length,
+        ).to.equal(3);
+    });
+
+    it("reorders a column when its header is dragged onto another", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-column-reorder
+            ></y-data-grid>
+        `);
+        const headers = () => [
+            ...el.shadowRoot.querySelectorAll("thead th[data-col-key]"),
+        ];
+        const nameTh = headers()[0];
+        const cityRect = headers()[2].getBoundingClientRect();
+        const startRect = nameTh.getBoundingClientRect();
+
+        let detail = null;
+        el.addEventListener("column-reorder", (e) => (detail = e.detail));
+
+        nameTh.dispatchEvent(
+            new PointerEvent("pointerdown", {
+                bubbles: true,
+                button: 0,
+                pointerId: 3,
+                clientX: startRect.left + 5,
+                clientY: startRect.top + 5,
+            }),
+        );
+        nameTh.dispatchEvent(
+            new PointerEvent("pointermove", {
+                bubbles: true,
+                pointerId: 3,
+                clientX: cityRect.right - 2,
+                clientY: cityRect.top + 5,
+            }),
+        );
+        nameTh.dispatchEvent(
+            new PointerEvent("pointerup", {
+                bubbles: true,
+                pointerId: 3,
+                clientX: cityRect.right - 2,
+                clientY: cityRect.top + 5,
+            }),
+        );
+        await waitFrame();
+        await waitFrame();
+
+        expect(headers().map((th) => th.dataset.colKey)).to.deep.equal([
+            "age",
+            "city",
+            "name",
+        ]);
+        expect(detail.column).to.equal("name");
+        expect(detail.order).to.deep.equal(["age", "city", "name"]);
+    });
+
+    it("treats a header press without travel as a sort click, not a drag", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                enable-column-reorder
+            ></y-data-grid>
+        `);
+        const nameTh = el.shadowRoot.querySelector("thead th[data-col-key='name']");
+        const rect = nameTh.getBoundingClientRect();
+        const at = (type) =>
+            nameTh.dispatchEvent(
+                new PointerEvent(type, {
+                    bubbles: true,
+                    button: 0,
+                    pointerId: 4,
+                    clientX: rect.left + 5,
+                    clientY: rect.top + 5,
+                }),
+            );
+        at("pointerdown");
+        at("pointerup");
+        nameTh.click();
+
+        expect(el.shadowRoot.querySelector("tbody tr td").textContent).to.equal(
+            "Alice",
+        );
+    });
 });

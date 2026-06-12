@@ -15,7 +15,7 @@ Every `y-*` component class must have exactly four comment-delimited sections, i
 // Private
 ```
 
-No sub-sections. Methods within Public and Private must be **alphabetical**.
+No sub-sections. Members within Getters / Setters, Public, and Private must be **alphabetical**. In Getters / Setters, keep each property's `get`/`set` pair (and its doc comment) together and order by property name.
 
 ## Method Style
 
