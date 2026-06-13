@@ -113,6 +113,27 @@ describe("YumeHelp", () => {
         await teardown(help, container);
     });
 
+    it("mounts the overlay into the nearest <y-theme> so it inherits the theme", async () => {
+        // Theme variables are scoped to the <y-theme> subtree, so the portal
+        // must stay inside it rather than landing on document.body.
+        const theme = document.createElement("y-theme");
+        document.body.appendChild(theme);
+        const help = document.createElement("y-help");
+        help.steps = [{ content: "themed" }];
+        theme.appendChild(help);
+
+        help.start();
+        await aTimeout(0);
+
+        const portal = getPortal();
+        expect(portal).to.exist;
+        expect(portal.parentNode).to.equal(theme);
+
+        help.close();
+        await aTimeout(0);
+        theme.remove();
+    });
+
     it("start() does nothing when there are no steps", async () => {
         const { help, container } = await setupTour([]);
         help.start();

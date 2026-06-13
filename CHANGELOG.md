@@ -61,6 +61,12 @@ Delete any empty sections before publishing.
 
 ### Changed
 
+- `y-break` — the divider line now uses the semantic border color (`base.border`) instead of `base.content.lightest`, matching other component borders, and the host now applies default perpendicular spacing (above/below a horizontal break, left/right of a vertical one) via the new `--component-break-spacing` token (defaults to `--spacing-medium`) so a break separates content out of the box. The line color and thickness also gained `--base-border` / `1px` fallbacks for use without a full token set.
+
+- `y-button` — `--component-button-border-width` is now applied as the `border-width` longhand instead of being baked into the `border` shorthand, so it accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0` for a bottom-only border). Default (`1px`) is unchanged. The `--component-button-outline-border` shorthand override now controls border style + color only; its width is superseded by `--component-button-border-width`.
+
+- Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — `--component-inputs-border-width` is now applied as the `border-width` longhand (out of the `border` shorthand) on every field surface, including the `y-select` dropdown panel and the `y-color` picker popup, so like `y-button` it accepts a 1–4 value pattern for per-side borders; `--component-inputs-border-radius-outer` already accepts a 1–4 value pattern. Default rendering is unchanged. The `variant="underline"` preset is kept — it additionally squares the bottom corners, which a width value alone can't do.
+
 - `y-button` — Outlined button borders were changed to use semantic border values instead of content color. Padding can now be set per-axis via `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` (overriding, and falling back to, the all-sides `--component-button-padding-{size}`), plus a new `padding-mode` attribute (`auto` (default) / `square` / `wide`) controlling whether the inline axis collapses to the block value. `auto` makes icon-only buttons square automatically; `square`/`wide` force it. The Material themes use this for wide pill buttons that stay round when icon-only; `y-paginator` number buttons and `y-datepicker` day / month / year buttons set `padding-mode="square"` so they don't bloat under the wide Material padding.
 
 - Custom color support expanded to the browser-native color functions — `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()` — in addition to `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()`. The shared `isSafeCssColor` gate now also tightens its argument allowlist (rejecting semicolons, braces, angle brackets, and nested functions). Applies anywhere a `color` accepts a custom value, including `y-badge`, `y-select`, `y-popover`, `y-button`, `y-tag`, `y-icon`, and `y-rating`.
@@ -74,6 +80,8 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
+
+- Portaled overlays now inherit the active theme. `y-help` (tour overlay/tooltip), `y-popover` (`portal` mode), and `y-select` (`portal` mode) previously rendered into `document.body`, escaping the `<y-theme>` subtree that scopes the theme's CSS custom properties — so they fell back to the default un-themed palette. They now mount into the nearest enclosing `<y-theme>` (falling back to `document.body` when there isn't one), so the portaled surface matches the active theme and tracks live theme switches. Keep the component inside your `<y-theme>`.
 
 - Form field components now share one field background. `y-select` (trigger and dropdown) used `base.background.app` while `y-input` / `y-textarea` / `y-color` / `y-date` used `base.background.component`; `select.background` is now `base.background.component` across all themes, so fields match when placed together on a form (most visible in the Material and Carbon themes). The select dropdown panel now also matches menus/popovers.
 

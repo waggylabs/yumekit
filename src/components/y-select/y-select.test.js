@@ -832,6 +832,29 @@ describe("<y-select>", () => {
             expect(dropdown.style.right).to.equal("auto");
         });
 
+        it("mounts the portal into the nearest <y-theme> so it inherits the theme", async () => {
+            // createElement (not fixture) keeps the undefined <y-theme> tag an
+            // inert host; closest() still matches it by tag name.
+            const theme = document.createElement("y-theme");
+            const el = document.createElement("y-select");
+            el.setAttribute("portal", "");
+            el.setAttribute(
+                "options",
+                '[{"value":"a","label":"A"},{"value":"b","label":"B"}]',
+            );
+            theme.appendChild(el);
+            document.body.appendChild(theme);
+
+            el.toggleDropdown();
+
+            const portal = theme.querySelector(".y-select-portal");
+            expect(portal).to.exist;
+            expect(portal.parentNode).to.equal(theme);
+
+            el.closeDropdown();
+            theme.remove();
+        });
+
         it("returns the dropdown to the wrapper when the portal closes", async () => {
             const el = await fixture(html`
                 <y-select

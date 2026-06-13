@@ -798,7 +798,7 @@ export class YumeHelp extends HTMLElement {
 
         const { root } = this._buildContainer();
         this._portalRoot = root;
-        document.body.appendChild(root);
+        this._resolveMountPoint().appendChild(root);
 
         window.addEventListener("keydown", this._onKeydown, true);
         window.addEventListener("resize", this._onWindowChange);
@@ -937,9 +937,7 @@ export class YumeHelp extends HTMLElement {
         // "center" means "render mid-viewport, no pointer" — y-popover does
         // exactly that when no anchor is set, so we null the anchor.
         const anchorEl =
-            stepPosition === "center"
-                ? null
-                : this._resolveAnchorElement(step);
+            stepPosition === "center" ? null : this._resolveAnchorElement(step);
         const popoverPosition =
             stepPosition === "center" ? "auto" : stepPosition;
 
@@ -966,6 +964,10 @@ export class YumeHelp extends HTMLElement {
         }
     }
 
+    _resolveMountPoint() {
+        return this.closest("y-theme") || document.body;
+    }
+
     _resolveAnchorElement(step) {
         const targets = this._activeTargets;
         if (!targets.length) return null;
@@ -977,9 +979,6 @@ export class YumeHelp extends HTMLElement {
             return targets[anchorPref];
         }
 
-        // Default: union of all targets. y-popover needs a real Element with
-        // a bounding rect; we maintain a hidden phantom div positioned to
-        // match the union and pass that as the anchor.
         return this._ensurePhantomAnchor(targets);
     }
 

@@ -103,6 +103,24 @@ describe("KeplerButton", () => {
         expect(outlineBorder).to.contain("--error-content--");
     });
 
+    it("applies --component-button-border-width as a longhand, supporting per-side (multi-value) widths", async () => {
+        const el = await fixture(
+            html`<y-button style-type="outlined">Test</y-button>`
+        );
+        const shadowButton = el.shadowRoot.querySelector("button");
+        shadowButton.style.setProperty(
+            "--component-button-border-width",
+            "1px 5px"
+        );
+        const cs = getComputedStyle(shadowButton);
+        expect(cs.borderTopWidth).to.equal("1px");
+        expect(cs.borderBottomWidth).to.equal("1px");
+        expect(cs.borderLeftWidth).to.equal("5px");
+        expect(cs.borderRightWidth).to.equal("5px");
+        // Style + color are unaffected by the multi-value width.
+        expect(cs.borderTopStyle).to.equal("solid");
+    });
+
     it("applies custom hex color CSS variables for flat style-type", async () => {
         const el = await fixture(
             html`<y-button color="#00ff88" style-type="flat">Test</y-button>`

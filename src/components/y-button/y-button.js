@@ -403,7 +403,13 @@ export class YumeButton extends HTMLElement {
                 position: relative;
                 overflow: hidden;
                 border-radius: var(--component-button-border-radius-outer, 4px);
-                border: var(--btn-outline-border, var(--component-button-border-width, 1px) solid var(--border-color, var(--base-content--, #f7f7fa)));
+                /* Style + color come from the shorthand (its width stays a
+                   fixed, always-valid 1px); the real width is applied as a
+                   longhand below so --component-button-border-width can take a
+                   1–4 value pattern (e.g. "1px 2px") for per-side widths
+                   without invalidating the shorthand. */
+                border: var(--btn-outline-border, 1px solid var(--border-color, var(--base-content--, #f7f7fa)));
+                border-width: var(--component-button-border-width, 1px);
                 background: var(--background-color, #0c0c0d);
                 transition: background-color 0.1s, color 0.1s, border-color 0.1s;
                 cursor: pointer;
@@ -775,7 +781,7 @@ export class YumeButton extends HTMLElement {
     }
 
     _outlineBorder(defaultColor) {
-        return `var(--component-button-outline-border, var(--component-button-border-width, 1px) solid ${this._outlineBorderColor(defaultColor)})`;
+        return `var(--component-button-outline-border, 1px solid ${this._outlineBorderColor(defaultColor)})`;
     }
 
     _outlineBorderColor(defaultColor) {

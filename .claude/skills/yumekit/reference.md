@@ -77,7 +77,7 @@ A divider that draws a line, optionally broken by centered content (text, icon, 
 
 **CSS Parts:** `line`, `line-start`, `line-end`, `content`
 
-**CSS Custom Properties:** `--component-break-line-color`, `--component-break-line-thickness`, `--component-break-line-style` (override the `variant`), `--component-break-gap`, `--component-break-content-color`, `--component-break-content-font-size`, `--component-break-content-font-weight`, `--component-break-inset`, `--component-break-min-length`
+**CSS Custom Properties:** `--component-break-line-color` (defaults to `--base-border`), `--component-break-line-thickness`, `--component-break-line-style` (override the `variant`), `--component-break-spacing` (perpendicular padding around the line — block axis when horizontal, inline when vertical; defaults to `--spacing-medium`), `--component-break-gap`, `--component-break-content-color`, `--component-break-content-font-size`, `--component-break-content-font-weight`, `--component-break-inset`, `--component-break-min-length`
 
 ```html
 <y-break></y-break>
@@ -176,7 +176,7 @@ Slots: default (label), `left-icon`, `right-icon`
 <y-button href="/restricted" disabled>Unavailable</y-button>
 ```
 
-CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` (all sides), and `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` to override the vertical / horizontal axes independently (fall back to `--component-button-padding-{size}`). The `padding-mode` attribute governs whether the inline axis collapses to the block value (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets min-height (shared with `y-input`; falls back to `--sizing-{size}`). For `style-type="outlined"`: the border is sourced from the button's matching semantic border token (`--base-border`, `--error-border`, …) per `color`, falling back to the text color when that token is unset. Optional global overrides: `--component-button-outline-border` (whole border as a CSS `border` shorthand) and `--component-button-outline-border-color` (border color across all states) — set via CSS or a scoped `y-theme`.
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` (all sides), and `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` to override the vertical / horizontal axes independently (fall back to `--component-button-padding-{size}`). The `padding-mode` attribute governs whether the inline axis collapses to the block value (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets min-height (shared with `y-input`; falls back to `--sizing-{size}`). For `style-type="outlined"`: the border is sourced from the button's matching semantic border token (`--base-border`, `--error-border`, …) per `color`, falling back to the text color when that token is unset. `--component-button-border-width` (applied as the `border-width` longhand, default `1px`) accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0`). Optional global overrides: `--component-button-outline-border` (border style + color as a CSS `border` shorthand; its width is superseded by `--component-button-border-width`) and `--component-button-outline-border-color` (border color across all states) — set via CSS or a scoped `y-theme`.
 
 ---
 
@@ -1243,7 +1243,7 @@ Events:
 
 ## y-help
 
-Guided product-tour / onboarding overlay. Given an ordered list of steps, dims the page, highlights one or more targets per step (single SVG mask for clean multi-target cutouts), and anchors a tooltip with helper text. Untargeted steps render a centered tooltip. The overlay and tooltip are portaled to `document.body` to escape ancestor `overflow` / `transform` / `z-index` contexts.
+Guided product-tour / onboarding overlay. Given an ordered list of steps, dims the page, highlights one or more targets per step (single SVG mask for clean multi-target cutouts), and anchors a tooltip with helper text. Untargeted steps render a centered tooltip. The overlay and tooltip are portaled out of `<y-help>` to escape ancestor `overflow` / `transform` / `z-index` contexts — into the nearest enclosing `<y-theme>` (falling back to `document.body`). Keep `<y-help>` inside your `<y-theme>` so the portaled tour inherits the active theme; mounting on `document.body` would render with the default un-themed palette since theme variables are scoped to the `<y-theme>` subtree.
 
 | Attribute                       | Values / Notes                                                                                                                                       |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1787,7 +1787,7 @@ Target-anchored, slot-based floating panel — the primitive bridging `y-tooltip
 | `close-on-escape`        | default `true` (always on for modal)                                                                  |
 | `close-on-outside-click` | default `true`                                                                                        |
 | `close-on-anchor-click`  | default `false` — when true, re-clicking the anchor toggles closed                                    |
-| `portal`                 | render into `document.body` to escape stacking/transform/clip contexts (loses ancestor CSS-var inheritance) |
+| `portal`                 | render into the nearest `<y-theme>` (fallback `document.body`) to escape stacking/transform/clip contexts while keeping the theme |
 | `text`                   | simple text body (equivalent to a `<span>` in the default slot)                                       |
 | `color`                  | `base` (default) \| `primary`/`secondary`/`success`/`warning`/`error`/`help`, or any safe CSS color   |
 | `size`                   | `small` \| `medium` (default) \| `large`                                                              |

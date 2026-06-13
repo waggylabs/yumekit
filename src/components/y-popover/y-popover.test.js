@@ -823,6 +823,28 @@ describe("YumePopover", () => {
         expect(portal.shadowRoot.querySelector(surfaceSel)).to.exist;
     });
 
+    it("mounts the portal into the nearest <y-theme> so it inherits the theme", async () => {
+        // Use createElement (not fixture) so the undefined <y-theme> tag is an
+        // inert host; closest() still matches it by tag name.
+        const theme = document.createElement("y-theme");
+        const anchor = document.createElement("button");
+        anchor.id = "portal-theme-anchor";
+        const popover = document.createElement("y-popover");
+        popover.setAttribute("anchor", "portal-theme-anchor");
+        popover.setAttribute("portal", "");
+        popover.setAttribute("text", "content");
+        theme.append(anchor, popover);
+        document.body.appendChild(theme);
+
+        await popover.show();
+        const portal = theme.querySelector(".y-popover-portal");
+        expect(portal).to.exist;
+        expect(portal.parentNode).to.equal(theme);
+
+        popover.hide("api");
+        theme.remove();
+    });
+
     it("moves slotted body children into the portal so slots compose them", async () => {
         const wrap = await fixture(html`
             <div>

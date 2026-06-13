@@ -249,7 +249,10 @@ export class YumeSelect extends HTMLElement {
             : "default";
     }
     set variant(val) {
-        this.setAttribute("variant", val === "underline" ? "underline" : "default");
+        this.setAttribute(
+            "variant",
+            val === "underline" ? "underline" : "default",
+        );
     }
 
     /** @type {string} The current selected value, or comma-separated values when multiple. */
@@ -400,7 +403,8 @@ export class YumeSelect extends HTMLElement {
                 align-items: center;
                 gap: var(--spacing-x-small);
                 background: var(--component-select-background);
-                border: var(--component-inputs-border-width) solid var(--component-select-border-color);
+                border: 1px solid var(--component-select-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
                 min-height: ${minHeightVar};
@@ -454,7 +458,8 @@ export class YumeSelect extends HTMLElement {
                 left: 0;
                 right: 0;
                 background: var(--component-select-background);
-                border: var(--component-inputs-border-width) solid var(--component-select-border-color);
+                border: 1px solid var(--component-select-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 box-shadow: var(--component-select-shadow, 0 2px 8px rgba(0,0,0,0.1));
                 max-height: 200px;
@@ -773,21 +778,17 @@ export class YumeSelect extends HTMLElement {
             containerChildren,
         );
 
-        const dropdown = _el(
-            "div",
-            { class: "dropdown", part: "dropdown" },
-            [
-                ...this.options.map((opt) =>
-                    this._buildDropdownItem(opt, valueSet.has(opt.value)),
-                ),
-                (() => {
-                    const noResults = _el("div", { class: "no-results" });
-                    noResults.style.display = "none";
-                    noResults.textContent = "No results";
-                    return noResults;
-                })(),
-            ],
-        );
+        const dropdown = _el("div", { class: "dropdown", part: "dropdown" }, [
+            ...this.options.map((opt) =>
+                this._buildDropdownItem(opt, valueSet.has(opt.value)),
+            ),
+            (() => {
+                const noResults = _el("div", { class: "no-results" });
+                noResults.style.display = "none";
+                noResults.textContent = "No results";
+                return noResults;
+            })(),
+        ]);
 
         const wrapperChildren = [];
         if (isLabelTop) wrapperChildren.push(buildLabelSlot());
@@ -852,9 +853,14 @@ export class YumeSelect extends HTMLElement {
         const insideHost = path.includes(this);
         // When portaled, the dropdown lives in document.body — treat clicks on
         // the portal container (and its shadow descendants) as "inside" too.
-        const insidePortal = this._portalContainer && path.includes(this._portalContainer);
+        const insidePortal =
+            this._portalContainer && path.includes(this._portalContainer);
 
-        if (!insideHost && !insidePortal && this.dropdown?.classList.contains("open")) {
+        if (
+            !insideHost &&
+            !insidePortal &&
+            this.dropdown?.classList.contains("open")
+        ) {
             this.closeDropdown();
         }
     }
@@ -872,7 +878,7 @@ export class YumeSelect extends HTMLElement {
         // references `this.dropdown`, so positioning math and event handlers
         // continue working unchanged.
         shadow.appendChild(this.dropdown);
-        document.body.appendChild(portal);
+        this._resolveMountPoint().appendChild(portal);
         this._portalContainer = portal;
     }
 
@@ -886,6 +892,10 @@ export class YumeSelect extends HTMLElement {
         }
         this._portalContainer.remove();
         this._portalContainer = null;
+    }
+
+    _resolveMountPoint() {
+        return this.closest("y-theme") || document.body;
     }
 
     _openDropdown() {

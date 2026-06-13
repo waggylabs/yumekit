@@ -350,7 +350,7 @@
     "break": {
       "line-color": {
         "$type": "color",
-        "$value": "{base.content.lightest}"
+        "$value": "{base.border}"
       },
       "content-color": {
         "$type": "color",

@@ -205,6 +205,10 @@
                 "$type": "borderWidth",
                 "$value": "{border.x-thin}"
             },
+            "spacing": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
             "gap": {
                 "$type": "spacing",
                 "$value": "{spacing.small}"
@@ -235,10 +239,6 @@
                 "$type": "borderWidth",
                 "$value": "{border.thin}"
             },
-            "border-width-2": {
-                "$type": "borderWidth",
-                "$value": "{border.x-thin}"
-            },
             "padding-large": {
                 "$type": "spacing",
                 "$value": "{spacing.x-large}"
@@ -250,6 +250,30 @@
             "padding-small": {
                 "$type": "spacing",
                 "$value": "{spacing.x-small}"
+            },
+            "padding-block-large": {
+                "$type": "spacing",
+                "$value": "{component.button.padding-large}"
+            },
+            "padding-block-medium": {
+                "$type": "spacing",
+                "$value": "{component.button.padding-medium}"
+            },
+            "padding-block-small": {
+                "$type": "spacing",
+                "$value": "{component.button.padding-small}"
+            },
+            "padding-inline-large": {
+                "$type": "spacing",
+                "$value": "{component.button.padding-large}"
+            },
+            "padding-inline-medium": {
+                "$type": "spacing",
+                "$value": "{component.button.padding-medium}"
+            },
+            "padding-inline-small": {
+                "$type": "spacing",
+                "$value": "{component.button.padding-small}"
             }
         },
         "breadcrumbs": {
@@ -316,6 +340,24 @@
             "size": {
                 "$type": "sizing",
                 "$value": "{sizing.x-small}"
+            },
+            "checked": {
+                "background": {
+                    "$type": "color",
+                    "$value": "var(--component-checkbox-background)"
+                },
+                "border": {
+                    "color": {
+                        "$type": "color",
+                        "$value": "var(--component-checkbox-border-color)"
+                    }
+                },
+                "icon": {
+                    "color": {
+                        "$type": "color",
+                        "$value": "var(--component-checkbox-accent)"
+                    }
+                }
             }
         },
         "color": {
@@ -766,6 +808,24 @@
             "size": {
                 "$type": "sizing",
                 "$value": "{sizing.2x-small}"
+            },
+            "checked": {
+                "background": {
+                    "$type": "color",
+                    "$value": "var(--component-radio-background, transparent)"
+                },
+                "border": {
+                    "color": {
+                        "$type": "color",
+                        "$value": "var(--component-radio-color)"
+                    }
+                },
+                "dot": {
+                    "color": {
+                        "$type": "color",
+                        "$value": "var(--component-radio-accent)"
+                    }
+                }
             }
         },
         "date": {

@@ -648,7 +648,7 @@ export class YumePopover extends HTMLElement {
         }
         this._portalLightChildren = movedChildren;
 
-        document.body.appendChild(portal);
+        this._resolveMountPoint().appendChild(portal);
         this._portalContainer = portal;
         this._portalShadow = shadow;
     }
@@ -739,16 +739,13 @@ export class YumePopover extends HTMLElement {
     }
 
     _containingBlockOffset() {
-        // When portaled, the surface lives in a `<body>` child whose own
-        // ancestors are normally untransformed — `position: fixed` already
-        // resolves against the viewport. Skip the walk.
-        if (this._portalContainer) return { x: 0, y: 0 };
-
-        // Walk the host's flattened DOM ancestry to find the nearest element
-        // that establishes a containing block for `position: fixed`. Returns
-        // its viewport-coord top-left so the caller can subtract it from
-        // computed viewport coords.
-        let el = this.parentElement;
+        // Walk the flattened DOM ancestry to find the nearest element that
+        // establishes a containing block for `position: fixed`. Returns its
+        // viewport-coord top-left so the caller can subtract it from computed
+        // viewport coords.
+        let el = this._portalContainer
+            ? this._portalContainer
+            : this.parentElement;
         while (el) {
             const cs = getComputedStyle(el);
             const willChange = cs.willChange || "";
@@ -1247,6 +1244,18 @@ export class YumePopover extends HTMLElement {
                     ),
             );
         slot.classList.toggle("has-content", hasContent);
+    }
+
+    _resolveMountPoint() {
+        // Portaling escapes ancestor stacking/overflow contexts, but YumeKit
+        // delivers a theme as CSS custom properties scoped to the <y-theme>
+        // subtree (set inline on that element). Appending to document.body
+        // would drop out of that scope, so every --base-* / --component-* /
+        // --primary-* lookup falls back to the un-themed default literals.
+        // Mount into the nearest enclosing <y-theme> instead so the portaled
+        // surface inherits the active theme; fall back to <body> when there
+        // is no y-theme ancestor (or it lives across a shadow boundary).
+        return this.closest("y-theme") || document.body;
     }
 
     _restoreFocus() {

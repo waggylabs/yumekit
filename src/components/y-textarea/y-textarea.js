@@ -250,7 +250,8 @@ export class YumeTextarea extends HTMLElement {
                 display: flex;
                 align-items: flex-start;
                 background: ${isDisabled ? "var(--component-input-background-disabled)" : "var(--component-input-background)"};
-                border: var(--component-inputs-border-width) solid var(--component-input-border-color);
+                border: 1px solid var(--component-input-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
                 box-sizing: border-box;

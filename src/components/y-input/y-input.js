@@ -278,7 +278,13 @@ export class YumeInput extends HTMLElement {
                 align-items: center;
                 gap: var(--spacing-x-small);
                 background: ${isDisabled ? "var(--component-input-background-disabled)" : "var(--component-input-background)"};
-                border: var(--component-inputs-border-width) solid var(--component-input-border-color);
+                /* Style + color via the shorthand (fixed, always-valid 1px
+                   width); real width as a longhand so
+                   --component-inputs-border-width accepts a 1–4 value pattern
+                   for per-side widths. border-radius is already a longhand and
+                   likewise takes a 1–4 value pattern. */
+                border: 1px solid var(--component-input-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
                 min-height: ${minHeightVar};

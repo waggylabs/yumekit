@@ -167,6 +167,11 @@ export class YumeBreak extends HTMLElement {
                 --_inset: var(--component-break-inset, ${inset});
                 display: block;
                 box-sizing: border-box;
+                /* Breathing room above/below the line so the break separates
+                   content out of the box. Perpendicular to the line, so it
+                   becomes inline padding when vertical (below). */
+                padding-block: var(--component-break-spacing, var(--spacing-medium, 16px));
+                padding-inline: 0;
                 color: var(--component-break-content-color);
             }
 
@@ -174,6 +179,8 @@ export class YumeBreak extends HTMLElement {
                 display: inline-flex;
                 align-self: stretch;
                 min-height: 1em;
+                padding-block: 0;
+                padding-inline: var(--component-break-spacing, var(--spacing-medium, 16px));
             }
 
             .break {
@@ -192,13 +199,13 @@ export class YumeBreak extends HTMLElement {
             .line {
                 flex: 1 1 auto;
                 min-width: var(--component-break-min-length);
-                border-top: var(--component-break-line-thickness) var(--_line-style) var(--component-break-line-color);
+                border-top: var(--component-break-line-thickness, 1px) var(--_line-style) var(--component-break-line-color, var(--base-border, currentColor));
                 align-self: center;
             }
 
             :host([orientation="vertical"]) .line {
                 border-top: 0;
-                border-left: var(--component-break-line-thickness) var(--_line-style) var(--component-break-line-color);
+                border-left: var(--component-break-line-thickness, 1px) var(--_line-style) var(--component-break-line-color, var(--base-border, currentColor));
                 min-width: 0;
                 min-height: var(--component-break-min-length);
                 width: 0;

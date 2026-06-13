@@ -116,7 +116,7 @@ CSS Parts: `line`, `line-start`, `line-end`, `content`.
 
 The host receives `role="separator"`, plus `aria-orientation="vertical"` when vertical (horizontal is the implicit default and is omitted). With no slotted content, label, or icon, a single unbroken line is rendered.
 
-`--component-break-line-style` overrides the `variant` attribute per instance without re-render.
+`--component-break-line-style` overrides the `variant` attribute per instance without re-render. The line color defaults to the semantic border token (`--base-border`) via `--component-break-line-color`. The host applies default perpendicular spacing around the line (block axis when horizontal, inline when vertical) via `--component-break-spacing` (defaults to `--spacing-medium`) so the break separates content without extra wrapper margins; set it to `0` to opt out. `--inset` (the `inset` attribute) still controls padding at the outer *ends* of the line — distinct from `--component-break-spacing`, which is the gap perpendicular to it.
 
 ```html
 <y-break></y-break>
@@ -169,7 +169,7 @@ Attributes:
 <y-button color="primary" size="large" left-icon="check">Save</y-button>
 ```
 
-CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material and Shadcn themes use this for wider buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets the min-height (shared with `y-input` so fields and buttons stay the same height per theme); falls back to `--sizing-{size}`. For `style-type="outlined"`, the border is sourced from the button's matching semantic border token (`--base-border`, `--primary-border`, `--error-border`, …) per `color`, falling back to the button's text color when that token is unset. Two optional global overrides remain: `--component-button-outline-border` overrides the whole border as a CSS `border` shorthand (e.g. `1px solid var(--base-border)`), and `--component-button-outline-border-color` sets just the border color across resting/hover/focus/active — set either via CSS or a scoped `y-theme` to flatten all outlined borders to one color.
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material and Shadcn themes use this for wider buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets the min-height (shared with `y-input` so fields and buttons stay the same height per theme); falls back to `--sizing-{size}`. For `style-type="outlined"`, the border is sourced from the button's matching semantic border token (`--base-border`, `--primary-border`, `--error-border`, …) per `color`, falling back to the button's text color when that token is unset. `--component-button-border-width` sets the border width and is applied as the `border-width` longhand (not baked into a shorthand), so it accepts a 1–4 value pattern for per-side widths (e.g. `1px 2px` or `0 0 2px 0` for a bottom-only border); defaults to `1px`. Two optional global overrides remain: `--component-button-outline-border` overrides the border style + color as a CSS `border` shorthand (e.g. `1px solid var(--base-border)`) — note its width is superseded by `--component-button-border-width` — and `--component-button-outline-border-color` sets just the border color across resting/hover/focus/active — set either via CSS or a scoped `y-theme` to flatten all outlined borders to one color.
 
 ---
 
@@ -220,7 +220,7 @@ Attributes:
 
 Events: `change`, `input`
 
-CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`
+CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`. Shared across all form fields: `--component-inputs-border-width` (applied as the `border-width` longhand — accepts a 1–4 value pattern for per-side widths, e.g. `0 0 1px 0`) and `--component-inputs-border-radius-outer` (also takes a 1–4 value pattern). For a true underlined field prefer `variant="underline"`, which also squares the bottom corners.
 
 ```html
 <y-input type="email" name="email" label="Email" required></y-input>
@@ -901,7 +901,7 @@ Attributes:
 - `close-on-escape` — defaults to `true`. Modal popovers honor Escape regardless of this attribute.
 - `close-on-outside-click` — defaults to `true`. Clicks outside the popover *and* outside the anchor close it.
 - `close-on-anchor-click` — defaults to `false`. When `true`, clicking the anchor again toggles the popover closed (otherwise the `"click"` trigger only opens).
-- `portal` — render the surface into `document.body`, escaping ancestor stacking / transform / clip-path / overflow contexts. Off by default. Tradeoff: the surface loses CSS-variable inheritance from its original ancestor chain.
+- `portal` — render the surface out of the popover to escape ancestor stacking / transform / clip-path / overflow contexts. Off by default. The surface mounts into the nearest enclosing `<y-theme>` (falling back to `document.body`), so it keeps the active theme; CSS variables set on intermediate ancestors between the popover and the `<y-theme>` are not inherited.
 - `text` — simple text content for the body. Equivalent to slotting a `<span>` into the default slot — provides a migration path from `<y-tooltip>`'s `text` attribute.
 - `color` — `"base"` (default) | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"` or any safe CSS color literal (`#hex`, `rgb()`/`rgba()`, `hsl()`/`hsla()`).
 - `size` — `"small"` | `"medium"` (default) | `"large"`.
@@ -972,7 +972,7 @@ CSS Custom Properties: `--component-popover-background`, `--component-popover-co
 Notes:
 - Positioning uses a flip-and-shift strategy: try the requested side → opposite → perpendiculars; cross-axis shift keeps the popover in view but is skipped entirely when the anchor itself is off-screen. Best-fit fallback when no side fits (pointer hidden).
 - Detects transformed/filtered/clip-pathed ancestors and adjusts coords so `position: fixed` still lands on the viewport correctly (Storybook docs, animated panels, etc.).
-- `portal="true"` moves the surface (plus backdrop and slotted body/header/footer children) into a `<div class="y-popover-portal">` appended to `<body>`. The trigger stays in place.
+- `portal="true"` moves the surface (plus backdrop and slotted body/header/footer children) into a `<div class="y-popover-portal">` appended to the nearest enclosing `<y-theme>` (so it inherits the theme), falling back to `<body>` when there is no `<y-theme>` ancestor. The trigger stays in place.
 - Detached or removed anchors during the open lifecycle re-resolve on every reposition.
 - Body / header / footer content is rendered as DOM (slotted), not via `textContent`, so consumers can put rich markup in slots.
 
@@ -1551,7 +1551,7 @@ CSS Custom Properties (exhaustive — every variable y-help actually reads): `--
 ```
 
 Notes:
-- The overlay and tooltip are portaled to `document.body`, so they escape ancestor `overflow` / `transform` / `z-index` contexts. Don't expect to find them inside `<y-help>` itself.
+- The overlay and tooltip are portaled out of `<y-help>` (so they escape ancestor `overflow` / `transform` / `z-index` contexts) into the nearest enclosing `<y-theme>`, falling back to `document.body` when there is no `<y-theme>` ancestor. Mounting inside the theme is deliberate: YumeKit themes are CSS custom properties scoped to the `<y-theme>` subtree, so a `document.body`-level overlay would render with the un-themed default palette. **Put `<y-help>` inside your `<y-theme>`** and the tour matches the active theme automatically (including live theme switches). The overlay is `position: fixed`, so it still covers the viewport regardless of where it mounts.
 - Tooltip positioning uses a flip-only collision strategy in v1: try the requested side, fall back to the opposite, then `bottom` / `top` / `right` / `left`. Untargeted tooltips center in the viewport.
 - Persistence ("has the user seen this tour?") is the caller's responsibility — read/write storage and pass `open`/`index` accordingly.
 - Step `content` and `title` are rendered via `textContent` and never re-parsed as HTML. For rich content, use the `content` / `title` slots or wait for `<y-help-step>` in a future release.

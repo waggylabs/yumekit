@@ -927,7 +927,8 @@ export class YumeDate extends HTMLElement {
                 align-items: center;
                 gap: var(--spacing-x-small);
                 background: var(--component-input-background);
-                border: var(--component-inputs-border-width) solid var(--component-input-border-color);
+                border: 1px solid var(--component-input-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: ${padding};
                 min-height: ${minHeight};
