@@ -196,12 +196,18 @@ export class YumeCheckbox extends HTMLElement {
                 background: var(--component-checkbox-background);
                 color: var(--component-checkbox-accent);
                 box-sizing: border-box;
-                transition: border-color 0.2s ease;
+                transition: background-color 0.2s ease, border-color 0.2s ease;
             }
 
             :host([disabled]) .checkbox {
                 background: var(--component-checkbox-disabled-background, var(--component-checkbox-background));
                 cursor: not-allowed;
+            }
+
+            :host([checked]) .checkbox,
+            :host([indeterminate]) .checkbox {
+                background: var(--component-checkbox-checked-background, var(--component-checkbox-background));
+                border-color: var(--component-checkbox-checked-border-color, var(--component-checkbox-border-color));
             }
 
             .checkbox:hover {
@@ -215,7 +221,7 @@ export class YumeCheckbox extends HTMLElement {
             .icon {
                 width: var(--component-checkbox-icon-size, 16px);
                 height: var(--component-checkbox-icon-size, 16px);
-                color: var(--component-checkbox-accent);
+                color: var(--component-checkbox-checked-icon-color, var(--component-checkbox-accent));
             }
 
             [part="label"] {

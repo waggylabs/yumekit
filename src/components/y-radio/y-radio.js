@@ -158,6 +158,12 @@ export class YumeRadio extends HTMLElement {
                 position: relative;
                 outline: none;
                 cursor: pointer;
+                background: var(--component-radio-background, transparent);
+                transition: background-color 0.2s ease, border-color 0.2s ease;
+            }
+            input[type="radio"]:checked {
+                background: var(--component-radio-checked-background, var(--component-radio-background, transparent));
+                border-color: var(--component-radio-checked-border-color, var(--component-radio-color));
             }
             input[type="radio"]:checked::after {
                 content: '';
@@ -166,7 +172,7 @@ export class YumeRadio extends HTMLElement {
                 left: 50%;
                 width: var(--component-radio-dot-size, 8px);
                 height: var(--component-radio-dot-size, 8px);
-                background: var(--component-radio-accent);
+                background: var(--component-radio-checked-dot-color, var(--component-radio-accent));
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
             }

@@ -21,7 +21,7 @@ npm install @waggylabs/yumekit
 - Tree-shakeable ESM modules
 - ARIA-compliant and keyboard-navigable
 - Design token system via CSS custom properties
-- 37 built-in themes: 12 color families (blue, mono, orange, green, red, teal, yellow, indigo, purple, pink, brown, olive — `mono` is a shadcn-style monochrome family with a near-black/near-white primary on the default neutral surfaces) × dark and light variants, plus five design-system families that also override shape and typography, not just color: Material Design 3 (`material-blue-light` / `material-blue-dark`, rounded + Roboto), IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans), Ant Design (`ant-blue-light` / `ant-blue-dark`, 6px corners + `#1677ff` daybreak blue + native system-font stack), and Tailwind/shadcn on Slate neutrals + Inter + 8px corners — both the monochrome shadcn default (`shadcn-light` / `shadcn-dark`, near-black/near-white primary) and a Tailwind-blue variant (`shadcn-blue-light` / `shadcn-blue-dark`, `#2563eb` primary)
+- 51 built-in themes: 13 color families (blue, mono, orange, green, red, teal, yellow, indigo, purple, pink, rose, brown, olive — `mono` is a shadcn-style monochrome family with a near-black/near-white primary on the default neutral surfaces, and `rose` is a muted dusty-rose) × dark and light variants; design-system families that also override shape and typography, not just color: Material Design 3 (`material-blue-*` and `material-purple-*`, rounded + Roboto), IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans), Ant Design (`ant-blue-*` daybreak blue `#1677ff` and `ant-green-*` polar green, 6px corners + native system-font stack), Tailwind/shadcn on Slate neutrals + Inter + 8px corners (monochrome `shadcn-light` / `shadcn-dark` plus Tailwind-blue `shadcn-blue-light` / `shadcn-blue-dark`, `#2563eb` primary), GitHub Primer (`primer-light` / `primer-dark` / `primer-dark-dimmed`), and Bootstrap (`bootstrap-light` / `bootstrap-dark`); plus two curated palette sets: Catppuccin (`catppuccin-latte` / `-frappe` / `-macchiato` / `-mocha`) and Nord (`nord` / `nord-aurora`)
 - React JSX type declarations included
 - Form-associated components with native HTML form API support
 - Security-focused SVG icon sanitization (allowlist-based)
@@ -391,7 +391,7 @@ Attributes:
 
 Events: `change`
 
-CSS Custom Properties: `--component-checkbox-size` sets the box dimensions; `--component-checkbox-border-radius` sets the corner radius (falls back to the shared `--component-inputs-border-radius-outer`, letting a theme give checkboxes tighter corners than text inputs — the Shadcn themes use 4px boxes vs. 8px inputs).
+CSS Custom Properties: `--component-checkbox-size` sets the box dimensions; `--component-checkbox-icon-size` the checkmark size; `--component-checkbox-border-radius` the corner radius (falls back to the shared `--component-inputs-border-radius-outer`, letting a theme give checkboxes tighter corners than text inputs — the Shadcn themes use 4px boxes vs. 8px inputs). Unchecked state: `--component-checkbox-background`, `--component-checkbox-border-color`, `--component-checkbox-accent` (checkmark + hover border). Checked / indeterminate state overrides (each falls back to its unchecked value, so the box only fills when a theme opts in): `--component-checkbox-checked-background`, `--component-checkbox-checked-border-color`, `--component-checkbox-checked-icon-color`. The design-system themes (Shadcn, Material, Carbon, Ant, Bootstrap, Primer) use these to fill the checked box with the primary color and draw the check in the primary-inverse color. `--component-checkbox-color` sets the label text color.
 
 ---
 
@@ -526,6 +526,8 @@ Attributes:
 - `label`, `label-position`
 
 Events: `change`
+
+CSS Custom Properties: `--component-radio-size` sets the control diameter; `--component-radio-dot-size` the center dot. Unchecked state: `--component-radio-background` (default transparent), `--component-radio-color` (border), `--component-radio-accent` (dot). Checked-state overrides (each falls back to its unchecked value): `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`. Filled-style design systems (Shadcn, Bootstrap, Primer) fill the checked control with the primary color and draw a primary-inverse center dot; outlined ones (Material, Carbon, Ant) keep a transparent fill with a primary ring and primary dot.
 
 ---
 

@@ -425,6 +425,28 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "border-radius": {
+        "$type": "borderRadius",
+        "$value": "2px"
+      },
+      "checked": {
+        "background": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
+        "icon": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.inverse}"
+          }
+        }
       }
     },
     "dock": {
@@ -753,6 +775,20 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
+        "dot": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
       }
     },
     "select": {

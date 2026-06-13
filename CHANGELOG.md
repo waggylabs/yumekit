@@ -35,13 +35,9 @@ Delete any empty sections before publishing.
 
 ### Added
 
-- Several theme color variations including the `Catppuccin` color schemes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, and Bootstrap.
+- `y-checkbox` / `y-radio` — checked-state color hooks so themes can fill the control on selection: `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` and `--component-radio-background` / `-checked-background` / `-checked-border-color` / `-checked-dot-color`. Each falls back to the matching unchecked value, so existing themes are unchanged. The design-system themes now use them — checked checkboxes (and Shadcn/Bootstrap/Primer radios) fill with the primary color and draw the check/dot in the primary-inverse color, matching each system's native look.
 
-- `Nord` themes — two dark flavors built on the Nord palette's Polar Night base: `nord` (cool, Frost-led accents) and `nord-aurora` (warm, Aurora-led accents).
-
-- `Rose` theme — a muted dusty-rose color family (`rose-light` / `rose-dark`), backed by a new `rose` core color swatch tuned to the palette's existing lightness/saturation steps.
-
-- Non-blue color options for the design-system themes: `material-purple` (light / dark) using the Material Purple palette, and `ant-green` (light / dark) using Ant Design's Polar Green. Each keeps its system's surfaces, status colors, and font, swapping only the primary.
+- Several theme color variations including the `Catppuccin` and `Nord` color schemes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, and Bootstrap.
 
 - `y-tabs` — new `variant="accent"` style: minimal tabs where the active tab shows a primary-colored indicator border on its content-facing edge (bottom for top tabs, etc.). The default bordered style is unchanged. Adds `--component-tabs-accent-width` (indicator thickness). The border-width token is normalized to `--component-tabs-border-width` (matching `--component-tabs-border-color`); the legacy `--component-tab-border-width` is still honored as a fallback.
 
@@ -78,8 +74,6 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
-
-- `y-data-grid` — selected-row colors are now readable in every theme. The row used a near-surface tint (`--primary-background-component`) for its background but the white `--primary-content-inverse` for text, so text was invisible on light themes and the background was indistinguishable from the surface on dark themes. Selected rows now use the `--primary-background-active` tint with the normal `--base-content` text (override via `--component-data-grid-row-selected-bg` / `--component-data-grid-row-selected-text`). The multi-sort priority badge and group-toggle focus ring, which shared the same mistake, now use `--primary-content`.
 
 - Form field components now share one field background. `y-select` (trigger and dropdown) used `base.background.app` while `y-input` / `y-textarea` / `y-color` / `y-date` used `base.background.component`; `select.background` is now `base.background.component` across all themes, so fields match when placed together on a form (most visible in the Material and Carbon themes). The select dropdown panel now also matches menus/popovers.
 

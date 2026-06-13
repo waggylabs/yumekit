@@ -335,7 +335,7 @@ Form-associated.
 | `label-position` | `right` (default) \| `left`    |
 
 Events: `change`
-CSS Custom Properties: `--component-checkbox-size`, `--component-checkbox-icon-size`, `--component-checkbox-border-radius` (lets checkboxes use a tighter radius than text inputs), `--component-checkbox-border-color`, `--component-checkbox-background`, `--component-checkbox-color`, `--component-checkbox-accent`
+CSS Custom Properties: `--component-checkbox-size`, `--component-checkbox-icon-size`, `--component-checkbox-border-radius` (lets checkboxes use a tighter radius than text inputs), `--component-checkbox-border-color`, `--component-checkbox-background`, `--component-checkbox-color`, `--component-checkbox-accent`; checked/indeterminate overrides (fall back to the unchecked values) `--component-checkbox-checked-background`, `--component-checkbox-checked-border-color`, `--component-checkbox-checked-icon-color`
 
 ---
 
@@ -354,6 +354,7 @@ Form-associated. Group by giving the same `name`.
 | `label-position` | `right` (default) \| `left`    |
 
 Events: `change`
+CSS Custom Properties: `--component-radio-size`, `--component-radio-dot-size`, `--component-radio-background`, `--component-radio-color` (border), `--component-radio-accent` (dot); checked-state overrides (fall back to the unchecked values) `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`
 
 ---
 
