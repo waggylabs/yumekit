@@ -358,9 +358,9 @@ export class YumeInput extends HTMLElement {
 
     _getMinHeightVar(size) {
         const map = {
-            small: "var(--sizing-small, 32px)",
-            medium: "var(--sizing-medium, 40px)",
-            large: "var(--sizing-large, 56px)",
+            small: "var(--component-control-height-small, var(--sizing-small, 32px))",
+            medium: "var(--component-control-height-medium, var(--sizing-medium, 40px))",
+            large: "var(--component-control-height-large, var(--sizing-large, 56px))",
         };
         return map[size] || map.medium;
     }

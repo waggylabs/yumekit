@@ -92,6 +92,17 @@ describe("KeplerButton", () => {
         expect(bgColor).to.equal("transparent");
     });
 
+    it("drives the outlined border from the semantic border token", async () => {
+        const el = await fixture(
+            html`<y-button color="error" style-type="outlined">Test</y-button>`
+        );
+        const shadowButton = el.shadowRoot.querySelector("button");
+        const outlineBorder =
+            shadowButton.style.getPropertyValue("--btn-outline-border");
+        expect(outlineBorder).to.contain("--error-border");
+        expect(outlineBorder).to.contain("--error-content--");
+    });
+
     it("applies custom hex color CSS variables for flat style-type", async () => {
         const el = await fixture(
             html`<y-button color="#00ff88" style-type="flat">Test</y-button>`

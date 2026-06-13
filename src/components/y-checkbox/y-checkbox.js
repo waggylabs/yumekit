@@ -189,7 +189,7 @@ export class YumeCheckbox extends HTMLElement {
                 width: var(--component-checkbox-size, 20px);
                 height: var(--component-checkbox-size, 20px);
                 border: var(--component-inputs-border-width, 2px) solid var(--component-checkbox-border-color);
-                border-radius: var(--component-inputs-border-radius-outer, 4px);
+                border-radius: var(--component-checkbox-border-radius, var(--component-inputs-border-radius-outer, 4px));
                 display: flex;
                 align-items: center;
                 justify-content: center;

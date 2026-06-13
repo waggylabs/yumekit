@@ -305,6 +305,10 @@
             }
         },
         "checkbox": {
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
             "icon-size": {
                 "$type": "dimension",
                 "$value": "{sizing.2x-small}"
@@ -392,6 +396,20 @@
             "checkerboard-size": {
                 "$type": "dimension",
                 "$value": "8px"
+            }
+        },
+        "control": {
+            "height-small": {
+                "$type": "sizing",
+                "$value": "{sizing.small}"
+            },
+            "height-medium": {
+                "$type": "sizing",
+                "$value": "{sizing.medium}"
+            },
+            "height-large": {
+                "$type": "sizing",
+                "$value": "{sizing.large}"
             }
         },
         "dock": {

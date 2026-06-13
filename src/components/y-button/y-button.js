@@ -253,6 +253,7 @@ export class YumeButton extends HTMLElement {
                 "--background-color": color,
                 "--border-color": color,
                 "--text-color": text,
+                "--btn-outline-border": "initial",
                 "--hover-background-color": hover,
                 "--hover-border-color": hover,
                 "--hover-text-color": text,
@@ -267,20 +268,22 @@ export class YumeButton extends HTMLElement {
                 "--background-color": "transparent",
                 "--border-color": color,
                 "--text-color": color,
+                "--btn-outline-border": this._outlineBorder(color),
                 "--hover-background-color": subtle,
-                "--hover-border-color": color,
+                "--hover-border-color": this._outlineBorderColor(color),
                 "--hover-text-color": color,
                 "--focus-background-color": subtle,
-                "--focus-border-color": color,
+                "--focus-border-color": this._outlineBorderColor(color),
                 "--focus-text-color": color,
                 "--active-background-color": color,
-                "--active-border-color": color,
+                "--active-border-color": this._outlineBorderColor(color),
                 "--active-text-color": text,
             },
             flat: {
                 "--background-color": "transparent",
                 "--border-color": "transparent",
                 "--text-color": color,
+                "--btn-outline-border": "initial",
                 "--hover-background-color": subtle,
                 "--hover-border-color": subtle,
                 "--hover-text-color": color,
@@ -361,9 +364,9 @@ export class YumeButton extends HTMLElement {
         this.button.style.setProperty("--button-gap", shared);
 
         const minSizeMapping = {
-            small: "var(--sizing-small, 32px)",
-            medium: "var(--sizing-medium, 40px)",
-            large: "var(--sizing-large, 56px)",
+            small: "var(--component-control-height-small, var(--sizing-small, 32px))",
+            medium: "var(--component-control-height-medium, var(--sizing-medium, 40px))",
+            large: "var(--component-control-height-large, var(--sizing-large, 56px))",
         };
         this.button.style.setProperty(
             "--button-min-height",
@@ -400,7 +403,7 @@ export class YumeButton extends HTMLElement {
                 position: relative;
                 overflow: hidden;
                 border-radius: var(--component-button-border-radius-outer, 4px);
-                border: var(--component-button-border-width, 1px) solid var(--border-color, var(--base-content--, #f7f7fa));
+                border: var(--btn-outline-border, var(--component-button-border-width, 1px) solid var(--border-color, var(--base-content--, #f7f7fa)));
                 background: var(--background-color, #0c0c0d);
                 transition: background-color 0.1s, color 0.1s, border-color 0.1s;
                 cursor: pointer;
@@ -463,7 +466,9 @@ export class YumeButton extends HTMLElement {
     }
 
     _applyUnfilledInteractionStyles(vars, styleType) {
-        const borderColor = `var(${vars[0]}, #f7f7fa)`;
+        const borderColor = this._outlineBorderColor(
+            `var(${vars[7]}, var(${vars[0]}, #f7f7fa))`,
+        );
 
         this.button.style.setProperty(
             "--hover-background-color",
@@ -522,6 +527,7 @@ export class YumeButton extends HTMLElement {
                 "--primary-background-hover",
                 "--primary-background-active",
                 "--primary-content-inverse",
+                "--primary-border",
             ],
             secondary: [
                 "--secondary-content--",
@@ -531,6 +537,7 @@ export class YumeButton extends HTMLElement {
                 "--secondary-background-hover",
                 "--secondary-background-active",
                 "--secondary-content-inverse",
+                "--secondary-border",
             ],
             base: [
                 "--base-content--",
@@ -540,6 +547,7 @@ export class YumeButton extends HTMLElement {
                 "--base-background-hover",
                 "--base-background-active",
                 "--base-content-inverse",
+                "--base-border",
             ],
             success: [
                 "--success-content--",
@@ -549,6 +557,7 @@ export class YumeButton extends HTMLElement {
                 "--success-background-hover",
                 "--success-background-active",
                 "--success-content-inverse",
+                "--success-border",
             ],
             error: [
                 "--error-content--",
@@ -558,6 +567,7 @@ export class YumeButton extends HTMLElement {
                 "--error-background-hover",
                 "--error-background-active",
                 "--error-content-inverse",
+                "--error-border",
             ],
             warning: [
                 "--warning-content--",
@@ -567,6 +577,7 @@ export class YumeButton extends HTMLElement {
                 "--warning-background-hover",
                 "--warning-background-active",
                 "--warning-content-inverse",
+                "--warning-border",
             ],
             help: [
                 "--help-content--",
@@ -576,6 +587,7 @@ export class YumeButton extends HTMLElement {
                 "--help-background-hover",
                 "--help-background-active",
                 "--help-content-inverse",
+                "--help-border",
             ],
         };
     }
@@ -762,6 +774,14 @@ export class YumeButton extends HTMLElement {
         });
     }
 
+    _outlineBorder(defaultColor) {
+        return `var(--component-button-outline-border, var(--component-button-border-width, 1px) solid ${this._outlineBorderColor(defaultColor)})`;
+    }
+
+    _outlineBorderColor(defaultColor) {
+        return `var(--component-button-outline-border-color, ${defaultColor})`;
+    }
+
     _updateStyles() {
         const { color, size, styleType } = this;
         const colorVars = this._getColorVarsMap();
@@ -778,16 +798,21 @@ export class YumeButton extends HTMLElement {
                 "--background-color": `var(${vars[3]}, #0c0c0d)`,
                 "--border-color": `var(${vars[0]}, #f7f7fa)`,
                 "--text-color": `var(${vars[0]}, #f7f7fa)`,
+                "--btn-outline-border": this._outlineBorder(
+                    `var(${vars[7]}, var(${vars[0]}, #f7f7fa))`,
+                ),
             },
             filled: {
                 "--background-color": `var(${vars[0]}, #f7f7fa)`,
                 "--border-color": `var(${vars[0]}, #f7f7fa)`,
                 "--text-color": `var(${vars[6]}, #0c0c0d)`,
+                "--btn-outline-border": "initial",
             },
             flat: {
                 "--background-color": `var(${vars[3]},#0c0c0d)`,
                 "--border-color": `var(${vars[3]},#0c0c0d)`,
                 "--text-color": `var(${vars[0]},#f7f7fa)`,
+                "--btn-outline-border": "initial",
             },
         };
 

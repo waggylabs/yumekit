@@ -407,6 +407,32 @@
         "$value": "{base.content.lightest}"
       }
     },
+    "button": {
+      "padding-inline-small": {
+        "$type": "spacing",
+        "$value": "12px"
+      },
+      "padding-inline-medium": {
+        "$type": "spacing",
+        "$value": "16px"
+      },
+      "padding-inline-large": {
+        "$type": "spacing",
+        "$value": "24px"
+      },
+      "padding-block-small": {
+        "$type": "spacing",
+        "$value": "3px"
+      },
+      "padding-block-medium": {
+        "$type": "spacing",
+        "$value": "5px"
+      },
+      "padding-block-large": {
+        "$type": "spacing",
+        "$value": "8px"
+      }
+    },
     "checkbox": {
       "background": {
         "$type": "color",
@@ -425,6 +451,28 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "size": {
+        "$type": "sizing",
+        "$value": "16px"
+      },
+      "border-radius": {
+        "$type": "borderRadius",
+        "$value": "4px"
+      }
+    },
+    "control": {
+      "height-small": {
+        "$type": "sizing",
+        "$value": "28px"
+      },
+      "height-medium": {
+        "$type": "sizing",
+        "$value": "32px"
+      },
+      "height-large": {
+        "$type": "sizing",
+        "$value": "40px"
       }
     },
     "dock": {

@@ -169,7 +169,31 @@ Attributes:
 <y-button color="primary" size="large" left-icon="check">Save</y-button>
 ```
 
-CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material themes use this for wide pill buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons).
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material and Shadcn themes use this for wider buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets the min-height (shared with `y-input` so fields and buttons stay the same height per theme); falls back to `--sizing-{size}`. For `style-type="outlined"`, the border is sourced from the button's matching semantic border token (`--base-border`, `--primary-border`, `--error-border`, …) per `color`, falling back to the button's text color when that token is unset. Two optional global overrides remain: `--component-button-outline-border` overrides the whole border as a CSS `border` shorthand (e.g. `1px solid var(--base-border)`), and `--component-button-outline-border-color` sets just the border color across resting/hover/focus/active — set either via CSS or a scoped `y-theme` to flatten all outlined borders to one color.
+
+---
+
+### y-button-group
+Groups buttons (or other controls) into a visually connected toolbar — removes the border-radius on inner children and collapses shared borders.
+
+Tag: `<y-button-group>`
+Attributes:
+- `orientation` — `"horizontal"` (default) | `"vertical"`
+
+Slots: default — any child elements, typically `y-button`, `y-input`, or `y-select`.
+
+```html
+<y-button-group>
+  <y-button color="primary">Left</y-button>
+  <y-button color="primary">Center</y-button>
+  <y-button color="primary">Right</y-button>
+</y-button-group>
+
+<y-button-group orientation="vertical">
+  <y-button color="base">Top</y-button>
+  <y-button color="base">Bottom</y-button>
+</y-button-group>
+```
 
 ---
 
@@ -366,6 +390,8 @@ Attributes:
 - `label-position` — `"right"` (default) | `"left"`
 
 Events: `change`
+
+CSS Custom Properties: `--component-checkbox-size` sets the box dimensions; `--component-checkbox-border-radius` sets the corner radius (falls back to the shared `--component-inputs-border-radius-outer`, letting a theme give checkboxes tighter corners than text inputs — the Shadcn themes use 4px boxes vs. 8px inputs).
 
 ---
 
