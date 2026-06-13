@@ -114,6 +114,28 @@
     }
   },
   {
+    "id": "themes-ant-green-dark",
+    "name": "Ant Green Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/ant-green-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-ant-green-light",
+    "name": "Ant Green Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/ant-green-light": "enabled"
+    }
+  },
+  {
     "id": "themes-shadcn-dark",
     "name": "Shadcn Dark",
     "group": "Themes",
@@ -257,6 +279,28 @@
     }
   },
   {
+    "id": "themes-nord",
+    "name": "Nord",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/nord": "enabled"
+    }
+  },
+  {
+    "id": "themes-nord-aurora",
+    "name": "Nord Aurora",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/nord-aurora": "enabled"
+    }
+  },
+  {
     "id": "themes-brown-dark",
     "name": "Brown Dark",
     "group": "Themes",
@@ -345,6 +389,28 @@
     }
   },
   {
+    "id": "themes-material-purple-dark",
+    "name": "Material Purple Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/material-purple-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-material-purple-light",
+    "name": "Material Purple Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/material-purple-light": "enabled"
+    }
+  },
+  {
     "id": "themes-olive-dark",
     "name": "Olive Dark",
     "group": "Themes",
@@ -408,6 +474,28 @@
       "core/numerics": "source",
       "core/components": "source",
       "themes/pink-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-rose-dark",
+    "name": "Rose Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/rose-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-rose-light",
+    "name": "Rose Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/rose-light": "enabled"
     }
   },
   {

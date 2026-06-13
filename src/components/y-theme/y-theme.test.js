@@ -75,6 +75,50 @@ describe("<y-theme>", () => {
         );
     });
 
+    it("swaps the Ant primary to polar green while keeping Ant surfaces", async () => {
+        const light = await fixture(
+            html`<y-theme theme="ant-green-light"></y-theme>`,
+        );
+        expect(
+            light.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#52c41a");
+        expect(
+            light.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#f5f5f5");
+
+        const dark = await fixture(
+            html`<y-theme theme="ant-green-dark"></y-theme>`,
+        );
+        expect(
+            dark.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#52c41a");
+        expect(
+            dark.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#141414");
+    });
+
+    it("swaps the Material primary to purple while keeping Material surfaces", async () => {
+        const light = await fixture(
+            html`<y-theme theme="material-purple-light"></y-theme>`,
+        );
+        expect(
+            light.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#9c27b0");
+        expect(
+            light.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#fafafa");
+
+        const dark = await fixture(
+            html`<y-theme theme="material-purple-dark"></y-theme>`,
+        );
+        expect(
+            dark.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#ce93d8");
+        expect(
+            dark.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#121212");
+    });
+
     it("uses a system-font stack and injects no webfont for the Ant themes", async () => {
         const before = document.querySelectorAll(
             "link[data-yumekit-font]",
@@ -277,6 +321,40 @@ describe("<y-theme>", () => {
         expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
             "#8839ef",
         );
+    });
+
+    it("applies the Nord Polar Night base with a Frost primary accent", async () => {
+        const el = await fixture(html`<y-theme theme="nord"></y-theme>`);
+
+        expect(
+            el.style.getPropertyValue("--base-background-component").trim(),
+        ).to.equal("#3b4252");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#88c0d0",
+        );
+    });
+
+    it("shares the Nord base but leads with an Aurora primary accent", async () => {
+        const el = await fixture(html`<y-theme theme="nord-aurora"></y-theme>`);
+
+        expect(
+            el.style.getPropertyValue("--base-background-component").trim(),
+        ).to.equal("#3b4252");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#b48ead",
+        );
+    });
+
+    it("points the rose primary at the muted rose swatch in both modes", async () => {
+        const light = await fixture(html`<y-theme theme="rose-light"></y-theme>`);
+        expect(
+            light.style.getPropertyValue("--primary-content"),
+        ).to.include("rose");
+
+        const dark = await fixture(html`<y-theme theme="rose-dark"></y-theme>`);
+        expect(
+            dark.style.getPropertyValue("--primary-content"),
+        ).to.include("rose");
     });
 
     it("updates applied variables when theme attribute changes", async () => {

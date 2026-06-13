@@ -37,6 +37,12 @@ Delete any empty sections before publishing.
 
 - Several theme color variations including the `Catppuccin` color schemes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, and Bootstrap.
 
+- `Nord` themes — two dark flavors built on the Nord palette's Polar Night base: `nord` (cool, Frost-led accents) and `nord-aurora` (warm, Aurora-led accents).
+
+- `Rose` theme — a muted dusty-rose color family (`rose-light` / `rose-dark`), backed by a new `rose` core color swatch tuned to the palette's existing lightness/saturation steps.
+
+- Non-blue color options for the design-system themes: `material-purple` (light / dark) using the Material Purple palette, and `ant-green` (light / dark) using Ant Design's Polar Green. Each keeps its system's surfaces, status colors, and font, swapping only the primary.
+
 - `y-tabs` — new `variant="accent"` style: minimal tabs where the active tab shows a primary-colored indicator border on its content-facing edge (bottom for top tabs, etc.). The default bordered style is unchanged. Adds `--component-tabs-accent-width` (indicator thickness). The border-width token is normalized to `--component-tabs-border-width` (matching `--component-tabs-border-color`); the legacy `--component-tab-border-width` is still honored as a fallback.
 
 - Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — new `variant="underline"` style: a bottom-only border with square bottom corners (the Material/Carbon text-field look) instead of the full-border `"default"`. Hover/focus/invalid states still color the underline. Helps match design systems that use underlined fields.

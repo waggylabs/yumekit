@@ -19,16 +19,22 @@ import purpleLightCSS from "../../../styles/purple-light.css";
 import purpleDarkCSS from "../../../styles/purple-dark.css";
 import pinkLightCSS from "../../../styles/pink-light.css";
 import pinkDarkCSS from "../../../styles/pink-dark.css";
+import roseLightCSS from "../../../styles/rose-light.css";
+import roseDarkCSS from "../../../styles/rose-dark.css";
 import brownLightCSS from "../../../styles/brown-light.css";
 import brownDarkCSS from "../../../styles/brown-dark.css";
 import oliveLightCSS from "../../../styles/olive-light.css";
 import oliveDarkCSS from "../../../styles/olive-dark.css";
 import materialBlueLightCSS from "../../../styles/material-blue-light.css";
 import materialBlueDarkCSS from "../../../styles/material-blue-dark.css";
+import materialPurpleLightCSS from "../../../styles/material-purple-light.css";
+import materialPurpleDarkCSS from "../../../styles/material-purple-dark.css";
 import carbonLightCSS from "../../../styles/carbon-light.css";
 import carbonDarkCSS from "../../../styles/carbon-dark.css";
 import antBlueLightCSS from "../../../styles/ant-blue-light.css";
 import antBlueDarkCSS from "../../../styles/ant-blue-dark.css";
+import antGreenLightCSS from "../../../styles/ant-green-light.css";
+import antGreenDarkCSS from "../../../styles/ant-green-dark.css";
 import shadcnLightCSS from "../../../styles/shadcn-light.css";
 import shadcnDarkCSS from "../../../styles/shadcn-dark.css";
 import shadcnBlueLightCSS from "../../../styles/shadcn-blue-light.css";
@@ -42,6 +48,8 @@ import catppuccinLatteCSS from "../../../styles/catppuccin-latte.css";
 import catppuccinFrappeCSS from "../../../styles/catppuccin-frappe.css";
 import catppuccinMacchiatoCSS from "../../../styles/catppuccin-macchiato.css";
 import catppuccinMochaCSS from "../../../styles/catppuccin-mocha.css";
+import nordCSS from "../../../styles/nord.css";
+import nordAuroraCSS from "../../../styles/nord-aurora.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
@@ -64,16 +72,22 @@ const THEMES = {
     "purple-dark": purpleDarkCSS,
     "pink-light": pinkLightCSS,
     "pink-dark": pinkDarkCSS,
+    "rose-light": roseLightCSS,
+    "rose-dark": roseDarkCSS,
     "brown-light": brownLightCSS,
     "brown-dark": brownDarkCSS,
     "olive-light": oliveLightCSS,
     "olive-dark": oliveDarkCSS,
     "material-blue-light": materialBlueLightCSS,
     "material-blue-dark": materialBlueDarkCSS,
+    "material-purple-light": materialPurpleLightCSS,
+    "material-purple-dark": materialPurpleDarkCSS,
     "carbon-light": carbonLightCSS,
     "carbon-dark": carbonDarkCSS,
     "ant-blue-light": antBlueLightCSS,
     "ant-blue-dark": antBlueDarkCSS,
+    "ant-green-light": antGreenLightCSS,
+    "ant-green-dark": antGreenDarkCSS,
     "shadcn-light": shadcnLightCSS,
     "shadcn-dark": shadcnDarkCSS,
     "shadcn-blue-light": shadcnBlueLightCSS,
@@ -87,6 +101,8 @@ const THEMES = {
     "catppuccin-frappe": catppuccinFrappeCSS,
     "catppuccin-macchiato": catppuccinMacchiatoCSS,
     "catppuccin-mocha": catppuccinMochaCSS,
+    "nord": nordCSS,
+    "nord-aurora": nordAuroraCSS,
 };
 
 // Google Fonts `family=` query for each theme's typography. Themes not listed
@@ -98,10 +114,14 @@ const DEFAULT_FONT = "Lexend:wght@100..900";
 const THEME_FONTS = {
     "material-blue-light": "Roboto:wght@300;400;500;700",
     "material-blue-dark": "Roboto:wght@300;400;500;700",
+    "material-purple-light": "Roboto:wght@300;400;500;700",
+    "material-purple-dark": "Roboto:wght@300;400;500;700",
     "carbon-light": "IBM+Plex+Sans:wght@400;500;600;700",
     "carbon-dark": "IBM+Plex+Sans:wght@400;500;600;700",
     "ant-blue-light": null,
     "ant-blue-dark": null,
+    "ant-green-light": null,
+    "ant-green-dark": null,
     "shadcn-light": "Inter:wght@400;500;600;700",
     "shadcn-dark": "Inter:wght@400;500;600;700",
     "shadcn-blue-light": "Inter:wght@400;500;600;700",

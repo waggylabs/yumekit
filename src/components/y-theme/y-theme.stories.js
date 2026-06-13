@@ -78,13 +78,18 @@ export const Yellow = { render: () => family("yellow", "Yellow") };
 export const Indigo = { render: () => family("indigo", "Indigo") };
 export const Purple = { render: () => family("purple", "Purple") };
 export const Pink = { render: () => family("pink", "Pink") };
+export const Rose = { render: () => family("rose", "Rose") };
 export const Brown = { render: () => family("brown", "Brown") };
 export const Olive = { render: () => family("olive", "Olive") };
 export const MaterialBlue = {
     render: () => family("material-blue", "Material Blue"),
 };
+export const MaterialPurple = {
+    render: () => family("material-purple", "Material Purple"),
+};
 export const Carbon = { render: () => family("carbon", "Carbon") };
 export const AntBlue = { render: () => family("ant-blue", "Ant Blue") };
+export const AntGreen = { render: () => family("ant-green", "Ant Green") };
 export const Shadcn = { render: () => family("shadcn", "Shadcn") };
 export const ShadcnBlue = {
     render: () => family("shadcn-blue", "Shadcn Blue"),
@@ -110,6 +115,16 @@ export const Catppuccin = {
             ${showcase("catppuccin-frappe", "Catppuccin Frappe")}
             ${showcase("catppuccin-macchiato", "Catppuccin Macchiato")}
             ${showcase("catppuccin-mocha", "Catppuccin Mocha")}
+        </div>
+    `,
+};
+
+// Nord ships two dark flavors — cool Frost-led + warm Aurora-led.
+export const Nord = {
+    render: () => `
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+            ${showcase("nord", "Nord")}
+            ${showcase("nord-aurora", "Nord Aurora")}
         </div>
     `,
 };

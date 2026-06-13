@@ -1,5 +1,10 @@
 import { addons } from "storybook/preview-api";
 
+// Register the full icon pack globally so every story can render y-icon names
+// (checkbox marks, select chevrons, etc.) without each story importing it.
+// `all.js` also pulls in the filled variants.
+import "../src/icons/all.js";
+
 // `?inline` bypasses the css-string plugin so Vite returns each theme as a
 // plain string we can swap into a <style> at runtime.
 import variablesCSS from "../styles/variables.css?inline";
@@ -23,16 +28,22 @@ import purpleDarkCSS from "../styles/purple-dark.css?inline";
 import purpleLightCSS from "../styles/purple-light.css?inline";
 import pinkDarkCSS from "../styles/pink-dark.css?inline";
 import pinkLightCSS from "../styles/pink-light.css?inline";
+import roseDarkCSS from "../styles/rose-dark.css?inline";
+import roseLightCSS from "../styles/rose-light.css?inline";
 import brownDarkCSS from "../styles/brown-dark.css?inline";
 import brownLightCSS from "../styles/brown-light.css?inline";
 import oliveDarkCSS from "../styles/olive-dark.css?inline";
 import oliveLightCSS from "../styles/olive-light.css?inline";
 import materialBlueDarkCSS from "../styles/material-blue-dark.css?inline";
 import materialBlueLightCSS from "../styles/material-blue-light.css?inline";
+import materialPurpleDarkCSS from "../styles/material-purple-dark.css?inline";
+import materialPurpleLightCSS from "../styles/material-purple-light.css?inline";
 import carbonDarkCSS from "../styles/carbon-dark.css?inline";
 import carbonLightCSS from "../styles/carbon-light.css?inline";
 import antBlueDarkCSS from "../styles/ant-blue-dark.css?inline";
 import antBlueLightCSS from "../styles/ant-blue-light.css?inline";
+import antGreenDarkCSS from "../styles/ant-green-dark.css?inline";
+import antGreenLightCSS from "../styles/ant-green-light.css?inline";
 import shadcnDarkCSS from "../styles/shadcn-dark.css?inline";
 import shadcnLightCSS from "../styles/shadcn-light.css?inline";
 import shadcnBlueDarkCSS from "../styles/shadcn-blue-dark.css?inline";
@@ -46,6 +57,8 @@ import catppuccinLatteCSS from "../styles/catppuccin-latte.css?inline";
 import catppuccinFrappeCSS from "../styles/catppuccin-frappe.css?inline";
 import catppuccinMacchiatoCSS from "../styles/catppuccin-macchiato.css?inline";
 import catppuccinMochaCSS from "../styles/catppuccin-mocha.css?inline";
+import nordCSS from "../styles/nord.css?inline";
+import nordAuroraCSS from "../styles/nord-aurora.css?inline";
 
 // =============================================================================
 // Theme registry — single source of truth (toolbar order). Add a theme here and
@@ -73,16 +86,22 @@ const THEMES = [
     { key: "purple-light", name: "Purple Light", css: purpleLightCSS },
     { key: "pink-dark", name: "Pink Dark", css: pinkDarkCSS },
     { key: "pink-light", name: "Pink Light", css: pinkLightCSS },
+    { key: "rose-dark", name: "Rose Dark", css: roseDarkCSS },
+    { key: "rose-light", name: "Rose Light", css: roseLightCSS },
     { key: "brown-dark", name: "Brown Dark", css: brownDarkCSS },
     { key: "brown-light", name: "Brown Light", css: brownLightCSS },
     { key: "olive-dark", name: "Olive Dark", css: oliveDarkCSS },
     { key: "olive-light", name: "Olive Light", css: oliveLightCSS },
     { key: "material-blue-dark", name: "Material Blue Dark", css: materialBlueDarkCSS },
     { key: "material-blue-light", name: "Material Blue Light", css: materialBlueLightCSS },
+    { key: "material-purple-dark", name: "Material Purple Dark", css: materialPurpleDarkCSS },
+    { key: "material-purple-light", name: "Material Purple Light", css: materialPurpleLightCSS },
     { key: "carbon-dark", name: "Carbon Dark", css: carbonDarkCSS },
     { key: "carbon-light", name: "Carbon Light", css: carbonLightCSS },
     { key: "ant-blue-dark", name: "Ant Blue Dark", css: antBlueDarkCSS },
     { key: "ant-blue-light", name: "Ant Blue Light", css: antBlueLightCSS },
+    { key: "ant-green-dark", name: "Ant Green Dark", css: antGreenDarkCSS },
+    { key: "ant-green-light", name: "Ant Green Light", css: antGreenLightCSS },
     { key: "shadcn-dark", name: "Shadcn Dark", css: shadcnDarkCSS },
     { key: "shadcn-light", name: "Shadcn Light", css: shadcnLightCSS },
     { key: "shadcn-blue-dark", name: "Shadcn Blue Dark", css: shadcnBlueDarkCSS },
@@ -96,6 +115,8 @@ const THEMES = [
     { key: "catppuccin-frappe", name: "Catppuccin Frappe", css: catppuccinFrappeCSS },
     { key: "catppuccin-macchiato", name: "Catppuccin Macchiato", css: catppuccinMacchiatoCSS },
     { key: "catppuccin-mocha", name: "Catppuccin Mocha", css: catppuccinMochaCSS },
+    { key: "nord", name: "Nord", css: nordCSS },
+    { key: "nord-aurora", name: "Nord Aurora", css: nordAuroraCSS },
 ];
 
 const THEME_MAP = Object.fromEntries(THEMES.map((t) => [t.key, t.css]));
@@ -110,10 +131,14 @@ const THEME_STORAGE_KEY = "yumekit-storybook-theme";
 const SWATCH = {
     "material-blue-dark": "#121212",
     "material-blue-light": "#fafafa",
+    "material-purple-dark": "#121212",
+    "material-purple-light": "#fafafa",
     "carbon-dark": "#161616",
     "carbon-light": "#f4f4f4",
     "ant-blue-dark": "#141414",
     "ant-blue-light": "#f5f5f5",
+    "ant-green-dark": "#141414",
+    "ant-green-light": "#f5f5f5",
     "shadcn-dark": "#020617",
     "shadcn-light": "#f8fafc",
     "shadcn-blue-dark": "#020617",
@@ -127,6 +152,8 @@ const SWATCH = {
     "catppuccin-frappe": "#303446",
     "catppuccin-macchiato": "#24273a",
     "catppuccin-mocha": "#1e1e2e",
+    "nord": "#2e3440",
+    "nord-aurora": "#2e3440",
 };
 const backdrop = (key) => SWATCH[key] ?? (key.endsWith("-dark") ? "#1a1a1a" : "#f0f0f2");
 
