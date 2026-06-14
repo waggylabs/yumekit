@@ -172,7 +172,7 @@ export class YumeBreak extends HTMLElement {
                    becomes inline padding when vertical (below). */
                 padding-block: var(--component-break-spacing, var(--spacing-medium, 16px));
                 padding-inline: 0;
-                color: var(--component-break-content-color);
+                color: var(--component-break-content-color, var(--base-content-lightest, currentColor));
             }
 
             :host([orientation="vertical"]) {
