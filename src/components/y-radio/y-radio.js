@@ -153,7 +153,8 @@ export class YumeRadio extends HTMLElement {
                 appearance: none;
                 width: var(--component-radio-size, 16px);
                 height: var(--component-radio-size, 16px);
-                border: var(--component-inputs-border-width, 2px) solid var(--component-radio-color);
+                border: 2px solid var(--component-radio-color);
+                border-width: var(--component-inputs-border-width, 2px);
                 border-radius: 50%;
                 position: relative;
                 outline: none;

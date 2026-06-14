@@ -232,7 +232,8 @@ export class YumeAppbar extends HTMLElement {
                 flex-direction: row;
                 align-items: center;
                 background: var(--component-appbar-background, #0c0c0d);
-                border: var(--component-appbar-border-width, 2px) solid var(--component-appbar-border-color, #37383a);
+                border: 2px solid var(--component-appbar-border-color, #37383a);
+                border-width: var(--component-appbar-border-width, 2px);
                 border-radius: var(--component-appbar-border-radius, 4px);
                 overflow: visible;
                 padding: var(--_appbar-padding);
@@ -430,7 +431,8 @@ export class YumeAppbar extends HTMLElement {
                 flex-direction: row;
                 align-items: center;
                 background: var(--component-appbar-background, #0c0c0d);
-                border: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+                border: 2px solid var(--component-appbar-border-color, #37383a);
+                border-width: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px));
                 border-radius: var(--component-appbar-border-radius, var(--component-sidebar-border-radius, 4px));
                 overflow: visible;
                 padding: var(--_appbar-padding);
@@ -466,7 +468,8 @@ export class YumeAppbar extends HTMLElement {
                 left: 0;
                 margin-top: 4px;
                 background: var(--component-appbar-background, #0c0c0d);
-                border: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+                border: 2px solid var(--component-appbar-border-color, #37383a);
+                border-width: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px));
                 border-radius: var(--component-appbar-border-radius, var(--component-sidebar-border-radius, 4px));
                 padding: var(--_appbar-padding);
                 display: none;

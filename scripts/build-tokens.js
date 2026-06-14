@@ -50,6 +50,36 @@ StyleDictionary.registerTransform({
     },
 });
 
+// Restore multi-value border-width / border-radius. The tokens-studio pipeline
+// mangles space-separated CSS lists (its math/dimension passes try to reduce
+// each part), so a per-side `border-width` like "2px 5px 5px 2px" comes out
+// corrupted. Note tokens-studio's `alignTypes` preprocessor rewrites the
+// `borderWidth` / `borderRadius` `$type` to `dimension` (stashing the original
+// under `$extensions["studio.tokens"].originalType`). These lists are already
+// valid CSS, so when the *source* value is a space-separated list of lengths we
+// restore it verbatim. Runs last so it has the final say.
+const LENGTH_LIST = /^-?[\d.]+[a-z%]*(?:\s+-?[\d.]+[a-z%]*)+$/i;
+StyleDictionary.registerTransform({
+    name: "size/yumekit-multi-value",
+    type: "value",
+    transitive: true,
+    filter: (token) => {
+        const type = token.$type || token.type;
+        const origType =
+            token.$extensions?.["studio.tokens"]?.originalType;
+        const dimensionish =
+            ["borderWidth", "borderRadius", "dimension"].includes(type) ||
+            ["borderWidth", "borderRadius"].includes(origType);
+        if (!dimensionish) return false;
+        const orig = token.original?.$value ?? token.original?.value;
+        return typeof orig === "string" && LENGTH_LIST.test(orig.trim());
+    },
+    transform: (token) =>
+        String(token.original.$value ?? token.original.value)
+            .trim()
+            .replace(/\s+/g, " "),
+});
+
 // Quote the primary font family so families with spaces (e.g. "Noto Sans")
 // emit as valid CSS.
 StyleDictionary.registerTransform({
@@ -111,7 +141,10 @@ StyleDictionary.registerTransform({
 
 // Extends the registered tokens-studio group with our overrides. We drop the
 // group's `name/camel` and `name/kebab` in favor of our own name transform,
-// and drop `fontFamily/css` so our quoting transform sees the raw value.
+// and drop `fontFamily/css` so our quoting transform sees the raw value. We
+// also drop `ts/resolveMath`: no token uses arithmetic, and it corrupts
+// space-separated CSS lists (e.g. a per-side `border-width: 2px 5px 5px 2px`)
+// by trying to reduce each part as a math sub-expression.
 const DROPPED_FROM_BASE = new Set([
     "name/camel",
     "name/kebab",
@@ -126,6 +159,7 @@ StyleDictionary.registerTransformGroup({
     transforms: [
         ...TOKENS_STUDIO_BASE,
         "size/yumekit-preserve-unit",
+        "size/yumekit-multi-value",
         "fontFamily/yumekit-quote",
         // DEPRECATED: remove with the transform above.
         "shadow/yumekit-strip-zero-spread",

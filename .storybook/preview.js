@@ -59,6 +59,8 @@ import catppuccinMacchiatoCSS from "../styles/catppuccin-macchiato.css?inline";
 import catppuccinMochaCSS from "../styles/catppuccin-mocha.css?inline";
 import nordCSS from "../styles/nord.css?inline";
 import nordAuroraCSS from "../styles/nord-aurora.css?inline";
+import neobrutalistCSS from "../styles/neobrutalist.css?inline";
+import neobrutalistDarkCSS from "../styles/neobrutalist-dark.css?inline";
 
 // =============================================================================
 // Theme registry — single source of truth (toolbar order). Add a theme here and
@@ -117,6 +119,8 @@ const THEMES = [
     { key: "catppuccin-mocha", name: "Catppuccin Mocha", css: catppuccinMochaCSS },
     { key: "nord", name: "Nord", css: nordCSS },
     { key: "nord-aurora", name: "Nord Aurora", css: nordAuroraCSS },
+    { key: "neobrutalist", name: "Neobrutalist", css: neobrutalistCSS },
+    { key: "neobrutalist-dark", name: "Neobrutalist Dark", css: neobrutalistDarkCSS },
 ];
 
 const THEME_MAP = Object.fromEntries(THEMES.map((t) => [t.key, t.css]));
@@ -154,6 +158,8 @@ const SWATCH = {
     "catppuccin-mocha": "#1e1e2e",
     "nord": "#2e3440",
     "nord-aurora": "#2e3440",
+    "neobrutalist": "#fdf7e3",
+    "neobrutalist-dark": "#161616",
 };
 const backdrop = (key) => SWATCH[key] ?? (key.endsWith("-dark") ? "#1a1a1a" : "#f0f0f2");
 

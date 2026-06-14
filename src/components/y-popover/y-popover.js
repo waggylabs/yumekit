@@ -1376,7 +1376,8 @@ export class YumePopover extends HTMLElement {
                 box-sizing: border-box;
                 background: var(--_popover-bg, var(--component-popover-background, var(--base-background-component, #fff)));
                 color: var(--_popover-color, var(--component-popover-color, var(--base-content--, #1a1a1a)));
-                border: var(--component-popover-border-width, 1px) solid var(--component-popover-border-color, var(--base-border, rgba(0, 0, 0, 0.12)));
+                border: 1px solid var(--component-popover-border-color, var(--base-border, rgba(0, 0, 0, 0.12)));
+                border-width: var(--component-popover-border-width, 1px);
                 border-radius: var(--component-popover-border-radius, 8px);
                 box-shadow: var(--component-popover-shadow, 0 8px 32px rgba(0, 0, 0, 0.18));
                 min-width: var(--component-popover-min-width, auto);

@@ -50,6 +50,8 @@ import catppuccinMacchiatoCSS from "../../../styles/catppuccin-macchiato.css";
 import catppuccinMochaCSS from "../../../styles/catppuccin-mocha.css";
 import nordCSS from "../../../styles/nord.css";
 import nordAuroraCSS from "../../../styles/nord-aurora.css";
+import neobrutalistCSS from "../../../styles/neobrutalist.css";
+import neobrutalistDarkCSS from "../../../styles/neobrutalist-dark.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
@@ -103,6 +105,8 @@ const THEMES = {
     "catppuccin-mocha": catppuccinMochaCSS,
     "nord": nordCSS,
     "nord-aurora": nordAuroraCSS,
+    "neobrutalist": neobrutalistCSS,
+    "neobrutalist-dark": neobrutalistDarkCSS,
 };
 
 // Google Fonts `family=` query for each theme's typography. Themes not listed
@@ -131,6 +135,8 @@ const THEME_FONTS = {
     "primer-dark-dimmed": null,
     "bootstrap-light": null,
     "bootstrap-dark": null,
+    "neobrutalist": null,
+    "neobrutalist-dark": null,
 };
 
 export class YumeTheme extends HTMLElement {
@@ -208,9 +214,13 @@ export class YumeTheme extends HTMLElement {
      * @param {string} cssText - Raw CSS containing custom property declarations.
      */
     _applyVariablesToHost(cssText) {
+        // Remove the previous theme's custom properties before applying the new
+        // ones. A variable that exists only in the old theme (e.g. a
+        // theme-specific token like --component-tabs-inactive-background) would
+        // otherwise linger inline on the host and "stick" after switching away.
+        this.clearThemeProperties();
         const regex = /--([\w-]+):\s*([^;]+);/g;
         let match;
-        this._themeProps = [];
 
         while ((match = regex.exec(cssText)) !== null) {
             const prop = `--${match[1]}`;

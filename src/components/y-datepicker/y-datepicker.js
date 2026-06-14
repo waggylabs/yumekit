@@ -577,7 +577,8 @@ export class YumeDatepicker extends HTMLElement {
                 display: inline-flex;
                 gap: 0;
                 background: var(--component-datepicker-background);
-                border: var(--component-datepicker-border-width) solid var(--component-datepicker-border-color);
+                border: 1px solid var(--component-datepicker-border-color);
+                border-width: var(--component-datepicker-border-width, 1px);
                 border-radius: var(--component-datepicker-border-radius);
                 overflow: hidden;
             }

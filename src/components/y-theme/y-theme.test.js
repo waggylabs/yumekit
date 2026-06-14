@@ -384,6 +384,28 @@ describe("<y-theme>", () => {
         expect(primaryContent.trim()).to.not.be.empty;
     });
 
+    it("clears a theme-specific variable when switching away from that theme", async () => {
+        // --component-tabs-inactive-background exists only in the neobrutalist
+        // themes; switching away must not leave it stuck inline on the host.
+        const el = await fixture(html`<y-theme theme="neobrutalist"></y-theme>`);
+        await waitUntil(
+            () =>
+                el.style
+                    .getPropertyValue("--component-tabs-inactive-background")
+                    .trim() !== "",
+            "neobrutalist should set --component-tabs-inactive-background",
+        );
+
+        el.setAttribute("theme", "blue-light");
+        await waitUntil(
+            () =>
+                el.style
+                    .getPropertyValue("--component-tabs-inactive-background")
+                    .trim() === "",
+            "switching away should clear --component-tabs-inactive-background",
+        );
+    });
+
     it("injects two <style> elements into shadow DOM (variables + theme)", async () => {
         const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
 

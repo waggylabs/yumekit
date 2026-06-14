@@ -207,7 +207,8 @@ class YumeSwitch extends HTMLElement {
                 display: inline-flex;
                 align-items: center;
                 background: var(--base-background-component);
-                border: var(--component-switch-border-width) solid var(--base-border);
+                border: 1px solid var(--base-border);
+                border-width: var(--component-switch-border-width, 1px);
                 border-radius: var(--component-switch-border-radius);
                 cursor: pointer;
                 height: var(--switch-height);

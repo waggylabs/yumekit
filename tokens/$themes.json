@@ -279,6 +279,28 @@
     }
   },
   {
+    "id": "themes-neobrutalist",
+    "name": "Neobrutalist",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/neobrutalist": "enabled"
+    }
+  },
+  {
+    "id": "themes-neobrutalist-dark",
+    "name": "Neobrutalist Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/neobrutalist-dark": "enabled"
+    }
+  },
+  {
     "id": "themes-nord",
     "name": "Nord",
     "group": "Themes",

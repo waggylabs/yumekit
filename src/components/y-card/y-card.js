@@ -80,7 +80,8 @@ export class YumeCard extends HTMLElement {
                 display: block;
                 box-sizing: border-box;
                 background: var(--card-background, var(--base-background-component));
-                border: var(--card-border-width, var(--component-card-border-width)) solid var(--card-border-color, var(--base-border));
+                border: 1px solid var(--card-border-color, var(--base-border));
+                border-width: var(--card-border-width, var(--component-card-border-width, 1px));
                 border-radius: var(--component-card-border-radius-outer);
                 font-family: var(--font-family-body);
                 color: var(--card-content-color, var(--base-content--));

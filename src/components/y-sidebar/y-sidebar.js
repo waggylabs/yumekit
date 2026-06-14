@@ -357,7 +357,8 @@ export class YumeSidebar extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 background: var(--component-sidebar-background, var(--component-appbar-background, #0c0c0d));
-                border: var(--component-sidebar-border-width, var(--component-appbar-border-width, 2px)) solid var(--component-sidebar-border-color, var(--component-appbar-border-color, #37383a));
+                border: 2px solid var(--component-sidebar-border-color, var(--component-appbar-border-color, #37383a));
+                border-width: var(--component-sidebar-border-width, var(--component-appbar-border-width, 2px));
                 border-radius: var(--component-sidebar-border-radius, var(--component-appbar-border-radius, 4px));
                 overflow: visible;
                 padding: var(--_sidebar-padding);

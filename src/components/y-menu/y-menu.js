@@ -177,7 +177,8 @@ export class YumeMenu extends HTMLElement {
             .menu,
             .submenu {
                 background: var(--component-menu-background, #0c0c0d);
-                border: var(--component-menu-border-width, 1px) solid var(--component-menu-border-color, #37383a);
+                border: 1px solid var(--component-menu-border-color, #37383a);
+                border-width: var(--component-menu-border-width, 1px);
                 border-radius: var(--component-menu-border-radius, 4px);
                 box-shadow: var(--component-menu-shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
                 min-width: 150px;

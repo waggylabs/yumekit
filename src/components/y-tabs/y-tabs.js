@@ -245,9 +245,10 @@ export class YumeTabs extends HTMLElement {
             :host([position="right"])  .tablist button { border-left: none; }
 
             button {
-                background: var(--component-tabs-border-color);
+                background: var(--component-tabs-inactive-background, var(--component-tabs-border-color));
                 color: var(--component-tabs-color);
-                border: var(--component-tabs-border-width, var(--component-tab-border-width, 1px)) solid var(--component-tabs-border-color);
+                border: 1px solid var(--component-tabs-border-color);
+                border-width: var(--component-tabs-border-width, var(--component-tab-border-width, 1px));
                 margin: 0;
                 padding: ${paddingVar};
                 cursor: pointer;
@@ -286,7 +287,8 @@ export class YumeTabs extends HTMLElement {
             }
             .tabpanel {
                 position: relative;
-                border: var(--component-tabs-border-width, var(--component-tab-border-width, 1px)) solid var(--component-tabs-border-color);
+                border: 1px solid var(--component-tabs-border-color);
+                border-width: var(--component-tabs-border-width, var(--component-tab-border-width, 1px));
                 border-radius: var(--component-tab-border-radius-outer);
                 padding: var(--component-tab-content-padding);
                 background: var(--component-tabs-background);

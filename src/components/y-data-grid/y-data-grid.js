@@ -1949,7 +1949,8 @@ export class YumeDataGrid extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 min-height: 0;
-                border: var(--component-data-grid-border-width, 1px) solid var(--component-data-grid-border, var(--component-table-border-color, #37383a));
+                border: 1px solid var(--component-data-grid-border, var(--component-table-border-color, #37383a));
+                border-width: var(--component-data-grid-border-width, 1px);
                 border-radius: var(--component-data-grid-border-radius, 4px);
                 overflow: hidden;
                 background: var(--component-data-grid-bg, transparent);
