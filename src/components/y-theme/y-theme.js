@@ -1,6 +1,8 @@
 import variablesCSS from "../../../styles/variables.css";
 import blueLightCSS from "../../../styles/blue-light.css";
 import blueDarkCSS from "../../../styles/blue-dark.css";
+import slateLightCSS from "../../../styles/slate-light.css";
+import slateDarkCSS from "../../../styles/slate-dark.css";
 import monoLightCSS from "../../../styles/mono-light.css";
 import monoDarkCSS from "../../../styles/mono-dark.css";
 import orangeLightCSS from "../../../styles/orange-light.css";
@@ -52,10 +54,17 @@ import nordCSS from "../../../styles/nord.css";
 import nordAuroraCSS from "../../../styles/nord-aurora.css";
 import neobrutalistCSS from "../../../styles/neobrutalist.css";
 import neobrutalistDarkCSS from "../../../styles/neobrutalist-dark.css";
+import keplerLightCSS from "../../../styles/kepler-light.css";
+import keplerDarkCSS from "../../../styles/kepler-dark.css";
+import keplerAmberCSS from "../../../styles/kepler-amber.css";
+import keplerGalaxyCSS from "../../../styles/kepler-galaxy.css";
+import keplerMatrixCSS from "../../../styles/kepler-matrix.css";
 
 const THEMES = {
     "blue-light": blueLightCSS,
     "blue-dark": blueDarkCSS,
+    "slate-light": slateLightCSS,
+    "slate-dark": slateDarkCSS,
     "mono-light": monoLightCSS,
     "mono-dark": monoDarkCSS,
     "orange-light": orangeLightCSS,
@@ -107,6 +116,11 @@ const THEMES = {
     "nord-aurora": nordAuroraCSS,
     "neobrutalist": neobrutalistCSS,
     "neobrutalist-dark": neobrutalistDarkCSS,
+    "kepler-light": keplerLightCSS,
+    "kepler-dark": keplerDarkCSS,
+    "kepler-amber": keplerAmberCSS,
+    "kepler-galaxy": keplerGalaxyCSS,
+    "kepler-matrix": keplerMatrixCSS,
 };
 
 // Google Fonts `family=` query for each theme's typography. Themes not listed
@@ -137,6 +151,11 @@ const THEME_FONTS = {
     "bootstrap-dark": null,
     "neobrutalist": null,
     "neobrutalist-dark": null,
+    "kepler-light": "Tomorrow:wght@300;400;500;600;700",
+    "kepler-dark": "Tomorrow:wght@300;400;500;600;700",
+    "kepler-amber": "Tomorrow:wght@300;400;500;600;700",
+    "kepler-galaxy": "Tomorrow:wght@300;400;500;600;700",
+    "kepler-matrix": "Tomorrow:wght@300;400;500;600;700",
 };
 
 export class YumeTheme extends HTMLElement {

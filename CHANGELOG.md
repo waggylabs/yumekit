@@ -37,7 +37,7 @@ Delete any empty sections before publishing.
 
 - `y-checkbox` / `y-radio` — checked-state color hooks so themes can fill the control on selection: `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` and `--component-radio-background` / `-checked-background` / `-checked-border-color` / `-checked-dot-color`. Each falls back to the matching unchecked value, so existing themes are unchanged. The design-system themes now use them — checked checkboxes (and Shadcn/Bootstrap/Primer radios) fill with the primary color and draw the check/dot in the primary-inverse color, matching each system's native look.
 
-- Several theme color variations including the `Catppuccin` and `Nord` color schemes, two `Rose` color themes, two `Neobrutalist` themes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, and Bootstrap.
+- Several theme color variations including `Slate`, `Rose`, the `Catppuccin` and `Nord` color schemes, two `Neobrutalist` themes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, Bootstrap, and a few throwback themes inspired by Yumekit's spiritual ancestor: `Kepler UI`.
 
 - `y-tabs` — new `variant="accent"` style: minimal tabs where the active tab shows a primary-colored indicator border on its content-facing edge (bottom for top tabs, etc.). The default bordered style is unchanged. Adds `--component-tabs-accent-width` (indicator thickness). The border-width token is normalized to `--component-tabs-border-width` (matching `--component-tabs-border-color`); the legacy `--component-tab-border-width` is still honored as a fallback.
 

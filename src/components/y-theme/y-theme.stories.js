@@ -69,6 +69,7 @@ export default {
 };
 
 export const Blue = { render: () => family("blue", "Blue") };
+export const Slate = { render: () => family("slate", "Slate") };
 export const Mono = { render: () => family("mono", "Mono") };
 export const Orange = { render: () => family("orange", "Orange") };
 export const Green = { render: () => family("green", "Green") };
@@ -138,6 +139,21 @@ export const Neobrutalist = {
         <div style="display:flex;gap:16px;flex-wrap:wrap">
             ${showcase("neobrutalist", "Neobrutalist Light")}
             ${showcase("neobrutalist-dark", "Neobrutalist Dark")}
+        </div>
+    `,
+};
+
+// Kepler — a retro terminal family ported from the original Kepler UI kit, all
+// set in the Tomorrow typeface. Neutral light/dark plus three tinted dark
+// flavors: Amber (orange-on-black), Galaxy (blue-tinted), Matrix (green-on-black).
+export const Kepler = {
+    render: () => `
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+            ${showcase("kepler-light", "Kepler Light")}
+            ${showcase("kepler-dark", "Kepler Dark")}
+            ${showcase("kepler-amber", "Kepler Amber")}
+            ${showcase("kepler-galaxy", "Kepler Galaxy")}
+            ${showcase("kepler-matrix", "Kepler Matrix")}
         </div>
     `,
 };

@@ -607,5 +607,82 @@
       "core/components": "source",
       "themes/yellow-light": "enabled"
     }
+  },
+  {
+    "id": "themes-slate-dark",
+    "name": "Slate Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/slate-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-slate-light",
+    "name": "Slate Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/slate-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-kepler-light",
+    "name": "Kepler Light",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/kepler-light": "enabled"
+    }
+  },
+  {
+    "id": "themes-kepler-dark",
+    "name": "Kepler Dark",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/kepler-dark": "enabled"
+    }
+  },
+  {
+    "id": "themes-kepler-amber",
+    "name": "Kepler Amber",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/kepler-amber": "enabled"
+    }
+  },
+  {
+    "id": "themes-kepler-galaxy",
+    "name": "Kepler Galaxy",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/kepler-galaxy": "enabled"
+    }
+  },
+  {
+    "id": "themes-kepler-matrix",
+    "name": "Kepler Matrix",
+    "group": "Themes",
+    "selectedTokenSets": {
+      "core/colors": "source",
+      "core/numerics": "source",
+      "core/components": "source",
+      "themes/kepler-matrix": "enabled"
+    }
   }
 ]

@@ -10,6 +10,8 @@ import "../src/icons/all.js";
 import variablesCSS from "../styles/variables.css?inline";
 import blueDarkCSS from "../styles/blue-dark.css?inline";
 import blueLightCSS from "../styles/blue-light.css?inline";
+import slateDarkCSS from "../styles/slate-dark.css?inline";
+import slateLightCSS from "../styles/slate-light.css?inline";
 import monoDarkCSS from "../styles/mono-dark.css?inline";
 import monoLightCSS from "../styles/mono-light.css?inline";
 import orangeDarkCSS from "../styles/orange-dark.css?inline";
@@ -61,6 +63,11 @@ import nordCSS from "../styles/nord.css?inline";
 import nordAuroraCSS from "../styles/nord-aurora.css?inline";
 import neobrutalistCSS from "../styles/neobrutalist.css?inline";
 import neobrutalistDarkCSS from "../styles/neobrutalist-dark.css?inline";
+import keplerLightCSS from "../styles/kepler-light.css?inline";
+import keplerDarkCSS from "../styles/kepler-dark.css?inline";
+import keplerAmberCSS from "../styles/kepler-amber.css?inline";
+import keplerGalaxyCSS from "../styles/kepler-galaxy.css?inline";
+import keplerMatrixCSS from "../styles/kepler-matrix.css?inline";
 
 // =============================================================================
 // Theme registry — single source of truth (toolbar order). Add a theme here and
@@ -70,6 +77,8 @@ import neobrutalistDarkCSS from "../styles/neobrutalist-dark.css?inline";
 const THEMES = [
     { key: "blue-dark", name: "Blue Dark", css: blueDarkCSS },
     { key: "blue-light", name: "Blue Light", css: blueLightCSS },
+    { key: "slate-dark", name: "Slate Dark", css: slateDarkCSS },
+    { key: "slate-light", name: "Slate Light", css: slateLightCSS },
     { key: "mono-dark", name: "Mono Dark", css: monoDarkCSS },
     { key: "mono-light", name: "Mono Light", css: monoLightCSS },
     { key: "orange-dark", name: "Orange Dark", css: orangeDarkCSS },
@@ -121,6 +130,11 @@ const THEMES = [
     { key: "nord-aurora", name: "Nord Aurora", css: nordAuroraCSS },
     { key: "neobrutalist", name: "Neobrutalist", css: neobrutalistCSS },
     { key: "neobrutalist-dark", name: "Neobrutalist Dark", css: neobrutalistDarkCSS },
+    { key: "kepler-light", name: "Kepler Light", css: keplerLightCSS },
+    { key: "kepler-dark", name: "Kepler Dark", css: keplerDarkCSS },
+    { key: "kepler-amber", name: "Kepler Amber", css: keplerAmberCSS },
+    { key: "kepler-galaxy", name: "Kepler Galaxy", css: keplerGalaxyCSS },
+    { key: "kepler-matrix", name: "Kepler Matrix", css: keplerMatrixCSS },
 ];
 
 const THEME_MAP = Object.fromEntries(THEMES.map((t) => [t.key, t.css]));
@@ -160,6 +174,11 @@ const SWATCH = {
     "nord-aurora": "#2e3440",
     "neobrutalist": "#fdf7e3",
     "neobrutalist-dark": "#161616",
+    "kepler-light": "#f0f0f2",
+    "kepler-dark": "#0c0c0d",
+    "kepler-amber": "#000000",
+    "kepler-galaxy": "#0c0c0d",
+    "kepler-matrix": "#000000",
 };
 const backdrop = (key) => SWATCH[key] ?? (key.endsWith("-dark") ? "#1a1a1a" : "#f0f0f2");
 
@@ -253,12 +272,13 @@ function injectHeadStyles() {
         "body { color: var(--base-content--); font-family: var(--font-family-body, 'Lexend', sans-serif); }",
     );
     // Lexend (default) + Roboto (Material) + IBM Plex Sans (Carbon) + Inter
-    // (Tailwind/shadcn). y-theme loads these itself, but stories that don't wrap
-    // in y-theme need them. (Ant uses a system stack — nothing to load.)
+    // (Tailwind/shadcn) + Tomorrow (Kepler). y-theme loads these itself, but
+    // stories that don't wrap in y-theme need them. (Ant uses a system stack —
+    // nothing to load.)
     const font = document.createElement("link");
     font.rel = "stylesheet";
     font.href =
-        "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Roboto:wght@300;400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap";
+        "https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Roboto:wght@300;400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Tomorrow:wght@300;400;500;600;700&display=swap";
     document.head.appendChild(font);
 }
 

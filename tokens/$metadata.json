@@ -28,6 +28,13 @@
     "themes/teal-dark",
     "themes/teal-light",
     "themes/yellow-dark",
-    "themes/yellow-light"
+    "themes/yellow-light",
+    "themes/slate-dark",
+    "themes/slate-light",
+    "themes/kepler-light",
+    "themes/kepler-dark",
+    "themes/kepler-amber",
+    "themes/kepler-galaxy",
+    "themes/kepler-matrix"
   ]
 }
