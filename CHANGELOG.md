@@ -83,6 +83,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-menu` — a menu anchored to a disabled trigger no longer opens when the trigger is clicked. The anchor's disabled state (native `disabled`, a custom element's reflected `disabled` attribute, or `aria-disabled="true"`) is checked at click time, so toggling it back on restores normal behavior.
+
 - `y-sidebar` — nav/footer icons now stay in the same position between the expanded and collapsed states under themes whose borders use a multi-value width (e.g. the Neobrutalist offset border `2px 2px 6px 2px`). The icon-column width is now derived from the sidebar's resolved horizontal border (flat buttons render no border) instead of an invalid `calc()` that multiplied the multi-value token, which had collapsed the column to `auto` and shifted icons.
 
 - `y-drawer` — corners closest to the screen's edge are now squared in all themes.

@@ -50,6 +50,27 @@ describe("YumeMenu", () => {
         expect(menu.hasAttribute("visible")).to.be.true;
     });
 
+    it("does not open when its anchor is disabled", async () => {
+        const wrapper = await fixture(html`
+            <div>
+                <y-button id="trigger" disabled>Menu</y-button>
+                <y-menu id="menu" anchor="trigger" .items=${testItems}></y-menu>
+            </div>
+        `);
+        const trigger = wrapper.querySelector("#trigger");
+        const menu = wrapper.querySelector("#menu");
+
+        trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+        expect(menu.visible).to.be.false;
+
+        // Re-enabling the anchor restores the toggle behavior.
+        trigger.removeAttribute("disabled");
+        trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+        expect(menu.visible).to.be.true;
+    });
+
     it("sets aria-haspopup and aria-expanded on the resolved anchor", async () => {
         const wrapper = await fixture(html`
             <div>

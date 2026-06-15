@@ -418,7 +418,7 @@ Slots:
     - **Plain text** — works for snippets where `<` and `&` are rare (JS, JSON, CSS, etc.). Consumer escapes any `<` / `&` so the browser doesn't interpret them as markup.
     - **`<template>` wrapper** — preferred for HTML / XML / SVG samples. The browser parses but does not render or execute `<template>` content, so the source is preserved verbatim with no escaping required. Example: `<y-code language="html"><template><div>hi</div></template></y-code>`. If any `<template>` child is present, it becomes the source and other text content in the default slot is ignored.
 
-  Common leading whitespace is stripped from the source in both modes so indented authoring (`<y-code>\n    const x = 1;\n</y-code>`) renders flush-left.
+  Common leading whitespace is stripped from the source in both modes so indented authoring (`<y-code>\n    const x = 1;\n</y-code>`) renders flush-left. The block observes its light-DOM children and re-renders when they change, so frameworks (e.g. React) that reuse the element and swap its content across renders stay in sync without a manual refresh.
 - `highlighted` — pre-highlighted markup (consumer-provided). Sanitized to allow only `<span>` with class names in the allowlist (Prism / common highlighter tokens: `keyword`, `string`, `comment`, `function`, `number`, `operator`, `punctuation`, `tag`, `attr-name`, `attr-value`, `selector`, `regex`, `boolean`, `constant`, `class-name`, `type`, `builtin`, `variable`, `property`, `namespace`, `token`, `deleted`, `inserted`, `important`, `italic`, `bold`). Other tags and other class names are stripped. Replaces the default-slot rendering when present.
 - `header` — extra header content (e.g., a timestamp or status tag) rendered next to the filename.
 
@@ -1455,7 +1455,7 @@ Dropdown menu. Positioned relative to an anchor element. Items can be defined vi
 Tag: `<y-menu>`
 Attributes:
 - `items` — JSON string: `[{"text": "Edit", "value": "edit", "href": "...", "icon": "edit", "slot": "name", "selected": true, "children": [...]}, ...]`
-- `anchor` — element ID (no `#`) of the trigger element; clicking the anchor toggles the menu automatically (no manual listener needed)
+- `anchor` — element ID (no `#`) of the trigger element; clicking the anchor toggles the menu automatically (no manual listener needed). A disabled anchor (native `disabled`, a reflected `disabled` attribute on a custom element like `y-button`, or `aria-disabled="true"`) will not open the menu.
 - `visible` — boolean
 - `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`

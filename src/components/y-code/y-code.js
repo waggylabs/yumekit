@@ -60,11 +60,13 @@ export class YumeCode extends HTMLElement {
         this._copiedTimer = null;
         this._lineFlashTimer = null;
         this._isExpanded = false;
+        this._observer = null;
     }
 
     connectedCallback() {
         if (!this.hasAttribute("role")) this.setAttribute("role", "figure");
         this._render();
+        this._observeContent();
     }
 
     disconnectedCallback() {
@@ -76,6 +78,8 @@ export class YumeCode extends HTMLElement {
             clearTimeout(this._lineFlashTimer);
             this._lineFlashTimer = null;
         }
+        this._observer?.disconnect();
+        this._observer = null;
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -614,6 +618,16 @@ export class YumeCode extends HTMLElement {
 
     _hasHighlightedSlot() {
         return !!this.querySelector(':scope > [slot="highlighted"]');
+    }
+
+    _observeContent() {
+        this._observer?.disconnect();
+        this._observer = new MutationObserver(() => this._render());
+        this._observer.observe(this, {
+            childList: true,
+            characterData: true,
+            subtree: true,
+        });
     }
 
     _onExpandClick() {

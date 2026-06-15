@@ -1,4 +1,4 @@
-import { html, fixture, expect, oneEvent } from "@open-wc/testing";
+import { html, fixture, expect, oneEvent, nextFrame } from "@open-wc/testing";
 import sinon from "sinon";
 import "./y-code.js";
 
@@ -39,6 +39,23 @@ describe("YumeCode", () => {
         const lines = el.shadowRoot.querySelectorAll(".line .line-content");
         expect(lines[0].textContent).to.equal("const x = 1;");
         expect(lines[1].textContent).to.equal("const y = 2;");
+    });
+
+    it("re-renders when its light-DOM content changes after upgrade", async () => {
+        // Frameworks (notably React) reuse the same element across route
+        // changes and swap its children without touching attributes. A
+        // MutationObserver keeps the rendered output in sync with the children.
+        const el = await fixture("<y-code>old source</y-code>");
+        expect(el.shadowRoot.querySelector(".line-content").textContent).to.equal(
+            "old source",
+        );
+
+        el.textContent = "new source";
+        await nextFrame();
+
+        expect(el.shadowRoot.querySelector(".line-content").textContent).to.equal(
+            "new source",
+        );
     });
 
     it("renders an aria-label that includes the language and line count", async () => {

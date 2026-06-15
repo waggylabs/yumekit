@@ -64,10 +64,12 @@ export class YumeMenu extends HTMLElement {
         if (name === "visible") {
             this._syncAnchorExpanded();
             if (this._isReady) {
-                this.dispatchEvent(new CustomEvent(this.visible ? "open" : "close", {
-                    bubbles: true,
-                    composed: true,
-                }));
+                this.dispatchEvent(
+                    new CustomEvent(this.visible ? "open" : "close", {
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
             }
         }
     }
@@ -77,18 +79,28 @@ export class YumeMenu extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Which anchor element ID triggers this menu. */
-    get anchor() { return this.getAttribute("anchor"); }
-    set anchor(val) { this.setAttribute("anchor", val); }
+    get anchor() {
+        return this.getAttribute("anchor");
+    }
+    set anchor(val) {
+        this.setAttribute("anchor", val);
+    }
 
     /** Direction for menu placement: "down" | "up" | "left" | "right" (default "down"). */
-    get direction() { return this.getAttribute("direction") || "down"; }
-    set direction(val) { this.setAttribute("direction", val); }
+    get direction() {
+        return this.getAttribute("direction") || "down";
+    }
+    set direction(val) {
+        this.setAttribute("direction", val);
+    }
 
     /**
      * Navigation mode: omit for pushState (SPA-friendly), set to "false" for full-page navigation.
      * Regardless of this setting, a cancelable "navigate" event is always dispatched first.
      */
-    get history() { return this.getAttribute("history"); }
+    get history() {
+        return this.getAttribute("history");
+    }
     set history(val) {
         if (val != null) this.setAttribute("history", val);
         else this.removeAttribute("history");
@@ -103,7 +115,10 @@ export class YumeMenu extends HTMLElement {
         }
     }
     set items(val) {
-        this.setAttribute("items", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
+        this.setAttribute(
+            "items",
+            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
+        );
     }
 
     /** Size: "small" | "medium" | "large" (default "medium"). */
@@ -112,11 +127,16 @@ export class YumeMenu extends HTMLElement {
         return ["small", "medium", "large"].includes(sz) ? sz : "medium";
     }
     set size(val) {
-        this.setAttribute("size", ["small", "medium", "large"].includes(val) ? val : "medium");
+        this.setAttribute(
+            "size",
+            ["small", "medium", "large"].includes(val) ? val : "medium",
+        );
     }
 
     /** Whether the menu is currently visible. */
-    get visible() { return this.hasAttribute("visible"); }
+    get visible() {
+        return this.hasAttribute("visible");
+    }
     set visible(val) {
         if (val) this.setAttribute("visible", "");
         else this.removeAttribute("visible");
@@ -137,7 +157,9 @@ export class YumeMenu extends HTMLElement {
         root.setAttribute("part", "menu");
 
         const childSlot = _el("slot");
-        childSlot.addEventListener("slotchange", () => this._processSlottedItems());
+        childSlot.addEventListener("slotchange", () =>
+            this._processSlottedItems(),
+        );
         root.appendChild(childSlot);
 
         this.shadowRoot.appendChild(style);
@@ -257,8 +279,10 @@ export class YumeMenu extends HTMLElement {
         if (direction === "right") {
             let top = anchorRect.top;
             let left = anchorRect.right;
-            if (left + menuRect.width > vw) left = anchorRect.left - menuRect.width;
-            if (top + menuRect.height > vh) top = anchorRect.top - menuRect.height;
+            if (left + menuRect.width > vw)
+                left = anchorRect.left - menuRect.width;
+            if (top + menuRect.height > vh)
+                top = anchorRect.top - menuRect.height;
             return { top, left };
         }
 
@@ -274,7 +298,8 @@ export class YumeMenu extends HTMLElement {
             let top = anchorRect.top;
             let left = anchorRect.left - menuRect.width;
             if (left < 0) left = anchorRect.right;
-            if (top + menuRect.height > vh) top = anchorRect.top - menuRect.height;
+            if (top + menuRect.height > vh)
+                top = anchorRect.top - menuRect.height;
             return { top, left };
         }
 
@@ -290,7 +315,9 @@ export class YumeMenu extends HTMLElement {
         const wrapper = _el("span", { class: "item-content" });
 
         if (item.icon) {
-            wrapper.appendChild(_el("y-icon", { name: item.icon, size: this.size }));
+            wrapper.appendChild(
+                _el("y-icon", { name: item.icon, size: this.size }),
+            );
         } else if (item["icon-template"]) {
             YumeMenu._warnTemplateFieldDeprecated();
             const tpl = this._findTemplate(item["icon-template"]);
@@ -345,7 +372,9 @@ export class YumeMenu extends HTMLElement {
 
     _createMenuList(items) {
         const container = _el("div");
-        items.forEach((item) => container.appendChild(this._createMenuItem(item)));
+        items.forEach((item) =>
+            container.appendChild(this._createMenuItem(item)),
+        );
         return container;
     }
 
@@ -356,15 +385,28 @@ export class YumeMenu extends HTMLElement {
     }
 
     _dispatchSelect(detail) {
-        this.dispatchEvent(new CustomEvent("select", {
-            detail,
-            bubbles: true,
-            composed: true,
-        }));
+        this.dispatchEvent(
+            new CustomEvent("select", {
+                detail,
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     _findTemplate(name) {
         return this.querySelector(`template[slot="${name}"]`);
+    }
+
+    _isAnchorDisabled() {
+        const el = this._anchorEl;
+        if (!el) return false;
+
+        return (
+            el.disabled === true ||
+            el.hasAttribute("disabled") ||
+            el.getAttribute("aria-disabled") === "true"
+        );
     }
 
     _navigateTo(href) {
@@ -385,6 +427,8 @@ export class YumeMenu extends HTMLElement {
     }
 
     _onAnchorClick(e) {
+        if (this._isAnchorDisabled()) return;
+
         e.stopPropagation();
         if (!this.visible) YumeMenu._closeAll(this);
         this.visible = !this.visible;
@@ -445,7 +489,10 @@ export class YumeMenu extends HTMLElement {
 
     _syncAnchorExpanded() {
         if (!this._anchorEl) return;
-        this._anchorEl.setAttribute("aria-expanded", this.visible ? "true" : "false");
+        this._anchorEl.setAttribute(
+            "aria-expanded",
+            this.visible ? "true" : "false",
+        );
     }
 
     _teardownAnchor() {
