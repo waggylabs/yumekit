@@ -58,6 +58,7 @@ export class YumeCode extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this._copiedTimer = null;
+        this._lineFlashTimer = null;
         this._isExpanded = false;
     }
 
@@ -70,6 +71,10 @@ export class YumeCode extends HTMLElement {
         if (this._copiedTimer) {
             clearTimeout(this._copiedTimer);
             this._copiedTimer = null;
+        }
+        if (this._lineFlashTimer) {
+            clearTimeout(this._lineFlashTimer);
+            this._lineFlashTimer = null;
         }
     }
 
@@ -394,6 +399,7 @@ export class YumeCode extends HTMLElement {
                 padding: 0 var(--spacing-small, 8px);
                 white-space: ${this.wrap ? "pre-wrap" : "pre"};
                 word-break: ${this.wrap ? "break-word" : "normal"};
+                transition: background 0.4s ease;
             }
 
             .line-number {
@@ -419,9 +425,36 @@ export class YumeCode extends HTMLElement {
                 outline: 2px solid var(--primary-content--, #1976d2);
                 outline-offset: -2px;
             }
-            .line.is-copied {
+            .line.is-copied,
+            :host([line-numbers]) .line[role="button"].is-copied {
                 background: var(--component-code-line-copied-bg, var(--success-content-light, rgba(46, 125, 50, 0.12)));
-                transition: background 0.4s ease;
+            }
+
+            /* Floating "Copied!" pill anchored to the copied line. Its top is
+               set in JS; it's pinned to the right edge of the viewport so it
+               stays visible regardless of horizontal scroll. */
+            .line-copied-badge {
+                position: absolute;
+                right: var(--spacing-small, 8px);
+                z-index: 2;
+                pointer-events: none;
+                padding: 0 var(--spacing-x-small, 5px);
+                border-radius: var(--radii-full, 999px);
+                background: var(--component-code-line-copied-badge-bg, var(--success-content--, #2e7d32));
+                color: var(--component-code-line-copied-badge-text-color, var(--success-content-inverse, #fff));
+                font-family: var(--font-family-body, sans-serif);
+                font-size: 0.625rem;
+                font-weight: var(--font-weight-body, 400);
+                line-height: 1.6;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+                animation: y-code-copied-badge-in 0.15s ease;
+            }
+            @keyframes y-code-copied-badge-in {
+                from { opacity: 0; transform: translateY(-3px); }
+                to { opacity: 1; transform: none; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .line-copied-badge { animation: none; }
             }
 
             .line-content { flex: 1; min-width: 0; }
@@ -557,8 +590,22 @@ export class YumeCode extends HTMLElement {
             `.line[data-line="${index}"]`,
         );
         if (!line) return;
+
+        if (this._lineFlashTimer) clearTimeout(this._lineFlashTimer);
+        // Clear any in-progress flash first so rapid successive copies don't
+        // strand the highlight on a previously-copied line.
+        this.shadowRoot
+            .querySelectorAll(".line.is-copied")
+            .forEach((el) => el.classList.remove("is-copied"));
+
         line.classList.add("is-copied");
-        setTimeout(() => line.classList.remove("is-copied"), 600);
+        const badge = this._showLineCopiedBadge(line);
+
+        this._lineFlashTimer = setTimeout(() => {
+            this._lineFlashTimer = null;
+            line.classList.remove("is-copied");
+            if (badge) badge.remove();
+        }, 1500);
     }
 
     _hasHeaderSlot() {
@@ -757,6 +804,37 @@ export class YumeCode extends HTMLElement {
             lines.pop();
         }
         return lines;
+    }
+
+    _showLineCopiedBadge(line) {
+        const preWrap = this.shadowRoot.querySelector(".pre-wrap");
+        const pre = this.shadowRoot.querySelector("pre.code");
+        if (!preWrap || !pre) return null;
+
+        const stale = preWrap.querySelector(".line-copied-badge");
+        if (stale) stale.remove();
+
+        const badge = _el(
+            "span",
+            {
+                class: "line-copied-badge",
+                part: "line-copied-badge",
+                role: "status",
+            },
+            [this.copiedLabel],
+        );
+        preWrap.appendChild(badge);
+
+        // `line.offsetTop` is measured against `.pre-wrap` (the nearest
+        // positioned ancestor); subtract the scroll offset so the badge tracks
+        // the copied line when the block is scrolled vertically (max-lines).
+        const top =
+            line.offsetTop -
+            pre.scrollTop +
+            (line.offsetHeight - badge.offsetHeight) / 2;
+        badge.style.top = `${Math.max(top, 0)}px`;
+
+        return badge;
     }
 
     _tokenizedLines(source) {

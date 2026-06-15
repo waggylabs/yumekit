@@ -1,7 +1,14 @@
 import { html, fixture, expect, oneEvent } from "@open-wc/testing";
+import sinon from "sinon";
 import "./y-code.js";
 
 describe("YumeCode", () => {
+    let sandbox;
+    beforeEach(() => {
+        sandbox = sinon.createSandbox();
+    });
+    afterEach(() => sandbox.restore());
+
     // ── Rendering ──────────────────────────────────────────────────────
 
     it("renders without crashing", async () => {
@@ -11,9 +18,14 @@ describe("YumeCode", () => {
     });
 
     it("renders one .line per source line", async () => {
-        const el = await fixture(html`<y-code>line one
-line two
-line three</y-code>`);
+        // Code content here is whitespace-significant. It's passed as a plain
+        // string (not an html`` template) for two reasons: the formatter
+        // reflows HTML inside html`` templates and would collapse the newlines,
+        // and lit interpolation (`${}`) injects a marker node the component
+        // reads as part of the source. A string fixture avoids both.
+        const el = await fixture(
+            "<y-code>line one\nline two\nline three</y-code>",
+        );
         const lines = el.shadowRoot.querySelectorAll(".line");
         expect(lines.length).to.equal(3);
         expect(lines[0].textContent.trim()).to.equal("line one");
@@ -21,18 +33,18 @@ line three</y-code>`);
     });
 
     it("dedents common leading whitespace", async () => {
-        const el = await fixture(html`<y-code>
-            const x = 1;
-            const y = 2;
-        </y-code>`);
+        const el = await fixture(
+            "<y-code>    const x = 1;\n    const y = 2;</y-code>",
+        );
         const lines = el.shadowRoot.querySelectorAll(".line .line-content");
         expect(lines[0].textContent).to.equal("const x = 1;");
         expect(lines[1].textContent).to.equal("const y = 2;");
     });
 
     it("renders an aria-label that includes the language and line count", async () => {
-        const el = await fixture(html`<y-code language="javascript">a
-b</y-code>`);
+        const el = await fixture(
+            '<y-code language="javascript">a\nb</y-code>',
+        );
         const pre = el.shadowRoot.querySelector("pre.code");
         expect(pre.getAttribute("aria-label")).to.equal(
             "javascript code, 2 lines",
@@ -42,8 +54,7 @@ b</y-code>`);
     // ── Line numbers ───────────────────────────────────────────────────
 
     it("renders line numbers when line-numbers is set", async () => {
-        const el = await fixture(html`<y-code line-numbers>a
-b</y-code>`);
+        const el = await fixture("<y-code line-numbers>a\nb</y-code>");
         const nums = el.shadowRoot.querySelectorAll(".line-number");
         expect(nums.length).to.equal(2);
         expect(nums[0].textContent).to.equal("1");
@@ -56,8 +67,7 @@ b</y-code>`);
     });
 
     it("makes each line interactive (role=button + tabindex) when line-numbers is set", async () => {
-        const el = await fixture(html`<y-code line-numbers>a
-b</y-code>`);
+        const el = await fixture(html`<y-code line-numbers>a b</y-code>`);
         const line = el.shadowRoot.querySelector(".line");
         expect(line.getAttribute("role")).to.equal("button");
         expect(line.getAttribute("tabindex")).to.equal("0");
@@ -75,9 +85,7 @@ b</y-code>`);
     });
 
     it("omits the header when there is no filename and no header slot and no copy button", async () => {
-        const el = await fixture(
-            html`<y-code copyable="false">a</y-code>`,
-        );
+        const el = await fixture(html`<y-code copyable="false">a</y-code>`);
         expect(el.shadowRoot.querySelector("header.header")).to.not.exist;
     });
 
@@ -121,9 +129,7 @@ b</y-code>`);
     });
 
     it("fires a `copy` event with `target: 'line'` and the line index when copyLine() succeeds", async () => {
-        const el = await fixture(html`<y-code>first
-second
-third</y-code>`);
+        const el = await fixture("<y-code>first\nsecond\nthird</y-code>");
         const originalClipboard = navigator.clipboard;
         Object.defineProperty(navigator, "clipboard", {
             value: { writeText: async () => {} },
@@ -145,8 +151,7 @@ third</y-code>`);
     });
 
     it("flashes the line as copied when a line-copy succeeds", async () => {
-        const el = await fixture(html`<y-code line-numbers>first
-second</y-code>`);
+        const el = await fixture("<y-code line-numbers>first\nsecond</y-code>");
         const originalClipboard = navigator.clipboard;
         Object.defineProperty(navigator, "clipboard", {
             value: { writeText: async () => {} },
@@ -156,6 +161,37 @@ second</y-code>`);
             await el.copyLine(1);
             const line = el.shadowRoot.querySelector('.line[data-line="1"]');
             expect(line.classList.contains("is-copied")).to.be.true;
+
+            const bg = getComputedStyle(line).backgroundColor;
+            expect(bg).to.not.equal("rgba(0, 0, 0, 0)");
+            expect(bg).to.not.equal("transparent");
+        } finally {
+            Object.defineProperty(navigator, "clipboard", {
+                value: originalClipboard,
+                configurable: true,
+            });
+        }
+    });
+
+    it("shows a 'Copied!' badge on the copied line and removes it after the flash", async () => {
+        const el = await fixture(
+            '<y-code line-numbers copied-label="Copied!">first\nsecond</y-code>',
+        );
+        const clock = sandbox.useFakeTimers();
+        const originalClipboard = navigator.clipboard;
+        Object.defineProperty(navigator, "clipboard", {
+            value: { writeText: async () => {} },
+            configurable: true,
+        });
+        try {
+            await el.copyLine(1);
+            const badge = el.shadowRoot.querySelector(".line-copied-badge");
+            expect(badge).to.exist;
+            expect(badge.textContent).to.equal("Copied!");
+
+            clock.tick(1600);
+            expect(el.shadowRoot.querySelector(".line-copied-badge")).to.not
+                .exist;
         } finally {
             Object.defineProperty(navigator, "clipboard", {
                 value: originalClipboard,
@@ -165,8 +201,7 @@ second</y-code>`);
     });
 
     it("does not flash the line when a line-copy fails", async () => {
-        const el = await fixture(html`<y-code line-numbers>first
-second</y-code>`);
+        const el = await fixture("<y-code line-numbers>first\nsecond</y-code>");
         const originalClipboard = navigator.clipboard;
         Object.defineProperty(navigator, "clipboard", {
             value: {
@@ -218,10 +253,7 @@ second</y-code>`);
     // ── max-lines collapse ─────────────────────────────────────────────
 
     it("collapses to max-lines and renders an expand toggle", async () => {
-        const el = await fixture(html`<y-code max-lines="2">a
-b
-c
-d</y-code>`);
+        const el = await fixture('<y-code max-lines="2">a\nb\nc\nd</y-code>');
         expect(el.shadowRoot.querySelectorAll(".line").length).to.equal(2);
         const toggle = el.shadowRoot.querySelector(".expand-toggle");
         expect(toggle).to.exist;
@@ -229,10 +261,7 @@ d</y-code>`);
     });
 
     it("expands fully when the toggle is clicked", async () => {
-        const el = await fixture(html`<y-code max-lines="2">a
-b
-c
-d</y-code>`);
+        const el = await fixture('<y-code max-lines="2">a\nb\nc\nd</y-code>');
         el.shadowRoot.querySelector(".expand-toggle").click();
         expect(el.shadowRoot.querySelectorAll(".line").length).to.equal(4);
         expect(
@@ -243,11 +272,15 @@ d</y-code>`);
     // ── Highlighted slot sanitization ──────────────────────────────────
 
     it("renders sanitized span structure from the highlighted slot", async () => {
-        const el = await fixture(html`
-            <y-code>
-                <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
-            </y-code>
-        `);
+        // Highlighted-slot markup is whitespace-significant, so it's passed as
+        // a plain string (not an html`` template) to keep the formatter from
+        // reflowing it and stranding newlines/indentation inside the slot.
+        const el = await fixture(
+            "<y-code><div slot=\"highlighted\">" +
+                '<span class="token keyword">const</span> x = ' +
+                '<span class="token number">1</span>;' +
+                "</div></y-code>",
+        );
         const line = el.shadowRoot.querySelector(".line .line-content");
         const keyword = line.querySelector(".token.keyword");
         const number = line.querySelector(".token.number");
@@ -258,11 +291,12 @@ d</y-code>`);
     });
 
     it("strips disallowed elements from the highlighted slot", async () => {
-        const el = await fixture(html`
-            <y-code>
-                <div slot="highlighted"><script>alert(1)</script><span class="keyword">ok</span></div>
-            </y-code>
-        `);
+        const el = await fixture(
+            "<y-code><div slot=\"highlighted\">" +
+                "<script>alert(1)</script>" +
+                '<span class="keyword">ok</span>' +
+                "</div></y-code>",
+        );
         const line = el.shadowRoot.querySelector(".line .line-content");
         expect(line.querySelector("script")).to.not.exist;
         expect(line.textContent).to.include("ok");
@@ -271,7 +305,9 @@ d</y-code>`);
     it("drops unknown class names from highlighted spans", async () => {
         const el = await fixture(html`
             <y-code>
-                <div slot="highlighted"><span class="keyword evil-class">hi</span></div>
+                <div slot="highlighted">
+                    <span class="keyword evil-class">hi</span>
+                </div>
             </y-code>
         `);
         const span = el.shadowRoot.querySelector(".line .line-content span");
@@ -280,11 +316,13 @@ d</y-code>`);
     });
 
     it("splits highlighted content into lines at \\n boundaries", async () => {
-        const el = await fixture(html`
-            <y-code><div slot="highlighted"><span class="keyword">a</span>
-<span class="keyword">b</span>
-<span class="keyword">c</span></div></y-code>
-        `);
+        const el = await fixture(
+            "<y-code><div slot=\"highlighted\">" +
+                '<span class="keyword">a</span>\n' +
+                '<span class="keyword">b</span>\n' +
+                '<span class="keyword">c</span>' +
+                "</div></y-code>",
+        );
         const lines = el.shadowRoot.querySelectorAll(".line");
         expect(lines.length).to.equal(3);
         expect(lines[0].textContent.trim()).to.equal("a");
@@ -314,7 +352,8 @@ d</y-code>`);
     it("concatenates content from multiple <template> children", async () => {
         const el = await fixture(
             html`<y-code language="html"
-                ><template><a></a></template><template><b></b></template></y-code>`,
+                ><template><a></a></template><template><b></b></template
+            ></y-code>`,
         );
         const code = el.shadowRoot.querySelector("code.code-inner");
         expect(code.textContent).to.equal("<a></a><b></b>");
@@ -394,15 +433,23 @@ d</y-code>`);
     // ── Tokenizer integration ──────────────────────────────────────────
 
     it("auto-tokenizes JavaScript and renders keyword spans", async () => {
-        const el = await fixture(html`<y-code language="javascript">const x = 1;</y-code>`);
-        const keyword = el.shadowRoot.querySelector(".line-content .token.keyword");
+        const el = await fixture(
+            html`<y-code language="javascript">const x = 1;</y-code>`,
+        );
+        const keyword = el.shadowRoot.querySelector(
+            ".line-content .token.keyword",
+        );
         expect(keyword).to.exist;
         expect(keyword.textContent).to.equal("const");
     });
 
     it("auto-tokenizes JSON and tags property names", async () => {
-        const el = await fixture(html`<y-code language="json">{"name":"yumekit"}</y-code>`);
-        const property = el.shadowRoot.querySelector(".line-content .token.property");
+        const el = await fixture(
+            html`<y-code language="json">{"name":"yumekit"}</y-code>`,
+        );
+        const property = el.shadowRoot.querySelector(
+            ".line-content .token.property",
+        );
         expect(property).to.exist;
         expect(property.textContent).to.equal('"name"');
     });
@@ -442,9 +489,11 @@ d</y-code>`);
     });
 
     it("auto-tokenizes HTML (tag + attribute)", async () => {
-        const el = await fixture(html`<y-code language="html">
-            ${'<a href="/x">click</a>'}
-        </y-code>`);
+        const el = await fixture(
+            html`<y-code language="html">
+                ${'<a href="/x">click</a>'}
+            </y-code>`,
+        );
         const tag = el.shadowRoot.querySelector(".line-content .token.tag");
         const attr = el.shadowRoot.querySelector(
             ".line-content .token.attr-name",
@@ -456,9 +505,15 @@ d</y-code>`);
     });
 
     it("auto-tokenizes CSS and tags selectors + properties", async () => {
-        const el = await fixture(html`<y-code language="css">.btn { color: red; }</y-code>`);
-        const property = el.shadowRoot.querySelector(".line-content .token.property");
-        const string = el.shadowRoot.querySelector(".line-content .token.attr-value");
+        const el = await fixture(
+            html`<y-code language="css">.btn { color: red; }</y-code>`,
+        );
+        const property = el.shadowRoot.querySelector(
+            ".line-content .token.property",
+        );
+        const string = el.shadowRoot.querySelector(
+            ".line-content .token.attr-value",
+        );
         expect(property).to.exist;
         expect(property.textContent).to.equal("color");
         expect(string).to.exist;
@@ -469,15 +524,17 @@ d</y-code>`);
         const el = await fixture(
             html`<y-code language="ruby">puts "hi"</y-code>`,
         );
-        expect(el.shadowRoot.querySelector(".line-content .token")).to.not.exist;
+        expect(el.shadowRoot.querySelector(".line-content .token")).to.not
+            .exist;
     });
 
     it("copyBlock() copies the highlighted-slot text when default slot is empty", async () => {
-        const el = await fixture(html`
-            <y-code language="javascript">
-                <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
-            </y-code>
-        `);
+        const el = await fixture(
+            '<y-code language="javascript"><div slot="highlighted">' +
+                '<span class="token keyword">const</span> x = ' +
+                '<span class="token number">1</span>;' +
+                "</div></y-code>",
+        );
         const originalClipboard = navigator.clipboard;
         Object.defineProperty(navigator, "clipboard", {
             value: { writeText: async () => {} },
@@ -498,12 +555,12 @@ d</y-code>`);
     });
 
     it("copyLine() copies the indexed line from the highlighted slot", async () => {
-        const el = await fixture(html`
-            <y-code language="javascript">
-                <div slot="highlighted"><span class="token keyword">const</span> a = 1;
-<span class="token keyword">const</span> b = 2;</div>
-            </y-code>
-        `);
+        const el = await fixture(
+            '<y-code language="javascript"><div slot="highlighted">' +
+                '<span class="token keyword">const</span> a = 1;\n' +
+                '<span class="token keyword">const</span> b = 2;' +
+                "</div></y-code>",
+        );
         const originalClipboard = navigator.clipboard;
         Object.defineProperty(navigator, "clipboard", {
             value: { writeText: async () => {} },
@@ -530,7 +587,9 @@ d</y-code>`);
         // built-in tokenizer with their own pipeline.
         const el = await fixture(html`
             <y-code language="javascript">
-                <div slot="highlighted"><span class="comment">manual override</span></div>
+                <div slot="highlighted">
+                    <span class="comment">manual override</span>
+                </div>
             </y-code>
         `);
         const comment = el.shadowRoot.querySelector(".line-content .comment");
@@ -539,7 +598,9 @@ d</y-code>`);
     });
 
     it("copy block on a tokenized language still copies the raw text", async () => {
-        const el = await fixture(html`<y-code language="javascript">const x = 1;</y-code>`);
+        const el = await fixture(
+            html`<y-code language="javascript">const x = 1;</y-code>`,
+        );
         const originalClipboard = navigator.clipboard;
         Object.defineProperty(navigator, "clipboard", {
             value: { writeText: async () => {} },
