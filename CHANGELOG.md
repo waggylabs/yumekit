@@ -83,7 +83,7 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
-- `y-drawer` — corners closest to the screens edge are now squared in call themes.
+- `y-drawer` — corners closest to the screen's edge are now squared in all themes.
 
 - `y-theme` — switching themes now clears the previous theme's CSS custom properties from the host before applying the new ones. Variables defined only by the outgoing theme (e.g. a theme-specific token like `--component-tabs-inactive-background`) previously lingered inline and "stuck" until a page reload; they are now removed on every switch.
 
