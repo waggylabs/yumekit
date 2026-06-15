@@ -301,9 +301,9 @@ Attributes:
 - `hour-format` — `"12"` (default) | `"24"`, 12- or 24-hour clock
 - `minute-interval` — step between minute options (default: `5`)
 - `second-interval` — step between second options (default: `5`)
-- `show-years` — `"true"` (default) | `"false"`
+- `show-years` — `"true"` (default) | `"false"`; in the month picker this toggles the header year dropdown
 - `show-months` — `"true"` (default) | `"false"`
-- `show-days` — `"true"` (default) | `"false"`, set to `"false"` for a month picker; combine with `show-months="false"` for a year picker
+- `show-days` — `"true"` (default) | `"false"`, set to `"false"` for a month picker (12-month grid + optional year dropdown); combine with `show-months="false"` for a year picker (two year-range inputs bound a scrollable year grid). Clicking a month/year selects it and fires `change`.
 - `mobile-breakpoint` — viewport width in px below which range panels stack vertically (default: `768` or `--component-datepicker-mobile-breakpoint`)
 
 Events: `change` (detail: `{ value, startDate, endDate, formatted }`)
@@ -313,8 +313,11 @@ Methods: `clear()`, `formatDate(date)`
 <y-datepicker></y-datepicker>
 <y-datepicker mode="range" show-hours show-minutes></y-datepicker>
 
-<!-- Month picker -->
+<!-- Month picker (year dropdown + 12 months) -->
 <y-datepicker show-days="false"></y-datepicker>
+
+<!-- Year picker (start/end inputs bound a scrollable year grid) -->
+<y-datepicker show-days="false" show-months="false"></y-datepicker>
 ```
 
 ---

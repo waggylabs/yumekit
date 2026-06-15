@@ -178,12 +178,20 @@ export const WithMinMax = {
     args: { min: "2026-03-01", max: "2026-03-31" },
 };
 
-/** Month-only picker — hides the day grid. */
+/** Month-only picker — hides the day grid; the header shows a year dropdown. */
 export const MonthPicker = {
     args: { showDays: false },
 };
 
-/** Year-only picker. */
+/** Month-only picker with no year — just the twelve months. */
+export const MonthPickerNoYear = {
+    args: { showDays: false, showYears: false },
+};
+
+/**
+ * Year-only picker. The two header inputs bound a scrollable grid of years;
+ * clicking a year selects it.
+ */
 export const YearPicker = {
     args: { showDays: false, showMonths: false },
 };

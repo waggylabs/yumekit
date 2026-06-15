@@ -56,6 +56,82 @@ describe("<y-datepicker>", () => {
         expect(el.shadowRoot.querySelector(".year-grid")).to.exist;
     });
 
+    // -------------------------------------------------------------------------
+    // Month picker
+    // -------------------------------------------------------------------------
+
+    it("renders a year dropdown in the month picker by default", async () => {
+        const el = await fixture(
+            html`<y-datepicker show-days="false"></y-datepicker>`,
+        );
+        expect(el.shadowRoot.querySelector(".m-year-sel")).to.exist;
+    });
+
+    it("omits the year dropdown when show-years is false in the month picker", async () => {
+        const el = await fixture(
+            html`<y-datepicker
+                show-days="false"
+                show-years="false"
+            ></y-datepicker>`,
+        );
+        expect(el.shadowRoot.querySelector(".m-year-sel")).to.be.null;
+    });
+
+    it("selecting a month emits change and sets the value", async () => {
+        const el = await fixture(
+            html`<y-datepicker show-days="false"></y-datepicker>`,
+        );
+        const march = [...el.shadowRoot.querySelectorAll(".month-btn")].find(
+            (b) => b.dataset.month === "2",
+        );
+        setTimeout(() => march.click());
+        const { detail } = await oneEvent(el, "change");
+        expect(detail.startDate.getMonth()).to.equal(2);
+        expect(el.value).to.not.equal("");
+    });
+
+    // -------------------------------------------------------------------------
+    // Year picker
+    // -------------------------------------------------------------------------
+
+    it("renders start and end year-range inputs in the year picker", async () => {
+        const el = await fixture(
+            html`<y-datepicker
+                show-days="false"
+                show-months="false"
+            ></y-datepicker>`,
+        );
+        const inputs = el.shadowRoot.querySelectorAll(".year-range-input");
+        expect(inputs.length).to.equal(2);
+    });
+
+    it("selecting a year emits change without shifting the range inputs", async () => {
+        const el = await fixture(
+            html`<y-datepicker
+                show-days="false"
+                show-months="false"
+                min="2020-01-01"
+                max="2030-12-31"
+            ></y-datepicker>`,
+        );
+        const startInput = el.shadowRoot.querySelector(
+            ".year-range-input[data-bound='start']",
+        );
+        const before = startInput.value;
+
+        const yearBtn = [...el.shadowRoot.querySelectorAll(".year-btn")].find(
+            (b) => b.dataset.year === "2025",
+        );
+        setTimeout(() => yearBtn.click());
+        const { detail } = await oneEvent(el, "change");
+
+        expect(detail.startDate.getFullYear()).to.equal(2025);
+        const startAfter = el.shadowRoot.querySelector(
+            ".year-range-input[data-bound='start']",
+        );
+        expect(startAfter.value).to.equal(before);
+    });
+
     it("shows time column when show-hours is set", async () => {
         const el = await fixture(
             html`<y-datepicker show-hours></y-datepicker>`,

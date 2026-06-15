@@ -83,7 +83,11 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-sidebar` — nav/footer icons now stay in the same position between the expanded and collapsed states under themes whose borders use a multi-value width (e.g. the Neobrutalist offset border `2px 2px 6px 2px`). The icon-column width is now derived from the sidebar's resolved horizontal border (flat buttons render no border) instead of an invalid `calc()` that multiplied the multi-value token, which had collapsed the column to `auto` and shifted icons.
+
 - `y-drawer` — corners closest to the screen's edge are now squared in all themes.
+
+- `y-datepicker` — the month and year pickers were reworked. The month picker (`show-days="false"`) now shows a selectable year dropdown in its header (toggled by `show-years`, omitted when `false`) above the twelve months, and the year picker (`show-months="false"`) now bounds its scrollable year grid with two start/end year inputs. Clicking a month or year now selects it and fires `change`; clicking a year in the year picker no longer shifts the visible range.
 
 - `y-theme` — switching themes now clears the previous theme's CSS custom properties from the host before applying the new ones. Variables defined only by the outgoing theme (e.g. a theme-specific token like `--component-tabs-inactive-background`) previously lingered inline and "stuck" until a page reload; they are now removed on every switch.
 

@@ -325,7 +325,7 @@
         }
       },
       "color": {
-        "pending": { "$type": "color", "$value": "{base.border}" },
+        "pending": { "$type": "color", "$value": "{base.background.active}" },
         "active": {
           "text": { "$type": "color", "$value": "{primary.content.inverse}" },
           "DEFAULT": { "$type": "color", "$value": "{primary.content.DEFAULT}" }
