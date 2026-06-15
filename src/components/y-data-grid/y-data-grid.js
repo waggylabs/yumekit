@@ -1160,6 +1160,10 @@ export class YumeDataGrid extends HTMLElement {
             value: currentOp,
             portal: "",
         });
+        opSelect.style.setProperty(
+            "--component-select-z-index",
+            "calc(var(--component-popover-z-index, 7500) + 1)",
+        );
         const valInput = _el("y-input", {
             size: "small",
             type,

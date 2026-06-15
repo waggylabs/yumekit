@@ -872,6 +872,20 @@ export class YumeSelect extends HTMLElement {
 
         const portal = document.createElement("div");
         portal.className = "y-select-portal";
+
+        // Custom properties set inline on the host don't cascade into the
+        // portal — it mounts under y-theme/body, not as a descendant of this
+        // element. Forward a z-index override so a select opened inside a
+        // higher-stacked context (e.g. a portaled popover) can lift its
+        // dropdown above that context. The dropdown inherits the value through
+        // the portal's shadow boundary.
+        const zOverride = this.style
+            .getPropertyValue("--component-select-z-index")
+            .trim();
+        if (zOverride) {
+            portal.style.setProperty("--component-select-z-index", zOverride);
+        }
+
         const shadow = portal.attachShadow({ mode: "open" });
         shadow.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets;
 
