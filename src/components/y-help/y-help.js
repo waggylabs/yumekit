@@ -1,7 +1,10 @@
 import "../y-icon/y-icon.js";
 import "../y-button/y-button.js";
 import "../y-popover/y-popover.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    createElement as _el,
+    resolveThemeMountPoint,
+} from "../../modules/helpers.js";
 
 const VALID_POSITIONS = new Set([
     "top",
@@ -965,7 +968,7 @@ export class YumeHelp extends HTMLElement {
     }
 
     _resolveMountPoint() {
-        return this.closest("y-theme") || document.body;
+        return resolveThemeMountPoint(this);
     }
 
     _resolveAnchorElement(step) {

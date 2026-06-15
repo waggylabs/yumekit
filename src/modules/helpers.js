@@ -422,6 +422,30 @@ export function resolveAnchor(host, id, onFound, root = document) {
 }
 
 /**
+ * Find the mount point for a portaled overlay so it inherits the active theme.
+ *
+ * YumeKit delivers a theme as CSS custom properties scoped to the <y-theme>
+ * subtree, so a portaled surface must mount inside that subtree to stay themed.
+ * Element.closest() stops at the shadow boundary, so a component portaling from
+ * inside another component's shadow root (e.g. y-data-grid's header menus) would
+ * never see a light-DOM <y-theme> and fall back to the un-themed defaults. Walk
+ * up across shadow boundaries via getRootNode().host to find the nearest
+ * enclosing <y-theme>; fall back to <body> when there is none.
+ * @param {Element} el — the portaling element to resolve from
+ * @returns {Element} — the nearest <y-theme> ancestor, or document.body
+ */
+export function resolveThemeMountPoint(el) {
+    let node = el;
+    while (node) {
+        const theme = node.closest?.("y-theme");
+        if (theme) return theme;
+        const root = node.getRootNode();
+        node = root instanceof ShadowRoot ? root.host : null;
+    }
+    return document.body;
+}
+
+/**
  * Resolve a CSS custom-property value to a concrete color string.
  * Reads from the given element's computed style.
  * @param {string} varExpr — e.g. "var(--primary-content--)"

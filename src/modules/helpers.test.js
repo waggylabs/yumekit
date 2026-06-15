@@ -19,6 +19,7 @@ import {
     createElement,
     manageLabelVisibility,
     resolveAnchor,
+    resolveThemeMountPoint,
     buildNavItemIcon,
     isNavItemActive,
     navigateFrom,
@@ -715,6 +716,51 @@ describe("helpers", () => {
     });
 
     // ── navigateFrom ──────────────────────────────────────────
+    // ── resolveThemeMountPoint ────────────────────────────────
+    describe("resolveThemeMountPoint", () => {
+        it("returns the nearest y-theme ancestor in the light DOM", async () => {
+            const theme = await fixture(html`
+                <y-theme><div><span id="anchor"></span></div></y-theme>
+            `);
+            const anchor = theme.querySelector("#anchor");
+            expect(resolveThemeMountPoint(anchor)).to.equal(theme);
+        });
+
+        it("returns the closest y-theme when nested", async () => {
+            const outer = await fixture(html`
+                <y-theme><y-theme id="inner"><span id="anchor"></span></y-theme></y-theme>
+            `);
+            const inner = outer.querySelector("#inner");
+            const anchor = outer.querySelector("#anchor");
+            expect(resolveThemeMountPoint(anchor)).to.equal(inner);
+        });
+
+        it("falls back to document.body when there is no y-theme ancestor", async () => {
+            const el = await fixture(html`<div></div>`);
+            expect(resolveThemeMountPoint(el)).to.equal(document.body);
+        });
+
+        it("crosses shadow boundaries to find a light-DOM y-theme", async () => {
+            const theme = await fixture(html`<y-theme></y-theme>`);
+            const host = document.createElement("div");
+            theme.appendChild(host);
+            const shadow = host.attachShadow({ mode: "open" });
+            const inner = document.createElement("span");
+            shadow.appendChild(inner);
+
+            expect(resolveThemeMountPoint(inner)).to.equal(theme);
+        });
+
+        it("falls back to document.body when the y-theme is unreachable across shadow boundaries", async () => {
+            const host = await fixture(html`<div></div>`);
+            const shadow = host.attachShadow({ mode: "open" });
+            const inner = document.createElement("span");
+            shadow.appendChild(inner);
+
+            expect(resolveThemeMountPoint(inner)).to.equal(document.body);
+        });
+    });
+
     describe("navigateFrom", () => {
         it("dispatches a cancelable navigate event with the href in detail", async () => {
             const host = await fixture(html`<div></div>`);

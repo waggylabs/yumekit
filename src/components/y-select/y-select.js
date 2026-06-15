@@ -4,6 +4,7 @@ import {
     createElement as _el,
     isSafeCssColor,
     manageLabelVisibility,
+    resolveThemeMountPoint,
 } from "../../modules/helpers.js";
 
 const SEMANTIC_COLOR_VARS = {
@@ -895,7 +896,7 @@ export class YumeSelect extends HTMLElement {
     }
 
     _resolveMountPoint() {
-        return this.closest("y-theme") || document.body;
+        return resolveThemeMountPoint(this);
     }
 
     _openDropdown() {

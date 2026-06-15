@@ -3,6 +3,7 @@ import {
     createElement as _el,
     isSafeCssColor,
     getColorVarPair,
+    resolveThemeMountPoint,
 } from "../../modules/helpers.js";
 import { computePosition, pointerOffsetFor } from "../../modules/floating.js";
 
@@ -1247,15 +1248,7 @@ export class YumePopover extends HTMLElement {
     }
 
     _resolveMountPoint() {
-        // Portaling escapes ancestor stacking/overflow contexts, but YumeKit
-        // delivers a theme as CSS custom properties scoped to the <y-theme>
-        // subtree (set inline on that element). Appending to document.body
-        // would drop out of that scope, so every --base-* / --component-* /
-        // --primary-* lookup falls back to the un-themed default literals.
-        // Mount into the nearest enclosing <y-theme> instead so the portaled
-        // surface inherits the active theme; fall back to <body> when there
-        // is no y-theme ancestor (or it lives across a shadow boundary).
-        return this.closest("y-theme") || document.body;
+        return resolveThemeMountPoint(this);
     }
 
     _restoreFocus() {
