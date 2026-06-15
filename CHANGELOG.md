@@ -83,6 +83,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-drawer` — corners closest to the screens edge are now squared in call themes.
+
 - `y-theme` — switching themes now clears the previous theme's CSS custom properties from the host before applying the new ones. Variables defined only by the outgoing theme (e.g. a theme-specific token like `--component-tabs-inactive-background`) previously lingered inline and "stuck" until a page reload; they are now removed on every switch.
 
 - `y-tabs` — unselected tabs now use a dedicated `--component-tabs-inactive-background` (falling back to `--component-tabs-border-color`, so existing themes are unchanged) instead of always painting the tab background with the border color. This fixes the Neobrutalist themes, where the border color equals the text color and made unselected tab labels unreadable; both Neobrutalist themes now set it to a distinct surface tone.
