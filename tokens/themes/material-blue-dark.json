@@ -536,15 +536,15 @@
             },
             "padding-inline-small": {
                 "$type": "spacing",
-                "$value": "{spacing.x-large}"
+                "$value": "{spacing.medium}"
             },
             "padding-inline-medium": {
                 "$type": "spacing",
-                "$value": "{spacing.2x-large}"
+                "$value": "{spacing.large}"
             },
             "padding-inline-large": {
                 "$type": "spacing",
-                "$value": "{spacing.4x-large}"
+                "$value": "{spacing.x-large}"
             }
         },
         "inputs": {
