@@ -1107,7 +1107,8 @@ export class YumeDataGrid extends HTMLElement {
             // Same reason as the header-menu popover: y-select / y-input
             // interactions inside the filter form shouldn't dismiss it.
             // `_openFilterPopover` installs a manual handler that treats any
-            // `.y-popover-portal` as "inside".
+            // portal surface (`.y-popover-portal`, `.y-select-portal`, …) as
+            // "inside".
             "close-on-outside-click": "false",
             "close-on-escape": "true",
         });
@@ -3035,9 +3036,7 @@ export class YumeDataGrid extends HTMLElement {
 
         const onDocClick = (e) => {
             const path = e.composedPath();
-            const insidePortal = path.some((node) =>
-                node?.classList?.contains?.("y-popover-portal"),
-            );
+            const insidePortal = this._pathInsidePortal(path);
             const insideTrigger = path.includes(triggerBtn);
             if (!insidePortal && !insideTrigger) popover.hide("api");
         };
@@ -3072,13 +3071,12 @@ export class YumeDataGrid extends HTMLElement {
         popover.anchor = triggerBtn;
         triggerBtn.setAttribute("aria-expanded", "true");
 
-        // Manual outside-click: clicks inside *any* y-popover portal (main or
-        // submenu) and clicks on the trigger itself count as "inside".
+        // Manual outside-click: clicks inside *any* portal surface (the menu
+        // itself, a submenu, or a portaled y-select dropdown) and clicks on the
+        // trigger itself count as "inside".
         const onDocClick = (e) => {
             const path = e.composedPath();
-            const insidePortal = path.some((node) =>
-                node?.classList?.contains?.("y-popover-portal"),
-            );
+            const insidePortal = this._pathInsidePortal(path);
             const insideTrigger = path.includes(triggerBtn);
             if (!insidePortal && !insideTrigger) popover.hide("api");
         };
@@ -3130,6 +3128,24 @@ export class YumeDataGrid extends HTMLElement {
         } catch {
             this._parsedData = [];
         }
+    }
+
+    /**
+     * True when an event path passes through any component's portal container.
+     * Portaled surfaces (y-popover → `.y-popover-portal`, y-select →
+     * `.y-select-portal`, etc.) live under `document.body` rather than inside
+     * the grid, so a click in one must still count as "inside" for the manual
+     * outside-click guards that keep the header/filter popovers open.
+     */
+    _pathInsidePortal(path) {
+        return path.some((node) => {
+            const classes = node?.classList;
+            if (!classes) return false;
+            for (const cls of classes) {
+                if (cls.endsWith("-portal")) return true;
+            }
+            return false;
+        });
     }
 
     _readEditorValue(editor, type) {

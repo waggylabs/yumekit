@@ -42,7 +42,7 @@
     },
     "border": {
       "$type": "color",
-      "$value": "{green.dark.2}"
+      "$value": "{green.dark.4}"
     },
     "content": {
       "inverse": {
@@ -51,15 +51,15 @@
       },
       "light": {
         "$type": "color",
-        "$value": "{green.dark.6}"
+        "$value": "{green.light.6}"
       },
       "lighter": {
         "$type": "color",
-        "$value": "{green.dark.5}"
+        "$value": "{green.light.5}"
       },
       "lightest": {
         "$type": "color",
-        "$value": "{green.dark.4}"
+        "$value": "{green.light.4}"
       },
       "DEFAULT": {
         "$type": "color",

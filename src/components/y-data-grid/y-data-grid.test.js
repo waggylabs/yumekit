@@ -1234,6 +1234,48 @@ describe("YumeDataGrid", () => {
         expect(names).to.deep.equal(["Alice", "Charlie"]);
     });
 
+    it("selecting an operator from the dropdown keeps the filter popover open and applies", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                filtering="advanced"
+            ></y-data-grid>
+        `);
+        el.shadowRoot.querySelectorAll(".header-filter-trigger")[1].click(); // age
+        await waitFrame();
+
+        const portal = findPortal(".filter-popover");
+        const opSelect = portal.querySelector(".filter-row-inputs y-select");
+
+        // Pick "Greater than" by clicking the option inside the select's
+        // portaled (`.y-select-portal`) dropdown — this is the interaction that
+        // previously dismissed the whole filter popover and dropped the choice.
+        opSelect._openDropdown();
+        await waitFrame();
+        const gtItem = opSelect._portalContainer.shadowRoot.querySelector(
+            '.dropdown-item[data-value="gt"]',
+        );
+        gtItem.click();
+        await waitFrame();
+
+        expect(el._filterPopover.open).to.be.true;
+        expect(opSelect.value).to.equal("gt");
+
+        const valInput = portal.querySelector(".filter-row-inputs y-input");
+        valInput.value = "28";
+        const applyBtn = [...portal.querySelectorAll("y-button")].find((b) =>
+            b.textContent.includes("Apply"),
+        );
+        applyBtn.click();
+        await waitFrame();
+
+        const names = [...el.shadowRoot.querySelectorAll("tbody tr")].map((r) =>
+            r.querySelector("td").textContent,
+        );
+        expect(names).to.deep.equal(["Alice", "Charlie"]);
+    });
+
     it("filter popover Clear removes the column filter", async () => {
         const el = await fixture(html`
             <y-data-grid
