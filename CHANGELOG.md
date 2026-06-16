@@ -61,6 +61,12 @@ Delete any empty sections before publishing.
 
 ### Changed
 
+- `y-radio` — the default YumeKit color themes and the Kepler themes now color a selected radio's border with the primary color (via `--component-radio-checked-border-color`); the fill and dot are unchanged. Neobrutalist and the design-system themes already define their own checked styling and are unchanged.
+
+- `y-checkbox` — the default YumeKit color themes and the Kepler themes now mark a checked box with a translucent primary-colored fill, a primary border, and a primary-colored check (via the existing `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` hooks).
+
+- `y-switch` — the "on" state now fills the track with a translucent tint of the switch color and colors the border to match (derived from `on-color`, custom colors included), making it clearer which state is active; the tint strength is themeable via `--component-switch-on-fill-opacity` (16% default).
+
 - `y-break` — the divider line now uses the semantic border color (`base.border`) instead of `base.content.lightest`, matching other component borders, and the host now applies default perpendicular spacing (above/below a horizontal break, left/right of a vertical one) via the new `--component-break-spacing` token (defaults to `--spacing-medium`) so a break separates content out of the box. The line color and thickness also gained `--base-border` / `1px` fallbacks for use without a full token set.
 
 - `y-button` — `--component-button-border-width` is now applied as the `border-width` longhand instead of being baked into the `border` shorthand, so it accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0` for a bottom-only border). Default (`1px`) is unchanged. The `--component-button-outline-border` shorthand override now controls border style + color only; its width is superseded by `--component-button-border-width`.

@@ -397,6 +397,24 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "background": {
+          "$type": "color",
+          "$value": "color-mix(in srgb, {primary.content.DEFAULT} 16%, transparent)"
+        },
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
+        "icon": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
       }
     },
     "dock": {
@@ -669,6 +687,14 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
       }
     },
     "select": {
