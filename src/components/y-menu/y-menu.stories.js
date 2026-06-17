@@ -147,6 +147,24 @@ export const WithSlottedChildren = {
     `,
 };
 
+export const LongMenu = {
+    render: () => `
+        <div style="padding:16px">
+            <y-button id="menu-long-anchor" color="primary">Jump to…</y-button>
+            <y-menu
+                anchor="menu-long-anchor"
+                items='${JSON.stringify(
+                    Array.from({ length: 40 }, (_, i) => ({
+                        text: `Item ${i + 1}`,
+                        value: `item-${i + 1}`,
+                    }))
+                )}'
+            ></y-menu>
+        </div>
+    `,
+    parameters: { docs: { story: { inline: false, height: "360px" } } },
+};
+
 export const WithCustomSlotPerItem = {
     render: () => `
         <div style="padding:16px">

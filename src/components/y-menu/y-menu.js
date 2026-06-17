@@ -522,15 +522,36 @@ export class YumeMenu extends HTMLElement {
         }
 
         const anchorRect = this._anchorEl.getBoundingClientRect();
+        const menuEl = this.shadowRoot.querySelector(".menu");
+
+        // Drop any prior height cap so we can measure the menu's natural size.
+        if (menuEl) {
+            menuEl.style.maxHeight = "";
+            menuEl.style.overflowY = "";
+            menuEl.style.overscrollBehavior = "";
+        }
 
         // Measure menu off-screen so we know its size before placing it.
         this.style.visibility = "hidden";
         this.style.display = "block";
-        const menuRect = this.getBoundingClientRect();
+        let menuRect = this.getBoundingClientRect();
         this.style.visibility = "";
 
         const vw = window.innerWidth;
         const vh = window.innerHeight;
+        const margin = 8;
+
+        // When the menu is taller than the viewport, cap its height and let it
+        // scroll internally instead of running off-screen. Only do this on
+        // genuine overflow so normal menus keep CSS flyout submenus, which an
+        // `overflow` clipping context would otherwise clip.
+        if (menuEl && menuRect.height > vh - margin * 2) {
+            menuEl.style.maxHeight = `${vh - margin * 2}px`;
+            menuEl.style.overflowY = "auto";
+            menuEl.style.overscrollBehavior = "contain";
+            menuRect = this.getBoundingClientRect();
+        }
+
         const { top, left } = this._computeMenuOffset(
             this.direction,
             anchorRect,

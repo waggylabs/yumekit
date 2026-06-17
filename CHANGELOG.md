@@ -91,6 +91,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-menu` — a menu taller than the viewport now caps its height and scrolls internally instead of running off-screen (notably on mobile). Scrolling only engages on genuine overflow, so normal menus keep their CSS flyout submenus.
+
 - React JSX types (`react.d.ts`) and the bundled AI docs (`llm.txt`, skill reference) were brought back in sync with the components. Added missing attribute types for `y-data-grid`, `y-date`, `y-datepicker`, and `y-select`; dropped a stale `y-panelbar` type; and corrected several documented attributes/defaults (e.g. `y-table`'s data attribute, `y-button` `style-type` default, `y-switch` colors). A new `npm run check:docs` gate cross-checks every component's observed attributes against all three docs and runs in `pretest` / `prepublishOnly`.
 
 - `y-menu` — a menu anchored to a disabled trigger no longer opens when the trigger is clicked. The anchor's disabled state (native `disabled`, a custom element's reflected `disabled` attribute, or `aria-disabled="true"`) is checked at click time, so toggling it back on restores normal behavior.
