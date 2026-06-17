@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- AI assistant docs now ship with the package, plus an `npx @waggylabs/yumekit init-ai` command to drop them into a project. The command installs the YumeKit Claude Code skill (`.claude/skills/yumekit/`), `llm.txt`, and an `AGENTS.md` pointer; it is opt-in and idempotent, skipping existing files unless `--force` is passed.
+
 - `y-checkbox` / `y-radio` — checked-state color hooks so themes can fill the control on selection: `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` and `--component-radio-background` / `-checked-background` / `-checked-border-color` / `-checked-dot-color`. Each falls back to the matching unchecked value, so existing themes are unchanged. The design-system themes now use them — checked checkboxes (and Shadcn/Bootstrap/Primer radios) fill with the primary color and draw the check/dot in the primary-inverse color, matching each system's native look.
 
 - Several theme color variations including `Slate`, `Rose`, the `Catppuccin` and `Nord` color schemes, two `Neobrutalist` themes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, Bootstrap, and a few throwback themes inspired by Yumekit's spiritual ancestor: `Kepler UI`.
@@ -88,6 +90,8 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
+
+- React JSX types (`react.d.ts`) and the bundled AI docs (`llm.txt`, skill reference) were brought back in sync with the components. Added missing attribute types for `y-data-grid`, `y-date`, `y-datepicker`, and `y-select`; dropped a stale `y-panelbar` type; and corrected several documented attributes/defaults (e.g. `y-table`'s data attribute, `y-button` `style-type` default, `y-switch` colors). A new `npm run check:docs` gate cross-checks every component's observed attributes against all three docs and runs in `pretest` / `prepublishOnly`.
 
 - `y-menu` — a menu anchored to a disabled trigger no longer opens when the trigger is clicked. The anchor's disabled state (native `disabled`, a custom element's reflected `disabled` attribute, or `aria-disabled="true"`) is checked at click time, so toggling it back on restores normal behavior.
 

@@ -75,6 +75,14 @@ Every new component requires: `README.md`, `CHANGELOG.md`, `reference.md`, `SKIL
 
 Tokens under `tokens/` are the source of truth. `styles/*.css` is generated — never edit it directly. Run `npm run build:tokens` after any token change. `npm run build` chains the tokens build first.
 
+## AI Documentation
+
+`llm.txt` and the Claude skill (`.claude/skills/yumekit/` — `SKILL.md`, `reference.md`, `patterns.md`, `examples/`) are the AI-facing docs that ship with the package (bundled into `dist/ai/` at build time; installable into a consumer project via `npx @waggylabs/yumekit init-ai`). Keep them current:
+
+- **Mechanical numbers are synced automatically.** Version, registered-component count, and theme count are stamped from source by `npm run sync:docs` (`scripts/sync-llm-docs.js`), which runs as part of `npm run build`. Don't hand-edit those numbers; if you restructure the surrounding prose, update the anchor patterns in that script. `npm run sync:docs -- --check` fails on drift.
+- **API prose is hand-authored.** When you add or change a component's public API (attributes, slots, events, methods), update the component's entry in `llm.txt`, `.claude/skills/yumekit/reference.md`, and the JSX types in `src/react.d.ts` in the same change — the sync script does not touch these.
+- **Attribute coverage is checked.** `npm run check:docs` (`scripts/check-docs.js`) cross-references every component's `observedAttributes` against `react.d.ts`, `llm.txt`, and `reference.md`, flagging attributes that aren't documented. It runs in `pretest` (and `prepublishOnly`) with `--check`, so adding an observed attribute without documenting it fails the build. It checks attribute *names* only — value enums, defaults, and prose are still on you to keep accurate.
+
 ## Testing
 
 - Tests live alongside the component source file.

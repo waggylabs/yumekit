@@ -1,9 +1,9 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 48 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 53 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.5.0
+0.5.1-beta.12
 
 ## License
 MIT
@@ -158,15 +158,22 @@ Tag: `<y-button>`
 Attributes:
 - `color` — predefined scheme (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"`) or any CSS color (`#hex`, `rgb()`, `hsl()`)
 - `size` — `"small"` | `"medium"` (default) | `"large"`
-- `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
+- `style-type` — `"outlined"` (default) | `"filled"` | `"flat"`
 - `padding-mode` — `"auto"` (default) | `"square"` | `"wide"`. Controls whether the inline padding collapses to the block value: `auto` does so for icon-only buttons; `square` forces it (e.g. paginator number buttons); `wide` never does
 - `left-icon` — icon name (from registry)
 - `right-icon` — icon name (from registry)
 - `disabled` — boolean
 - `type` — `"button"` | `"submit"` | `"reset"` (default: `"button"`)
+- `href` — when set, the button renders as an anchor (`<a>`) pointing at this URL
+- `target` — anchor target (e.g. `"_blank"`); only applies when `href` is set
+- `rel` — anchor `rel` (e.g. `"noopener noreferrer"`); only applies when `href` is set
+- Native form-submission attributes (`form`, `formaction`, `formmethod`, `formenctype`, `formnovalidate`, `formtarget`, `autofocus`) and ARIA attributes (`aria-label`, `aria-pressed`, `aria-expanded`, `aria-haspopup`, `aria-controls`) are reflected onto the underlying control.
 
 ```html
 <y-button color="primary" size="large" left-icon="check">Save</y-button>
+
+<!-- Link button -->
+<y-button href="/docs" target="_blank" rel="noopener">Docs</y-button>
 ```
 
 CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material and Shadcn themes use this for wider buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets the min-height (shared with `y-input` so fields and buttons stay the same height per theme); falls back to `--sizing-{size}`. For `style-type="outlined"`, the border is sourced from the button's matching semantic border token (`--base-border`, `--primary-border`, `--error-border`, …) per `color`, falling back to the button's text color when that token is unset. `--component-button-border-width` sets the border width and is applied as the `border-width` longhand (not baked into a shorthand), so it accepts a 1–4 value pattern for per-side widths (e.g. `1px 2px` or `0 0 2px 0` for a bottom-only border); defaults to `1px`. Two optional global overrides remain: `--component-button-outline-border` overrides the border style + color as a CSS `border` shorthand (e.g. `1px solid var(--base-border)`) — note its width is superseded by `--component-button-border-width` — and `--component-button-outline-border-color` sets just the border color across resting/hover/focus/active — set either via CSS or a scoped `y-theme` to flatten all outlined borders to one color.
@@ -216,6 +223,7 @@ Attributes:
 - `invalid` — boolean, applies error state
 - `max-length` — numeric string
 - `min-length` — numeric string
+- `min`, `max`, `step` — numeric constraints applied when `type="number"`
 - `pattern` — validation regex
 
 Events: `change`, `input`
@@ -360,12 +368,14 @@ Attributes:
 - `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners; trigger only — the dropdown panel keeps its border)
 - `disabled` — boolean
 - `required` — boolean
+- `invalid` — boolean, applies error state
 - `multiple` — boolean; allows multiple selections
 - `display-mode` — `"tag"` renders selected items as removable tags (requires `multiple`)
 - `searchable` — boolean; replaces the value display with an inline text input that filters the dropdown options as the user types (autocomplete style). In single mode the selected label is shown in the input when closed and cleared when opened. In multi-tag mode the input appears after the last tag.
 - `clearable` — boolean; shows a clear (×) button when a value is selected. Works independently of `searchable`.
 - `label-position` — `"top"` (default) | `"bottom"`
 - `close-on-click-outside` — set to `"false"` to keep the dropdown open when clicking outside
+- `portal` — boolean; renders the dropdown into the nearest `<y-theme>` (falling back to `<body>`) so it escapes scrollable, clipped, or low-stacking ancestors (e.g. inside a data-grid cell editor or dialog)
 
 Events: `change`
 
@@ -525,6 +535,7 @@ Radio button. Form-associated.
 Tag: `<y-radio>`
 Attributes:
 - `name`, `value`, `checked`, `disabled`, `required`
+- `options` — JSON array `[{"value":"a","label":"Option A"}, ...]` to render a managed radio group from one element; omit to compose individual `<y-radio>` children instead
 - `size` — `"small"` | `"medium"` | `"large"`
 - `label`, `label-position`
 
@@ -541,10 +552,14 @@ Tag: `<y-switch>`
 Attributes:
 - `name`, `value`, `checked`, `disabled`, `required`
 - `size` — `"small"` | `"medium"` | `"large"`
-- `color` — predefined scheme or CSS color for the toggle when checked (default: `"primary"`)
-- `label`, `label-position` — `"right"` | `"left"`
+- `on-color` — predefined scheme or CSS color for the track when checked (default: `"primary"`)
+- `off-color` — predefined scheme or CSS color for the track when unchecked (default: theme default)
+- `animate` — set to `"false"` to disable the slide transition (default on)
+- `toggle-label` — boolean; shows inline on/off text inside the track (customize via the `on-label` / `off-label` slots)
+- `label-position` — `"right"` | `"left"`
 
 Events: `change`
+Slots: `label`, `on-label`, `off-label`
 
 ---
 
@@ -586,6 +601,15 @@ Attributes:
 - `size` — `"small"` | `"medium"` | `"large"`
 - `color` — predefined scheme or CSS color for the track fill and thumb (default: `"primary"`)
 - `orientation` — `"horizontal"` (default) | `"vertical"`
+- `range` — boolean; two-thumb range slider. Use `value-min` / `value-max` for the endpoints, and `value` reads/writes the `"min,max"` pair
+- `value-min`, `value-max` — the two thumb positions in range mode (default to `min` / `max`)
+- `min-gap` — minimum distance enforced between the two thumbs in range mode (default: `step`)
+- `ticks` — `"true"` for a mark at each step, a number `N` for `N` evenly-spaced intervals, or a JSON array of explicit positions (e.g. `"[0,25,50,100]"`)
+- `tick-labels` — boolean; render value labels beneath the ticks
+- `snap-to-ticks` — boolean; snap the thumb to the nearest tick instead of the step
+- `show-value` — `"none"` (default) | `"always"` | `"dragging"`; when/whether to show the value bubble
+- `value-position` — `"start"` | `"end"`; side the value bubble sits on (default: `"start"` horizontal, `"end"` vertical)
+- `aria-label-min`, `aria-label-max` — accessible labels for the lower / upper thumbs in range mode
 
 Events: `change`, `input`
 
@@ -876,6 +900,7 @@ Attributes:
 - `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `color` — predefined scheme or CSS color for the tooltip background; text is auto-contrasted
 - `delay` — show delay in milliseconds (default: `200`)
+- `open` — boolean; force the tooltip open programmatically (bypasses hover/focus)
 
 Slots: default (trigger element)
 
@@ -987,6 +1012,7 @@ Content container card.
 Tag: `<y-card>`
 Attributes:
 - `color` — color scheme name
+- `raised` — boolean; applies an elevated drop shadow
 
 Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body content)
 

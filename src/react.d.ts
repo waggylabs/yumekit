@@ -185,9 +185,14 @@ declare module "react" {
                 "show-hours"?: boolean | string;
                 "show-minutes"?: boolean | string;
                 "show-seconds"?: boolean | string;
+                "hour-format"?: "12" | "24";
+                "minute-interval"?: string | number;
+                "second-interval"?: string | number;
                 "show-years"?: string;
                 "show-months"?: string;
                 "show-days"?: string;
+                "mobile-breakpoint"?: string | number;
+                "native-mobile"?: boolean | string;
                 variant?: "default" | "underline";
             }>;
             "y-datepicker": El<{
@@ -200,9 +205,13 @@ declare module "react" {
                 "show-hours"?: boolean | string;
                 "show-minutes"?: boolean | string;
                 "show-seconds"?: boolean | string;
+                "hour-format"?: "12" | "24";
+                "minute-interval"?: string | number;
+                "second-interval"?: string | number;
                 "show-years"?: string;
                 "show-months"?: string;
                 "show-days"?: string;
+                "mobile-breakpoint"?: string | number;
             }>;
             "y-dialog": El<{
                 visible?: boolean | string;
@@ -419,9 +428,8 @@ declare module "react" {
                 href?: string;
                 history?: string;
             }>;
-            "y-panelbar": El<{
-                exclusive?: boolean | string;
-            }>;
+            // Layout container only — configuration lives on the child y-panel elements.
+            "y-panelbar": El;
             "y-popover": El<{
                 open?: boolean | string;
                 anchor?: string;
@@ -514,6 +522,7 @@ declare module "react" {
                 multiple?: boolean | string;
                 size?: "small" | "medium" | "large";
                 placeholder?: string;
+                portal?: boolean | string;
                 options?: Array<{ value: string; label: string }> | string;
                 invalid?: boolean | string;
                 required?: boolean | string;
@@ -690,6 +699,8 @@ declare module "react" {
                 "viewport-height"?: string | number;
                 "buffer-size"?: string | number;
                 "enable-header-menu"?: boolean | string;
+                "enable-column-resize"?: boolean | string;
+                "enable-column-reorder"?: boolean | string;
             }>;
             "y-tabs": El<{
                 options?:

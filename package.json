@@ -26,8 +26,12 @@
         "./FUNDING.md": "./FUNDING.md"
     },
     "sideEffects": true,
+    "bin": {
+        "yumekit": "scripts/install-ai-docs.js"
+    },
     "files": [
         "dist",
+        "scripts/install-ai-docs.js",
         "llm.txt",
         "CHANGELOG.md",
         "CONTRIBUTING.md",
@@ -37,10 +41,13 @@
         "access": "public"
     },
     "scripts": {
-        "build": "npm run build:tokens && rollup -c && tsc && node scripts/copy-component-types.js",
+        "build": "npm run build:tokens && rollup -c && tsc && node scripts/copy-component-types.js && npm run sync:docs && npm run bundle:ai",
         "build:tokens": "node scripts/build-tokens.js",
-        "prepublishOnly": "npm run build",
-        "pretest": "npm run build:tokens",
+        "bundle:ai": "node scripts/bundle-ai-docs.js",
+        "sync:docs": "node scripts/sync-llm-docs.js",
+        "check:docs": "node scripts/check-docs.js",
+        "prepublishOnly": "npm run build && npm run check:docs -- --check",
+        "pretest": "npm run build:tokens && npm run sync:docs -- --check && npm run check:docs -- --check",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage",
         "prestorybook": "npm run build:tokens",
         "storybook": "storybook dev -p 6006",

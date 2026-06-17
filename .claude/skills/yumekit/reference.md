@@ -146,6 +146,7 @@ When `href` is set, the internal element renders as `<a>` instead of `<button>` 
 | `href`       | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled` |
 | `target`     | e.g. `"_blank"` — only applies when `href` is set                                      |
 | `rel`        | e.g. `"noopener noreferrer"` — only applies when `href` is set                         |
+| form attrs   | `form`, `formaction`, `formmethod`, `formenctype`, `formnovalidate`, `formtarget`, `autofocus` are reflected to the underlying control |
 
 Slots: default (label), `left-icon`, `right-icon`
 
@@ -235,6 +236,7 @@ Form-associated. Always set `name` inside a `<form>`.
 | `invalid`        | boolean — applies error state                                             |
 | `max-length`     | number string                                                             |
 | `min-length`     | number string                                                             |
+| `min`, `max`, `step` | numeric constraints applied when `type="number"`                      |
 | `pattern`        | regex string                                                              |
 
 Events: `change`, `input`
@@ -303,8 +305,14 @@ Form-associated.
 | `variant`      | `default` \| `underline` (bottom border only on the trigger, square bottom corners) |
 | `disabled`     | boolean                                         |
 | `required`     | boolean                                         |
+| `invalid`      | boolean — error state                           |
 | `multiple`     | boolean                                         |
-| `display-mode` | `dropdown` (default) \| `inline`                |
+| `searchable`   | boolean — inline filter input (autocomplete)    |
+| `clearable`    | boolean — shows a clear (×) button when a value is set |
+| `display-mode` | `tag` — render selected items as removable tags (requires `multiple`) |
+| `label-position` | `top` (default) \| `bottom`                   |
+| `close-on-click-outside` | `"false"` keeps the dropdown open on outside click |
+| `portal`       | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors |
 
 Events: `change`
 
@@ -341,7 +349,7 @@ CSS Custom Properties: `--component-checkbox-size`, `--component-checkbox-icon-s
 
 ## y-radio
 
-Form-associated. Group by giving the same `name`.
+Form-associated. Group by giving the same `name`, or render a managed group from one element via `options`.
 
 | Attribute        | Values / Notes                 |
 | ---------------- | ------------------------------ |
@@ -349,6 +357,7 @@ Form-associated. Group by giving the same `name`.
 | `checked`        | boolean                        |
 | `disabled`       | boolean                        |
 | `required`       | boolean                        |
+| `options`        | JSON: `[{"value":"a","label":"Option A"}, ...]` — render a managed radio group |
 | `size`           | `small` \| `medium` \| `large` |
 | `label`          |                                |
 | `label-position` | `right` (default) \| `left`    |
@@ -369,10 +378,15 @@ Form-associated.
 | `disabled`       | boolean                        |
 | `required`       | boolean                        |
 | `size`           | `small` \| `medium` \| `large` |
+| `on-color`       | scheme or CSS color for the track when checked (default `primary`) |
+| `off-color`      | scheme or CSS color for the track when unchecked |
+| `animate`        | `"false"` disables the slide transition |
+| `toggle-label`   | boolean — inline on/off text inside the track (`on-label` / `off-label` slots) |
 | `label`          |                                |
 | `label-position` | `right` \| `left`              |
 
 Events: `change`
+Slots: `label`, `on-label`, `off-label`
 
 ---
 
@@ -382,11 +396,21 @@ Form-associated.
 
 | Attribute                             | Values / Notes                   |
 | ------------------------------------- | -------------------------------- |
-| `name`, `value`, `min`, `max`, `step` |                                  |
+| `name`, `value`, `min`, `max`, `step` | `value` reads/writes `"min,max"` in range mode |
 | `disabled`                            | boolean                          |
 | `required`                            | boolean                          |
 | `size`                                | `small` \| `medium` \| `large`   |
-| `show-value`                          | boolean — displays current value |
+| `color`                               | scheme or CSS color for the track fill and thumb (default `primary`) |
+| `orientation`                         | `horizontal` (default) \| `vertical` |
+| `range`                               | boolean — two-thumb range slider (uses `value-min` / `value-max`) |
+| `value-min`, `value-max`              | the two thumb positions in range mode (default `min` / `max`) |
+| `min-gap`                             | minimum gap between thumbs in range mode (default: `step`) |
+| `ticks`                               | `"true"` (mark per step), a number `N` (N intervals), or JSON array of positions `"[0,25,50,100]"` |
+| `tick-labels`                         | boolean — value labels beneath ticks |
+| `snap-to-ticks`                       | boolean — snap to nearest tick instead of step |
+| `show-value`                          | `none` (default) \| `always` \| `dragging` — value bubble |
+| `value-position`                      | `start` \| `end` (default: `start` horizontal, `end` vertical) |
+| `aria-label-min`, `aria-label-max`    | accessible labels for the lower / upper thumbs |
 
 Events: `change`, `input`
 
@@ -703,17 +727,30 @@ Events: `change` — `event.detail.value`
 
 ## y-progress
 
-| Attribute       | Values / Notes                 |
-| --------------- | ------------------------------ |
-| `value`         | number 0–100                   |
-| `max`           | number (default: 100)          |
-| `indeterminate` | boolean — animated loading bar |
-| `color`         | color scheme name              |
-| `size`          | `small` \| `medium` \| `large` |
+| Attribute        | Values / Notes                 |
+| ---------------- | ------------------------------ |
+| `value`          | number `min`–`max`             |
+| `values`         | JSON array of numbers — multiple segments/series |
+| `min`, `max`     | numeric bounds (default `0` / `100`) |
+| `step`           | numeric step                   |
+| `mode`           | `bar` (default) \| `ring` \| `pie` |
+| `indeterminate`  | boolean — animated loading state |
+| `disabled`       | boolean                        |
+| `color`          | color scheme name or CSS color |
+| `track-color`    | scheme or CSS color for the unfilled track |
+| `size`           | `small` \| `medium` \| `large` |
+| `thickness`      | `small` \| `medium` (default) \| `large` — bar/ring thickness |
+| `label-display`  | `"false"` hides the label (default shown) |
+| `label-format`   | `percent` (default) \| `value` \| `fraction` |
+| `segmented`      | boolean or number — split the bar into N segments |
+| `segment-gap`    | gap between segments           |
+| `start-angle`    | ring/pie start angle in degrees (default `0`) |
+| `direction`      | `clockwise` (default) \| `counterclockwise` — ring/pie sweep |
 
 ```html
 <y-progress value="65" color="primary"></y-progress>
 <y-progress indeterminate color="secondary"></y-progress>
+<y-progress mode="ring" value="70" thickness="large"></y-progress>
 ```
 
 ---
@@ -724,7 +761,9 @@ Events: `change` — `event.detail.value`
 | ---------- | ------------------------------------------------ |
 | `text`     | tooltip content (required)                       |
 | `position` | `top` (default) \| `bottom` \| `left` \| `right` |
-| `trigger`  | `hover` (default) \| `click` \| `focus`          |
+| `color`    | scheme or CSS color for the background; text auto-contrasted |
+| `delay`    | show delay in ms (default `200`)                 |
+| `open`     | boolean — force open programmatically (bypasses hover/focus) |
 
 Slot: default (trigger element)
 
@@ -781,9 +820,10 @@ function hello() {
 
 ## y-card
 
-| Attribute | Values / Notes    |
-| --------- | ----------------- |
-| `color`   | color scheme name |
+| Attribute | Values / Notes               |
+| --------- | ---------------------------- |
+| `color`   | color scheme name            |
+| `raised`  | boolean — elevated drop shadow |
 
 Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body)
 
@@ -1466,14 +1506,14 @@ Methods: `expand()`, `collapse()`, `toggle()`
 | Attribute | Values / Notes                                    |
 | --------- | ------------------------------------------------- |
 | `columns` | JSON: `[{"key":"name","label":"Name"}, ...]`      |
-| `rows`    | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
+| `data`    | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
 | `striped` | boolean                                           |
 | `size`    | `small` \| `medium` \| `large`                    |
 
 ```html
 <y-table
     columns='[{"key":"name","label":"Name"},{"key":"email","label":"Email"},{"key":"role","label":"Role"}]'
-    rows='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
+    data='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
     striped
 ></y-table>
 ```
