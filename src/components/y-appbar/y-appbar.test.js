@@ -455,6 +455,32 @@ describe("YumeAppbar", () => {
         expect(style).to.include("position: sticky");
     });
 
+    it("sticky border uses the border-width shorthand so multi-value tokens (e.g. neobrutalist) render", async () => {
+        const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
+        const style = el.shadowRoot.querySelector("style").textContent;
+        // A single-edge `border-bottom: <4-value token>` is invalid CSS; the
+        // shorthand `border-width` accepts per-side values, so the content-edge
+        // border renders for themes that set asymmetric widths.
+        expect(style).to.include(
+            "border-width: var(--component-appbar-border-width",
+        );
+        expect(style).to.not.include("border: none");
+    });
+
+    it("sticky=start keeps the content-facing (bottom) border and drops the screen-flush edges", async () => {
+        const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("border-top-width: 0;");
+        expect(style).to.include("border-left-width: 0;");
+        expect(style).to.include("border-right-width: 0;");
+    });
+
+    it("sticky=end drops the bottom (screen-flush) edge instead of the top", async () => {
+        const el = await fixture(html`<y-appbar sticky="end"></y-appbar>`);
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("border-bottom-width: 0;");
+    });
+
     // ── mobileBreakpoint getter/setter ───────────────────────────
 
     it("mobileBreakpoint getter returns empty string when attribute is absent", async () => {

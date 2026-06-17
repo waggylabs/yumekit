@@ -1461,11 +1461,12 @@ Attributes:
 - `breakpoint` — number (px) — when set, dock is only visible below this viewport width; omit for always visible
 - `size` — `"small"` | `"medium"` (default) | `"large"`
 - `history` — omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`
+- `floating` — boolean; when present, detaches the dock into a bordered, rounded island inset from the viewport edges with a shadow (similar to a non-sticky `y-appbar`)
 
 Events: `navigate` (cancelable, `detail: { href }`)
 Slots: default (direct child elements as dock items), `{item.slot}` (per-item custom template)
 CSS Parts: `bar`, `item`
-CSS Custom Properties: `--component-dock-height`, `--component-dock-height-{small|medium|large}`, `--component-dock-font-size-{small|medium|large}`, `--component-dock-background`, `--component-dock-border-color`, `--component-dock-border-width`, `--component-dock-color`, `--component-dock-color-active`, `--component-dock-z-index`
+CSS Custom Properties: `--component-dock-height`, `--component-dock-height-{small|medium|large}`, `--component-dock-font-size-{small|medium|large}`, `--component-dock-background`, `--component-dock-border-color`, `--component-dock-border-width`, `--component-dock-border-radius`, `--component-dock-floating-margin`, `--component-dock-shadow`, `--component-dock-color`, `--component-dock-color-active`, `--component-dock-z-index`
 
 ```html
 <y-dock

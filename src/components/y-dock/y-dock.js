@@ -3,7 +3,14 @@ import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeDock extends HTMLElement {
     static get observedAttributes() {
-        return ["items", "position", "breakpoint", "size", "history"];
+        return [
+            "items",
+            "position",
+            "breakpoint",
+            "size",
+            "history",
+            "floating",
+        ];
     }
 
     // -------------------------------------------------------------------------
@@ -56,6 +63,15 @@ export class YumeDock extends HTMLElement {
     set breakpoint(val) {
         if (val == null) this.removeAttribute("breakpoint");
         else this.setAttribute("breakpoint", String(val));
+    }
+
+    /** When set, detaches the dock into a bordered, rounded island inset from the viewport edges (similar to a non-sticky y-appbar). */
+    get floating() {
+        return this.hasAttribute("floating");
+    }
+    set floating(val) {
+        if (val) this.setAttribute("floating", "");
+        else this.removeAttribute("floating");
     }
 
     /** Navigation mode. Omit for pushState SPA navigation; set to "false" for full-page navigation. */
@@ -170,10 +186,30 @@ export class YumeDock extends HTMLElement {
         const style = document.createElement("style");
         const pos = this.position;
         const sz = this.size;
+        const floating = this.floating;
         const heightVar = `var(--component-dock-height, var(--component-dock-height-${sz}))`;
         const fontSizeVar = `var(--component-dock-font-size-${sz}, ${this._getDefaultFontSize()})`;
-        style.textContent = `
-            :host {
+        const margin = "var(--component-dock-floating-margin, 16px)";
+
+        const hostStyles = floating
+            ? `
+                display: block;
+                position: fixed;
+                ${
+                    pos === "top"
+                        ? `top: calc(${margin} + env(safe-area-inset-top, 0px));`
+                        : `bottom: calc(${margin} + env(safe-area-inset-bottom, 0px));`
+                }
+                left: ${margin};
+                right: ${margin};
+                z-index: var(--component-dock-z-index, 8000);
+                background: var(--component-dock-background);
+                border: var(--component-dock-border-width, 1px) solid var(--component-dock-border-color);
+                border-radius: var(--component-dock-border-radius, 8px);
+                box-shadow: var(--component-dock-shadow, var(--base-shadow, 0 2px 6px rgba(0, 0, 0, 0.4)));
+                overflow: hidden;
+            `
+            : `
                 display: block;
                 position: fixed;
                 ${pos === "top" ? "top: 0;" : "bottom: 0;"}
@@ -191,7 +227,10 @@ export class YumeDock extends HTMLElement {
                         ? `border-top: var(--component-dock-border-width, 1px) solid var(--component-dock-border-color);`
                         : `border-bottom: var(--component-dock-border-width, 1px) solid var(--component-dock-border-color);`
                 }
-            }
+            `;
+
+        style.textContent = `
+            :host {${hostStyles}}
             :host([hidden]) {
                 display: none !important;
             }

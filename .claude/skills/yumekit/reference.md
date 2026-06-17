@@ -1185,6 +1185,7 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 | `breakpoint` | number (px) — when set, dock is only visible below this width; omit for always visible        |
 | `size`       | `small` \| `medium` (default) \| `large`                                                      |
 | `history`    | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+| `floating`   | boolean — when present, renders the dock as a bordered, rounded island inset from the edges with a shadow (like a non-sticky `y-appbar`) |
 
 **Events:** `navigate` (cancelable, `detail: { href }`)
 
@@ -1198,6 +1199,9 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 - `--component-dock-background` — dock bar background color
 - `--component-dock-border-color` — border color on the edge facing the content
 - `--component-dock-border-width` — border width
+- `--component-dock-border-radius` — corner radius when `floating`
+- `--component-dock-floating-margin` — inset from the viewport edges when `floating` (default `16px`)
+- `--component-dock-shadow` — drop shadow when `floating` (defaults to `--base-shadow`)
 - `--component-dock-color` — default item text/icon color
 - `--component-dock-color-active` — selected item text/icon color
 - `--component-dock-z-index` — stacking order (default: `8000`)

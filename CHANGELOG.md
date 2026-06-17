@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-dock` — new `floating` attribute that detaches the dock into a bordered, rounded island inset from the viewport edges with a drop shadow, styled like a non-sticky `y-appbar`. Tunable via `--component-dock-border-radius`, `--component-dock-floating-margin`, and `--component-dock-shadow` (shadow defaults to `--base-shadow`).
+
 - AI assistant docs now ship with the package, plus an `npx @waggylabs/yumekit init-ai` command to drop them into a project. The command installs the YumeKit Claude Code skill (`.claude/skills/yumekit/`), `llm.txt`, and an `AGENTS.md` pointer; it is opt-in and idempotent, skipping existing files unless `--force` is passed.
 
 - `y-checkbox` / `y-radio` — checked-state color hooks so themes can fill the control on selection: `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` and `--component-radio-background` / `-checked-background` / `-checked-border-color` / `-checked-dot-color`. Each falls back to the matching unchecked value, so existing themes are unchanged. The design-system themes now use them — checked checkboxes (and Shadcn/Bootstrap/Primer radios) fill with the primary color and draw the check/dot in the primary-inverse color, matching each system's native look.
@@ -90,6 +92,8 @@ Delete any empty sections before publishing.
 - **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
 
 ### Fixed
+
+- `y-appbar` — a stickied appbar now renders its content-facing border correctly under themes with per-side border widths (e.g. neobrutalist's `2px 2px 6px 2px`). The sticky styles previously fed a 4-value width token into a single-edge `border-bottom`/`border-top` shorthand, which is invalid CSS and dropped the border entirely; they now use the `border-width` shorthand and zero only the screen-flush edges.
 
 - `y-menu` — a menu taller than the viewport now caps its height and scrolls internally instead of running off-screen (notably on mobile). Scrolling only engages on genuine overflow, so normal menus keep their CSS flyout submenus.
 

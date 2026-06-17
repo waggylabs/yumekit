@@ -483,6 +483,14 @@
                 "$type": "borderWidth",
                 "$value": "{border.x-thin}"
             },
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.large}"
+            },
+            "floating-margin": {
+                "$type": "dimension",
+                "$value": "16px"
+            },
             "z-index": {
                 "$type": "number",
                 "$value": 8000

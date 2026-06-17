@@ -218,13 +218,19 @@ export class YumeAppbar extends HTMLElement {
 
             :host([sticky]) .appbar {
                 border-radius: 0;
-                border: none;
+                border-style: solid;
+                border-color: var(--component-appbar-border-color, #37383a);
+                border-width: var(--component-appbar-border-width, 2px);
             }
             :host([sticky="start"]) .appbar {
-                border-bottom: var(--component-appbar-border-width, 2px) solid var(--component-appbar-border-color, #37383a);
+                border-top-width: 0;
+                border-left-width: 0;
+                border-right-width: 0;
             }
             :host([sticky="end"]) .appbar {
-                border-top: var(--component-appbar-border-width, 2px) solid var(--component-appbar-border-color, #37383a);
+                border-bottom-width: 0;
+                border-left-width: 0;
+                border-right-width: 0;
             }
 
             .appbar {
@@ -422,8 +428,12 @@ export class YumeAppbar extends HTMLElement {
 
             :host([sticky]) .appbar {
                 border-radius: 0;
-                border: none;
-                border-bottom: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px)) solid var(--component-appbar-border-color, #37383a);
+                border-style: solid;
+                border-color: var(--component-appbar-border-color, #37383a);
+                border-width: var(--component-appbar-border-width, var(--component-sidebar-border-width, 2px));
+                border-top-width: 0;
+                border-left-width: 0;
+                border-right-width: 0;
             }
 
             .appbar {

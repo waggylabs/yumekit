@@ -28,10 +28,10 @@
     "shadow": {
       "$type": "boxShadow",
       "$value": {
-        "x": "4px",
-        "y": "4px",
+        "x": "0px",
+        "y": "6px",
         "blur": "0",
-        "spread": "0",
+        "spread": "3px",
         "color": "#000000",
         "type": "dropShadow"
       }

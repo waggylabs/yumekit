@@ -236,6 +236,7 @@ declare module "react" {
                 breakpoint?: string | number;
                 size?: "small" | "medium" | "large";
                 history?: string;
+                floating?: boolean | string;
             }>;
             "y-drawer": El<{
                 visible?: boolean | string;
