@@ -51,19 +51,19 @@
       },
       "light": {
         "$type": "color",
-        "$value": "{orange.light.6}"
+        "$value": "#f7b23a"
       },
       "lighter": {
         "$type": "color",
-        "$value": "{orange.light.5}"
+        "$value": "#e89e28"
       },
       "lightest": {
         "$type": "color",
-        "$value": "{orange.light.4}"
+        "$value": "#d18a1c"
       },
       "DEFAULT": {
         "$type": "color",
-        "$value": "{orange.light.7}"
+        "$value": "#ffc24d"
       }
     },
     "shadow": {

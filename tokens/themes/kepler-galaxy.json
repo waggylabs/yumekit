@@ -25,7 +25,7 @@
     "background": {
       "app": {
         "$type": "color",
-        "$value": "{blue.dark.0}"
+        "$value": "#07101f"
       },
       "component": {
         "$type": "color",
@@ -82,24 +82,24 @@
     "background": {
       "app": {
         "$type": "color",
-        "$value": "{teal.dark.1}"
+        "$value": "{cyan.dark.1}"
       },
       "component": {
         "$type": "color",
-        "$value": "{teal.dark.0}"
+        "$value": "{cyan.dark.0}"
       },
       "hover": {
         "$type": "color",
-        "$value": "{teal.dark.2}"
+        "$value": "{cyan.dark.2}"
       },
       "active": {
         "$type": "color",
-        "$value": "{teal.dark.3}"
+        "$value": "{cyan.dark.3}"
       }
     },
     "border": {
       "$type": "color",
-      "$value": "{teal.dark.4}"
+      "$value": "{cyan.dark.4}"
     },
     "content": {
       "inverse": {
@@ -108,15 +108,15 @@
       },
       "hover": {
         "$type": "color",
-        "$value": "{teal.light.7}"
+        "$value": "{cyan.light.7}"
       },
       "active": {
         "$type": "color",
-        "$value": "{teal.light.6}"
+        "$value": "{cyan.light.6}"
       },
       "DEFAULT": {
         "$type": "color",
-        "$value": "{teal.DEFAULT}"
+        "$value": "{cyan.DEFAULT}"
       }
     }
   },

@@ -51,19 +51,19 @@
       },
       "light": {
         "$type": "color",
-        "$value": "{green.light.6}"
+        "$value": "#9bf58c"
       },
       "lighter": {
         "$type": "color",
-        "$value": "{green.light.5}"
+        "$value": "#74e063"
       },
       "lightest": {
         "$type": "color",
-        "$value": "{green.light.4}"
+        "$value": "#50c63f"
       },
       "DEFAULT": {
         "$type": "color",
-        "$value": "{green.DEFAULT}"
+        "$value": "#c4ffb8"
       }
     },
     "shadow": {
@@ -108,15 +108,15 @@
       },
       "hover": {
         "$type": "color",
-        "$value": "{neutral.light.2}"
+        "$value": "#5ae883"
       },
       "active": {
         "$type": "color",
-        "$value": "{neutral.light.3}"
+        "$value": "#74f099"
       },
       "DEFAULT": {
         "$type": "color",
-        "$value": "{neutral.light.0}"
+        "$value": "#3ee06b"
       }
     }
   },
