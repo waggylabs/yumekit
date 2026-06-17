@@ -157,7 +157,8 @@
       "content-color": { "$type": "color", "$value": "{base.content.lightest}" }
     },
     "button": {
-      "border-width": { "$type": "borderWidth", "$value": "2px 2px 6px 2px" }
+      "border-width": { "$type": "borderWidth", "$value": "2px 2px 6px 2px" },
+      "outline-border-color": { "$type": "color", "$value": "{base.border}" }
     },
     "inputs": {
       "border-width": { "$type": "borderWidth", "$value": "2px 2px 6px 2px" }

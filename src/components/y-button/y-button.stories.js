@@ -13,7 +13,15 @@ export default {
         },
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+                "help",
+            ],
             description: "Color theme for the button.",
             table: { defaultValue: { summary: "base" } },
         },
@@ -57,7 +65,15 @@ export default {
         disabled: false,
         type: "button",
     },
-    render: ({ label, color, styleType, size, paddingMode, disabled, type }) => `
+    render: ({
+        label,
+        color,
+        styleType,
+        size,
+        paddingMode,
+        disabled,
+        type,
+    }) => `
         <y-button
             color="${color}"
             style-type="${styleType}"
@@ -91,6 +107,29 @@ export const Colors = {
             <y-button color="warning">Warning</y-button>
             <y-button color="error">Error</y-button>
             <y-button color="help">Help</y-button>
+        </div>
+    `,
+};
+
+export const CustomColors = {
+    name: "Custom Colors",
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <y-button color="#7c3aed" style-type="outlined">Outlined #7c3aed</y-button>
+                <y-button color="#7c3aed" style-type="filled">Filled #7c3aed</y-button>
+                <y-button color="#7c3aed" style-type="flat">Flat #7c3aed</y-button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <y-button color="rgb(13 148 136)" style-type="outlined">Outlined rgb()</y-button>
+                <y-button color="rgb(13 148 136)" style-type="filled">Filled rgb()</y-button>
+                <y-button color="rgb(13 148 136)" style-type="flat">Flat rgb()</y-button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <y-button color="oklch(0.7 0.18 25)" style-type="outlined">Outlined oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" style-type="filled">Filled oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" style-type="flat">Flat oklch()</y-button>
+            </div>
         </div>
     `,
 };

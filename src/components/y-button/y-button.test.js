@@ -86,10 +86,12 @@ describe("KeplerButton", () => {
             html`<y-button color="#00aaff" style-type="outlined">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
+        const textColor = shadowButton.style.getPropertyValue("--text-color");
+        expect(textColor).to.equal("#00aaff");
         const borderColor = shadowButton.style.getPropertyValue("--border-color");
-        expect(borderColor).to.equal("#00aaff");
+        expect(borderColor).to.equal("color-mix(in srgb, #00aaff 55%, transparent)");
         const bgColor = shadowButton.style.getPropertyValue("--background-color");
-        expect(bgColor).to.equal("transparent");
+        expect(bgColor).to.equal("color-mix(in srgb, #00aaff 8%, transparent)");
     });
 
     it("drives the outlined border from the semantic border token", async () => {
@@ -130,6 +132,14 @@ describe("KeplerButton", () => {
         expect(bgColor).to.equal("transparent");
         const textColor = shadowButton.style.getPropertyValue("--text-color");
         expect(textColor).to.equal("#00ff88");
+        const hoverBorder = shadowButton.style.getPropertyValue(
+            "--hover-border-color"
+        );
+        expect(hoverBorder).to.equal("transparent");
+        const hoverBg = shadowButton.style.getPropertyValue(
+            "--hover-background-color"
+        );
+        expect(hoverBg).to.equal("color-mix(in srgb, #00ff88 15%, transparent)");
     });
 
     it("value getter returns empty string when no value is set", async () => {

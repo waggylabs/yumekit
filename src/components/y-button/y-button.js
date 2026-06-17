@@ -247,6 +247,8 @@ export class YumeButton extends HTMLElement {
         const hover = `color-mix(in srgb, ${color} 85%, black)`;
         const active = `color-mix(in srgb, ${color} 70%, black)`;
         const subtle = `color-mix(in srgb, ${color} 15%, transparent)`;
+        const faint = `color-mix(in srgb, ${color} 8%, transparent)`;
+        const border = `color-mix(in srgb, ${color} 55%, transparent)`;
 
         const styles = {
             filled: {
@@ -265,18 +267,18 @@ export class YumeButton extends HTMLElement {
                 "--active-text-color": text,
             },
             outlined: {
-                "--background-color": "transparent",
-                "--border-color": color,
+                "--background-color": faint,
+                "--border-color": border,
                 "--text-color": color,
-                "--btn-outline-border": this._outlineBorder(color),
+                "--btn-outline-border": this._outlineBorder(border),
                 "--hover-background-color": subtle,
-                "--hover-border-color": this._outlineBorderColor(color),
+                "--hover-border-color": this._outlineBorderColor(border),
                 "--hover-text-color": color,
                 "--focus-background-color": subtle,
-                "--focus-border-color": this._outlineBorderColor(color),
+                "--focus-border-color": this._outlineBorderColor(border),
                 "--focus-text-color": color,
                 "--active-background-color": color,
-                "--active-border-color": this._outlineBorderColor(color),
+                "--active-border-color": this._outlineBorderColor(border),
                 "--active-text-color": text,
             },
             flat: {
@@ -285,10 +287,10 @@ export class YumeButton extends HTMLElement {
                 "--text-color": color,
                 "--btn-outline-border": "initial",
                 "--hover-background-color": subtle,
-                "--hover-border-color": subtle,
+                "--hover-border-color": "transparent",
                 "--hover-text-color": color,
                 "--focus-background-color": subtle,
-                "--focus-border-color": subtle,
+                "--focus-border-color": "transparent",
                 "--focus-text-color": color,
                 "--active-background-color": color,
                 "--active-border-color": color,
