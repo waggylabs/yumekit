@@ -385,11 +385,11 @@ describe("<y-theme>", () => {
     });
 
     it("resets a theme-specific variable when switching away from that theme", async () => {
-        // --component-tabs-inactive-background exists only in the neobrutalist
+        // --component-tabs-inactive-background exists only in the waggy
         // themes; switching away must not leave its value stuck inline on the
         // host. It is reset to `initial` (not removed) so it also can't inherit
         // from an ancestor <y-theme> in nested setups.
-        const el = await fixture(html`<y-theme theme="neobrutalist"></y-theme>`);
+        const el = await fixture(html`<y-theme theme="waggy"></y-theme>`);
         await waitUntil(
             () => {
                 const v = el.style
@@ -397,7 +397,7 @@ describe("<y-theme>", () => {
                     .trim();
                 return v !== "" && v !== "initial";
             },
-            "neobrutalist should set --component-tabs-inactive-background",
+            "waggy should set --component-tabs-inactive-background",
         );
 
         el.setAttribute("theme", "blue-light");
@@ -454,10 +454,10 @@ describe("<y-theme>", () => {
     });
 
     it("resets ancestor-only tokens to `initial` in a nested theme", async () => {
-        // neobrutalist is the only built-in theme that sets
+        // waggy is the only built-in theme that sets
         // --component-button-outline-border-color; blue-light omits it.
         const outer = await fixture(html`
-            <y-theme id="outer" theme="neobrutalist">
+            <y-theme id="outer" theme="waggy">
                 <y-theme id="inner" theme="blue-light"></y-theme>
             </y-theme>
         `);
@@ -479,9 +479,9 @@ describe("<y-theme>", () => {
     it("ancestor token does not leak into a nested theme's var() fallback", async () => {
         // A probe element resolves the token with a sentinel fallback. The
         // `initial` reset on the inner host should make the inner probe fall
-        // back, while the outer (neobrutalist) probe picks up the real value.
+        // back, while the outer (waggy) probe picks up the real value.
         const outer = await fixture(html`
-            <y-theme id="outer" theme="neobrutalist">
+            <y-theme id="outer" theme="waggy">
                 <span
                     id="outer-probe"
                     style="color: var(--component-button-outline-border-color, rgb(1, 2, 3))"

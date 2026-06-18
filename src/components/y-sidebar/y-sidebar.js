@@ -511,7 +511,7 @@ export class YumeSidebar extends HTMLElement {
      * Total horizontal border (left + right) of the collapsed bar, used to size
      * the icon column so collapsed and expanded icons line up. Resolved in JS
      * because the border-width tokens may be a multi-value shorthand (e.g. the
-     * neobrutalist offset border "2px 2px 6px 2px"), which can't be multiplied
+     * waggy offset border "2px 2px 6px 2px"), which can't be multiplied
      * inside calc(). Flat nav buttons render no border (border-style: none), so
      * only the sidebar's own border is subtracted.
      */

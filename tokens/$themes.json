@@ -279,25 +279,25 @@
     }
   },
   {
-    "id": "themes-neobrutalist",
-    "name": "Neobrutalist",
+    "id": "themes-waggy",
+    "name": "Waggy",
     "group": "Themes",
     "selectedTokenSets": {
       "core/colors": "source",
       "core/numerics": "source",
       "core/components": "source",
-      "themes/neobrutalist": "enabled"
+      "themes/waggy": "enabled"
     }
   },
   {
-    "id": "themes-neobrutalist-dark",
-    "name": "Neobrutalist Dark",
+    "id": "themes-waggy-dark",
+    "name": "Waggy Dark",
     "group": "Themes",
     "selectedTokenSets": {
       "core/colors": "source",
       "core/numerics": "source",
       "core/components": "source",
-      "themes/neobrutalist-dark": "enabled"
+      "themes/waggy-dark": "enabled"
     }
   },
   {

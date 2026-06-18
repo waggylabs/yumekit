@@ -35,103 +35,103 @@ Delete any empty sections before publishing.
 
 ### Added
 
-- `y-dock` — new `floating` attribute that detaches the dock into a bordered, rounded island inset from the viewport edges with a drop shadow, styled like a non-sticky `y-appbar`. Tunable via `--component-dock-border-radius`, `--component-dock-floating-margin`, and `--component-dock-shadow` (shadow defaults to `--base-shadow`).
+- New `y-data-grid` component — interactive grid for large datasets with client- or server-side sorting, filtering, and pagination, row selection, inline cell editing, grouping with aggregates, multi-column header groups, virtual scrolling, a per-column header menu, and a sticky header.
 
-- AI assistant docs now ship with the package, plus an `npx @waggylabs/yumekit init-ai` command to drop them into a project. The command installs the YumeKit Claude Code skill (`.claude/skills/yumekit/`), `llm.txt`, and an `AGENTS.md` pointer; it is opt-in and idempotent, skipping existing files unless `--force` is passed.
+- New `y-popover` component — anchored floating panel with slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and a `portal` mode that renders into `<body>`.
 
-- `y-checkbox` / `y-radio` — checked-state color hooks so themes can fill the control on selection: `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` and `--component-radio-background` / `-checked-background` / `-checked-border-color` / `-checked-dot-color`. Each falls back to the matching unchecked value, so existing themes are unchanged. The design-system themes now use them — checked checkboxes (and Shadcn/Bootstrap/Primer radios) fill with the primary color and draw the check/dot in the primary-inverse color, matching each system's native look.
+- New `y-help` component — guided product-tour overlay with ordered steps, a dimmed SVG highlight, anchored tooltip, prev/next controls, and keyboard shortcuts.
 
-- Several theme color variations including `Slate`, `Rose`, the `Catppuccin` and `Nord` color schemes, two `Neobrutalist` themes, as well as several new themes based on some of the most popular design systems. This includes Material, Carbon, Ant, Shadcn, Primer, Bootstrap, and a few throwback themes inspired by Yumekit's spiritual ancestor: `Kepler UI`.
+- New `y-code` component — code block with line numbers, copy-to-clipboard (block and per-line), `max-lines` collapse, and an optional filename header. Built-in tokenizer covers JavaScript, TypeScript, JSON, CSS, Python, Bash, and HTML and emits Prism-compatible classes; an external highlighter can feed the sanitized `highlighted` slot.
 
-- `y-tabs` — new `variant="accent"` style: minimal tabs where the active tab shows a primary-colored indicator border on its content-facing edge (bottom for top tabs, etc.). The default bordered style is unchanged. Adds `--component-tabs-accent-width` (indicator thickness). The border-width token is normalized to `--component-tabs-border-width` (matching `--component-tabs-border-color`); the legacy `--component-tab-border-width` is still honored as a fallback.
+- New `y-shape` component — clips slotted content into a geometric shape (rectangle, circle, ellipse, star, heart, chat-bubble, times, cross, or custom `polygon`) via CSS `clip-path`.
 
-- Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — new `variant="underline"` style: a bottom-only border with square bottom corners (the Material/Carbon text-field look) instead of the full-border `"default"`. Hover/focus/invalid states still color the underline. Helps match design systems that use underlined fields.
+- Many new themes: `Slate`, `Rose`, `Catppuccin`, and `Nord`. We also added two `Waggy` themes, several themes based on other open source design systems (Material, Carbon, Ant, Shadcn, Primer, Bootstrap). We also added `Kepler` themes in a nod to Kepler UI, YumeKit's spiritual predecessor.
 
-- New `y-data-grid` component — interactive grid for large or dynamic datasets with client- or server-side sorting, filtering, and pagination, single/multi row selection, inline cell editing, nested row grouping with aggregates, multi-column header groups, virtual scrolling, an optional per-column header menu (filter, sort, visibility, reorder), and a sticky header.
+- Filled icon variants for `y-icon` via a new `weight="filled"` value, falling back to the line icon when no filled version is registered. 116 filled icons ship under `icons/all-filled.js` (also pulled in by `icons/all.js`).
 
-- New `y-popover` component — target-anchored floating panel with rich slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and an opt-in `portal` mode that renders into `<body>` to escape ancestor stacking contexts.
+- AI assistant docs now ship with the package, plus an `npx @waggylabs/yumekit init-ai` command that installs the YumeKit Claude Code skill (`.claude/skills/yumekit/`), `llm.txt`, and an `AGENTS.md` pointer. Opt-in and idempotent; skips existing files unless `--force` is passed.
 
-- New `y-help` component — guided product-tour / onboarding overlay. Walks users through an ordered list of steps with a dimmed SVG highlight, anchored tooltip, prev/next controls, overlay-edge arrows, and keyboard shortcuts.
+- `y-checkbox` / `y-radio` — checked-state color hooks so themes can fill the control on selection: `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` and `--component-radio-background` / `-checked-background` / `-checked-border-color` / `-checked-dot-color`. Each falls back to its unchecked value. The design-system themes use them to fill checked controls with the primary color.
 
-- New `y-code` component — code-block container with line numbers, copy-to-clipboard (block and per-line), `max-lines` collapse, and an optional filename header. Built-in tokenizer covers JavaScript, TypeScript, JSON, CSS, Python, Bash, and HTML; emits Prism-compatible classes so existing Prism stylesheets layer on cleanly, or pipe an external highlighter's output through the sanitized `highlighted` slot.
+- `y-tabs` — new `variant="accent"` style: the active tab shows a primary-colored indicator on its content-facing edge. Adds `--component-tabs-accent-width` (indicator thickness) and normalizes the border-width token to `--component-tabs-border-width` (legacy `--component-tab-border-width` still honored).
 
-- New `y-shape` component — presentational container that clips its slotted content into a geometric shape (rectangle, circle, ellipse, star, heart, chat-bubble, times, cross, or a custom `polygon`) via CSS `clip-path`. Suitable for avatar masks, decorative panels, and non-rectangular skeletons.
+- Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — new `variant="underline"` style: a bottom-only border with square bottom corners. Hover/focus/invalid states still color the underline.
 
-- `y-stepper` — `responsive` and `responsive-breakpoint` attributes; auto-flips horizontal layouts to vertical below the breakpoint (600px default). Enabled by default; set `responsive="false"` to opt out.
+- `y-dock` — new `floating` attribute that detaches the dock into a bordered, rounded island inset from the viewport edges with a drop shadow. Tunable via `--component-dock-border-radius`, `--component-dock-floating-margin`, and `--component-dock-shadow`.
 
-- Filled icon variants for `y-icon` via a new `weight="filled"` value, with automatic fallback to the line icon when no filled version is registered. 116 filled icons ship under `icons/all-filled.js` (also pulled in by `icons/all.js`); the remaining component-illustration icons fall back to their line versions.
+- New theming hooks: `--component-control-height-{size}` (shared min-height for `y-button` and `y-input`, falling back to `--sizing-{size}`) and `--component-checkbox-border-radius` (tighter checkbox radius). Outlined `y-button`s now source their border from the matching semantic border token per color, falling back to the text color; `--component-button-outline-border` / `--component-button-outline-border-color` remain as global overrides.
 
-- New theming hooks: `--component-control-height-{size}` (shared min-height for `y-button` and `y-input` so fields and buttons match per theme, falling back to `--sizing-{size}`), `--component-checkbox-border-radius` (lets checkboxes use a tighter radius than text inputs). Outlined `y-button`s now source their border from the matching semantic border token (`--base-border`, `--error-border`, …) per color, falling back to the button's text color when that token is unset; `--component-button-outline-border` / `--component-button-outline-border-color` remain available as optional global overrides. Defaults preserve the existing look for all current themes.
+- `y-stepper` — new `responsive` and `responsive-breakpoint` attributes; auto-flips horizontal layouts to vertical below the breakpoint (600px default). Set `responsive="false"` to opt out.
 
 ### Changed
 
-- `y-radio` — the default YumeKit color themes and the Kepler themes now color a selected radio's border with the primary color (via `--component-radio-checked-border-color`); the fill and dot are unchanged. Neobrutalist and the design-system themes already define their own checked styling and are unchanged.
+- **Breaking** `y-break` — `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used elsewhere. Spacing is unchanged, so output is identical after the rename.
 
-- `y-checkbox` — the default YumeKit color themes and the Kepler themes now mark a checked box with a translucent primary-colored fill, a primary border, and a primary-colored check (via the existing `--component-checkbox-checked-background` / `-checked-border-color` / `-checked-icon-color` hooks).
+- Custom color support expanded to the browser-native color functions — `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()` — alongside `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()`. The `isSafeCssColor` gate also tightens its allowlist, rejecting semicolons, braces, angle brackets, and nested functions. Applies anywhere a `color` accepts a custom value.
 
-- `y-switch` — the "on" state now fills the track with a translucent tint of the switch color and colors the border to match (derived from `on-color`, custom colors included), making it clearer which state is active; the tint strength is themeable via `--component-switch-on-fill-opacity` (16% default).
+- Every bordered component now applies its `--component-*-border-width` token as the `border-width` longhand, so each accepts a 1–4 value pattern for per-side borders. Covers surfaces (`y-card`, `y-menu`, `y-dialog`, `y-popover`, `y-datepicker`, `y-data-grid`, `y-appbar`, `y-sidebar`, `y-tabs`) and controls (`y-checkbox`, `y-radio`, `y-switch`, `y-slider`, `y-progress`). Default rendering is unchanged.
 
-- `y-break` — the divider line now uses the semantic border color (`base.border`) instead of `base.content.lightest`, matching other component borders, and the host now applies default perpendicular spacing (above/below a horizontal break, left/right of a vertical one) via the new `--component-break-spacing` token (defaults to `--spacing-medium`) so a break separates content out of the box. The line color and thickness also gained `--base-border` / `1px` fallbacks for use without a full token set.
+- `y-button` — `--component-button-border-width` is now applied as the `border-width` longhand, so it accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0`). The `--component-button-outline-border` override now controls border style and color only.
 
-- `y-button` — `--component-button-border-width` is now applied as the `border-width` longhand instead of being baked into the `border` shorthand, so it accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0` for a bottom-only border). Default (`1px`) is unchanged. The `--component-button-outline-border` shorthand override now controls border style + color only; its width is superseded by `--component-button-border-width`.
+- Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — `--component-inputs-border-width` is now applied as the `border-width` longhand on every field surface, including the `y-select` dropdown panel and the `y-color` picker popup, so it accepts a 1–4 value pattern for per-side borders.
 
-- Every bordered component now applies its `--component-*-border-width` token as the `border-width` longhand (out of the `border` shorthand), so each accepts a 1–4 value pattern for per-side borders, consistent with `y-button` and the form fields: surfaces/containers (`y-card`, `y-menu`, `y-dialog`, `y-popover`, `y-datepicker`, `y-data-grid`, `y-appbar`, `y-sidebar`, `y-tabs`) and controls (`y-checkbox`, `y-radio`, `y-switch`, `y-slider`, `y-progress`). Default rendering is unchanged.
+- `y-button` — new `padding-mode` attribute (`auto` / `square` / `wide`): `auto` makes icon-only buttons square, `square`/`wide` force it. Padding can also be set per-axis via `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}`. `y-paginator` and `y-datepicker` day/month/year buttons use `padding-mode="square"`.
 
-- Form fields (`y-input`, `y-textarea`, `y-select`, `y-color`, `y-date`) — `--component-inputs-border-width` is now applied as the `border-width` longhand (out of the `border` shorthand) on every field surface, including the `y-select` dropdown panel and the `y-color` picker popup, so like `y-button` it accepts a 1–4 value pattern for per-side borders.
+- `y-select` — new opt-in `portal` attribute renders the dropdown into `<body>` so it escapes scrollable or clipped ancestors.
 
-- `y-button` — Outlined button borders were changed to use semantic border values instead of content color. Padding can now be set per-axis via `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` (overriding, and falling back to, the all-sides `--component-button-padding-{size}`), plus a new `padding-mode` attribute (`auto` (default) / `square` / `wide`) controlling whether the inline axis collapses to the block value. `auto` makes icon-only buttons square automatically; `square`/`wide` force it. The Material themes use this for wide pill buttons that stay round when icon-only; `y-paginator` number buttons and `y-datepicker` day / month / year buttons set `padding-mode="square"` so they don't bloat under the wide Material padding.
+- `y-switch` — the "on" state now tints the track and border with the switch color (derived from `on-color`); tint strength is themeable via `--component-switch-on-fill-opacity` (16% default).
 
-- Custom color support expanded to the browser-native color functions — `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()` — in addition to `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()`. The shared `isSafeCssColor` gate now also tightens its argument allowlist (rejecting semicolons, braces, angle brackets, and nested functions). Applies anywhere a `color` accepts a custom value, including `y-badge`, `y-select`, `y-popover`, `y-button`, `y-tag`, `y-icon`, and `y-rating`.
+- `y-break` — the divider line now uses the semantic border color (`base.border`), and the host applies default perpendicular spacing via the new `--component-break-spacing` token (defaults to `--spacing-medium`).
 
-- `y-rating` — selected icons now swap in the registered `filled` weight variant instead of just thickening the line stroke, falling back to the thick stroke when no filled variant is available.
+- `y-checkbox` — the default color themes now mark a checked box with a translucent primary fill, a primary border, and a primary-colored check (via the `--component-checkbox-checked-*` hooks).
 
-- `y-paginator` — page-button list now auto-shrinks to fit the host width, growing back when space allows.
+- `y-radio` — the default color themes now color a selected radio's border with the primary color (via `--component-radio-checked-border-color`). Themes that already define their own checked styling are unchanged.
 
-- `y-select` — new opt-in `portal` attribute renders the dropdown into `<body>` so it escapes scrollable or clipped ancestors (e.g. inside a data-grid cell editor).
+- `y-rating` — selected icons now swap in the registered `filled` weight variant, falling back to the thick stroke when none is available.
 
-- **Breaking** `y-break`: `inset` values renamed from `"sm"` / `"md"` / `"lg"` to `"small"` / `"medium"` / `"large"` to match the size scale used by every other component. Spacing mapping is unchanged (`small` → `--spacing-x-small`, `medium` → `--spacing-medium`, `large` → `--spacing-x-large`), so visual output is identical after the find-and-replace.
+- `y-paginator` — the page-button list now auto-shrinks to fit the host width, growing back when space allows.
 
 ### Fixed
 
 - `y-theme` — theme tokens no longer leak across nested `<y-theme>` boundaries.
 
-- `y-appbar` — a stickied appbar now renders its content-facing border correctly under themes with per-side border widths (e.g. neobrutalist's `2px 2px 6px 2px`). The sticky styles previously fed a 4-value width token into a single-edge `border-bottom`/`border-top` shorthand, which is invalid CSS and dropped the border entirely; they now use the `border-width` shorthand and zero only the screen-flush edges.
+- `y-theme` — switching themes now clears the previous theme's CSS custom properties from the host, so tokens defined only by the outgoing theme no longer linger inline until reload.
 
-- `y-menu` — a menu taller than the viewport now caps its height and scrolls internally instead of running off-screen (notably on mobile). Scrolling only engages on genuine overflow, so normal menus keep their CSS flyout submenus.
+- Portaled overlays now inherit the active theme. `y-help`, `y-popover` (`portal` mode), and `y-select` (`portal` mode) rendered into `document.body`, escaping the `<y-theme>` subtree and falling back to the un-themed palette. They now mount into the nearest enclosing `<y-theme>`, walking up across shadow boundaries so it also works inside another component's shadow root, and fall back to `document.body` when there is no theme ancestor.
 
-- React JSX types (`react.d.ts`) and the bundled AI docs (`llm.txt`, skill reference) were brought back in sync with the components. Added missing attribute types for `y-data-grid`, `y-date`, `y-datepicker`, and `y-select`; dropped a stale `y-panelbar` type; and corrected several documented attributes/defaults (e.g. `y-table`'s data attribute, `y-button` `style-type` default, `y-switch` colors). A new `npm run check:docs` gate cross-checks every component's observed attributes against all three docs and runs in `pretest` / `prepublishOnly`.
+- `y-button` — no longer throws when `color` is set to an unrecognized value; it falls back to the `base` theme instead of crashing while reading the color-token map.
 
-- `y-menu` — a menu anchored to a disabled trigger no longer opens when the trigger is clicked. The anchor's disabled state (native `disabled`, a custom element's reflected `disabled` attribute, or `aria-disabled="true"`) is checked at click time, so toggling it back on restores normal behavior.
+- `y-datepicker` — reworked the month and year pickers. The month picker (`show-days="false"`) now shows a selectable year dropdown in its header (toggled by `show-years`) above the twelve months; the year picker (`show-months="false"`) bounds its scrollable grid with start/end year inputs. Clicking a month or year selects it and fires `change`.
 
-- `y-sidebar` — nav/footer icons now stay in the same position between the expanded and collapsed states under themes whose borders use a multi-value width (e.g. the Neobrutalist offset border `2px 2px 6px 2px`). The icon-column width is now derived from the sidebar's resolved horizontal border (flat buttons render no border) instead of an invalid `calc()` that multiplied the multi-value token, which had collapsed the column to `auto` and shifted icons.
+- `y-droplist` — touch drag now works on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time rather than from `pointerdown`, so mobile browsers no longer preempt the press as a scroll.
 
-- `y-drawer` — corners closest to the screen's edge are now squared in all themes.
+- `y-tabs` — the tab panel no longer creates a stacking context (`z-index: 0` removed), which had trapped `position: fixed` overlays from slotted components beneath the tab strip.
 
-- `y-datepicker` — the month and year pickers were reworked. The month picker (`show-days="false"`) now shows a selectable year dropdown in its header (toggled by `show-years`, omitted when `false`) above the twelve months, and the year picker (`show-months="false"`) now bounds its scrollable year grid with two start/end year inputs. Clicking a month or year now selects it and fires `change`; clicking a year in the year picker no longer shifts the visible range.
+- `y-menu` — a menu taller than the viewport now caps its height and scrolls internally. Scrolling engages only on genuine overflow, so normal menus keep their CSS flyout submenus.
 
-- `y-theme` — switching themes now clears the previous theme's CSS custom properties from the host before applying the new ones. Variables defined only by the outgoing theme (e.g. a theme-specific token like `--component-tabs-inactive-background`) previously lingered inline and "stuck" until a page reload; they are now removed on every switch.
+- `y-menu` — a menu anchored to a disabled trigger no longer opens on click. The anchor's disabled state (native `disabled`, reflected `disabled`, or `aria-disabled="true"`) is checked at click time.
 
-- `y-tabs` — unselected tabs now use a dedicated `--component-tabs-inactive-background` (falling back to `--component-tabs-border-color`, so existing themes are unchanged) instead of always painting the tab background with the border color. This fixes the Neobrutalist themes, where the border color equals the text color and made unselected tab labels unreadable; both Neobrutalist themes now set it to a distinct surface tone.
+- `y-menu` — selected items now use the primary-inverse content color, keeping labels readable against the selected background across themes.
 
-- Portaled overlays now inherit the active theme. `y-help` (tour overlay/tooltip), `y-popover` (`portal` mode), and `y-select` (`portal` mode) previously rendered into `document.body`, escaping the `<y-theme>` subtree that scopes the theme's CSS custom properties — so they fell back to the default un-themed palette. They now mount into the nearest enclosing `<y-theme>`, walking up across shadow boundaries so the fix also applies when the component is used inside another component's shadow root (e.g. `y-data-grid`'s per-column header menus), falling back to `document.body` when there is no theme ancestor. The portaled surface matches the active theme and tracks live theme switches. Keep the component inside your `<y-theme>`.
+- `y-sidebar` — nav/footer icons now stay aligned between expanded and collapsed states under themes whose borders use a multi-value width. The icon-column width is derived from the sidebar's resolved horizontal border instead of a `calc()` that mishandled the multi-value token.
 
-- Form field components now share one field background. `y-select` (trigger and dropdown) used `base.background.app` while `y-input` / `y-textarea` / `y-color` / `y-date` used `base.background.component`; `select.background` is now `base.background.component` across all themes, so fields match when placed together on a form (most visible in the Material and Carbon themes). The select dropdown panel now also matches menus/popovers.
+- `y-appbar` — a stickied appbar now renders its content-facing border correctly under themes with per-side border widths. The sticky styles now use the `border-width` shorthand and zero only the screen-flush edges.
 
-- `y-avatar` — the three `shape` values are now visually distinct. Added a `--component-avatar-border-radius-rounded` token (medium radius) and changed `square` to a zero radius (sharp corners); `circle` is unchanged.
+- `y-tabs` — unselected tabs now use a dedicated `--component-tabs-inactive-background` (falling back to `--component-tabs-border-color`), fixing unreadable labels in themes where the border and text colors match.
 
-- `y-tag` — Increased the inline padding size for all sizes of `y-tag` component.
+- Form fields now share one background (`base.background.component`), so a `y-select` matches sibling `y-input` / `y-textarea` / `y-color` / `y-date` fields and the select dropdown matches menus/popovers.
 
-- `y-tabs` — the tab panel no longer creates a stacking context (`z-index: 0` removed), which was trapping `position: fixed` overlays rendered by slotted components (e.g. `y-gallery`'s lightbox) underneath the tab strip and surrounding page content.
+- `y-gallery` — the lightbox z-index was raised from 1000 to 9000 so it layers above fixed chrome like `y-dock`; override via `--component-gallery-expand-z-index`.
 
-- `y-gallery` — the lightbox overlay's default z-index was raised from 1000 to 9000 so it layers above fixed chrome like `y-dock` (8000); override via `--component-gallery-expand-z-index`.
+- React JSX types (`react.d.ts`) and the bundled AI docs (`llm.txt`, skill reference) were brought back in sync, adding missing attribute types and correcting several defaults. A new `npm run check:docs` gate cross-checks observed attributes against all three docs in `pretest` / `prepublishOnly`.
 
-- `y-menu` — selected items now use the primary inverse content color for their text, so the label stays readable against the primary-colored selected background across all themes.
+- `y-drawer` — corners closest to the screen edge are now squared in all themes.
 
-- `y-button` — no longer throws when `color` is set to an unrecognized value that isn't a valid custom color; it now falls back to the `base` theme instead of crashing while reading the color-token map.
+- `y-avatar` — the three `shape` values are now visually distinct: added `--component-avatar-border-radius-rounded` (medium radius) and changed `square` to a zero radius; `circle` is unchanged.
 
-- `y-droplist` — touch drag now works reliably on iOS Safari and Chrome Android. `touch-action: none` is applied to the press target at decoration time instead of from inside `pointerdown`, so mobile browsers stop preempting the press as a scroll gesture.
+- Corrected the arrow direction on the `left-from-bracket`, `right-from-bracket`, and `left-to-bracket` icons: `*-from-*` arrows now exit the bracket and `*-to-*` enters it.
 
-- Corrected the arrow direction on the `left-from-bracket`, `right-from-bracket`, and `left-to-bracket` icons, which previously pointed the wrong way relative to their bracket (the `*-from-*` arrows now exit the bracket and the `*-to-*` arrow enters it).
+- `y-tag` — increased inline padding across all sizes.
 
 ## [0.5.0] - 2026-05-25
 

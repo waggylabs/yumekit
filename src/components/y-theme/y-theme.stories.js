@@ -130,15 +130,15 @@ export const Nord = {
     `,
 };
 
-// Neobrutalist — a single, deliberately loud theme: wild palette, sharp
+// Waggy — a single, deliberately loud theme: wild palette, sharp
 // corners, thick black borders, hard offset shadows. Also a live demo of the
 // per-side border-width feature (outlined buttons + every field carry an
 // asymmetric, heavier bottom/right edge).
-export const Neobrutalist = {
+export const Waggy = {
     render: () => `
         <div style="display:flex;gap:16px;flex-wrap:wrap">
-            ${showcase("neobrutalist", "Neobrutalist Light")}
-            ${showcase("neobrutalist-dark", "Neobrutalist Dark")}
+            ${showcase("waggy", "Waggy Light")}
+            ${showcase("waggy-dark", "Waggy Dark")}
         </div>
     `,
 };

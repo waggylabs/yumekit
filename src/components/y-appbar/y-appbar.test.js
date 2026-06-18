@@ -455,7 +455,7 @@ describe("YumeAppbar", () => {
         expect(style).to.include("position: sticky");
     });
 
-    it("sticky border uses the border-width shorthand so multi-value tokens (e.g. neobrutalist) render", async () => {
+    it("sticky border uses the border-width shorthand so multi-value tokens (e.g. waggy) render", async () => {
         const el = await fixture(html`<y-appbar sticky="start"></y-appbar>`);
         const style = el.shadowRoot.querySelector("style").textContent;
         // A single-edge `border-bottom: <4-value token>` is invalid CSS; the

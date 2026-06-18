@@ -52,8 +52,8 @@ import catppuccinMacchiatoCSS from "../../../styles/catppuccin-macchiato.css";
 import catppuccinMochaCSS from "../../../styles/catppuccin-mocha.css";
 import nordCSS from "../../../styles/nord.css";
 import nordAuroraCSS from "../../../styles/nord-aurora.css";
-import neobrutalistCSS from "../../../styles/neobrutalist.css";
-import neobrutalistDarkCSS from "../../../styles/neobrutalist-dark.css";
+import waggyCSS from "../../../styles/waggy.css";
+import waggyDarkCSS from "../../../styles/waggy-dark.css";
 import keplerLightCSS from "../../../styles/kepler-light.css";
 import keplerDarkCSS from "../../../styles/kepler-dark.css";
 import keplerAmberCSS from "../../../styles/kepler-amber.css";
@@ -114,8 +114,8 @@ const THEMES = {
     "catppuccin-mocha": catppuccinMochaCSS,
     "nord": nordCSS,
     "nord-aurora": nordAuroraCSS,
-    "neobrutalist": neobrutalistCSS,
-    "neobrutalist-dark": neobrutalistDarkCSS,
+    "waggy": waggyCSS,
+    "waggy-dark": waggyDarkCSS,
     "kepler-light": keplerLightCSS,
     "kepler-dark": keplerDarkCSS,
     "kepler-amber": keplerAmberCSS,
@@ -149,8 +149,8 @@ const THEME_FONTS = {
     "primer-dark-dimmed": null,
     "bootstrap-light": null,
     "bootstrap-dark": null,
-    "neobrutalist": null,
-    "neobrutalist-dark": null,
+    "waggy": null,
+    "waggy-dark": null,
     "kepler-light": "Tomorrow:wght@300;400;500;600;700",
     "kepler-dark": "Tomorrow:wght@300;400;500;600;700",
     "kepler-amber": "Tomorrow:wght@300;400;500;600;700",

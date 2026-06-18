@@ -34,7 +34,7 @@ Yumekit is authored in plain JavaScript. Please follow the conventions already p
 - Components are standard Custom Elements with no external framework dependencies.
 - Use `kebab-case` for element names and attribute names.
 - Keep components self-contained: styles live in the Shadow DOM, logic in the class, no shared global state.
-- Run the linter before submitting: `npm run lint`.
+- Run the linter before submitting: `npx eslint .` (configured in `eslint.config.mjs`).
 
 ## Component Authoring Guidelines
 
@@ -93,12 +93,14 @@ The DOM-element, icon, and slot rules above exist primarily to keep user-control
 
 ### New component checklist
 
-Every new component requires changes to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, its token sets under `tokens/` (see [Design Tokens](#design-tokens)), entry in `llm.txt`, and a `y-*.stories.js` stories file.
+Every new component requires changes to the following: `README.md`, `CHANGELOG.md`, `reference.md`, `SKILL.md`, `react.d.ts`, its token sets under `tokens/` (see [Design Tokens](#design-tokens)), entry in `llm.txt`, and a `y-*.stories.js` stories file. See [AI Documentation](#ai-documentation) for the docs that are checked automatically.
 
 ### Testing
 
 - Tests co-locate with the component source file.
-- Use `sinon.createSandbox()` at the `describe` level with `afterEach(() => sandbox.restore())`.
+- Use `sinon.createSandbox()` at the `describe` level with `afterEach(() => sandbox.restore())`. Never call `stub.restore()` manually — it leaks on assertion failure.
+- Use `sandbox.stub(...)` rather than `sinon.stub(...)` directly.
+- Run the suite with `npm test` (Web Test Runner with coverage).
 
 ## Design Tokens
 
@@ -125,6 +127,17 @@ Generated outputs:
 ### Figma sync
 
 Use the [Tokens Studio for Figma](https://tokens.studio/) plugin pointed at this repo's `tokens/` directory to keep Figma Variables in sync with code.
+
+## AI Documentation
+
+Yumekit ships AI-facing docs alongside the package: `llm.txt` and the Claude skill under `.claude/skills/yumekit/` (`SKILL.md`, `reference.md`, `patterns.md`, `examples/`). These are bundled into `dist/ai/` at build time and can be installed into a consumer project with `npx @waggylabs/yumekit init-ai`.
+
+Two scripts keep these docs honest, and both run automatically in `pretest` and `prepublishOnly`:
+
+- **`npm run sync:docs`** stamps mechanical numbers (package version, registered-component count, theme count) into `llm.txt` and the skill docs from source. Don't hand-edit those numbers. Run with `-- --check` to fail on drift.
+- **`npm run check:docs`** cross-references each component's `observedAttributes` against `react.d.ts`, `llm.txt`, and `reference.md`, flagging any observed attribute that isn't documented. It checks attribute *names* only — value enums, defaults, and prose are still up to you.
+
+When you add or change a component's public API (attributes, slots, events, methods), update its entry in `llm.txt`, `.claude/skills/yumekit/reference.md`, and the JSX types in `src/react.d.ts` in the same change. The sync script does not author this prose for you.
 
 ## AI Assistance
 
