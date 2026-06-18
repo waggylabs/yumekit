@@ -897,6 +897,10 @@
                 "$type": "borderRadius",
                 "$value": "{radii.medium}"
             },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
             "font-size": {
                 "$type": "dimension",
                 "$value": "0.9em"

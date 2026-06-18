@@ -384,15 +384,19 @@ describe("<y-theme>", () => {
         expect(primaryContent.trim()).to.not.be.empty;
     });
 
-    it("clears a theme-specific variable when switching away from that theme", async () => {
+    it("resets a theme-specific variable when switching away from that theme", async () => {
         // --component-tabs-inactive-background exists only in the neobrutalist
-        // themes; switching away must not leave it stuck inline on the host.
+        // themes; switching away must not leave its value stuck inline on the
+        // host. It is reset to `initial` (not removed) so it also can't inherit
+        // from an ancestor <y-theme> in nested setups.
         const el = await fixture(html`<y-theme theme="neobrutalist"></y-theme>`);
         await waitUntil(
-            () =>
-                el.style
+            () => {
+                const v = el.style
                     .getPropertyValue("--component-tabs-inactive-background")
-                    .trim() !== "",
+                    .trim();
+                return v !== "" && v !== "initial";
+            },
             "neobrutalist should set --component-tabs-inactive-background",
         );
 
@@ -401,8 +405,8 @@ describe("<y-theme>", () => {
             () =>
                 el.style
                     .getPropertyValue("--component-tabs-inactive-background")
-                    .trim() === "",
-            "switching away should clear --component-tabs-inactive-background",
+                    .trim() === "initial",
+            "switching away should reset --component-tabs-inactive-background",
         );
     });
 
@@ -447,6 +451,69 @@ describe("<y-theme>", () => {
         expect(outerBg).to.include("light");
         expect(innerBg).to.include("dark");
         expect(outerBg).to.not.equal(innerBg);
+    });
+
+    it("resets ancestor-only tokens to `initial` in a nested theme", async () => {
+        // neobrutalist is the only built-in theme that sets
+        // --component-button-outline-border-color; blue-light omits it.
+        const outer = await fixture(html`
+            <y-theme id="outer" theme="neobrutalist">
+                <y-theme id="inner" theme="blue-light"></y-theme>
+            </y-theme>
+        `);
+        const inner = outer.querySelector("#inner");
+        const token = "--component-button-outline-border-color";
+
+        await waitUntil(
+            () => inner.style.getPropertyValue(token).trim() !== "",
+        );
+
+        // Outer defines a real value; inner resets it so it can't inherit through.
+        expect(outer.style.getPropertyValue(token).trim()).to.not.be.empty;
+        expect(outer.style.getPropertyValue(token).trim()).to.not.equal(
+            "initial",
+        );
+        expect(inner.style.getPropertyValue(token).trim()).to.equal("initial");
+    });
+
+    it("ancestor token does not leak into a nested theme's var() fallback", async () => {
+        // A probe element resolves the token with a sentinel fallback. The
+        // `initial` reset on the inner host should make the inner probe fall
+        // back, while the outer (neobrutalist) probe picks up the real value.
+        const outer = await fixture(html`
+            <y-theme id="outer" theme="neobrutalist">
+                <span
+                    id="outer-probe"
+                    style="color: var(--component-button-outline-border-color, rgb(1, 2, 3))"
+                ></span>
+                <y-theme id="inner" theme="blue-light">
+                    <span
+                        id="inner-probe"
+                        style="color: var(--component-button-outline-border-color, rgb(1, 2, 3))"
+                    ></span>
+                </y-theme>
+            </y-theme>
+        `);
+        const inner = outer.querySelector("#inner");
+
+        await waitUntil(
+            () =>
+                inner.style
+                    .getPropertyValue(
+                        "--component-button-outline-border-color",
+                    )
+                    .trim() === "initial",
+        );
+
+        const outerColor = getComputedStyle(
+            outer.querySelector("#outer-probe"),
+        ).color;
+        const innerColor = getComputedStyle(
+            outer.querySelector("#inner-probe"),
+        ).color;
+
+        expect(outerColor).to.not.equal("rgb(1, 2, 3)");
+        expect(innerColor).to.equal("rgb(1, 2, 3)");
     });
 
     describe("custom theme paths", () => {

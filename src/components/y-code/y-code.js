@@ -329,6 +329,7 @@ export class YumeCode extends HTMLElement {
                 color: var(--component-code-text-color, var(--base-content--, #1a1a1a));
                 background: var(--component-code-bg-color, var(--base-background-component, #f6f8fa));
                 border: 1px solid var(--component-code-border-color, var(--base-border, rgba(0,0,0,0.08)));
+                border-width: var(--component-code-border-width, 1px);
                 border-radius: var(--component-code-border-radius, var(--radii-medium, 8px));
                 overflow: hidden;
                 position: relative;

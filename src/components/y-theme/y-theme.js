@@ -158,6 +158,25 @@ const THEME_FONTS = {
     "kepler-matrix": "Tomorrow:wght@300;400;500;600;700",
 };
 
+const CUSTOM_PROP_RE = /--([\w-]+):\s*([^;]+);/g;
+
+// Returns the union of every custom property declared by the base variables
+// sheet or any built-in theme. Computed once, lazily.
+let _allThemeProps = null;
+function getAllThemeProps() {
+    if (_allThemeProps) return _allThemeProps;
+    const props = new Set();
+    for (const css of [variablesCSS, ...Object.values(THEMES)]) {
+        let match;
+        CUSTOM_PROP_RE.lastIndex = 0;
+        while ((match = CUSTOM_PROP_RE.exec(css)) !== null) {
+            props.add(`--${match[1]}`);
+        }
+    }
+    _allThemeProps = props;
+    return props;
+}
+
 export class YumeTheme extends HTMLElement {
     static get observedAttributes() {
         return ["theme", "cross-origin"];
@@ -229,24 +248,34 @@ export class YumeTheme extends HTMLElement {
     }
 
     /**
-     * Parses CSS custom properties from the given text and sets them on the host element.
+     * Replaces the host's inline custom properties with those parsed from the
+     * given CSS, then resets every other known theme token to `initial`.
+     * Clearing first stops a token defined only by the outgoing theme from
+     * sticking across a theme switch; resetting omitted tokens to `initial`
+     * stops an ancestor <y-theme>'s value from inheriting into a nested theme's
+     * scope, so the component's `var(token, fallback)` resolves to its own
+     * fallback instead. url() values are neutralized to avoid unwanted network
+     * requests from untrusted theme CSS.
      * @param {string} cssText - Raw CSS containing custom property declarations.
      */
     _applyVariablesToHost(cssText) {
-        // Remove the previous theme's custom properties before applying the new
-        // ones. A variable that exists only in the old theme (e.g. a
-        // theme-specific token like --component-tabs-inactive-background) would
-        // otherwise linger inline on the host and "stick" after switching away.
         this.clearThemeProperties();
-        const regex = /--([\w-]+):\s*([^;]+);/g;
+        const applied = new Set();
         let match;
 
-        while ((match = regex.exec(cssText)) !== null) {
+        CUSTOM_PROP_RE.lastIndex = 0;
+        while ((match = CUSTOM_PROP_RE.exec(cssText)) !== null) {
             const prop = `--${match[1]}`;
             let value = match[2].trim();
-            // Strip url() values that could trigger unwanted network requests
             value = value.replace(/url\s*\([^)]*\)/gi, "none");
             this.style.setProperty(prop, value);
+            this._themeProps.push(prop);
+            applied.add(prop);
+        }
+
+        for (const prop of getAllThemeProps()) {
+            if (applied.has(prop)) continue;
+            this.style.setProperty(prop, "initial");
             this._themeProps.push(prop);
         }
     }

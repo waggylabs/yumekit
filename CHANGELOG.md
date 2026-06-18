@@ -93,6 +93,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-theme` — theme tokens no longer leak across nested `<y-theme>` boundaries.
+
 - `y-appbar` — a stickied appbar now renders its content-facing border correctly under themes with per-side border widths (e.g. neobrutalist's `2px 2px 6px 2px`). The sticky styles previously fed a 4-value width token into a single-edge `border-bottom`/`border-top` shorthand, which is invalid CSS and dropped the border entirely; they now use the `border-width` shorthand and zero only the screen-flush edges.
 
 - `y-menu` — a menu taller than the viewport now caps its height and scrolls internally instead of running off-screen (notably on mobile). Scrolling only engages on genuine overflow, so normal menus keep their CSS flyout submenus.
