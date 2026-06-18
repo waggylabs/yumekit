@@ -429,8 +429,9 @@ declare module "react" {
                 href?: string;
                 history?: string;
             }>;
-            // Layout container only — configuration lives on the child y-panel elements.
-            "y-panelbar": El;
+            "y-panelbar": El<{
+                exclusive?: boolean | string;
+            }>;
             "y-popover": El<{
                 open?: boolean | string;
                 anchor?: string;

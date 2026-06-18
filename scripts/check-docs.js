@@ -40,6 +40,7 @@ const isGlobalAttr = (a) =>
 // observedAttributes — so declaring them in react.d.ts is correct, not stale.
 // Keeping this explicit means a genuinely stale type still surfaces.
 const INTENTIONAL_EXTRAS = {
+    "y-panelbar": ["exclusive"],
     "y-rating": ["required"],
     "y-select": ["multiple"],
     "y-switch": ["name"],
