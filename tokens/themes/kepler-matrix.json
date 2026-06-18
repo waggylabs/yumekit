@@ -82,24 +82,24 @@
     "background": {
       "app": {
         "$type": "color",
-        "$value": "{neutral.dark.3}"
+        "$value": "{green.dark.1}"
       },
       "component": {
         "$type": "color",
-        "$value": "{neutral.dark.2}"
+        "$value": "{green.dark.0}"
       },
       "hover": {
         "$type": "color",
-        "$value": "{neutral.dark.3}"
+        "$value": "{green.dark.2}"
       },
       "active": {
         "$type": "color",
-        "$value": "{neutral.dark.4}"
+        "$value": "{green.dark.4}"
       }
     },
     "border": {
       "$type": "color",
-      "$value": "{neutral.dark.4}"
+      "$value": "{green.dark.3}"
     },
     "content": {
       "inverse": {
