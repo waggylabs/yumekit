@@ -208,6 +208,20 @@ export class YumeMenu extends HTMLElement {
                 flex-direction: column;
             }
 
+            .menu > .menuitem:first-of-type,
+            .submenu > .menuitem:first-of-type,
+            ::slotted(:not([slot]):first-child) {
+                border-top-left-radius: var(--component-menu-border-radius, 4px);
+                border-top-right-radius: var(--component-menu-border-radius, 4px);
+            }
+
+            .menu > .menuitem:last-of-type,
+            .submenu > .menuitem:last-of-type,
+            ::slotted(:not([slot]):last-child) {
+                border-bottom-left-radius: var(--component-menu-border-radius, 4px);
+                border-bottom-right-radius: var(--component-menu-border-radius, 4px);
+            }
+
             .menuitem,
             ::slotted(:not([slot])) {
                 cursor: pointer;
