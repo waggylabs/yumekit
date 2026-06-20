@@ -3,6 +3,7 @@ name: Publish
 on:
     release:
         types: [published]
+    workflow_dispatch:
 
 permissions:
     id-token: write
@@ -37,7 +38,7 @@ jobs:
         secrets: inherit
 
     publish-release:
-        if: github.event.release.prerelease == false
+        if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
         needs: test
         permissions:
             id-token: write
@@ -46,7 +47,7 @@ jobs:
         secrets: inherit
 
     deploy-storybook:
-        if: github.event.release.prerelease == false
+        if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
         needs: test
         permissions:
             id-token: write
