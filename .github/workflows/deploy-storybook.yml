@@ -8,6 +8,13 @@ on:
                 required: false
                 type: string
                 default: storybook.yumekit.com
+    workflow_dispatch:
+        inputs:
+            bucket:
+                description: "Target S3 bucket name"
+                required: false
+                type: string
+                default: storybook.yumekit.com
 
 jobs:
     build-and-deploy:

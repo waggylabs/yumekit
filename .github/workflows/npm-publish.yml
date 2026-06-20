@@ -8,6 +8,13 @@ on:
                 required: false
                 type: string
                 default: latest
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: "npm dist-tag (e.g. latest, beta)"
+                required: false
+                type: string
+                default: latest
 
 jobs:
     build-and-publish:
