@@ -4,13 +4,13 @@ import "../y-icon/y-icon.js";
 const VALID_ORIENTATIONS = new Set(["horizontal", "vertical"]);
 const VALID_ALIGNMENTS = new Set(["start", "center", "end"]);
 const VALID_VARIANTS = new Set(["solid", "dashed", "dotted"]);
-const VALID_INSETS = new Set(["none", "sm", "md", "lg"]);
+const VALID_INSETS = new Set(["none", "small", "medium", "large"]);
 
 const INSET_TOKENS = {
     none: "0",
-    sm: "var(--spacing-x-small)",
-    md: "var(--spacing-medium)",
-    lg: "var(--spacing-x-large)",
+    small: "var(--spacing-x-small)",
+    medium: "var(--spacing-medium)",
+    large: "var(--spacing-x-large)",
 };
 
 export class YumeBreak extends HTMLElement {
@@ -62,7 +62,7 @@ export class YumeBreak extends HTMLElement {
         else this.removeAttribute("icon");
     }
 
-    /** Outer end padding token: "none" | "sm" | "md" | "lg". */
+    /** Outer end padding token: "none" (default) | "small" | "medium" | "large". */
     get inset() {
         const v = this.getAttribute("inset");
         return VALID_INSETS.has(v) ? v : "none";
@@ -167,13 +167,20 @@ export class YumeBreak extends HTMLElement {
                 --_inset: var(--component-break-inset, ${inset});
                 display: block;
                 box-sizing: border-box;
-                color: var(--component-break-content-color);
+                /* Breathing room above/below the line so the break separates
+                   content out of the box. Perpendicular to the line, so it
+                   becomes inline padding when vertical (below). */
+                padding-block: var(--component-break-spacing, var(--spacing-medium, 16px));
+                padding-inline: 0;
+                color: var(--component-break-content-color, var(--base-content-lightest, currentColor));
             }
 
             :host([orientation="vertical"]) {
                 display: inline-flex;
                 align-self: stretch;
                 min-height: 1em;
+                padding-block: 0;
+                padding-inline: var(--component-break-spacing, var(--spacing-medium, 16px));
             }
 
             .break {
@@ -192,13 +199,13 @@ export class YumeBreak extends HTMLElement {
             .line {
                 flex: 1 1 auto;
                 min-width: var(--component-break-min-length);
-                border-top: var(--component-break-line-thickness) var(--_line-style) var(--component-break-line-color);
+                border-top: var(--component-break-line-thickness, 1px) var(--_line-style) var(--component-break-line-color, var(--base-border, currentColor));
                 align-self: center;
             }
 
             :host([orientation="vertical"]) .line {
                 border-top: 0;
-                border-left: var(--component-break-line-thickness) var(--_line-style) var(--component-break-line-color);
+                border-left: var(--component-break-line-thickness, 1px) var(--_line-style) var(--component-break-line-color, var(--base-border, currentColor));
                 min-width: 0;
                 min-height: var(--component-break-min-length);
                 width: 0;

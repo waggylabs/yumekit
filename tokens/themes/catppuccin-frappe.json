@@ -1,0 +1,991 @@
+{
+  "base": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#292c3c"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#303446"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#414559"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#51576d"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#626880"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "light": {
+        "$type": "color",
+        "$value": "#b5bfe2"
+      },
+      "lighter": {
+        "$type": "color",
+        "$value": "#a5adce"
+      },
+      "lightest": {
+        "$type": "color",
+        "$value": "#838ba7"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#c6d0f5"
+      }
+    },
+    "shadow": {
+      "$type": "boxShadow",
+      "$value": {
+        "x": "0",
+        "y": "4px",
+        "blur": "12px",
+        "spread": "0",
+        "color": "rgba(0, 0, 0, 0.5)",
+        "type": "dropShadow"
+      }
+    }
+  },
+  "primary": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#4f4966"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#44425b"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#4f4966"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#5e5476"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#856e9e"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#c7c4f1"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#c8baee"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#ca9ee6"
+      }
+    }
+  },
+  "secondary": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#424c68"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#3c435c"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#424c68"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#4c5778"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#6375a2"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#b8c7f3"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#acbff2"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#8caaee"
+      }
+    }
+  },
+  "success": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#485353"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#3f484f"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#485353"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#53635a"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#718a6b"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#bed0da"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#b8d0c4"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#a6d189"
+      }
+    }
+  },
+  "warning": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#545255"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#484750"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#545255"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#66605c"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#94856f"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#cecedc"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#d4ccc8"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#e5c890"
+      }
+    }
+  },
+  "error": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#554452"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#483e4e"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#554452"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#674b59"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#955f68"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#cebdd9"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#d5adc2"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#e78284"
+      }
+    }
+  },
+  "help": {
+    "background": {
+      "app": {
+        "$type": "color",
+        "$value": "#574e66"
+      },
+      "component": {
+        "$type": "color",
+        "$value": "#49455b"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#574e66"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#6b5c75"
+      }
+    },
+    "border": {
+      "$type": "color",
+      "$value": "#9c7d9d"
+    },
+    "content": {
+      "inverse": {
+        "$type": "color",
+        "$value": "#232634"
+      },
+      "hover": {
+        "$type": "color",
+        "$value": "#d2caf1"
+      },
+      "active": {
+        "$type": "color",
+        "$value": "#dbc5ed"
+      },
+      "DEFAULT": {
+        "$type": "color",
+        "$value": "#f4b8e4"
+      }
+    }
+  },
+  "component": {
+    "appbar": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      }
+    },
+    "breadcrumbs": {
+      "color": {
+        "hover": {
+          "$type": "color",
+          "$value": "{primary.content.hover}"
+        },
+        "current": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        }
+      },
+      "separator": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.lighter}"
+        }
+      }
+    },
+    "break": {
+      "line-color": {
+        "$type": "color",
+        "$value": "{base.border}"
+      },
+      "content-color": {
+        "$type": "color",
+        "$value": "{base.content.lightest}"
+      }
+    },
+    "checkbox": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        }
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "background": {
+          "$type": "color",
+          "$value": "color-mix(in srgb, {primary.content.DEFAULT} 16%, transparent)"
+        },
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
+        "icon": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
+      }
+    },
+    "dock": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "active": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        }
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      }
+    },
+    "dialog": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{primary.content.DEFAULT}"
+      },
+      "shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      }
+    },
+    "drawer": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      }
+    },
+    "droplist": {
+      "drag-preview-shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      },
+      "ghost-background": {
+        "$type": "color",
+        "$value": "{base.background.hover}"
+      },
+      "ghost-border-color": {
+        "$type": "color",
+        "$value": "{base.border}"
+      },
+      "swap-indicator": {
+        "background": {
+          "$type": "color",
+          "$value": "{primary.background.active}"
+        }
+      }
+    },
+    "input": {
+      "background": {
+        "disabled": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        }
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{primary.content.DEFAULT}"
+      },
+      "label": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.light}"
+        }
+      },
+      "icon": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.lighter}"
+        }
+      },
+      "error": {
+        "color": {
+          "$type": "color",
+          "$value": "{error.content.DEFAULT}"
+        },
+        "background": {
+          "$type": "color",
+          "$value": "{error.background.component}"
+        },
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{error.border}"
+          }
+        }
+      }
+    },
+    "menu": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      },
+      "selected": {
+        "background": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{primary.content.inverse}"
+        }
+      },
+      "shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      }
+    },
+    "panel": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "expanded": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.app}"
+        }
+      },
+      "accent": {
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "hover": {
+          "background": {
+            "$type": "color",
+            "$value": "{primary.background.active}"
+          }
+        }
+      },
+      "active": {
+        "border": {
+          "$type": "color",
+          "$value": "{base.background.active}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      }
+    },
+    "tree": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "item": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        },
+        "hover": {
+          "background": {
+            "$type": "color",
+            "$value": "{base.background.hover}"
+          }
+        },
+        "selected": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          },
+          "background": {
+            "$type": "color",
+            "$value": "{primary.background.active}"
+          }
+        },
+        "accent": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "active": {
+          "border": {
+            "$type": "color",
+            "$value": "{base.background.active}"
+          }
+        }
+      }
+    },
+    "radio": {
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
+      }
+    },
+    "select": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "accent": {
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "contrast": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        }
+      },
+      "label": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.light}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      },
+      "shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      },
+      "error": {
+        "color": {
+          "$type": "color",
+          "$value": "{error.content.DEFAULT}"
+        },
+        "background": {
+          "$type": "color",
+          "$value": "{error.background.component}"
+        },
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{error.border}"
+          }
+        }
+      }
+    },
+    "table": {
+      "color": {
+        "light": {
+          "$type": "color",
+          "$value": "{base.content.lightest}"
+        },
+        "DEFAULT": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        }
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      },
+      "active": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.active}"
+        }
+      }
+    },
+    "datepicker": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "header": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.light}"
+        }
+      },
+      "shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      }
+    },
+    "paginator": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "hover": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      },
+      "active": {
+        "background": {
+          "$type": "color",
+          "$value": "{primary.background.active}"
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        }
+      },
+      "disabled": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.lightest}"
+        }
+      },
+      "ellipsis": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.lighter}"
+        }
+      }
+    },
+    "stepper": {
+      "connector": {
+        "color": {
+          "complete": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{base.border}"
+          }
+        }
+      },
+      "color": {
+        "pending": {
+          "$type": "color",
+          "$value": "{base.border}"
+        },
+        "active": {
+          "text": {
+            "$type": "color",
+            "$value": "{primary.content.inverse}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
+        "complete": {
+          "text": {
+            "$type": "color",
+            "$value": "{success.content.inverse}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{success.content.DEFAULT}"
+          }
+        },
+        "error": {
+          "text": {
+            "$type": "color",
+            "$value": "{error.content.inverse}"
+          },
+          "DEFAULT": {
+            "$type": "color",
+            "$value": "{error.content.DEFAULT}"
+          }
+        }
+      },
+      "label": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        }
+      }
+    },
+    "tabs": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "accent": {
+        "$type": "color",
+        "$value": "{primary.content.DEFAULT}"
+      }
+    },
+    "splitter": {
+      "handle": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        },
+        "hover-background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        },
+        "active-background": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        },
+        "border-color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        },
+        "grip-color": {
+          "$type": "color",
+          "$value": "{base.content.lighter}"
+        },
+        "active-grip-color": {
+          "$type": "color",
+          "$value": "{primary.content.inverse}"
+        }
+      }
+    },
+    "progress": {
+      "track": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        }
+      }
+    },
+    "slider": {
+      "track": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.background.active}"
+        }
+      },
+      "tick": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "thumb": {
+        "shadow": {
+          "$type": "shadow",
+          "$value": "{base.shadow}"
+        }
+      }
+    },
+    "popover": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      },
+      "header-divider": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      }
+    }
+  }
+}

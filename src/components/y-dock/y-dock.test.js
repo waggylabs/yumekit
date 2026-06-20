@@ -272,6 +272,37 @@ describe("YumeDock", () => {
         expect(css).to.include("border-top:");
     });
 
+    it("floating getter reflects the attribute", async () => {
+        const el = await fixture(html`<y-dock></y-dock>`);
+        expect(el.floating).to.be.false;
+
+        el.floating = true;
+        expect(el.hasAttribute("floating")).to.be.true;
+        expect(el.floating).to.be.true;
+
+        el.floating = false;
+        expect(el.hasAttribute("floating")).to.be.false;
+    });
+
+    it("non-floating dock spans the edge with a single edge border", async () => {
+        const el = await fixture(html`<y-dock position="bottom"></y-dock>`);
+
+        const css = el.shadowRoot.querySelector("style").textContent;
+        expect(css).to.include("left: 0;");
+        expect(css).to.include("border-top:");
+        expect(css).to.not.include("box-shadow:");
+        expect(css).to.not.include("--component-dock-floating-margin");
+    });
+
+    it("floating dock is inset with a full border, radius, and shadow", async () => {
+        const el = await fixture(html`<y-dock floating></y-dock>`);
+
+        const css = el.shadowRoot.querySelector("style").textContent;
+        expect(css).to.include("--component-dock-floating-margin");
+        expect(css).to.include("border-radius:");
+        expect(css).to.include("box-shadow:");
+    });
+
     it("renders item with custom slot template", async () => {
         const slotItems = [{ name: "Custom", icon: "star", slot: "custom-item" }];
         const el = await fixture(html`

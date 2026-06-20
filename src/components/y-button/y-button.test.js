@@ -86,10 +86,41 @@ describe("KeplerButton", () => {
             html`<y-button color="#00aaff" style-type="outlined">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
+        const textColor = shadowButton.style.getPropertyValue("--text-color");
+        expect(textColor).to.equal("#00aaff");
         const borderColor = shadowButton.style.getPropertyValue("--border-color");
-        expect(borderColor).to.equal("#00aaff");
+        expect(borderColor).to.equal("color-mix(in srgb, #00aaff 55%, transparent)");
         const bgColor = shadowButton.style.getPropertyValue("--background-color");
-        expect(bgColor).to.equal("transparent");
+        expect(bgColor).to.equal("color-mix(in srgb, #00aaff 8%, transparent)");
+    });
+
+    it("drives the outlined border from the semantic border token", async () => {
+        const el = await fixture(
+            html`<y-button color="error" style-type="outlined">Test</y-button>`
+        );
+        const shadowButton = el.shadowRoot.querySelector("button");
+        const outlineBorder =
+            shadowButton.style.getPropertyValue("--btn-outline-border");
+        expect(outlineBorder).to.contain("--error-border");
+        expect(outlineBorder).to.contain("--error-content--");
+    });
+
+    it("applies --component-button-border-width as a longhand, supporting per-side (multi-value) widths", async () => {
+        const el = await fixture(
+            html`<y-button style-type="outlined">Test</y-button>`
+        );
+        const shadowButton = el.shadowRoot.querySelector("button");
+        shadowButton.style.setProperty(
+            "--component-button-border-width",
+            "1px 5px"
+        );
+        const cs = getComputedStyle(shadowButton);
+        expect(cs.borderTopWidth).to.equal("1px");
+        expect(cs.borderBottomWidth).to.equal("1px");
+        expect(cs.borderLeftWidth).to.equal("5px");
+        expect(cs.borderRightWidth).to.equal("5px");
+        // Style + color are unaffected by the multi-value width.
+        expect(cs.borderTopStyle).to.equal("solid");
     });
 
     it("applies custom hex color CSS variables for flat style-type", async () => {
@@ -101,6 +132,14 @@ describe("KeplerButton", () => {
         expect(bgColor).to.equal("transparent");
         const textColor = shadowButton.style.getPropertyValue("--text-color");
         expect(textColor).to.equal("#00ff88");
+        const hoverBorder = shadowButton.style.getPropertyValue(
+            "--hover-border-color"
+        );
+        expect(hoverBorder).to.equal("transparent");
+        const hoverBg = shadowButton.style.getPropertyValue(
+            "--hover-background-color"
+        );
+        expect(hoverBg).to.equal("color-mix(in srgb, #00ff88 15%, transparent)");
     });
 
     it("value getter returns empty string when no value is set", async () => {
@@ -203,18 +242,67 @@ describe("KeplerButton", () => {
         expect(assigned.length).to.be.greaterThan(0);
     });
 
-    it("applies small size padding CSS variable when size is small", async () => {
+    it("applies small size padding CSS variables when size is small", async () => {
         const el = await fixture(html`<y-button size="small">Test</y-button>`);
         const shadowButton = el.shadowRoot.querySelector("button");
-        const padding = shadowButton.style.getPropertyValue("--button-padding");
-        expect(padding).to.include("--component-button-padding-small");
+        const block = shadowButton.style.getPropertyValue("--button-padding-block");
+        const inline = shadowButton.style.getPropertyValue("--button-padding-inline");
+        expect(block).to.include("--component-button-padding-block-small");
+        expect(block).to.include("--component-button-padding-small");
+        expect(inline).to.include("--component-button-padding-inline-small");
+        expect(inline).to.include("--component-button-padding-small");
     });
 
-    it("applies large size padding CSS variable when size is large", async () => {
+    it("applies large size padding CSS variables when size is large", async () => {
         const el = await fixture(html`<y-button size="large">Test</y-button>`);
         const shadowButton = el.shadowRoot.querySelector("button");
-        const padding = shadowButton.style.getPropertyValue("--button-padding");
-        expect(padding).to.include("--component-button-padding-large");
+        const block = shadowButton.style.getPropertyValue("--button-padding-block");
+        const inline = shadowButton.style.getPropertyValue("--button-padding-inline");
+        expect(block).to.include("--component-button-padding-block-large");
+        expect(inline).to.include("--component-button-padding-inline-large");
+    });
+
+    it("applies square padding (auto) when an icon is present without a label", async () => {
+        const el = await fixture(html`
+            <y-button>
+                <svg slot="left-icon" width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>
+            </y-button>
+        `);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.true;
+    });
+
+    it("does not apply square padding (auto) when both an icon and a label are present", async () => {
+        const el = await fixture(html`
+            <y-button>
+                <svg slot="left-icon" width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>
+                Save
+            </y-button>
+        `);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.false;
+    });
+
+    it("does not apply square padding (auto) for a label-only button", async () => {
+        const el = await fixture(html`<y-button>Save</y-button>`);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.false;
+    });
+
+    it("padding-mode='square' forces square padding on a label-only button", async () => {
+        const el = await fixture(html`<y-button padding-mode="square">5</y-button>`);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.true;
+    });
+
+    it("padding-mode='wide' keeps wide padding on an icon-only button", async () => {
+        const el = await fixture(html`
+            <y-button padding-mode="wide">
+                <svg slot="left-icon" width="16" height="16"><circle cx="8" cy="8" r="8"/></svg>
+            </y-button>
+        `);
+        const shadowButton = el.shadowRoot.querySelector("button");
+        expect(shadowButton.classList.contains("square-padding")).to.be.false;
     });
 
     it("applies filled style background color from theme color vars", async () => {

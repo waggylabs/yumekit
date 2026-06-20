@@ -75,9 +75,9 @@ export const SplitGap = {
     render: () => `
         <y-masonry columns="3" row-gap="4x-large" column-gap="x-small" responsive="false">
             <y-card><p>Card 1</p></y-card>
-            <y-card><p>Card 2 â€” extra content for height variation.</p></y-card>
+            <y-card><p>Card 2 — extra content for height variation.</p></y-card>
             <y-card><p>Card 3</p></y-card>
-            <y-card><p>Card 4 â€” also taller for visual interest.</p></y-card>
+            <y-card><p>Card 4 — also taller for visual interest.</p></y-card>
             <y-card><p>Card 5</p></y-card>
             <y-card><p>Card 6</p></y-card>
         </y-masonry>
@@ -87,8 +87,8 @@ export const SplitGap = {
 export const Responsive = {
     render: () => `
         <p style="margin:0 0 8px;color:#666">
-            Resize the browser to see columns drop at the tablet (â‰¤768px) and
-            mobile (â‰¤576px) breakpoints.
+            Resize the browser to see columns drop at the tablet (≤768px) and
+            mobile (≤576px) breakpoints.
         </p>
         <y-masonry columns="4" gap="large" responsive>
             <y-card><div slot="header"><strong>Short</strong></div><p>Brief.</p></y-card>

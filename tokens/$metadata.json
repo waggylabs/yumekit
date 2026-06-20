@@ -5,12 +5,16 @@
     "core/components",
     "themes/blue-dark",
     "themes/blue-light",
+    "themes/carbon-dark",
+    "themes/carbon-light",
     "themes/brown-dark",
     "themes/brown-light",
     "themes/green-dark",
     "themes/green-light",
     "themes/indigo-dark",
     "themes/indigo-light",
+    "themes/material-blue-dark",
+    "themes/material-blue-light",
     "themes/olive-dark",
     "themes/olive-light",
     "themes/orange-dark",
@@ -24,6 +28,13 @@
     "themes/teal-dark",
     "themes/teal-light",
     "themes/yellow-dark",
-    "themes/yellow-light"
+    "themes/yellow-light",
+    "themes/slate-dark",
+    "themes/slate-light",
+    "themes/kepler-light",
+    "themes/kepler-dark",
+    "themes/kepler-amber",
+    "themes/kepler-galaxy",
+    "themes/kepler-matrix"
   ]
 }

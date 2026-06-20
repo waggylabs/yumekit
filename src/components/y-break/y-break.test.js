@@ -10,6 +10,34 @@ describe("YumeBreak", () => {
         expect(root.classList.contains("align-center")).to.be.true;
     });
 
+    it("applies perpendicular spacing padding so the break separates content out of the box", async () => {
+        const el = await fixture(html`<y-break></y-break>`);
+        el.style.setProperty("--component-break-spacing", "20px");
+        const cs = getComputedStyle(el);
+        // Horizontal: padding sits above/below the line, inline padding stays 0.
+        expect(cs.paddingTop).to.equal("20px");
+        expect(cs.paddingBottom).to.equal("20px");
+        expect(cs.paddingLeft).to.equal("0px");
+    });
+
+    it("moves the spacing padding to the inline axis when vertical", async () => {
+        const el = await fixture(html`<y-break orientation="vertical"></y-break>`);
+        el.style.setProperty("--component-break-spacing", "20px");
+        const cs = getComputedStyle(el);
+        expect(cs.paddingLeft).to.equal("20px");
+        expect(cs.paddingRight).to.equal("20px");
+        expect(cs.paddingTop).to.equal("0px");
+    });
+
+    it("draws the line with the semantic border color", async () => {
+        const el = await fixture(html`<y-break></y-break>`);
+        el.style.setProperty("--base-border", "rgb(10, 20, 30)");
+        el.style.removeProperty("--component-break-line-color");
+        const line = el.shadowRoot.querySelector(".line-start");
+        // No explicit line-color set → falls back through to --base-border.
+        expect(getComputedStyle(line).borderTopColor).to.equal("rgb(10, 20, 30)");
+    });
+
     it("sets role=separator on the host", async () => {
         const el = await fixture(html`<y-break></y-break>`);
         expect(el.getAttribute("role")).to.equal("separator");
@@ -162,8 +190,8 @@ describe("YumeBreak", () => {
         expect(el.inset).to.equal("none");
     });
 
-    it("applies sm inset via spacing token", async () => {
-        const el = await fixture(html`<y-break inset="sm"></y-break>`);
+    it("applies small inset via spacing token", async () => {
+        const el = await fixture(html`<y-break inset="small"></y-break>`);
         const hostRule = [...el.shadowRoot.adoptedStyleSheets[0].cssRules].find(
             (r) => r.selectorText === ":host",
         );

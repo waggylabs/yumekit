@@ -110,6 +110,12 @@ export default {
 
 export const Default = {};
 
+export const Underline = {
+    name: "Underline variant",
+    render: () =>
+        `<y-select variant="underline" placeholder="Pick one" options='[{"value":"a","label":"Option A"},{"value":"b","label":"Option B"}]' style="max-width:320px"></y-select>`,
+};
+
 export const WithValue = {
     args: { value: "banana" },
 };

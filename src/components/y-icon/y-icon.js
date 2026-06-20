@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, isSafeCssColor } from "../../modules/helpers.js";
 import { getSanitizedIcon } from "../../modules/svg-sanitizer.js";
 
 export class YumeIcon extends HTMLElement {
@@ -62,7 +62,11 @@ export class YumeIcon extends HTMLElement {
         this.setAttribute("size", val);
     }
 
-    /** Stroke weight: "thin" | "regular" | "thick". */
+    /**
+     * Weight: "x-thin" | "thin" | "regular" (default) | "thick" | "x-thick" set
+     * the stroke width of line icons; "filled" swaps in the filled variant
+     * (falling back to the line icon when no filled variant is registered).
+     */
     get weight() {
         return this.getAttribute("weight") || "regular";
     }
@@ -76,9 +80,10 @@ export class YumeIcon extends HTMLElement {
     // -------------------------------------------------------------------------
 
     render() {
-        const svg = getSanitizedIcon(this.name);
+        const svg = getSanitizedIcon(this._resolveIconName());
         const sizeVal = this._getSize(this.size);
         const colorVal = this.color ? this._getColor(this.color) : "inherit";
+        // "filled" maps to no stroke width, so the filled variant ignores weight.
         const weightVal = this._getWeight(this.weight);
 
         this._updateAria();
@@ -87,7 +92,7 @@ export class YumeIcon extends HTMLElement {
         wrapper.innerHTML = svg;
 
         this.shadowRoot.adoptedStyleSheets = [
-            this._buildStyleSheet(sizeVal, colorVal, weightVal),
+            this._buildStyleSheet(sizeVal, colorVal, weightVal, this.weight === "filled"),
         ];
         this.shadowRoot.replaceChildren(wrapper);
     }
@@ -96,7 +101,7 @@ export class YumeIcon extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
-    _buildStyleSheet(sizeVal, colorVal, weightVal) {
+    _buildStyleSheet(sizeVal, colorVal, weightVal, isFilled = false) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host {
@@ -112,6 +117,12 @@ export class YumeIcon extends HTMLElement {
                 width: 100%;
                 height: 100%;
             }
+            ${isFilled ? `.icon-wrapper svg {
+                /* Line icons render a ~1px stroke that extends past their path;
+                   scale filled icons up so they read at the same optical size. */
+                transform: scale(1.1);
+                transform-origin: center;
+            }` : ""}
             ${this._getWeightCSS(weightVal)}
         `);
         return sheet;
@@ -128,14 +139,7 @@ export class YumeIcon extends HTMLElement {
             help: "var(--help-content--, #5405ff)",
         };
         if (map[color]) return map[color];
-        if (
-            color &&
-            (color.startsWith("#") ||
-                color.startsWith("rgb") ||
-                color.startsWith("hsl"))
-        ) {
-            return color;
-        }
+        if (isSafeCssColor(color)) return color;
         return map.base;
     }
 
@@ -165,6 +169,14 @@ export class YumeIcon extends HTMLElement {
         if (!weightVal) return "";
         return `.icon-wrapper svg,
                 .icon-wrapper svg * { stroke-width: ${weightVal} !important; }`;
+    }
+
+    _resolveIconName() {
+        if (this.weight === "filled") {
+            const filled = `${this.name}-fill`;
+            if (getSanitizedIcon(filled)) return filled;
+        }
+        return this.name;
     }
 
     _updateAria() {

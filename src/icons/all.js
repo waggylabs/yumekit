@@ -4,9 +4,13 @@
  * Import this module as a side-effect to make every icon available to <y-icon>:
  *
  *   import "@waggylabs/yumekit/icons/all.js";
+ *
+ * This also pulls in the filled variants (registered under `<name>-fill`), so
+ * `<y-icon weight="filled">` works for every icon that has a filled version.
  */
 
 import { registerIcons } from "./registry.js";
+import "./all-filled.js";
 
 import accessibility from "./accessibility.svg";
 import robot from "./robot.svg";

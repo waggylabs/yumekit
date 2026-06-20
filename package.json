@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -18,6 +18,7 @@
         },
         "./components/*": "./dist/components/*",
         "./icons/all.js": "./dist/icons/all.js",
+        "./icons/all-filled.js": "./dist/icons/all-filled.js",
         "./icons/registry.js": "./dist/icons/registry.js",
         "./styles/*": "./dist/styles/*",
         "./CHANGELOG.md": "./CHANGELOG.md",
@@ -25,8 +26,12 @@
         "./FUNDING.md": "./FUNDING.md"
     },
     "sideEffects": true,
+    "bin": {
+        "yumekit": "scripts/install-ai-docs.js"
+    },
     "files": [
         "dist",
+        "scripts/install-ai-docs.js",
         "llm.txt",
         "CHANGELOG.md",
         "CONTRIBUTING.md",
@@ -36,10 +41,13 @@
         "access": "public"
     },
     "scripts": {
-        "build": "npm run build:tokens && rollup -c && tsc && node scripts/copy-component-types.js",
+        "build": "npm run build:tokens && rollup -c && tsc && node scripts/copy-component-types.js && npm run sync:docs && npm run bundle:ai",
         "build:tokens": "node scripts/build-tokens.js",
-        "prepublishOnly": "npm run build",
-        "pretest": "npm run build:tokens",
+        "bundle:ai": "node scripts/bundle-ai-docs.js",
+        "sync:docs": "node scripts/sync-llm-docs.js",
+        "check:docs": "node scripts/check-docs.js",
+        "prepublishOnly": "npm run build && npm run check:docs -- --check",
+        "pretest": "npm run build:tokens && npm run sync:docs -- --check && npm run check:docs -- --check",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage",
         "prestorybook": "npm run build:tokens",
         "storybook": "storybook dev -p 6006",

@@ -61,6 +61,12 @@ export default {
 
 export const Default = {};
 
+export const Underline = {
+    name: "Underline variant",
+    render: () =>
+        `<y-textarea variant="underline" label="Message" rows="3" style="max-width:320px"></y-textarea>`,
+};
+
 export const WithValue = {
     args: { value: "This is some textarea content." },
 };

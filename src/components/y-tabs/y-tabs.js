@@ -3,7 +3,7 @@ import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
-        return ["options", "size", "position"];
+        return ["options", "size", "position", "variant"];
     }
 
     // -------------------------------------------------------------------------
@@ -19,7 +19,8 @@ export class YumeTabs extends HTMLElement {
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
-        if (!this.hasAttribute("position")) this.setAttribute("position", "top");
+        if (!this.hasAttribute("position"))
+            this.setAttribute("position", "top");
         this.render();
     }
 
@@ -54,7 +55,22 @@ export class YumeTabs extends HTMLElement {
         return ["top", "bottom", "left", "right"].includes(pos) ? pos : "top";
     }
     set position(val) {
-        this.setAttribute("position", ["top", "bottom", "left", "right"].includes(val) ? val : "top");
+        this.setAttribute(
+            "position",
+            ["top", "bottom", "left", "right"].includes(val) ? val : "top",
+        );
+    }
+
+    /**
+     * @type {"default"|"accent"} Visual style. `"default"` renders bordered,
+     * boxed tabs; `"accent"` renders minimal tabs with a primary-colored
+     * indicator border on the active tab's content-facing edge.
+     */
+    get variant() {
+        return this.getAttribute("variant") === "accent" ? "accent" : "default";
+    }
+    set variant(val) {
+        this.setAttribute("variant", val === "accent" ? "accent" : "default");
     }
 
     /** @type {"small"|"medium"|"large"} Controls tab button padding and gap. */
@@ -63,7 +79,10 @@ export class YumeTabs extends HTMLElement {
         return ["small", "medium", "large"].includes(sz) ? sz : "medium";
     }
     set size(val) {
-        this.setAttribute("size", ["small", "medium", "large"].includes(val) ? val : "medium");
+        this.setAttribute(
+            "size",
+            ["small", "medium", "large"].includes(val) ? val : "medium",
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -94,7 +113,11 @@ export class YumeTabs extends HTMLElement {
         style.textContent = this._getStyles();
         this.shadowRoot.appendChild(style);
 
-        const tablist = _el("div", { class: "tablist", role: "tablist", part: "tablist" });
+        const tablist = _el("div", {
+            class: "tablist",
+            role: "tablist",
+            part: "tablist",
+        });
         tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
         this.shadowRoot.appendChild(tablist);
 
@@ -117,8 +140,8 @@ export class YumeTabs extends HTMLElement {
             // eslint-disable-next-line no-console
             console.warn(
                 `[y-tabs] The "${slotName}" slot is deprecated. ` +
-                `Use the ${side}Icon property on the tab options object instead, ` +
-                `or use the "tab-content-${tabId}" slot for custom content.`
+                    `Use the ${side}Icon property on the tab options object instead, ` +
+                    `or use the "tab-content-${tabId}" slot for custom content.`,
             );
         }
 
@@ -183,7 +206,11 @@ export class YumeTabs extends HTMLElement {
 
     _findSiblingButton(buttons, fromIndex, direction) {
         for (let i = 1; i <= buttons.length; i++) {
-            const b = buttons[(fromIndex + i * direction + buttons.length) % buttons.length];
+            const b =
+                buttons[
+                    (fromIndex + i * direction + buttons.length) %
+                        buttons.length
+                ];
             if (!b.disabled) return b;
         }
         return null;
@@ -218,9 +245,10 @@ export class YumeTabs extends HTMLElement {
             :host([position="right"])  .tablist button { border-left: none; }
 
             button {
-                background: var(--component-tabs-border-color);
+                background: var(--component-tabs-inactive-background, var(--component-tabs-border-color));
                 color: var(--component-tabs-color);
-                border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
+                border: 1px solid var(--component-tabs-border-color);
+                border-width: var(--component-tabs-border-width, var(--component-tab-border-width, 1px));
                 margin: 0;
                 padding: ${paddingVar};
                 cursor: pointer;
@@ -259,8 +287,8 @@ export class YumeTabs extends HTMLElement {
             }
             .tabpanel {
                 position: relative;
-                z-index: 0;
-                border: var(--component-tab-border-width) solid var(--component-tabs-border-color);
+                border: 1px solid var(--component-tabs-border-color);
+                border-width: var(--component-tabs-border-width, var(--component-tab-border-width, 1px));
                 border-radius: var(--component-tab-border-radius-outer);
                 padding: var(--component-tab-content-padding);
                 background: var(--component-tabs-background);
@@ -273,6 +301,34 @@ export class YumeTabs extends HTMLElement {
             :host([position="bottom"]) .tabpanel { margin-bottom: -1px; }
             :host([position="left"])   .tabpanel { margin-left: -1px; }
             :host([position="right"])  .tabpanel { margin-right: -1px; }
+
+            /* ---- Accent variant: minimal tabs with a primary indicator border
+                   on the active tab's content-facing edge ---- */
+            :host([variant="accent"]) .tablist { margin: 0; }
+            :host([variant="accent"]) button {
+                background: transparent;
+                border: none;
+                border-radius: 0;
+            }
+            :host([variant="accent"]) button[aria-selected="true"] {
+                background: transparent;
+                color: var(--component-tabs-accent);
+            }
+            :host([variant="accent"]) .tabpanel {
+                border: none;
+                border-radius: 0;
+                margin: 0;
+            }
+            /* A rail in the base border color runs along the tabs' content-facing
+               edge; the active tab switches that edge to the accent color. */
+            :host([variant="accent"][position="top"])    .tablist button { border-bottom: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="bottom"]) .tablist button { border-top: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="left"])   .tablist button { border-right: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="right"])  .tablist button { border-left: var(--component-tabs-accent-width, 2px) solid var(--component-tabs-border-color); }
+            :host([variant="accent"][position="top"])    .tablist button[aria-selected="true"] { border-bottom-color: var(--component-tabs-accent); }
+            :host([variant="accent"][position="bottom"]) .tablist button[aria-selected="true"] { border-top-color: var(--component-tabs-accent); }
+            :host([variant="accent"][position="left"])   .tablist button[aria-selected="true"] { border-right-color: var(--component-tabs-accent); }
+            :host([variant="accent"][position="right"])  .tablist button[aria-selected="true"] { border-left-color: var(--component-tabs-accent); }
         `;
     }
 
@@ -298,7 +354,9 @@ export class YumeTabs extends HTMLElement {
     }
 
     _resolveActiveTab(tabs) {
-        const currentInvalid = !this._activeTab || tabs.find((t) => t.id === this._activeTab)?.disabled;
+        const currentInvalid =
+            !this._activeTab ||
+            tabs.find((t) => t.id === this._activeTab)?.disabled;
         if (tabs.length && currentInvalid) {
             this._activeTab = tabs.find((t) => !t.disabled)?.id || "";
         }
@@ -308,8 +366,12 @@ export class YumeTabs extends HTMLElement {
         const buttons = Array.from(this.shadowRoot.querySelectorAll("button"));
         buttons.forEach((button) => {
             if (button.disabled) return;
-            button.addEventListener("click", () => this.activateTab(button.dataset.id));
-            button.addEventListener("keydown", (e) => this._handleTabKeydown(e, buttons));
+            button.addEventListener("click", () =>
+                this.activateTab(button.dataset.id),
+            );
+            button.addEventListener("keydown", (e) =>
+                this._handleTabKeydown(e, buttons),
+            );
         });
     }
 }

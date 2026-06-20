@@ -198,7 +198,6 @@ class YumeDrawer extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 border: none;
-                border-radius: var(--component-drawer-border-radius, 0);
                 transition: transform var(--component-drawer-transition-duration, 0.3s) ease;
             }
 
@@ -213,11 +212,13 @@ class YumeDrawer extends HTMLElement {
                 left: 0;
                 transform: translateX(-100%);
                 border-right: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
+                border-radius: 0 var(--component-drawer-border-radius, 0) var(--component-drawer-border-radius, 0) 0;
             }
             .drawer-panel[data-position="right"] {
                 right: 0;
                 transform: translateX(100%);
                 border-left: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
+                border-radius: var(--component-drawer-border-radius, 0) 0 0 var(--component-drawer-border-radius, 0);
             }
 
             .drawer-panel[data-position="top"],
@@ -230,11 +231,13 @@ class YumeDrawer extends HTMLElement {
                 top: 0;
                 transform: translateY(-100%);
                 border-bottom: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
+                border-radius: 0 0 var(--component-drawer-border-radius, 0) var(--component-drawer-border-radius, 0);
             }
             .drawer-panel[data-position="bottom"] {
                 bottom: 0;
                 transform: translateY(100%);
                 border-top: var(--component-drawer-border-width, 2px) solid var(--component-drawer-border-color, #37383a);
+                border-radius: var(--component-drawer-border-radius, 0) var(--component-drawer-border-radius, 0) 0 0;
             }
 
             .drawer-panel.open { transform: translate(0, 0); }

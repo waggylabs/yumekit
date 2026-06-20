@@ -65,21 +65,29 @@ export function contrastTextColor(bgColor) {
 }
 
 /**
- * Whether a string is a safe CSS color literal — `#hex`, `rgb()`/`rgba()`,
- * or `hsl()`/`hsla()`. Used to gate user-supplied colors before they reach a
- * CSS context (style tag, inline style attribute) so a hostile value cannot
- * escape and inject markup or other declarations.
+ * Whether a string is a safe CSS color literal: a `#hex` value, or one of the
+ * browser-native color functions — `rgb()`/`rgba()`, `hsl()`/`hsla()`, `hwb()`,
+ * `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()`. Used to gate
+ * user-supplied colors before they reach a CSS context (style tag, inline style
+ * attribute) so a hostile value cannot escape and inject markup or other
+ * declarations.
  *
- * Intentionally strict: rejects named colors, `currentColor`, `var(...)`, and
- * `color()` so callers can fall back to a known semantic default. Inputs with
- * comments, semicolons, braces, or surrounding whitespace are rejected.
+ * Safety comes from the argument allowlist: a function body may contain only
+ * the characters these color functions legitimately use (digits, letters,
+ * `.`, `%`, `,`, `/`, `+`, `-`, whitespace). Parentheses are disallowed, so no
+ * nested `var()` / `calc()` / `url()`; and `<>{};:*"'\` are disallowed, so a
+ * value cannot close the function to inject another declaration or break out of
+ * a `<style>` element.
+ *
+ * Intentionally strict: rejects named colors, `currentColor`, and `var(...)`
+ * so callers can fall back to a known semantic default.
  *
  * @param {unknown} value
  * @returns {boolean}
  */
 export function isSafeCssColor(value) {
     if (typeof value !== "string") return false;
-    return /^(#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|rgba?\([^()]*\)|hsla?\([^()]*\))$/i.test(
+    return /^(?:#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([a-z0-9.,%/+\s-]*\))$/i.test(
         value,
     );
 }
@@ -106,13 +114,8 @@ export function getColorVarPair(color, fallbackColor = "base") {
         help: ["var(--help-content--)", "var(--help-content-inverse)"],
     };
     if (map[color]) return map[color];
-    // Custom CSS color (hex, rgb/rgba, hsl/hsla) — use raw value with auto-contrasted text
-    if (
-        color &&
-        (color.startsWith("#") ||
-            color.startsWith("rgb") ||
-            color.startsWith("hsl"))
-    ) {
+    // Custom CSS color literal — use raw value with auto-contrasted text.
+    if (isSafeCssColor(color)) {
         return [color, contrastTextColor(color)];
     }
     if (fallbackColor === null) return [color, "var(--base-content-inverse)"];
@@ -416,6 +419,30 @@ export function resolveAnchor(host, id, onFound, root = document) {
     });
 
     return dispose;
+}
+
+/**
+ * Find the mount point for a portaled overlay so it inherits the active theme.
+ *
+ * YumeKit delivers a theme as CSS custom properties scoped to the <y-theme>
+ * subtree, so a portaled surface must mount inside that subtree to stay themed.
+ * Element.closest() stops at the shadow boundary, so a component portaling from
+ * inside another component's shadow root (e.g. y-data-grid's header menus) would
+ * never see a light-DOM <y-theme> and fall back to the un-themed defaults. Walk
+ * up across shadow boundaries via getRootNode().host to find the nearest
+ * enclosing <y-theme>; fall back to <body> when there is none.
+ * @param {Element} el — the portaling element to resolve from
+ * @returns {Element} — the nearest <y-theme> ancestor, or document.body
+ */
+export function resolveThemeMountPoint(el) {
+    let node = el;
+    while (node) {
+        const theme = node.closest?.("y-theme");
+        if (theme) return theme;
+        const root = node.getRootNode();
+        node = root instanceof ShadowRoot ? root.host : null;
+    }
+    return document.body;
 }
 
 /**

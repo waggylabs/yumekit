@@ -199,7 +199,8 @@ class YumeDialog extends HTMLElement {
 
             .dialog {
                 background: var(--component-dialog-background);
-                border: var(--component-dialog-border-width, 1px) solid var(--component-dialog-border-color);
+                border: 1px solid var(--component-dialog-border-color);
+                border-width: var(--component-dialog-border-width, 1px);
                 border-radius: var(--component-dialog-border-radius-outer, 4px);
                 max-width: 90%;
                 max-height: 90%;

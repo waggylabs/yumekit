@@ -188,20 +188,27 @@ export class YumeCheckbox extends HTMLElement {
             .checkbox {
                 width: var(--component-checkbox-size, 20px);
                 height: var(--component-checkbox-size, 20px);
-                border: var(--component-inputs-border-width, 2px) solid var(--component-checkbox-border-color);
-                border-radius: var(--component-inputs-border-radius-outer, 4px);
+                border: 2px solid var(--component-checkbox-border-color);
+                border-width: var(--component-inputs-border-width, 2px);
+                border-radius: var(--component-checkbox-border-radius, var(--component-inputs-border-radius-outer, 4px));
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 background: var(--component-checkbox-background);
                 color: var(--component-checkbox-accent);
                 box-sizing: border-box;
-                transition: border-color 0.2s ease;
+                transition: background-color 0.2s ease, border-color 0.2s ease;
             }
 
             :host([disabled]) .checkbox {
                 background: var(--component-checkbox-disabled-background, var(--component-checkbox-background));
                 cursor: not-allowed;
+            }
+
+            :host([checked]) .checkbox,
+            :host([indeterminate]) .checkbox {
+                background: var(--component-checkbox-checked-background, var(--component-checkbox-background));
+                border-color: var(--component-checkbox-checked-border-color, var(--component-checkbox-border-color));
             }
 
             .checkbox:hover {
@@ -215,6 +222,7 @@ export class YumeCheckbox extends HTMLElement {
             .icon {
                 width: var(--component-checkbox-icon-size, 16px);
                 height: var(--component-checkbox-icon-size, 16px);
+                color: var(--component-checkbox-checked-icon-color, var(--component-checkbox-accent));
             }
 
             [part="label"] {

@@ -22,6 +22,7 @@ export class YumeColor extends HTMLElement {
             "clearable",
             "size",
             "label-position",
+            "variant",
         ];
     }
 
@@ -165,6 +166,19 @@ export class YumeColor extends HTMLElement {
     }
     set size(v) {
         this.setAttribute("size", v);
+    }
+
+    /**
+     * @type {"default"|"underline"} Field style. `"default"` is a full border;
+     * `"underline"` shows only a bottom border with square bottom corners.
+     */
+    get variant() {
+        return this.getAttribute("variant") === "underline"
+            ? "underline"
+            : "default";
+    }
+    set variant(v) {
+        this.setAttribute("variant", v === "underline" ? "underline" : "default");
     }
 
     get value() {
@@ -378,7 +392,8 @@ export class YumeColor extends HTMLElement {
                 align-items: center;
                 gap: var(--component-color-trigger-gap, var(--spacing-x-small));
                 background: var(--component-input-background);
-                border: var(--component-inputs-border-width) solid var(--component-input-border-color);
+                border: 1px solid var(--component-input-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: ${padding};
                 min-height: ${minHeight};
@@ -386,6 +401,13 @@ export class YumeColor extends HTMLElement {
                 cursor: pointer;
                 user-select: none;
                 transition: border-color 0.2s ease-in-out;
+            }
+
+            /* Underline variant: bottom border only, square bottom corners. */
+            :host([variant="underline"]) .trigger {
+                border-style: none;
+                border-bottom-style: solid;
+                border-radius: var(--component-inputs-border-radius-outer) var(--component-inputs-border-radius-outer) 0 0;
             }
 
             .trigger:hover {
@@ -479,7 +501,8 @@ export class YumeColor extends HTMLElement {
                 left: 0;
                 z-index: var(--component-color-z-index, 200);
                 background: var(--base-background-app);
-                border: var(--component-inputs-border-width) solid var(--base-border);
+                border: 1px solid var(--base-border);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-colorpicker-border-radius, var(--radii-x-small));
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 padding: var(--spacing-small, 8px);

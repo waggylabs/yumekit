@@ -99,7 +99,7 @@ export const ConstrainedRange = {
     docs: {
       description: {
         story:
-          "Min and max ratios prevent collapsing past 25% / 75% â€” try dragging past either end.",
+          "Min and max ratios prevent collapsing past 25% / 75% — try dragging past either end.",
       },
     },
   },

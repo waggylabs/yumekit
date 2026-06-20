@@ -15,7 +15,7 @@ Every `y-*` component class must have exactly four comment-delimited sections, i
 // Private
 ```
 
-No sub-sections. Methods within Public and Private must be **alphabetical**.
+No sub-sections. Members within Getters / Setters, Public, and Private must be **alphabetical**. In Getters / Setters, keep each property's `get`/`set` pair (and its doc comment) together and order by property name.
 
 ## Method Style
 
@@ -64,7 +64,7 @@ if (this.querySelector('[slot="my-slot"]')) { ... }
 
 Two cases need extra care — `_el` alone doesn't cover them:
 
-- **CSS color literals.** When painting a user-supplied color into any CSS context (inline `style`, `<style>` block, CSS variable), gate the value through `isSafeCssColor` from `src/modules/helpers.js` and fall back to a semantic theme default when it fails. The helper accepts only `#hex`, `rgb()`/`rgba()`, and `hsl()`/`hsla()` literals. See `y-badge` and `y-select` (per-option `color`) for the pattern.
+- **CSS color literals.** When painting a user-supplied color into any CSS context (inline `style`, `<style>` block, CSS variable), gate the value through `isSafeCssColor` from `src/modules/helpers.js` and fall back to a semantic theme default when it fails. The helper accepts `#hex` and the browser-native color functions (`rgb()`/`rgba()`, `hsl()`/`hsla()`, `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, `color()`). See `y-badge` and `y-select` (per-option `color`) for the pattern.
 - **SVG markup.** Anything that ultimately came from `registerIcon(name, svg)` must go through the shared sanitizer in `src/modules/svg-sanitizer.js` before it touches `innerHTML`. Prefer `<y-icon name="…">`; if you need raw markup, call `getSanitizedIcon(name)`.
 
 ## New Component Checklist
@@ -74,6 +74,14 @@ Every new component requires: `README.md`, `CHANGELOG.md`, `reference.md`, `SKIL
 ## Design Tokens
 
 Tokens under `tokens/` are the source of truth. `styles/*.css` is generated — never edit it directly. Run `npm run build:tokens` after any token change. `npm run build` chains the tokens build first.
+
+## AI Documentation
+
+`llm.txt` and the Claude skill (`.claude/skills/yumekit/` — `SKILL.md`, `reference.md`, `patterns.md`, `examples/`) are the AI-facing docs that ship with the package (bundled into `dist/ai/` at build time; installable into a consumer project via `npx @waggylabs/yumekit init-ai`). Keep them current:
+
+- **Mechanical numbers are synced automatically.** Version, registered-component count, and theme count are stamped from source by `npm run sync:docs` (`scripts/sync-llm-docs.js`), which runs as part of `npm run build`. Don't hand-edit those numbers; if you restructure the surrounding prose, update the anchor patterns in that script. `npm run sync:docs -- --check` fails on drift.
+- **API prose is hand-authored.** When you add or change a component's public API (attributes, slots, events, methods), update the component's entry in `llm.txt`, `.claude/skills/yumekit/reference.md`, and the JSX types in `src/react.d.ts` in the same change — the sync script does not touch these.
+- **Attribute coverage is checked.** `npm run check:docs` (`scripts/check-docs.js`) cross-references every component's `observedAttributes` against `react.d.ts`, `llm.txt`, and `reference.md`, flagging attributes that aren't documented. It runs in `pretest` (and `prepublishOnly`) with `--check`, so adding an observed attribute without documenting it fails the build. It checks attribute *names* only — value enums, defaults, and prose are still on you to keep accurate.
 
 ## Testing
 

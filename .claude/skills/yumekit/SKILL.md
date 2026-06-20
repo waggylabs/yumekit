@@ -4,7 +4,7 @@ description: Generate and scaffold UI using YumeKit (@waggylabs/yumekit) web com
 argument-hint: "component or task description"
 ---
 
-You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 42 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
+You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 51 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
 
 The user's request is: $ARGUMENTS
 
@@ -21,7 +21,7 @@ When writing or modifying component source code, follow the authoring standards 
     ```javascript
     import "@waggylabs/yumekit/components/y-button";
     ```
-3. **JSON attributes** — `y-select options`, `y-tabs options`, and `y-table columns`/`rows` take JSON strings:
+3. **JSON attributes** — `y-select options`, `y-tabs options`, and `y-table columns`/`data` take JSON strings:
     ```html
     <y-select options='[{"value":"a","label":"Option A"}]'></y-select>
     ```

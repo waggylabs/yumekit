@@ -30,6 +30,12 @@ CDN:
 
 ---
 
+## Color values
+
+Wherever a `color` attribute accepts a "CSS color value" (`y-button`, `y-badge`, `y-tag`, `y-icon`, `y-rating`, `y-select` per-option, `y-popover`, …), the value is gated through the shared `isSafeCssColor` check. Accepted forms: `#hex`, `rgb()`/`rgba()`, `hsl()`/`hsla()`, and the browser-native functions `hwb()`, `lab()`, `lch()`, `oklab()`, `oklch()`, and `color()`. The gate rejects semicolons, braces, angle brackets, and nested functions; values that fail fall back to a semantic theme default. Predefined scheme names (`base`, `primary`, `secondary`, `success`, `warning`, `error`, `help`) are always available alongside literals.
+
+---
+
 ## y-theme
 
 Injects design tokens as CSS custom properties. Wraps entire app.
@@ -65,13 +71,13 @@ A divider that draws a line, optionally broken by centered content (text, icon, 
 | `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                      |
 | `label`       | Convenience text rendered in the center                                                     |
 | `icon`        | Convenience icon name rendered in the center (icon then label when both are set)            |
-| `inset`       | `none` (default) \| `sm` \| `md` \| `lg` — outer end padding                                |
+| `inset`       | `none` (default) \| `small` \| `medium` \| `large` — outer end padding                       |
 
 **Slots:** default — content rendered in the center; takes precedence over `label` / `icon`.
 
 **CSS Parts:** `line`, `line-start`, `line-end`, `content`
 
-**CSS Custom Properties:** `--component-break-line-color`, `--component-break-line-thickness`, `--component-break-line-style` (override the `variant`), `--component-break-gap`, `--component-break-content-color`, `--component-break-content-font-size`, `--component-break-content-font-weight`, `--component-break-inset`, `--component-break-min-length`
+**CSS Custom Properties:** `--component-break-line-color` (defaults to `--base-border`), `--component-break-line-thickness`, `--component-break-line-style` (override the `variant`), `--component-break-spacing` (perpendicular padding around the line — block axis when horizontal, inline when vertical; defaults to `--spacing-medium`), `--component-break-gap`, `--component-break-content-color`, `--component-break-content-font-size`, `--component-break-content-font-weight`, `--component-break-inset`, `--component-break-min-length`
 
 ```html
 <y-break></y-break>
@@ -134,11 +140,13 @@ When `href` is set, the internal element renders as `<a>` instead of `<button>` 
 | `color`      | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`      |
 | `size`       | `small` \| `medium` \| `large`                                                         |
 | `style-type` | `outlined` (default) \| `filled` \| `flat`                                             |
+| `padding-mode` | `auto` (default) \| `square` \| `wide` — `square` forces equal block/inline padding (e.g. paginator numbers), `wide` keeps inline padding even when icon-only, `auto` squares icon-only buttons |
 | `disabled`   | boolean                                                                                |
 | `type`       | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                 |
 | `href`       | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled` |
 | `target`     | e.g. `"_blank"` — only applies when `href` is set                                      |
 | `rel`        | e.g. `"noopener noreferrer"` — only applies when `href` is set                         |
+| form attrs   | `form`, `formaction`, `formmethod`, `formenctype`, `formnovalidate`, `formtarget`, `autofocus` are reflected to the underlying control |
 
 Slots: default (label), `left-icon`, `right-icon`
 
@@ -168,6 +176,8 @@ Slots: default (label), `left-icon`, `right-icon`
 <!-- Disabled link — href removed, aria-disabled set, pointer-events blocked -->
 <y-button href="/restricted" disabled>Unavailable</y-button>
 ```
+
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` (all sides), and `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` to override the vertical / horizontal axes independently (fall back to `--component-button-padding-{size}`). The `padding-mode` attribute governs whether the inline axis collapses to the block value (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets min-height (shared with `y-input`; falls back to `--sizing-{size}`). For `style-type="outlined"`: the border is sourced from the button's matching semantic border token (`--base-border`, `--error-border`, …) per `color`, falling back to the text color when that token is unset. `--component-button-border-width` (applied as the `border-width` longhand, default `1px`) accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0`). Optional global overrides: `--component-button-outline-border` (border style + color as a CSS `border` shorthand; its width is superseded by `--component-button-border-width`) and `--component-button-outline-border-color` (border color across all states) — set via CSS or a scoped `y-theme`.
 
 ---
 
@@ -219,12 +229,14 @@ Form-associated. Always set `name` inside a `<form>`.
 | `label`          | visible label text                                                        |
 | `label-position` | `top` (default) \| `bottom` \| `left` \| `right`                          |
 | `size`           | `small` \| `medium` \| `large`                                            |
+| `variant`        | `default` (full border) \| `underline` (bottom border only, square bottom corners) |
 | `disabled`       | boolean                                                                   |
 | `readonly`       | boolean                                                                   |
 | `required`       | boolean                                                                   |
 | `invalid`        | boolean — applies error state                                             |
 | `max-length`     | number string                                                             |
 | `min-length`     | number string                                                             |
+| `min`, `max`, `step` | numeric constraints applied when `type="number"`                      |
 | `pattern`        | regex string                                                              |
 
 Events: `change`, `input`
@@ -255,6 +267,7 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 | `label-position` | `top` (default) \| `bottom` \| `left` \| `right` |
 | `rows`           | number of visible rows (default: `3`)            |
 | `size`           | `small` \| `medium` \| `large`                   |
+| `variant`        | `default` \| `underline` (bottom border only, square bottom corners) |
 | `disabled`       | boolean                                          |
 | `required`       | boolean                                          |
 | `invalid`        | boolean — applies error state                    |
@@ -289,10 +302,17 @@ Form-associated.
 | `name`         | form field name                                 |
 | `placeholder`  |                                                 |
 | `size`         | `small` \| `medium` \| `large`                  |
+| `variant`      | `default` \| `underline` (bottom border only on the trigger, square bottom corners) |
 | `disabled`     | boolean                                         |
 | `required`     | boolean                                         |
+| `invalid`      | boolean — error state                           |
 | `multiple`     | boolean                                         |
-| `display-mode` | `dropdown` (default) \| `inline`                |
+| `searchable`   | boolean — inline filter input (autocomplete)    |
+| `clearable`    | boolean — shows a clear (×) button when a value is set |
+| `display-mode` | `tag` — render selected items as removable tags (requires `multiple`) |
+| `label-position` | `top` (default) \| `bottom`                   |
+| `close-on-click-outside` | `"false"` keeps the dropdown open on outside click |
+| `portal`       | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors |
 
 Events: `change`
 
@@ -323,12 +343,13 @@ Form-associated.
 | `label-position` | `right` (default) \| `left`    |
 
 Events: `change`
+CSS Custom Properties: `--component-checkbox-size`, `--component-checkbox-icon-size`, `--component-checkbox-border-radius` (lets checkboxes use a tighter radius than text inputs), `--component-checkbox-border-color`, `--component-checkbox-background`, `--component-checkbox-color`, `--component-checkbox-accent`; checked/indeterminate overrides (fall back to the unchecked values) `--component-checkbox-checked-background`, `--component-checkbox-checked-border-color`, `--component-checkbox-checked-icon-color`
 
 ---
 
 ## y-radio
 
-Form-associated. Group by giving the same `name`.
+Form-associated. Group by giving the same `name`, or render a managed group from one element via `options`.
 
 | Attribute        | Values / Notes                 |
 | ---------------- | ------------------------------ |
@@ -336,11 +357,13 @@ Form-associated. Group by giving the same `name`.
 | `checked`        | boolean                        |
 | `disabled`       | boolean                        |
 | `required`       | boolean                        |
+| `options`        | JSON: `[{"value":"a","label":"Option A"}, ...]` — render a managed radio group |
 | `size`           | `small` \| `medium` \| `large` |
 | `label`          |                                |
 | `label-position` | `right` (default) \| `left`    |
 
 Events: `change`
+CSS Custom Properties: `--component-radio-size`, `--component-radio-dot-size`, `--component-radio-background`, `--component-radio-color` (border), `--component-radio-accent` (dot); checked-state overrides (fall back to the unchecked values) `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`
 
 ---
 
@@ -355,10 +378,15 @@ Form-associated.
 | `disabled`       | boolean                        |
 | `required`       | boolean                        |
 | `size`           | `small` \| `medium` \| `large` |
+| `on-color`       | scheme or CSS color for the track when checked (default `primary`) |
+| `off-color`      | scheme or CSS color for the track when unchecked |
+| `animate`        | `"false"` disables the slide transition |
+| `toggle-label`   | boolean — inline on/off text inside the track (`on-label` / `off-label` slots) |
 | `label`          |                                |
 | `label-position` | `right` \| `left`              |
 
 Events: `change`
+Slots: `label`, `on-label`, `off-label`
 
 ---
 
@@ -368,11 +396,21 @@ Form-associated.
 
 | Attribute                             | Values / Notes                   |
 | ------------------------------------- | -------------------------------- |
-| `name`, `value`, `min`, `max`, `step` |                                  |
+| `name`, `value`, `min`, `max`, `step` | `value` reads/writes `"min,max"` in range mode |
 | `disabled`                            | boolean                          |
 | `required`                            | boolean                          |
 | `size`                                | `small` \| `medium` \| `large`   |
-| `show-value`                          | boolean — displays current value |
+| `color`                               | scheme or CSS color for the track fill and thumb (default `primary`) |
+| `orientation`                         | `horizontal` (default) \| `vertical` |
+| `range`                               | boolean — two-thumb range slider (uses `value-min` / `value-max`) |
+| `value-min`, `value-max`              | the two thumb positions in range mode (default `min` / `max`) |
+| `min-gap`                             | minimum gap between thumbs in range mode (default: `step`) |
+| `ticks`                               | `"true"` (mark per step), a number `N` (N intervals), or JSON array of positions `"[0,25,50,100]"` |
+| `tick-labels`                         | boolean — value labels beneath ticks |
+| `snap-to-ticks`                       | boolean — snap to nearest tick instead of step |
+| `show-value`                          | `none` (default) \| `always` \| `dragging` — value bubble |
+| `value-position`                      | `start` \| `end` (default: `start` horizontal, `end` vertical) |
+| `aria-label-min`, `aria-label-max`    | accessible labels for the lower / upper thumbs |
 
 Events: `change`, `input`
 
@@ -598,18 +636,19 @@ Pre-built icon names (loaded with `icons/all.js`): `accessible`, `eye`, `eye-off
 
 Overlays a count/status on another element.
 
-| Attribute  | Values / Notes                                                         |
-| ---------- | ---------------------------------------------------------------------- |
-| `color`    | color scheme name                                                      |
-| `position` | `top-right` (default) \| `top-left` \| `bottom-right` \| `bottom-left` |
-| `size`     | `small` \| `medium` \| `large`                                         |
+| Attribute   | Values / Notes                                  |
+| ----------- | ----------------------------------------------- |
+| `value`     | text displayed inside the badge                 |
+| `color`     | color scheme name (default `primary`)           |
+| `position`  | `top` (default) \| `bottom` — vertical          |
+| `alignment` | `left` \| `right` (default) — horizontal        |
+| `size`      | `small` (default) \| `medium` \| `large`        |
 
-Slots: default (badge label text), `anchor` (element being badged)
+Slots: default (the element the badge overlays)
 
 ```html
-<y-badge color="error" position="top-right"
-    >5
-    <y-button slot="anchor" left-icon="bell">Notifications</y-button>
+<y-badge color="error" value="5" position="top" alignment="right">
+    <y-button>Notifications</y-button>
 </y-badge>
 ```
 
@@ -688,17 +727,30 @@ Events: `change` — `event.detail.value`
 
 ## y-progress
 
-| Attribute       | Values / Notes                 |
-| --------------- | ------------------------------ |
-| `value`         | number 0–100                   |
-| `max`           | number (default: 100)          |
-| `indeterminate` | boolean — animated loading bar |
-| `color`         | color scheme name              |
-| `size`          | `small` \| `medium` \| `large` |
+| Attribute        | Values / Notes                 |
+| ---------------- | ------------------------------ |
+| `value`          | number `min`–`max`             |
+| `values`         | JSON array of numbers — multiple segments/series |
+| `min`, `max`     | numeric bounds (default `0` / `100`) |
+| `step`           | numeric step                   |
+| `mode`           | `bar` (default) \| `ring` \| `pie` |
+| `indeterminate`  | boolean — animated loading state |
+| `disabled`       | boolean                        |
+| `color`          | color scheme name or CSS color |
+| `track-color`    | scheme or CSS color for the unfilled track |
+| `size`           | `small` \| `medium` \| `large` |
+| `thickness`      | `small` \| `medium` (default) \| `large` — bar/ring thickness |
+| `label-display`  | `"false"` hides the label (default shown) |
+| `label-format`   | `percent` (default) \| `value` \| `fraction` |
+| `segmented`      | boolean or number — split the bar into N segments |
+| `segment-gap`    | gap between segments           |
+| `start-angle`    | ring/pie start angle in degrees (default `0`) |
+| `direction`      | `clockwise` (default) \| `counterclockwise` — ring/pie sweep |
 
 ```html
 <y-progress value="65" color="primary"></y-progress>
 <y-progress indeterminate color="secondary"></y-progress>
+<y-progress mode="ring" value="70" thickness="large"></y-progress>
 ```
 
 ---
@@ -709,7 +761,9 @@ Events: `change` — `event.detail.value`
 | ---------- | ------------------------------------------------ |
 | `text`     | tooltip content (required)                       |
 | `position` | `top` (default) \| `bottom` \| `left` \| `right` |
-| `trigger`  | `hover` (default) \| `click` \| `focus`          |
+| `color`    | scheme or CSS color for the background; text auto-contrasted |
+| `delay`    | show delay in ms (default `200`)                 |
+| `open`     | boolean — force open programmatically (bypasses hover/focus) |
 
 Slot: default (trigger element)
 
@@ -723,11 +777,53 @@ Slot: default (trigger element)
 
 ---
 
+## y-code
+
+Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. A built-in tokenizer covers **JavaScript** (aliases: `js` / `jsx` / `mjs` / `cjs`), **TypeScript** (aliases: `ts` / `tsx` / `mts` / `cts`), **JSON**, **CSS**, **Python** (aliases: `py` / `python3`), **Bash** (aliases: `sh` / `shell` / `zsh`), and **HTML** (aliases: `htm` / `xml` / `svg`); other languages fall back to plain text. The HTML tokenizer treats `<style>` and `<script>` bodies as text rather than recursively tokenizing them. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through the sanitized `highlighted` slot — that path takes precedence when present.
+
+| Attribute       | Values / Notes                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| `language`      | string — built-in tokenizers: `javascript` (`js` / `jsx` / `mjs` / `cjs`), `typescript` (`ts` / `tsx` / `mts` / `cts`), `json`, `css`, `python` (`py` / `python3`), `bash` (`sh` / `shell` / `zsh`), `html` (`htm` / `xml` / `svg`). Anything else renders as plain text. Also used in the `aria-label`. Default `"text"`. |
+| `line-numbers`  | boolean — when set, line numbers render and each line becomes a click/keyboard target that copies it |
+| `max-lines`     | number — caps visible lines; an expand toggle reveals the rest                                       |
+| `wrap`          | boolean — wraps long lines (otherwise the block scrolls horizontally)                                |
+| `filename`      | string — renders a header bar with the filename and copy button                                      |
+| `copyable`      | defaults to `true` — copy button shown by default; `copyable="false"` to hide                        |
+| `disabled`      | boolean — suppresses interactive affordances; source still renders                                   |
+| `copy-label`    | string — idle copy-button text (default `"Copy"`)                                                    |
+| `copied-label`  | string — post-copy feedback text (default `"Copied!"`)                                               |
+
+Slots: (default) raw source code — plain text (escape `<` and `&`) **or** wrap the source in a `<template>` child so the browser preserves it verbatim without escaping (preferred for HTML / XML / SVG samples; if any `<template>` is present it becomes the source). `highlighted` — sanitized pre-highlighted markup (allowlist: `<span>` with class names from common highlighter tokens). `header` — extra header content.
+
+Events (non-cancelable): `copy` (`{ source, target: "block" | "line", lineIndex? }`), `copy-fail` (`{ error }`), `language-change` (`{ language }`).
+
+Methods: `copyBlock()`, `copyLine(index)`, `setLanguage(lang)`.
+
+CSS Parts: `header`, `filename`, `copy-button`, `copy-feedback`, `pre`, `code`, `line`, `line-number`, `expand-toggle`.
+
+**Security / trust model.** The default slot is safe with any input — text is read via `textContent` (or `template.innerHTML` for the `<template>` shortcut) and rendered into shadow DOM via `createTextNode`, so the source string is never re-parsed as HTML. The **`highlighted` slot requires markup from a trusted source**: the sanitizer protects what y-code renders into shadow DOM (allowlist of `<span>` + token class names), but the browser parses the slotted light-DOM children before this component upgrades, so any `<script>` tag inside the slot will execute regardless of our sanitizer. Pipe Prism / shiki output through it; never wire it directly to untrusted user input. The `<template>` shortcut is a DX convenience, not a security boundary.
+
+```html
+<y-code language="javascript" filename="hello.js" line-numbers>
+function hello() {
+    return "world";
+}
+</y-code>
+
+<!-- Pre-highlighted via an external highlighter -->
+<y-code language="javascript">
+    <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
+</y-code>
+```
+
+---
+
 ## y-card
 
-| Attribute | Values / Notes    |
-| --------- | ----------------- |
-| `color`   | color scheme name |
+| Attribute | Values / Notes               |
+| --------- | ---------------------------- |
+| `color`   | color scheme name            |
+| `raised`  | boolean — elevated drop shadow |
 
 Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body)
 
@@ -862,28 +958,28 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
 
 ## y-drawer
 
-| Attribute    | Values / Notes                                   |
-| ------------ | ------------------------------------------------ |
-| `open`       | boolean                                          |
-| `position`   | `left` (default) \| `right` \| `top` \| `bottom` |
-| `modal`      | boolean — shows backdrop                         |
-| `persistent` | boolean — backdrop click does not close          |
+| Attribute   | Values / Notes                                                                       |
+| ----------- | ------------------------------------------------------------------------------------ |
+| `visible`   | boolean — toggle to open/close (also a property: `el.visible = true`)                |
+| `anchor`    | element ID (no `#`) of a trigger element; clicking it toggles the drawer automatically |
+| `position`  | `left` (default) \| `right` \| `top` \| `bottom`                                     |
+| `resizable` | boolean — adds a drag handle for resizing                                            |
 
 Events: `open`, `close`
-Methods: `.show()`, `.hide()`
 
-Slot: default (drawer content)
+Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
 ```html
-<y-drawer id="nav-drawer" position="left" modal>
-    <nav>
+<y-drawer id="nav-drawer" position="left" anchor="open-nav-btn">
+    <strong slot="header">Navigation</strong>
+    <nav slot="body">
         <y-button style-type="flat">Dashboard</y-button>
         <y-button style-type="flat">Settings</y-button>
     </nav>
 </y-drawer>
 
 <script type="module">
-    document.getElementById("nav-drawer").show();
+    document.getElementById("nav-drawer").visible = true;
 </script>
 ```
 
@@ -1050,26 +1146,29 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 
 ## y-dialog
 
-| Attribute    | Values / Notes                          |
-| ------------ | --------------------------------------- |
-| `open`       | boolean                                 |
-| `persistent` | boolean — backdrop click does not close |
+| Attribute       | Values / Notes                                                                        |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `visible`       | boolean — toggle to open/close (also a property: `el.visible = true`)                 |
+| `anchor`        | element ID (no `#`) of a trigger element; clicking it opens the dialog automatically  |
+| `closable`      | controls the built-in close button                                                    |
+| `show-backdrop` | controls the backdrop                                                                 |
+| `animate`       | open/close animation                                                                  |
+| `position`      | dialog placement                                                                      |
 
 Events: `open`, `close`
-Methods: `.show()`, `.hide()`
 
-Slots: `header`, `footer`, default (body)
+Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
 ```html
 <y-dialog id="confirm-dialog">
     <span slot="header">Confirm Delete</span>
-    <p>This action cannot be undone.</p>
+    <p slot="body">This action cannot be undone.</p>
     <y-button slot="footer" style-type="outlined">Cancel</y-button>
     <y-button slot="footer" color="error">Delete</y-button>
 </y-dialog>
 
 <script type="module">
-    document.getElementById("confirm-dialog").show();
+    document.getElementById("confirm-dialog").visible = true;
 </script>
 ```
 
@@ -1086,6 +1185,7 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 | `breakpoint` | number (px) — when set, dock is only visible below this width; omit for always visible        |
 | `size`       | `small` \| `medium` (default) \| `large`                                                      |
 | `history`    | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+| `floating`   | boolean — when present, renders the dock as a bordered, rounded island inset from the edges with a shadow (like a non-sticky `y-appbar`) |
 
 **Events:** `navigate` (cancelable, `detail: { href }`)
 
@@ -1099,6 +1199,9 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 - `--component-dock-background` — dock bar background color
 - `--component-dock-border-color` — border color on the edge facing the content
 - `--component-dock-border-width` — border width
+- `--component-dock-border-radius` — corner radius when `floating`
+- `--component-dock-floating-margin` — inset from the viewport edges when `floating` (default `16px`)
+- `--component-dock-shadow` — drop shadow when `floating` (defaults to `--base-shadow`)
 - `--component-dock-color` — default item text/icon color
 - `--component-dock-color-active` — selected item text/icon color
 - `--component-dock-z-index` — stacking order (default: `8000`)
@@ -1145,7 +1248,7 @@ Positioned relative to an `anchor` element. Items can be defined via the `items`
 | Attribute   | Values / Notes                                                                                     |
 | ----------- | -------------------------------------------------------------------------------------------------- |
 | `items`     | JSON: `[{"text":"Edit","value":"...","href":"...","icon":"...","selected":true,"children":[...]}]` |
-| `anchor`    | CSS selector or element ID of the trigger element                                                  |
+| `anchor`    | element ID (no `#`) of the trigger element; clicking the anchor toggles the menu automatically     |
 | `visible`   | boolean                                                                                            |
 | `direction` | `down` (default) \| `up` \| `left` \| `right`                                                      |
 | `size`      | `small` \| `medium` \| `large`                                                                     |
@@ -1165,20 +1268,66 @@ Events:
 - `navigate` — cancelable; `detail.href`. Fires before navigation when an item with `href` is clicked. Cancel to handle navigation in app code.
 
 ```html
-<y-button id="opts-btn" right-icon="chevron-down">Options</y-button>
+<y-button id="opts-btn">Options<y-icon slot="right-icon" name="chevron-down" size="small"></y-icon></y-button>
+<!-- anchor is a plain element ID; the menu wires the anchor's click itself -->
 <y-menu
     id="opts-menu"
-    anchor="#opts-btn"
-    items='[{"text":"Edit","value":"edit","icon":"edit"},{"text":"Delete","value":"delete","icon":"trash"}]'
+    anchor="opts-btn"
+    items='[{"text":"Edit","value":"edit","icon":"pencil"},{"text":"Delete","value":"delete","icon":"trash"}]'
 ></y-menu>
 
 <script type="module">
-    document.getElementById("opts-btn").addEventListener("click", () => {
-        document.getElementById("opts-menu").visible = true;
-    });
     document.getElementById("opts-menu").addEventListener("select", (e) => {
         console.log("selected:", e.detail.value);
     });
+</script>
+```
+
+---
+
+## y-help
+
+Guided product-tour / onboarding overlay. Given an ordered list of steps, dims the page, highlights one or more targets per step (single SVG mask for clean multi-target cutouts), and anchors a tooltip with helper text. Untargeted steps render a centered tooltip. The overlay and tooltip are portaled out of `<y-help>` to escape ancestor `overflow` / `transform` / `z-index` contexts — into the nearest enclosing `<y-theme>` (falling back to `document.body`). Keep `<y-help>` inside your `<y-theme>` so the portaled tour inherits the active theme; mounting on `document.body` would render with the default un-themed palette since theme variables are scoped to the `<y-theme>` subtree.
+
+| Attribute                       | Values / Notes                                                                                                                                       |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `steps`                         | `HelpStep[]` (property; JSON string via attribute). Each step `{ target?: string \| string[], title?, content, position?, anchor?, highlightPadding? }` |
+| `open`                          | boolean — reflects whether the tour is active                                                                                                        |
+| `index`                         | number — 0-based active step, reflected                                                                                                              |
+| `default-position`              | `auto` (default) \| `top` \| `bottom` \| `left` \| `right` \| `center`                                                                                |
+| `untargeted-position`           | `center` (default) \| other positions — fallback when no target resolves                                                                             |
+| `default-anchor`                | `bounds` (default) \| `first` \| `last` \| numeric index — multi-target anchor                                                                       |
+| `highlight-padding`             | number (px, default `8`) — pixel padding around each highlight                                                                                       |
+| `show-progress`                 | defaults to `true` — show "N of M" in the tooltip                                                                                                    |
+| `show-arrows`                   | defaults to `true` — large overlay-edge prev/next arrows                                                                                             |
+| `close-on-escape`               | defaults to `true`                                                                                                                                   |
+| `close-on-overlay-click`        | defaults to `false`                                                                                                                                  |
+| `disable-target-interaction`    | defaults to `true` — when `false`, highlighted elements remain clickable                                                                             |
+| `prev-label` / `next-label` / `finish-label` / `close-label` | button text; `finish-label` is shown on the next button on the last step (when `loop` is unset)                          |
+| `loop`                          | boolean — when set, advancing past the last step returns to the first                                                                                |
+
+Slots: none in v1. Step title/content come from each step's `title` / `content` fields, button text from the `prev-label` / `next-label` / `finish-label` / `close-label` attributes. Per-region slot overrides and declarative `<y-help-step>` children are planned for a future release; style the existing rendering via the documented CSS parts in the meantime.
+
+Events (bubble + composed): `y-help-open` (cancelable, `{ index }`), `y-help-start` (`{ index, step }`), `y-help-step-change` (cancelable, `{ from, to, step, direction }`), `y-help-complete` (`{ totalSteps }`), `y-help-close` (cancelable, `{ index, reason }`).
+
+Methods: `start(index = 0)`, `next()`, `prev()`, `goto(index)`, `close(reason = "api")`.
+
+CSS Parts: `overlay`, `highlight`, `tooltip`, `tooltip-title`, `tooltip-content`, `tooltip-actions`, `prev-button`, `next-button`, `close-button`, `progress`, `arrow-prev`, `arrow-next`, `pointer`.
+
+Accessibility: tooltip is `role="dialog"` `aria-modal="true"`, focus is trapped while open and restored on close, arrow keys + Enter advance, Escape closes (when on). Respects `prefers-reduced-motion`.
+
+```html
+<button id="launch">Take the tour</button>
+<y-help id="tour"></y-help>
+
+<script type="module">
+    const help = document.getElementById("tour");
+    help.steps = [
+        { target: "btn-create", title: "Start here", content: "Spin up a new agent." },
+        { target: ["card-1", "card-2"], anchor: "bounds", content: "Each agent gets a card." },
+        { title: "All set!", content: "You can replay this any time." },
+    ];
+    document.getElementById("launch").addEventListener("click", () => help.start());
 </script>
 ```
 
@@ -1188,19 +1337,19 @@ Events:
 
 | Attribute  | Values / Notes                                                                                            |
 | ---------- | --------------------------------------------------------------------------------------------------------- |
-| `position` | `top-right` (default) \| `top-left` \| `top-center` \| `bottom-right` \| `bottom-left` \| `bottom-center` |
-| `duration` | number (ms); `0` for persistent                                                                           |
-| `color`    | color scheme name                                                                                         |
+| `position` | `bottom-right` (default) \| `top-right` \| `top-left` \| `top-center` \| `bottom-left` \| `bottom-center` |
+| `duration` | default ms per toast (default `4000`); `0` for persistent                                                 |
+| `max`      | maximum simultaneous toasts (default `5`; oldest removed first)                                           |
 
-Methods: `.show(message, options?)`, `.hide()`
+Methods: `.show(opts)` — **single options object**: `{ message, color, duration, dismissible, icon }`. Returns the toast element.
 
 ```html
 <y-toast id="toast" position="bottom-right"></y-toast>
 
 <script type="module">
     const toast = document.getElementById("toast");
-    toast.show("Saved successfully!", { color: "success", duration: 3000 });
-    toast.show("Something went wrong.", { color: "error", duration: 0 }); // persistent
+    toast.show({ message: "Saved successfully!", color: "success", duration: 3000 });
+    toast.show({ message: "Something went wrong.", color: "error", duration: 0 }); // persistent
 </script>
 ```
 
@@ -1213,6 +1362,7 @@ Methods: `.show(message, options?)`, `.hide()`
 | `options`  | JSON array of tab objects (see shape below)      |
 | `position` | `top` (default) \| `bottom` \| `left` \| `right` |
 | `size`     | `small` \| `medium` \| `large`                   |
+| `variant`  | `default` (bordered boxes) \| `accent` (minimal tabs; active tab shows a primary indicator border on its content-facing edge, like Material/Carbon) |
 
 Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":false,"leftIcon":"home","rightIcon":"arrow-right"}` — `id`, `label`, and `slot` are required; `disabled`, `leftIcon`, `rightIcon` are optional.
 
@@ -1256,15 +1406,17 @@ Deprecated slots (still functional, emit `console.warn`; use `leftIcon`/`rightIc
 
 Multi-step wizard that guides users through a sequential flow. Step content is provided via named slots.
 
-| Attribute     | Values / Notes                                                        |
-| ------------- | --------------------------------------------------------------------- |
-| `items`       | JSON array of `{ label, slot, description?, icon?, status? }` objects |
-| `current`     | number — zero-based active step index (default: `0`)                  |
-| `orientation` | `horizontal` (default) \| `vertical`                                  |
-| `position`    | `start` (default) \| `end` — indicators before or after the content   |
-| `size`        | `small` \| `medium` (default) \| `large`                              |
-| `linear`      | boolean — restricts free navigation; must use `next()` / `complete()` |
-| `editable`    | boolean — allows clicking completed steps to return to them           |
+| Attribute               | Values / Notes                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `items`                 | JSON array of `{ label, slot, description?, icon?, status? }` objects                                       |
+| `current`               | number — zero-based active step index (default: `0`)                                                        |
+| `orientation`           | `horizontal` (default) \| `vertical`                                                                        |
+| `position`              | `start` (default) \| `end` — indicators before or after the content                                         |
+| `size`                  | `small` \| `medium` (default) \| `large`                                                                    |
+| `linear`                | boolean — restricts free navigation; must use `next()` / `complete()`                                       |
+| `editable`              | boolean — allows clicking completed steps to return to them                                                 |
+| `responsive`            | defaults to `true` — auto-flips a declared horizontal layout to vertical below `responsive-breakpoint`. Pass `responsive="false"` to opt out. |
+| `responsive-breakpoint` | number (px) — host-width threshold below which the responsive flip triggers (default `600`)                 |
 
 Items shape: `{ label: string, slot: string, description?: string, icon?: string, status?: "complete" | "error" | "pending" }`
 
@@ -1358,14 +1510,14 @@ Methods: `expand()`, `collapse()`, `toggle()`
 | Attribute | Values / Notes                                    |
 | --------- | ------------------------------------------------- |
 | `columns` | JSON: `[{"key":"name","label":"Name"}, ...]`      |
-| `rows`    | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
+| `data`    | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
 | `striped` | boolean                                           |
 | `size`    | `small` \| `medium` \| `large`                    |
 
 ```html
 <y-table
     columns='[{"key":"name","label":"Name"},{"key":"email","label":"Email"},{"key":"role","label":"Role"}]'
-    rows='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
+    data='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
     striped
 ></y-table>
 ```
@@ -1387,6 +1539,7 @@ Form-associated date input with popup calendar. Handles single dates and ranges.
 | `color`             | datepicker color theme (default: `primary`)                                  |
 | `size`              | `small` \| `medium` (default) \| `large`                                     |
 | `label-position`    | `top` (default) \| `bottom`                                                  |
+| `variant`           | `default` \| `underline` (bottom border only, square bottom corners)         |
 | `clearable`         | boolean — shows × button when value is set                                   |
 | `disabled`          | boolean                                                                      |
 | `invalid`           | boolean — error state                                                        |
@@ -1461,6 +1614,371 @@ Methods: `clear()`, `formatDate(date)`
 
 <!-- Year picker -->
 <y-datepicker show-days="false" show-months="false"></y-datepicker>
+```
+
+---
+
+## y-color
+
+Form-associated color input with a trigger/popup pattern (like `y-date`). Shows a swatch and value string; opens a `y-colorpicker` popup on click.
+
+| Attribute        | Values / Notes                                                          |
+| ---------------- | ----------------------------------------------------------------------- |
+| `value`          | color string in the active format                                       |
+| `format`         | `hex` (default) \| `rgb` \| `hsl` \| `hsv`                              |
+| `formats`        | JSON array of available formats (default: all four)                     |
+| `show-alpha`     | boolean — enable alpha channel                                          |
+| `placeholder`    | trigger placeholder (default: `"Select color"`)                         |
+| `name`           | form field name                                                         |
+| `disabled`, `invalid`, `clearable` | booleans                                              |
+| `size`           | `small` \| `medium` \| `large`                                          |
+| `label-position` | `top` (default) \| `bottom`                                             |
+| `variant`        | `default` (full border) \| `underline` (bottom border, square corners)  |
+
+Slot: `label`
+Events: `change` — `event.detail: { value, hex, rgb, hsl, hsv, alpha }`
+Methods: `open()`, `close()`, `clear()`
+CSS Parts: `color`, `wrapper`, `label-wrapper`, `trigger`, `swatch`, `display`, `clear-btn`, `popup`
+
+```html
+<y-color name="brand" value="#e74c3c" clearable>
+    <span slot="label">Brand color</span>
+</y-color>
+<y-color name="bg" format="rgb" show-alpha>
+    <span slot="label">Background</span>
+</y-color>
+```
+
+---
+
+## y-colorpicker
+
+Standalone color picker — 2D saturation/brightness canvas, hue slider, optional alpha slider, format selector, and channel inputs. Internal model is HSV.
+
+| Attribute    | Values / Notes                                                                  |
+| ------------ | ------------------------------------------------------------------------------- |
+| `value`      | initial color (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsv()`, `hsva()`) |
+| `format`     | `hex` (default) \| `rgb` \| `hsl` \| `hsv`                                       |
+| `formats`    | JSON array of available formats                                                 |
+| `show-alpha` | boolean — enable alpha slider and channel                                       |
+| `size`       | `small` \| `medium` \| `large` (scales canvas and inputs)                       |
+
+Events: `change` — `{ value, hex, rgb, hsl, hsv, alpha }`; `format-change` — `{ format }`
+Methods: `setColor(value)`
+CSS Parts: `colorpicker`, `canvas`, `canvas-handle`, `hue-slider`, `hue-thumb`, `alpha-slider`, `alpha-thumb`, `inputs-row`, `format-select`, `swatch-preview`
+
+```html
+<y-colorpicker value="#3498db"></y-colorpicker>
+<y-colorpicker value="#9b59b6" show-alpha format="rgb"></y-colorpicker>
+```
+
+---
+
+## y-paginator
+
+Page navigation with a configurable button window, ellipsis collapsing, prev/next, an optional items-per-page select, and SPA-friendly cancelable events. Page buttons render as `y-button` (flat when inactive, filled primary for the active page).
+
+| Attribute            | Values / Notes                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `current-page`       | active page, 1-indexed. Clamped to `[1, total-pages]`; reads `0` when `total-pages = 0`. Default `1`/`0`   |
+| `total-pages`        | total pages. `0` = no data (page list omitted). Default `0`                                                |
+| `page-count`         | max page buttons shown (excl. ellipses), default `5`. Auto-shrinks to fit host width, grows back up to max |
+| `boundary-count`     | pages always shown at each end (default `1`)                                                                |
+| `variant`            | `default` (page numbers + prev/next) \| `compact` (first/prev/status/next/last) \| `detailed` (+ text labels) |
+| `size`               | `small` \| `medium` (default) \| `large` — forwarded to page buttons and the select                        |
+| `disabled`           | boolean — disables every control                                                                           |
+| `hide-on-single-page`| default `true` — hides when `total-pages <= 1` and no size select; `"false"` to always render              |
+| `items-per-page`     | currently selected items-per-page value (number)                                                           |
+| `page-size-options`  | JSON `[10,25,50]` or `[{value,label}]` — appends an items-per-page `y-select`                               |
+| `page-size-label`    | label for the select (only visible in `variant="detailed"`, else used as `aria-label`)                     |
+
+Events (cancelable): `page-change` — `{ page }`; `update:current-page` — `{ page }`; `page-size-change` — `{ pageSize, previous }`; `update:items-per-page` — `{ pageSize, previous }`
+Methods: `goTo(page)`, `next()`, `previous()`, `setPageSize(value)`
+Slots: `prev-label`, `next-label` (only in `variant="detailed"`), `ellipsis`
+CSS Parts: `wrapper`, `nav-wrapper`, `list`, `button`, `button--active`, `button--disabled`, `nav-first`, `nav-prev`, `nav-next`, `nav-last`, `compact-status`, `ellipsis`, `page-size`, `page-size-label`, `page-size-select`
+Keyboard: on a page button, `ArrowLeft`/`ArrowRight` move focus; `Home`/`End` jump to first/last.
+
+```html
+<y-paginator total-pages="50" current-page="5"></y-paginator>
+<y-paginator
+    total-pages="100" current-page="42" boundary-count="2"
+    variant="detailed" items-per-page="25" page-size-options="[10, 25, 50, 100]"
+></y-paginator>
+```
+
+---
+
+## y-tree
+
+Hierarchical navigation tree for sidebars, doc nav, and file/folder explorers. Use when leaf nodes are navigation targets (links); for collapsible content regions use `y-panelbar` / `y-panel`.
+
+| Attribute     | Values / Notes                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| `exclusive`   | boolean — expanding one branch collapses siblings at the same level                         |
+| `selection`   | `single` (default) \| `none` (route-driven only)                                            |
+| `route-match` | `exact` (default) \| `prefix` (highlights ancestors of the active route) \| `off`           |
+| `aria-label`  | defaults to `"Tree"`                                                                         |
+
+Methods: `getAllItems()`, `getVisibleItems()`, `focusItem(item)`
+Events (bubble from items): `navigate` (cancelable, `{ href, item }`), `select` (`{ item, href }`), `expand` (`{ item }`), `collapse` (`{ item }`), `toggle` (`{ item, expanded }`)
+Slot: default — root-level `<y-tree-item>` elements
+CSS Parts: `tree`
+
+```html
+<y-tree route-match="prefix" style="width:280px">
+    <y-tree-item href="/docs" expanded>
+        <y-icon slot="icon" name="book" size="small"></y-icon>
+        <span slot="label">Docs</span>
+        <y-tree-item slot="children" href="/docs/install">
+            <span slot="label">Installation</span>
+        </y-tree-item>
+    </y-tree-item>
+    <y-tree-item href="/api"><span slot="label">API Reference</span></y-tree-item>
+</y-tree>
+```
+
+---
+
+## y-tree-item
+
+Individual node in a `y-tree`.
+
+| Attribute  | Values / Notes                                                                  |
+| ---------- | ------------------------------------------------------------------------------- |
+| `href`     | navigation target; the item behaves as a link when set                          |
+| `expanded` | boolean — children visible                                                       |
+| `selected` | boolean — active/current; auto-managed by the tree when `route-match` is on      |
+| `disabled` | boolean — non-interactive, skipped in keyboard nav                               |
+| `history`  | `push` (default) \| `replace` \| `false` (full-page nav)                         |
+
+Methods: `expand()`, `collapse()`, `toggle()`, `activate()`
+Slots: `icon`, `label` (default slot also accepted), `suffix`, `children` (nested `<y-tree-item>`)
+CSS Parts: `item`, `header`, `icon`, `label`, `suffix`, `arrow`, `children`
+CSS Custom Properties: `--component-tree-background`, `--component-tree-item-color`, `--component-tree-item-hover-background`, `--component-tree-item-selected-color`, `--component-tree-item-selected-background`, `--component-tree-item-accent`, `--component-tree-item-active-border`, `--component-tree-border-width`, `--component-tree-padding`, `--component-tree-indent`, `--component-tree-icon-gap`
+Keyboard: ArrowUp/Down move between visible items; ArrowRight expands/focuses first child; ArrowLeft collapses/focuses parent; Home/End jump; Enter activates; Space toggles; type-ahead; roving `tabindex`.
+
+---
+
+## y-data-grid
+
+Interactive data grid for large datasets — client- or server-side sorting, filtering, and pagination on top of the `y-table` visual language, plus row selection, inline cell editing, grouping, multi-column header groups, and virtual scrolling. Use `y-table` for static reports; use `y-data-grid` for admin panels, CRMs, and any list users slice, page, select, or edit.
+
+| Attribute             | Values / Notes                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------ |
+| `columns`             | JSON tree. Leaves: `{key, label, type, sortable, filterable, editable, editor, options, required, min, max, pattern, width, minWidth, resizable, reorderable, align}`. Groups: `{label, align, children:[...]}` (nest for multi-row headers). `type`: `text`/`number`/`date`/`checkbox`; `editor`: `text`/`number`/`date`/`select`/`checkbox` (`options` required for `select`) |
+| `data`                | JSON array of row objects keyed by column `key`                                                        |
+| `mode`                | `client` (default) — local sort/filter/page/edit; `server` — parent handles via events                 |
+| `page-size`           | rows per page (default `20`)                                                                            |
+| `current-page`        | 1-indexed (default `1`)                                                                                 |
+| `total-rows`          | required in `server` mode for pagination math                                                          |
+| `loading`             | boolean — loading overlay + `aria-busy`                                                                 |
+| `striped`             | boolean (default false)                                                                                 |
+| `hover`               | boolean (default true; `hover="false"` to disable)                                                     |
+| `fixed-header`        | boolean (default true) — sticky header                                                                  |
+| `filtering`           | `inline` (per-column input row) \| `advanced` (funnel popover per header) \| omitted (none)             |
+| `enable-sorting`      | boolean (default true) — click cycles asc→desc→none; shift-click for multi-sort                         |
+| `enable-pagination`   | boolean (default true)                                                                                  |
+| `show-item-count`     | boolean (default false) — row count in footer                                                          |
+| `enable-selection`    | boolean — checkbox column + row selection (Ctrl/Cmd+click)                                              |
+| `enable-editing`      | boolean — inline cell editing                                                                           |
+| `selection-mode`      | `multi` (default) \| `single`                                                                           |
+| `edit-on`             | `click` (default) \| `focus`                                                                            |
+| `row-key`             | column key used as the stable row id (falls back to array index)                                       |
+| `selected`            | JSON array of row keys to mark selected (mirrors the `selectedKeys` property)                          |
+| `empty-message`       | text when no rows visible (default `"No data available"`)                                               |
+| `row-height`          | px per row (default `40`; required for `virtual`)                                                       |
+| `global-search`       | search query across all column values                                                                  |
+| `group-by`            | JSON array of column keys — collapsible group rows (nested when multiple). Hides pagination             |
+| `aggregates`          | JSON map of key → `sum`/`avg`/`min`/`max`/`count`, rendered in group header cells                       |
+| `virtual`             | boolean — render only the visible window (needs `viewport-height`). Hides pagination; not with `group-by` |
+| `viewport-height`     | px of scrollable viewport (required for virtualization)                                                |
+| `buffer-size`         | extra rows above/below the viewport (default `10`)                                                      |
+| `enable-header-menu`  | boolean — kebab menu per header (sort, column visibility submenu, move column)                          |
+| `enable-column-resize`| boolean — drag handle on each leaf header (double-click resets); emits `column-resize`. Opt out via `resizable:false` / clamp with `minWidth` |
+| `enable-column-reorder`| boolean — drag a leaf header to reorder (within sibling group when nested); emits `column-reorder`. Opt out via `reorderable:false` |
+
+Slots: `header-before`, `header-after`, `footer-before`, `footer-after`, `empty`, `loading`, `pagination`
+Events: `page-change` (cancelable, `{page, pageSize}`), `sort-change` (`{column, direction, sorts}`), `filter-change` (`{filters, operators, globalSearch}`), `row-select` (`{rows, keys, event}`), `cell-edit-start` (`{row, column, value}`), `cell-edit-end` (cancelable, `{row, column, value, oldValue}`), `cell-edit-cancel`, `row-click`, `row-dblclick`, `group-toggle` (`{path, groupKey, expanded}`), `column-resize` (`{column, width}`), `column-reorder` (`{column, fromIndex, toIndex, order}`)
+Properties / methods: `selectedRows`, `selectedKeys`, `filters`, `sortState`, `groupBy`, `aggregates`, `clearFilters()`, `clearSort()`, `clearSelection()`, `selectRows(rows)`, `commitEdit()`, `cancelEdit()`, `expandGroup(path)`, `collapseGroup(path)`, `expandAllGroups()`, `collapseAllGroups()`, `refresh()`
+CSS Parts: `grid-container`, `header`, `header-row`, `header-cell`, `body`, `row`, `cell`, `pagination`, `loading-overlay`, `empty-state`, `filter-input`, `filter-row`, `cell-editor`, `group-header`, `header-menu-trigger`, `header-filter-trigger`, `header-menu-popover`, `header-menu-submenu`, `header-filter-popover`, `column-resize-handle`
+CSS Custom Properties: `--component-data-grid-*` (border, border-radius, padding-{size}, row-height, row-stripe-bg, row-hover-bg, row-selected-bg, header-bg, header-text, filter-bg, edit-input-border, pagination-bg, loading-spinner-color, group-indent, resize-handle-color, drop-indicator-color, …)
+
+```html
+<y-data-grid
+    columns='[{"key":"name","label":"Name"},{"key":"age","label":"Age","type":"number"}]'
+    data='[{"name":"Alice","age":30},{"name":"Bob","age":25}]'
+    filtering="inline" page-size="10"
+></y-data-grid>
+```
+
+---
+
+## y-popover
+
+Target-anchored, slot-based floating panel — the primitive bridging `y-tooltip` (hover/focus text) and `y-dialog` (centered modal) for rich positioned popovers: confirm prompts, action menus, comboboxes, inline help. Used internally by `y-help`.
+
+| Attribute                | Values / Notes                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `open`                   | reflects/toggles visibility                                                                           |
+| `anchor`                 | element `id` (no `#`) or CSS selector (or an `Element` via property). Falls back to a `[slot="trigger"]` child |
+| `position`               | `auto` (default) \| `top`/`bottom`/`left`/`right` + aligned variants (`top-start`, `bottom-end`, …)   |
+| `offset`                 | px gap between anchor and popover (default `8`)                                                       |
+| `pointer`                | render the arrow (default `true`; `pointer="false"` to hide)                                          |
+| `trigger`                | space-separated subset of `click`/`hover`/`focus`/`context-menu`/`manual` (default `manual`)          |
+| `delay-show`/`delay-hide`| ms before open/close on hover/focus (default `0`)                                                     |
+| `modal`                  | `role="dialog"` + focus trap + Escape always closes                                                  |
+| `show-backdrop`          | dim backdrop (implicitly true with `modal` unless `="false"`)                                         |
+| `close-on-escape`        | default `true` (always on for modal)                                                                  |
+| `close-on-outside-click` | default `true`                                                                                        |
+| `close-on-anchor-click`  | default `false` — when true, re-clicking the anchor toggles closed                                    |
+| `portal`                 | render into the nearest `<y-theme>` (fallback `document.body`) to escape stacking/transform/clip contexts while keeping the theme |
+| `text`                   | simple text body (equivalent to a `<span>` in the default slot)                                       |
+| `color`                  | `base` (default) \| `primary`/`secondary`/`success`/`warning`/`error`/`help`, or any safe CSS color   |
+| `size`                   | `small` \| `medium` (default) \| `large`                                                              |
+| `disabled`               | triggers inert; `show()` is a no-op; an open popover closes                                           |
+
+Slots: default (body, falls back to `text`), `trigger` (becomes the anchor), `header`, `footer`, `pointer`
+Events (bubble + composed): `popover-open` (cancelable, `{trigger}`), `popover-opened` (`{position}`), `popover-close` (cancelable, `{reason}`), `popover-closed` (`{reason}`), `popover-anchor-change` (`{from, to}`)
+Methods: `show(detail?)` → `Promise<boolean>`, `hide(reason="api")`, `toggle()`, `updatePosition()`, `setAnchor(element|selector)`
+CSS Parts: `surface`, `header`, `body`, `footer`, `pointer`, `backdrop`, `trigger`
+CSS Custom Properties: `--component-popover-*` (background, color, border-color, border-width, border-radius, padding-{size}, font-size-{size}, max-width, min-width, shadow, offset, pointer-size, pointer-color, backdrop, backdrop-blur, z-index, header-divider-color, transition-duration)
+Accessibility: non-modal uses `role="tooltip"`; modal uses `role="dialog"` + `aria-modal`. Header → `aria-labelledby`, body → `aria-describedby`. Modal traps and restores focus; respects `prefers-reduced-motion`.
+
+```html
+<button id="save-btn">Save layout</button>
+<y-popover anchor="save-btn" trigger="click" position="bottom">
+    <strong slot="header">Confirm change</strong>
+    <p>Saving will overwrite the existing layout.</p>
+    <div slot="footer">
+        <y-button size="small" style-type="outlined">Cancel</y-button>
+        <y-button size="small" color="primary">Save</y-button>
+    </div>
+</y-popover>
+
+<y-popover trigger="hover focus" text="Helpful description" position="top">
+    <y-button slot="trigger">Hover me</y-button>
+</y-popover>
+```
+
+---
+
+## y-shape
+
+Presentational container that clips its slotted content into a geometric shape via CSS `clip-path`. Useful for avatar masks, decorative panels, and non-rectangular skeleton loaders.
+
+| Attribute          | Values / Notes                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| `type`             | `rectangle` (default) \| `circle` \| `ellipse` \| `star` \| `heart` \| `chat-bubble` \| `times` \| `cross` \| `polygon` |
+| `polygon-points`   | required for `type="polygon"` — comma-separated coords (e.g. `"50% 0%, 100% 50%, 50% 100%, 0% 50%"`) |
+| `radius`           | shape radius for `circle`/`ellipse`, or corner radius for `rectangle` (e.g. `"50%"`, `"12px"`)       |
+| `fit`              | `contain` (default) \| `cover` \| `fill` — `object-fit` for slotted `<img>`/`<video>`                |
+| `preserve-aspect`  | boolean — locks the container to 1:1                                                                  |
+| `size`             | `small` \| `medium` (default) \| `large`                                                             |
+
+Events: `ready` — `{ clipPath }`
+Slot: default — content to clip (commonly an image)
+CSS Parts: `host`, `content`
+CSS Custom Properties: `--component-shape-clip-path` (computed), `--component-shape-size`, `--component-shape-background`, `--component-shape-color`
+
+```html
+<y-shape type="circle"><img src="avatar.jpg" alt="" /></y-shape>
+<y-shape type="rectangle" radius="16px" size="large" style="background: var(--primary-content--);"></y-shape>
+<y-shape type="polygon" polygon-points="50% 0%, 100% 50%, 50% 100%, 0% 50%"></y-shape>
+```
+
+---
+
+## y-banner
+
+Full-width inline alert / notification region with optional icon, action, and dismiss button.
+
+| Attribute     | Values / Notes                                                                          |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `color`       | `base` (default) \| `primary`/`secondary`/`success`/`error`/`warning`/`help`            |
+| `icon`        | registered icon name shown before the content                                           |
+| `position`    | `push` (default, in-flow) \| `overlap` (positioned over content)                        |
+| `sticky`      | boolean — with `position="overlap"`, fixes the banner to the viewport top on scroll     |
+| `dismissable` | boolean — shows a close button                                                          |
+| `dismissed`   | boolean — reflects/sets the hidden state                                                |
+| `size`        | `small` \| `medium` (default) \| `large`                                                |
+
+Events: `dismiss` (cancelable) — fired before hiding; `preventDefault()` keeps it open
+Methods: `dismiss()`, `show()`
+Slots: default (message), `icon` (falls back to the `icon` attribute), `action`
+CSS Parts: `banner`, `icon`, `content`, `action`, `close-btn`
+CSS Custom Properties: `--component-banner-gap`, `--component-banner-padding-{small|medium|large}`, `--component-banner-icon-size-{small|medium|large}`, `--component-banner-border-radius`, `--component-banner-z-index`
+
+```html
+<y-banner color="success" icon="check" dismissable>
+    Your changes have been saved.
+    <y-button slot="action" size="small">Undo</y-button>
+</y-banner>
+```
+
+---
+
+## y-avatar-group
+
+A group of overlapping avatars rendered horizontally or vertically.
+
+| Attribute     | Values / Notes                                                                          |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `avatars`     | JSON array `[{ alt, src, color, shape }]`; when set, slotted children are ignored       |
+| `orientation` | `horizontal` (default) \| `vertical`                                                    |
+| `overlap`     | px each avatar overlaps the previous (default `8`)                                      |
+| `stack-order` | `last` (default; final on top) \| `first` (leading on top)                              |
+| `max`         | max visible avatars; `0` (default) = unlimited. Excess collapses into a `+N` indicator  |
+| `size`        | `small` \| `medium` \| `large` — applied to JSON-rendered avatars                       |
+
+Events: `y-overflow-click` — fired when the `+N` indicator is clicked (`{ count }`)
+CSS Parts: `overflow` (the `+N` button)
+
+```html
+<y-avatar-group max="3" aria-label="Project members">
+    <y-avatar alt="Jane Doe" color="primary"></y-avatar>
+    <y-avatar alt="John Smith" color="secondary"></y-avatar>
+    <y-avatar alt="Pat Lee" color="success"></y-avatar>
+    <y-avatar alt="Sam Ko" color="warning"></y-avatar>
+</y-avatar-group>
+```
+
+---
+
+## y-animate
+
+Wrapper that applies a preset CSS-based entrance/exit animation to its children via the Web Animations API.
+
+| Attribute       | Values / Notes                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------------- |
+| `animation`     | `fade` (default) \| `slide` \| `zoom-in` \| `zoom-out` \| `flip-horizontal` \| `flip-vertical` \| `rotate-in` \| `bounce` \| `shake` \| `scale` |
+| `direction`     | `up` (default) \| `down` \| `left` \| `right` — used by `slide`/`bounce`/`shake`                      |
+| `duration`      | ms (default `300`)                                                                                   |
+| `delay`         | ms before start (default `0`)                                                                        |
+| `easing`        | CSS easing keyword, `cubic-bezier(...)`, or `steps(...)` (default `"ease-out"`)                       |
+| `trigger`       | `load` (default) \| `visible` (plays on scroll-in via `IntersectionObserver`) \| `manual`            |
+| `once`          | `"true"` (default) \| `"false"` — when false, visibility triggers re-fire on each entry              |
+| `reverse`       | boolean — plays in reverse                                                                           |
+| `stagger`       | boolean — animates each child with a per-index delay                                                 |
+| `stagger-delay` | per-child delay in ms when `stagger` is set (default `50`)                                            |
+| `disabled`      | boolean — blocks playback                                                                            |
+| `hidden`        | standard HTML attribute — cancels any in-flight animation and hides the host                         |
+
+Events (bubble + composed): `animation-start`, `animation-end`, `animation-cancel` — each `{ animation, element }`
+Methods: `play()` → `Promise<void>`, `reset()`, `abort()`, `setAnimation(name, duration?, easing?)`
+Slot: default — children to animate
+CSS Parts: `content`
+CSS Custom Properties: `--component-animate-duration`, `--component-animate-stagger-delay`, `--component-animate-fade-opacity-start/-end`, `--component-animate-slide-distance`, `--component-animate-zoom-in-scale-start`, `--component-animate-zoom-out-scale-start`, `--component-animate-rotate-angle`, `--component-animate-bounce-height`, `--component-animate-shake-amplitude`, `--component-animate-scale-start/-end`
+Accessibility: respects `prefers-reduced-motion: reduce` — animations are skipped, but `animation-start`/`animation-end` still fire.
+
+```html
+<y-animate animation="fade" duration="400">
+    <y-card>Hello</y-card>
+</y-animate>
+
+<y-animate trigger="visible" animation="slide" direction="up" stagger stagger-delay="80">
+    <y-card>One</y-card>
+    <y-card>Two</y-card>
+</y-animate>
 ```
 
 ---

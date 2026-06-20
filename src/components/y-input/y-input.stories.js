@@ -80,6 +80,16 @@ export default {
 
 export const Default = {};
 
+export const Underline = {
+    name: "Underline variant",
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:16px;max-width:320px">
+            <y-input variant="underline" label="Name" placeholder="Jane Doe"></y-input>
+            <y-input variant="underline" label="Email" type="email" invalid value="bad"></y-input>
+        </div>
+    `,
+};
+
 export const WithValue = {
     args: { value: "Hello world" },
 };

@@ -18,6 +18,7 @@ export class YumeInput extends HTMLElement {
             "min",
             "max",
             "step",
+            "variant",
         ];
     }
 
@@ -121,6 +122,20 @@ export class YumeInput extends HTMLElement {
     }
     set size(val) {
         this.setAttribute("size", val);
+    }
+
+    /**
+     * @type {"default"|"underline"} Field style. `"default"` is a full border;
+     * `"underline"` shows only a bottom border with square bottom corners
+     * (like the Material/Carbon text-field style).
+     */
+    get variant() {
+        return this.getAttribute("variant") === "underline"
+            ? "underline"
+            : "default";
+    }
+    set variant(val) {
+        this.setAttribute("variant", val === "underline" ? "underline" : "default");
     }
 
     /** @type {string} Input type (default "text"). */
@@ -263,12 +278,27 @@ export class YumeInput extends HTMLElement {
                 align-items: center;
                 gap: var(--spacing-x-small);
                 background: ${isDisabled ? "var(--component-input-background-disabled)" : "var(--component-input-background)"};
-                border: var(--component-inputs-border-width) solid var(--component-input-border-color);
+                /* Style + color via the shorthand (fixed, always-valid 1px
+                   width); real width as a longhand so
+                   --component-inputs-border-width accepts a 1–4 value pattern
+                   for per-side widths. border-radius is already a longhand and
+                   likewise takes a 1–4 value pattern. */
+                border: 1px solid var(--component-input-border-color);
+                border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
                 min-height: ${minHeightVar};
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
+            }
+
+            /* Underline variant: bottom border only, square bottom corners.
+               Only border-style/radius are overridden so the existing
+               hover/focus/invalid border-color rules still color the underline. */
+            :host([variant="underline"]) .input-container {
+                border-style: none;
+                border-bottom-style: solid;
+                border-radius: var(--component-inputs-border-radius-outer) var(--component-inputs-border-radius-outer) 0 0;
             }
 
             .input-container.is-invalid {
@@ -334,9 +364,9 @@ export class YumeInput extends HTMLElement {
 
     _getMinHeightVar(size) {
         const map = {
-            small: "var(--sizing-small, 32px)",
-            medium: "var(--sizing-medium, 40px)",
-            large: "var(--sizing-large, 56px)",
+            small: "var(--component-control-height-small, var(--sizing-small, 32px))",
+            medium: "var(--component-control-height-medium, var(--sizing-medium, 40px))",
+            large: "var(--component-control-height-large, var(--sizing-large, 56px))",
         };
         return map[size] || map.medium;
     }

@@ -44,3 +44,12 @@ jobs:
             contents: read
         uses: ./.github/workflows/npm-publish.yml
         secrets: inherit
+
+    deploy-storybook:
+        if: github.event.release.prerelease == false
+        needs: test
+        permissions:
+            id-token: write
+            contents: read
+        uses: ./.github/workflows/deploy-storybook.yml
+        secrets: inherit

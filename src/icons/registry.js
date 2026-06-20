@@ -26,3 +26,8 @@ export function registerIcons(entries) {
 export function getIcon(name) {
     return icons.get(name) || "";
 }
+
+/** Names of all currently-registered icons, in registration order. */
+export function getIconNames() {
+    return [...icons.keys()];
+}

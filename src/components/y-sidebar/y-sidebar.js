@@ -179,7 +179,7 @@ export class YumeSidebar extends HTMLElement {
             role: "navigation",
         });
 
-        const iconColWidth = `calc(${cfg.collapsedWidth} - 2 * var(--_sidebar-padding) - 2 * var(--component-sidebar-border-width, var(--component-appbar-border-width, 2px)) - 2 * var(--component-button-border-width, 1px))`;
+        const iconColWidth = `calc(${cfg.collapsedWidth} - 2 * var(--_sidebar-padding) - ${this._iconColumnBorderX()})`;
 
         bar.style.setProperty("--_sidebar-padding", cfg.padding);
         bar.style.setProperty("--_sidebar-collapsed-width", cfg.collapsedWidth);
@@ -357,7 +357,8 @@ export class YumeSidebar extends HTMLElement {
                 display: flex;
                 flex-direction: column;
                 background: var(--component-sidebar-background, var(--component-appbar-background, #0c0c0d));
-                border: var(--component-sidebar-border-width, var(--component-appbar-border-width, 2px)) solid var(--component-sidebar-border-color, var(--component-appbar-border-color, #37383a));
+                border: 2px solid var(--component-sidebar-border-color, var(--component-appbar-border-color, #37383a));
+                border-width: var(--component-sidebar-border-width, var(--component-appbar-border-width, 2px));
                 border-radius: var(--component-sidebar-border-radius, var(--component-appbar-border-radius, 4px));
                 overflow: visible;
                 padding: var(--_sidebar-padding);
@@ -456,6 +457,9 @@ export class YumeSidebar extends HTMLElement {
                 margin-left: auto;
             }
 
+            /* Collapsed keeps the expanded layout (flex-start + the fixed
+               icon column) so the icon stays in the exact same position across
+               collapse/expand; only the min-width clamp differs. */
             .sidebar.collapsed .nav-item y-button::part(button),
             .sidebar.collapsed .sidebar-footer y-button::part(button) {
                 min-width: 0;
@@ -501,6 +505,26 @@ export class YumeSidebar extends HTMLElement {
                 height: var(--component-icon-size-large, 1.25em);
             }
         `;
+    }
+
+    /**
+     * Total horizontal border (left + right) of the collapsed bar, used to size
+     * the icon column so collapsed and expanded icons line up. Resolved in JS
+     * because the border-width tokens may be a multi-value shorthand (e.g. the
+     * waggy offset border "2px 2px 6px 2px"), which can't be multiplied
+     * inside calc(). Flat nav buttons render no border (border-style: none), so
+     * only the sidebar's own border is subtracted.
+     */
+    _iconColumnBorderX() {
+        const cs = getComputedStyle(this);
+        const raw =
+            cs.getPropertyValue("--component-sidebar-border-width").trim() ||
+            cs.getPropertyValue("--component-appbar-border-width").trim() ||
+            "2px";
+        const parts = raw.split(/\s+/);
+        const right = parts.length >= 2 ? parts[1] : parts[0];
+        const left = parts.length === 4 ? parts[3] : right;
+        return `(${left} + ${right})`;
     }
 
     _initRender() {

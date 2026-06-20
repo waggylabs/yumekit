@@ -1,5 +1,6 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
+import "../y-input/y-input.js";
 import "../y-select/y-select.js";
 
 const MONTHS = [
@@ -56,6 +57,8 @@ export class YumeDatepicker extends HTMLElement {
         this._awaitingEnd = false;
         this._startTime = { h: 0, m: 0, s: 0 };
         this._endTime = { h: 0, m: 0, s: 0 };
+        this._yearRangeStart = null;
+        this._yearRangeEnd = null;
         this._mql = null;
         this._isMobile = false;
         this._onMediaChange = this._onMediaChange.bind(this);
@@ -363,17 +366,33 @@ export class YumeDatepicker extends HTMLElement {
             });
         });
 
-        root.querySelectorAll(".month-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                this._viewDate.setMonth(parseInt(btn.dataset.month));
+        root.querySelectorAll(".m-year-sel").forEach((sel) => {
+            sel.addEventListener("change", () => {
+                this._viewDate.setFullYear(parseInt(sel.value));
                 this.render();
             });
         });
 
-        root.querySelectorAll(".year-btn").forEach((btn) => {
+        root.querySelectorAll(".month-btn").forEach((btn) => {
             btn.addEventListener("click", () => {
-                this._viewDate.setFullYear(parseInt(btn.dataset.year));
-                this.render();
+                const vd = this._viewDateForSide(btn.dataset.side);
+                this._selectMonth(vd.getFullYear(), parseInt(btn.dataset.month));
+            });
+        });
+
+        root.querySelectorAll(".year-btn").forEach((btn) => {
+            btn.addEventListener("click", () =>
+                this._selectYear(parseInt(btn.dataset.year)),
+            );
+        });
+
+        root.querySelectorAll(".year-range-input").forEach((input) => {
+            input.addEventListener("input", () => {
+                const val = parseInt(input.value, 10);
+                if (isNaN(val)) return;
+                if (input.dataset.bound === "start") this._yearRangeStart = val;
+                else this._yearRangeEnd = val;
+                this._refreshYearGrid();
             });
         });
 
@@ -414,7 +433,7 @@ export class YumeDatepicker extends HTMLElement {
         });
     }
 
-_buildDayGrid(vd) {
+    _buildDayGrid(vd) {
         const year = vd.getFullYear();
         const month = vd.getMonth();
         const firstDow = new Date(year, month, 1).getDay();
@@ -449,6 +468,7 @@ _buildDayGrid(vd) {
                 style-type="${styleType}"
                 color="${color}"
                 size="medium"
+                padding-mode="square"
                 data-date="${date.toISOString()}"
                 ${disabled ? "disabled" : ""}
                 aria-label="${date.toDateString()}"
@@ -469,23 +489,14 @@ _buildDayGrid(vd) {
         const year = vd.getFullYear();
         const month = vd.getMonth();
 
-        // Month and year picker modes: simple label, no selects or nav
-        if (!this.showDays) {
-            let label;
-            if (this.showMonths) {
-                label = String(year);
-            } else {
-                const minY = this._minDate()?.getFullYear() ?? year - 10;
-                const maxY = this._maxDate()?.getFullYear() ?? year + 10;
-                label = `${minY} – ${maxY}`;
-            }
-            return `
-                <div class="cal-header">
-                    <div class="header-selects">
-                        <span class="header-label">${label}</span>
-                    </div>
-                </div>
-            `;
+        // Month picker: 12-month grid with an optional year dropdown.
+        if (!this.showDays && this.showMonths) {
+            return this._buildMonthPickerHeader(year);
+        }
+
+        // Year picker: start/end year inputs bounding the scrollable grid.
+        if (!this.showDays && !this.showMonths) {
+            return this._buildYearPickerHeader();
         }
 
         const showPrev = !isRange || side === "left";
@@ -508,16 +519,16 @@ _buildDayGrid(vd) {
         return `
             <div class="cal-header">
                 <div class="nav-start">
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" data-side="${side}" style-type="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" data-side="${side}" style-type="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" padding-mode="square"data-side="${side}" style-type="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
                 </div>
                 <div class="header-selects">
                     ${this.showMonths ? `<y-select class="month-sel" data-side="${side}" size="small" value="${month}" options='${monthOptions}'></y-select>` : ""}
                     ${this.showYears ? `<y-select class="year-sel" data-side="${side}" size="small" value="${year}" options='${yearOptions}'></y-select>` : ""}
                 </div>
                 <div class="nav-end">
-                    ${showNext ? `<y-button class="nav-btn" data-action="next-month" data-side="${side}" style-type="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
-                    ${showNext ? `<y-button class="nav-btn" data-action="next-year" data-side="${side}" style-type="flat" size="small" aria-label="Next year"><y-icon name="expand-right" size="small"></y-icon></y-button>` : ""}
+                    ${showNext ? `<y-button class="nav-btn" data-action="next-month" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
+                    ${showNext ? `<y-button class="nav-btn" data-action="next-year" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Next year"><y-icon name="expand-right" size="small"></y-icon></y-button>` : ""}
                 </div>
             </div>
         `;
@@ -538,11 +549,33 @@ _buildDayGrid(vd) {
                         style-type="${isSelected ? "filled" : "flat"}"
                         color="${isSelected ? this.color : "base"}"
                         size="small"
+                        padding-mode="square"
                         data-month="${i}"
                         data-side="${side}"
                         ${disabled ? "disabled" : ""}
                     >${name.slice(0, 3)}</y-button>`;
                 }).join("")}
+            </div>
+        `;
+    }
+
+    _buildMonthPickerHeader(year) {
+        if (!this.showYears) return "";
+
+        const minYear = this._minDate()?.getFullYear() ?? year - 50;
+        const maxYear = this._maxDate()?.getFullYear() ?? year + 50;
+        const yearOptions = JSON.stringify(
+            Array.from({ length: maxYear - minYear + 1 }, (_, i) => ({
+                value: String(minYear + i),
+                label: String(minYear + i),
+            })),
+        );
+
+        return `
+            <div class="cal-header">
+                <div class="header-selects">
+                    <y-select class="m-year-sel" size="small" value="${year}" options='${yearOptions}'></y-select>
+                </div>
             </div>
         `;
     }
@@ -575,7 +608,8 @@ _buildDayGrid(vd) {
                 display: inline-flex;
                 gap: 0;
                 background: var(--component-datepicker-background);
-                border: var(--component-datepicker-border-width) solid var(--component-datepicker-border-color);
+                border: 1px solid var(--component-datepicker-border-color);
+                border-width: var(--component-datepicker-border-width, 1px);
                 border-radius: var(--component-datepicker-border-radius);
                 overflow: hidden;
             }
@@ -635,10 +669,20 @@ _buildDayGrid(vd) {
 
             .month-sel { min-width: 120px; }
             .year-sel  { min-width: 80px;  }
+            .m-year-sel { min-width: 90px; }
 
-            .header-label {
-                font-weight: 600;
-                white-space: nowrap;
+            /* ---- Year-picker range inputs ---- */
+
+            .cal-header.year-range {
+                justify-content: center;
+                gap: var(--spacing-x-small, 6px);
+            }
+
+            .year-range-input { width: 5.5em; }
+
+            .year-range-sep {
+                color: var(--component-datepicker-header-color);
+                flex-shrink: 0;
             }
 
             /* ---- Day grid ---- */
@@ -838,26 +882,53 @@ _buildDayGrid(vd) {
     }
 
     _buildYearGrid(vd) {
+        this._ensureYearRange(vd);
         const selected = this._startDate?.getFullYear();
-        const minY = this._minDate()?.getFullYear() ?? vd.getFullYear() - 10;
-        const maxY = this._maxDate()?.getFullYear() ?? vd.getFullYear() + 10;
-        const years = Array.from(
-            { length: maxY - minY + 1 },
-            (_, i) => minY + i,
-        );
+        const lo = Math.min(this._yearRangeStart, this._yearRangeEnd);
+        const hi = Math.max(this._yearRangeStart, this._yearRangeEnd);
+        const years = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
         return `
             <div class="year-grid">
                 ${years
-                    .map(
-                        (y) => `<y-button
+                    .map((y) => {
+                        const isSelected = y === selected;
+                        const disabled = this._isYearDisabled(y);
+                        return `<y-button
                     class="year-btn"
-                    style-type="${y === selected ? "filled" : "flat"}"
-                    color="${y === selected ? this.color : "base"}"
+                    style-type="${isSelected ? "filled" : "flat"}"
+                    color="${isSelected ? this.color : "base"}"
                     size="small"
+                    padding-mode="square"
                     data-year="${y}"
-                >${y}</y-button>`,
-                    )
+                    ${disabled ? "disabled" : ""}
+                >${y}</y-button>`;
+                    })
                     .join("")}
+            </div>
+        `;
+    }
+
+    _buildYearPickerHeader() {
+        this._ensureYearRange(this._viewDate);
+        return `
+            <div class="cal-header year-range">
+                <y-input
+                    class="year-range-input"
+                    data-bound="start"
+                    type="number"
+                    size="small"
+                    value="${this._yearRangeStart}"
+                    aria-label="Start year"
+                ></y-input>
+                <span class="year-range-sep">–</span>
+                <y-input
+                    class="year-range-input"
+                    data-bound="end"
+                    type="number"
+                    size="small"
+                    value="${this._yearRangeEnd}"
+                    aria-label="End year"
+                ></y-input>
             </div>
         `;
     }
@@ -887,6 +958,16 @@ _buildDayGrid(vd) {
                 },
             }),
         );
+    }
+
+    _ensureYearRange(vd) {
+        if (this._yearRangeStart != null && this._yearRangeEnd != null) return;
+        const base =
+            this._startDate && !isNaN(this._startDate)
+                ? this._startDate.getFullYear()
+                : vd.getFullYear();
+        this._yearRangeStart = this._minDate()?.getFullYear() ?? base - 10;
+        this._yearRangeEnd = this._maxDate()?.getFullYear() ?? base + 10;
     }
 
     _formatDate(date) {
@@ -981,6 +1062,14 @@ _buildDayGrid(vd) {
         );
     }
 
+    _isYearDisabled(year) {
+        const min = this._minDate();
+        const max = this._maxDate();
+        if (min && year < min.getFullYear()) return true;
+        if (max && year > max.getFullYear()) return true;
+        return false;
+    }
+
     _maxDate() {
         return this.max ? new Date(this.max) : null;
     }
@@ -1044,7 +1133,24 @@ _buildDayGrid(vd) {
         }
     }
 
-_sameDay(a, b) {
+    _refreshYearGrid() {
+        const grid = this.shadowRoot.querySelector(".year-grid");
+        if (!grid) return;
+
+        const lo = Math.min(this._yearRangeStart, this._yearRangeEnd);
+        const hi = Math.max(this._yearRangeStart, this._yearRangeEnd);
+        // Skip runaway ranges while the user is still typing a bound.
+        if (hi - lo > 500) return;
+
+        grid.outerHTML = this._buildYearGrid(this._viewDate);
+        this.shadowRoot.querySelectorAll(".year-btn").forEach((btn) => {
+            btn.addEventListener("click", () =>
+                this._selectYear(parseInt(btn.dataset.year)),
+            );
+        });
+    }
+
+    _sameDay(a, b) {
         if (!a || !b) return false;
         return (
             a.getFullYear() === b.getFullYear() &&
@@ -1060,6 +1166,33 @@ _sameDay(a, b) {
                 if (sel) sel.scrollIntoView({ block: "center" });
             });
         });
+    }
+
+    _selectMonth(year, month) {
+        const src =
+            this._startDate && !isNaN(this._startDate) ? this._startDate : null;
+        const day = src ? src.getDate() : 1;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        this._startDate = new Date(year, month, Math.min(day, daysInMonth));
+        this._viewDate = new Date(year, month, 1);
+        this._applyTimesToDates();
+        this._emitChange("month");
+        this.render();
+    }
+
+    _selectYear(year) {
+        const src =
+            this._startDate && !isNaN(this._startDate) ? this._startDate : null;
+        const month = src ? src.getMonth() : 0;
+        const day = src ? src.getDate() : 1;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        this._startDate = new Date(year, month, Math.min(day, daysInMonth));
+        this._viewDate = new Date(year, month, 1);
+        this._applyTimesToDates();
+        this._emitChange("year");
+        this.render();
     }
 
     _setupMediaQuery() {

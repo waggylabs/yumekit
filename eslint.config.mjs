@@ -17,4 +17,9 @@ export default [{
         "no-var": "error",
         "prefer-const": "error",
     },
-}, pluginJs.configs.recommended, ...storybook.configs["flat/recommended"]];
+}, pluginJs.configs.recommended, ...storybook.configs["flat/recommended"], {
+    // Build/CLI scripts run in Node and are expected to log to the console.
+    files: ["scripts/**/*.js"],
+    languageOptions: { globals: globals.node },
+    rules: { "no-console": "off" },
+}];

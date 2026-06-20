@@ -976,7 +976,8 @@ export class YumeSlider extends HTMLElement {
                 position: relative;
                 box-sizing: content-box;
                 background: var(--component-slider-track-color, var(--base-background-active));
-                border: var(--component-slider-border-width) solid var(--base-border);
+                border: 1px solid var(--base-border);
+                border-width: var(--component-slider-border-width, 1px);
                 border-radius: var(--radii-full);
                 padding: var(--component-slider-padding);
                 outline: none;
@@ -1032,7 +1033,8 @@ export class YumeSlider extends HTMLElement {
                 width: var(--_thumb-size);
                 height: var(--_thumb-size);
                 background: var(--component-slider-fill-color, var(--_fill-color));
-                border: var(--component-slider-thumb-border-width) solid var(--base-background-component);
+                border: 2px solid var(--base-background-component);
+                border-width: var(--component-slider-thumb-border-width, 2px);
                 border-radius: var(--radii-full);
                 box-shadow: var(--component-slider-thumb-shadow, var(--base-shadow));
                 cursor: grab;

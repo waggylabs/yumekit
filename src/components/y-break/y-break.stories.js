@@ -15,7 +15,8 @@ export default {
         align: {
             control: "select",
             options: ["start", "center", "end"],
-            description: "Position of the slotted break content along the line.",
+            description:
+                "Position of the slotted break content along the line.",
             table: { defaultValue: { summary: "center" } },
         },
         variant: {
@@ -34,7 +35,7 @@ export default {
         },
         inset: {
             control: "select",
-            options: ["none", "sm", "md", "lg"],
+            options: ["none", "small", "medium", "large"],
             description: "Padding applied to the outer ends of the line(s).",
             table: { defaultValue: { summary: "none" } },
         },
@@ -97,11 +98,11 @@ export const Alignments = {
 
 export const Insets = {
     render: () => `
-        <div style="display:flex;flex-direction:column;gap:24px;width:400px;background:#fafafa;padding:8px">
+        <div style="display:flex;flex-direction:column;gap:24px;width:400px;padding:8px">
             <y-break inset="none" label="None"></y-break>
-            <y-break inset="sm" label="Small"></y-break>
-            <y-break inset="md" label="Medium"></y-break>
-            <y-break inset="lg" label="Large"></y-break>
+            <y-break inset="small" label="Small"></y-break>
+            <y-break inset="medium" label="Medium"></y-break>
+            <y-break inset="large" label="Large"></y-break>
         </div>
     `,
 };

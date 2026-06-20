@@ -101,6 +101,15 @@ export default [
             file: "dist/icons/all.js",
             format: "esm",
         },
+        external: ["./registry.js", "./all-filled.js"],
+        plugins: [svgString()],
+    },
+    {
+        input: "src/icons/all-filled.js",
+        output: {
+            file: "dist/icons/all-filled.js",
+            format: "esm",
+        },
         external: ["./registry.js"],
         plugins: [svgString()],
     },

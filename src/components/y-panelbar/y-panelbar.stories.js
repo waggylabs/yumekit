@@ -91,7 +91,7 @@ export const NavigateEvent = {
 
         const log = document.createElement("div");
         log.style.cssText = "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px;min-width:220px;flex-shrink:0";
-        log.textContent = "Click a link itemâ€¦";
+        log.textContent = "Click a link item…";
 
         const panelbar = document.createElement("y-panelbar");
         panelbar.id = "spa-panelbar";

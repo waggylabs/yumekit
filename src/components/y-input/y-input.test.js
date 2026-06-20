@@ -2,6 +2,32 @@ import { fixture, html, expect, oneEvent } from "@open-wc/testing";
 import "./y-input.js";
 
 describe("<y-input>", () => {
+    it("variant='underline' renders a bottom-only border with square bottom corners", async () => {
+        const el = await fixture(html`<y-input variant="underline"></y-input>`);
+        el.style.setProperty("--component-inputs-border-radius-outer", "6px");
+        const cs = getComputedStyle(el.shadowRoot.querySelector(".input-container"));
+        expect(cs.borderTopStyle).to.equal("none");
+        expect(cs.borderBottomStyle).to.equal("solid");
+        expect(cs.borderTopLeftRadius).to.equal("6px");
+        expect(cs.borderBottomLeftRadius).to.equal("0px");
+    });
+
+    it("accepts per-side --component-inputs-border-width and multi-value border-radius", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        // A border color is needed for the shorthand to be valid (and thus
+        // border-style: solid) so the longhand widths render.
+        el.style.setProperty("--component-input-border-color", "rgb(0, 0, 0)");
+        el.style.setProperty("--component-inputs-border-width", "0px 0px 2px 0px");
+        el.style.setProperty("--component-inputs-border-radius-outer", "8px 8px 0px 0px");
+        const cs = getComputedStyle(el.shadowRoot.querySelector(".input-container"));
+        // Width is a longhand now, so a 1–4 value pattern applies per side.
+        expect(cs.borderTopWidth).to.equal("0px");
+        expect(cs.borderBottomWidth).to.equal("2px");
+        // border-radius already takes a 1–4 value pattern.
+        expect(cs.borderTopLeftRadius).to.equal("8px");
+        expect(cs.borderBottomLeftRadius).to.equal("0px");
+    });
+
     it("renders correctly with default props", async () => {
         const el = await fixture(
             html`<y-input><span slot="label">Name</span></y-input>`

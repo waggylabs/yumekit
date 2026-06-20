@@ -48,6 +48,315 @@ describe("<y-theme>", () => {
         expect(bg).to.include("dark");
     });
 
+    it("applies the Ant Design palette and 6px radius for ant-blue-light", async () => {
+        const el = await fixture(
+            html`<y-theme theme="ant-blue-light"></y-theme>`,
+        );
+
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#1677ff",
+        );
+        expect(el.style.getPropertyValue("--radii-small").trim()).to.equal(
+            "6px",
+        );
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#f5f5f5");
+    });
+
+    it("applies dark surfaces for ant-blue-dark", async () => {
+        const el = await fixture(html`<y-theme theme="ant-blue-dark"></y-theme>`);
+
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#141414");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#1677ff",
+        );
+    });
+
+    it("swaps the Ant primary to polar green while keeping Ant surfaces", async () => {
+        const light = await fixture(
+            html`<y-theme theme="ant-green-light"></y-theme>`,
+        );
+        expect(
+            light.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#52c41a");
+        expect(
+            light.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#f5f5f5");
+
+        const dark = await fixture(
+            html`<y-theme theme="ant-green-dark"></y-theme>`,
+        );
+        expect(
+            dark.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#52c41a");
+        expect(
+            dark.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#141414");
+    });
+
+    it("swaps the Material primary to purple while keeping Material surfaces", async () => {
+        const light = await fixture(
+            html`<y-theme theme="material-purple-light"></y-theme>`,
+        );
+        expect(
+            light.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#9c27b0");
+        expect(
+            light.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#fafafa");
+
+        const dark = await fixture(
+            html`<y-theme theme="material-purple-dark"></y-theme>`,
+        );
+        expect(
+            dark.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#ce93d8");
+        expect(
+            dark.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#121212");
+    });
+
+    it("uses a system-font stack and injects no webfont for the Ant themes", async () => {
+        const before = document.querySelectorAll(
+            "link[data-yumekit-font]",
+        ).length;
+        const el = await fixture(
+            html`<y-theme theme="ant-blue-light"></y-theme>`,
+        );
+        const after = document.querySelectorAll(
+            "link[data-yumekit-font]",
+        ).length;
+
+        expect(after).to.equal(before);
+        expect(el.style.getPropertyValue("--font-family-body")).to.include(
+            "Segoe UI",
+        );
+    });
+
+    it("applies the monochrome shadcn palette (Slate + Inter + 8px) for shadcn-light", async () => {
+        const el = await fixture(html`<y-theme theme="shadcn-light"></y-theme>`);
+
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#0f172a",
+        );
+        expect(el.style.getPropertyValue("--radii-small").trim()).to.equal(
+            "8px",
+        );
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#f8fafc");
+        expect(el.style.getPropertyValue("--font-family-body")).to.include(
+            "Inter",
+        );
+    });
+
+    it("inverts the monochrome primary to near-white for shadcn-dark", async () => {
+        const el = await fixture(html`<y-theme theme="shadcn-dark"></y-theme>`);
+
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#f8fafc",
+        );
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#020617");
+    });
+
+    it("applies the Tailwind-blue primary for the shadcn-blue variant", async () => {
+        const light = await fixture(
+            html`<y-theme theme="shadcn-blue-light"></y-theme>`,
+        );
+        expect(
+            light.style.getPropertyValue("--primary-content").trim(),
+        ).to.equal("#2563eb");
+
+        const dark = await fixture(
+            html`<y-theme theme="shadcn-blue-dark"></y-theme>`,
+        );
+        expect(dark.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#3b82f6",
+        );
+    });
+
+    it("mono-light is a monochrome default-language family (near-black primary, Lexend, colorful status)", async () => {
+        const el = await fixture(html`<y-theme theme="mono-light"></y-theme>`);
+
+        // Primary/secondary are neutral; surfaces use the default neutral ramp.
+        expect(el.style.getPropertyValue("--primary-content")).to.include(
+            "neutral-dark-0",
+        );
+        expect(el.style.getPropertyValue("--secondary-content")).to.include(
+            "neutral-dark-5",
+        );
+        expect(el.style.getPropertyValue("--base-background-app")).to.include(
+            "neutral-light",
+        );
+        expect(el.style.getPropertyValue("--font-family-body")).to.include(
+            "Lexend",
+        );
+        // Status colors stay colorful (not neutralized).
+        expect(el.style.getPropertyValue("--success-content")).to.include(
+            "green",
+        );
+    });
+
+    it("mono-dark inverts the monochrome primary to near-white", async () => {
+        const el = await fixture(html`<y-theme theme="mono-dark"></y-theme>`);
+
+        expect(el.style.getPropertyValue("--primary-content")).to.include(
+            "neutral-light-0",
+        );
+        expect(el.style.getPropertyValue("--base-background-app")).to.include(
+            "neutral-dark",
+        );
+    });
+
+    it("applies the GitHub Primer palette (accent + 6px + system font) for primer-light", async () => {
+        const el = await fixture(html`<y-theme theme="primer-light"></y-theme>`);
+
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#0969da",
+        );
+        expect(el.style.getPropertyValue("--radii-small").trim()).to.equal(
+            "6px",
+        );
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#f6f8fa");
+        expect(el.style.getPropertyValue("--font-family-body")).to.include(
+            "Segoe UI",
+        );
+    });
+
+    it("uses GitHub's dark canvas for primer-dark", async () => {
+        const el = await fixture(html`<y-theme theme="primer-dark"></y-theme>`);
+
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#0d1117");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#4493f8",
+        );
+    });
+
+    it("softens surfaces but keeps the dark accents for primer-dark-dimmed", async () => {
+        const el = await fixture(
+            html`<y-theme theme="primer-dark-dimmed"></y-theme>`,
+        );
+
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#22272e");
+        expect(el.style.getPropertyValue("--base-content").trim()).to.equal(
+            "#adbac7",
+        );
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#4493f8",
+        );
+    });
+
+    it("applies the Bootstrap palette (primary + 6px + system font) for bootstrap-light", async () => {
+        const el = await fixture(
+            html`<y-theme theme="bootstrap-light"></y-theme>`,
+        );
+
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#0d6efd",
+        );
+        expect(el.style.getPropertyValue("--radii-small").trim()).to.equal(
+            "6px",
+        );
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#f8f9fa");
+        expect(el.style.getPropertyValue("--font-family-body")).to.include(
+            "Segoe UI",
+        );
+    });
+
+    it("flips surfaces but keeps the brand colors for bootstrap-dark", async () => {
+        const el = await fixture(
+            html`<y-theme theme="bootstrap-dark"></y-theme>`,
+        );
+
+        expect(
+            el.style.getPropertyValue("--base-background-app").trim(),
+        ).to.equal("#212529");
+        // Bootstrap keeps the same solid primary/warning across modes.
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#0d6efd",
+        );
+        expect(el.style.getPropertyValue("--warning-content").trim()).to.equal(
+            "#ffc107",
+        );
+    });
+
+    it("applies the Catppuccin Mocha palette over the default typography", async () => {
+        const el = await fixture(
+            html`<y-theme theme="catppuccin-mocha"></y-theme>`,
+        );
+
+        expect(
+            el.style.getPropertyValue("--base-background-component").trim(),
+        ).to.equal("#1e1e2e");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#cba6f7",
+        );
+        // Catppuccin overrides only colors — typography stays the default.
+        expect(el.style.getPropertyValue("--font-family-body")).to.include(
+            "Lexend",
+        );
+    });
+
+    it("uses Catppuccin Latte's soft light surfaces", async () => {
+        const el = await fixture(
+            html`<y-theme theme="catppuccin-latte"></y-theme>`,
+        );
+
+        expect(
+            el.style.getPropertyValue("--base-background-component").trim(),
+        ).to.equal("#eff1f5");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#8839ef",
+        );
+    });
+
+    it("applies the Nord Polar Night base with a Frost primary accent", async () => {
+        const el = await fixture(html`<y-theme theme="nord"></y-theme>`);
+
+        expect(
+            el.style.getPropertyValue("--base-background-component").trim(),
+        ).to.equal("#3b4252");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#88c0d0",
+        );
+    });
+
+    it("shares the Nord base but leads with an Aurora primary accent", async () => {
+        const el = await fixture(html`<y-theme theme="nord-aurora"></y-theme>`);
+
+        expect(
+            el.style.getPropertyValue("--base-background-component").trim(),
+        ).to.equal("#3b4252");
+        expect(el.style.getPropertyValue("--primary-content").trim()).to.equal(
+            "#b48ead",
+        );
+    });
+
+    it("points the rose primary at the muted rose swatch in both modes", async () => {
+        const light = await fixture(html`<y-theme theme="rose-light"></y-theme>`);
+        expect(
+            light.style.getPropertyValue("--primary-content"),
+        ).to.include("rose");
+
+        const dark = await fixture(html`<y-theme theme="rose-dark"></y-theme>`);
+        expect(
+            dark.style.getPropertyValue("--primary-content"),
+        ).to.include("rose");
+    });
+
     it("updates applied variables when theme attribute changes", async () => {
         const el = await fixture(html`<y-theme theme="blue-light"></y-theme>`);
 
@@ -73,6 +382,32 @@ describe("<y-theme>", () => {
 
         const primaryContent = el.style.getPropertyValue("--primary-content--");
         expect(primaryContent.trim()).to.not.be.empty;
+    });
+
+    it("resets a theme-specific variable when switching away from that theme", async () => {
+        // --component-tabs-inactive-background exists only in the waggy
+        // themes; switching away must not leave its value stuck inline on the
+        // host. It is reset to `initial` (not removed) so it also can't inherit
+        // from an ancestor <y-theme> in nested setups.
+        const el = await fixture(html`<y-theme theme="waggy"></y-theme>`);
+        await waitUntil(
+            () => {
+                const v = el.style
+                    .getPropertyValue("--component-tabs-inactive-background")
+                    .trim();
+                return v !== "" && v !== "initial";
+            },
+            "waggy should set --component-tabs-inactive-background",
+        );
+
+        el.setAttribute("theme", "blue-light");
+        await waitUntil(
+            () =>
+                el.style
+                    .getPropertyValue("--component-tabs-inactive-background")
+                    .trim() === "initial",
+            "switching away should reset --component-tabs-inactive-background",
+        );
     });
 
     it("injects two <style> elements into shadow DOM (variables + theme)", async () => {
@@ -116,6 +451,69 @@ describe("<y-theme>", () => {
         expect(outerBg).to.include("light");
         expect(innerBg).to.include("dark");
         expect(outerBg).to.not.equal(innerBg);
+    });
+
+    it("resets ancestor-only tokens to `initial` in a nested theme", async () => {
+        // waggy is the only built-in theme that sets
+        // --component-button-outline-border-color; blue-light omits it.
+        const outer = await fixture(html`
+            <y-theme id="outer" theme="waggy">
+                <y-theme id="inner" theme="blue-light"></y-theme>
+            </y-theme>
+        `);
+        const inner = outer.querySelector("#inner");
+        const token = "--component-button-outline-border-color";
+
+        await waitUntil(
+            () => inner.style.getPropertyValue(token).trim() !== "",
+        );
+
+        // Outer defines a real value; inner resets it so it can't inherit through.
+        expect(outer.style.getPropertyValue(token).trim()).to.not.be.empty;
+        expect(outer.style.getPropertyValue(token).trim()).to.not.equal(
+            "initial",
+        );
+        expect(inner.style.getPropertyValue(token).trim()).to.equal("initial");
+    });
+
+    it("ancestor token does not leak into a nested theme's var() fallback", async () => {
+        // A probe element resolves the token with a sentinel fallback. The
+        // `initial` reset on the inner host should make the inner probe fall
+        // back, while the outer (waggy) probe picks up the real value.
+        const outer = await fixture(html`
+            <y-theme id="outer" theme="waggy">
+                <span
+                    id="outer-probe"
+                    style="color: var(--component-button-outline-border-color, rgb(1, 2, 3))"
+                ></span>
+                <y-theme id="inner" theme="blue-light">
+                    <span
+                        id="inner-probe"
+                        style="color: var(--component-button-outline-border-color, rgb(1, 2, 3))"
+                    ></span>
+                </y-theme>
+            </y-theme>
+        `);
+        const inner = outer.querySelector("#inner");
+
+        await waitUntil(
+            () =>
+                inner.style
+                    .getPropertyValue(
+                        "--component-button-outline-border-color",
+                    )
+                    .trim() === "initial",
+        );
+
+        const outerColor = getComputedStyle(
+            outer.querySelector("#outer-probe"),
+        ).color;
+        const innerColor = getComputedStyle(
+            outer.querySelector("#inner-probe"),
+        ).color;
+
+        expect(outerColor).to.not.equal("rgb(1, 2, 3)");
+        expect(innerColor).to.equal("rgb(1, 2, 3)");
     });
 
     describe("custom theme paths", () => {

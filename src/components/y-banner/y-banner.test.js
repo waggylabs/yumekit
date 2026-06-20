@@ -477,12 +477,8 @@ describe("YumeBanner", () => {
                 flag: "__xssBannerIcon",
             },
             {
-                // Use a hex-prefixed payload so y-button's color path doesn't
-                // crash on unknown enum values (separate y-button bug, out of
-                // scope). The XSS guarantee is the same: `setAttribute` makes
-                // the entire string a single attribute value with no breakout.
                 name: "color",
-                payload: `#fff" onload="window.__xssBannerColor=true" x="`,
+                payload: `red" onload="window.__xssBannerColor=true" x="`,
                 flag: "__xssBannerColor",
             },
             {

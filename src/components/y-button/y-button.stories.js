@@ -1,5 +1,6 @@
 ﻿import "./y-button.js";
 import "../y-icon/y-icon.js";
+import "../y-theme/y-theme.js";
 import "../../icons/all.js";
 
 export default {
@@ -12,7 +13,15 @@ export default {
         },
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error", "help"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+                "help",
+            ],
             description: "Color theme for the button.",
             table: { defaultValue: { summary: "base" } },
         },
@@ -27,6 +36,13 @@ export default {
             options: ["small", "medium", "large"],
             description: "Button size.",
             table: { defaultValue: { summary: "medium" } },
+        },
+        paddingMode: {
+            control: "select",
+            options: ["auto", "square", "wide"],
+            description:
+                "Whether inline padding collapses to the block value: auto (icon-only buttons), square (always), wide (never).",
+            table: { defaultValue: { summary: "auto" } },
         },
         disabled: {
             control: "boolean",
@@ -45,14 +61,24 @@ export default {
         color: "primary",
         styleType: "outlined",
         size: "medium",
+        paddingMode: "auto",
         disabled: false,
         type: "button",
     },
-    render: ({ label, color, styleType, size, disabled, type }) => `
+    render: ({
+        label,
+        color,
+        styleType,
+        size,
+        paddingMode,
+        disabled,
+        type,
+    }) => `
         <y-button
             color="${color}"
             style-type="${styleType}"
             size="${size}"
+            padding-mode="${paddingMode}"
             type="${type}"
             ${disabled ? "disabled" : ""}
         >${label}</y-button>
@@ -85,6 +111,29 @@ export const Colors = {
     `,
 };
 
+export const CustomColors = {
+    name: "Custom Colors",
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <y-button color="#7c3aed" style-type="outlined">Outlined #7c3aed</y-button>
+                <y-button color="#7c3aed" style-type="filled">Filled #7c3aed</y-button>
+                <y-button color="#7c3aed" style-type="flat">Flat #7c3aed</y-button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <y-button color="rgb(13 148 136)" style-type="outlined">Outlined rgb()</y-button>
+                <y-button color="rgb(13 148 136)" style-type="filled">Filled rgb()</y-button>
+                <y-button color="rgb(13 148 136)" style-type="flat">Flat rgb()</y-button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+                <y-button color="oklch(0.7 0.18 25)" style-type="outlined">Outlined oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" style-type="filled">Filled oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" style-type="flat">Flat oklch()</y-button>
+            </div>
+        </div>
+    `,
+};
+
 export const Sizes = {
     render: () => `
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
@@ -110,6 +159,27 @@ export const WithIcons = {
                 <y-icon slot="left-icon" name="check" size="small"></y-icon>
             </y-button>
         </div>
+    `,
+};
+
+export const PaddingMode = {
+    name: "Padding Mode",
+    // Shown in a Material theme, where labeled buttons get wide inline padding,
+    // so the square/wide distinction is visible.
+    render: () => `
+        <y-theme theme="material-blue-light" style="display:block">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px">
+                <y-button color="primary" style-type="filled">Auto (label)</y-button>
+                <y-button color="primary" style-type="filled">
+                    <y-icon slot="left-icon" name="check" size="small"></y-icon>
+                </y-button>
+                <y-button color="primary" style-type="filled" padding-mode="square">5</y-button>
+                <y-button color="primary" style-type="filled" padding-mode="wide">
+                    <y-icon slot="left-icon" name="check" size="small"></y-icon>
+                    Wide icon
+                </y-button>
+            </div>
+        </y-theme>
     `,
 };
 

@@ -163,6 +163,54 @@ describe("YumeTabs", () => {
         }
     });
 
+    it("variant defaults to 'default' and normalises invalid values", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        expect(el.variant).to.equal("default");
+        el.variant = "bogus";
+        expect(el.getAttribute("variant")).to.equal("default");
+        el.variant = "accent";
+        expect(el.getAttribute("variant")).to.equal("accent");
+        expect(el.variant).to.equal("accent");
+    });
+
+    it("accent variant gives the active tab a primary content-facing border", async () => {
+        const el = await fixture(html`
+            <y-tabs variant="accent" options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        // Theme vars aren't loaded in the test env; supply the ones the border
+        // shorthand needs so it isn't invalidated by an undefined color.
+        el.style.setProperty("--component-tabs-accent", "rgb(0, 0, 255)");
+        el.style.setProperty("--component-tabs-border-color", "rgb(0, 0, 0)");
+        const active = el.shadowRoot.querySelector('button[aria-selected="true"]');
+        const cs = getComputedStyle(active);
+        // top position (default): content-facing edge is the bottom
+        expect(parseFloat(cs.borderBottomWidth)).to.be.greaterThan(0);
+        expect(cs.borderBottomColor).to.equal("rgb(0, 0, 255)"); // the accent
+        expect(cs.color).to.equal("rgb(0, 0, 255)"); // active label is accent-colored
+    });
+
+    it("border-width reads the normalised --component-tabs-border-width token", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        el.style.setProperty("--component-tabs-border-width", "5px");
+        el.style.setProperty("--component-tabs-border-color", "rgb(0, 0, 0)");
+        const panel = el.shadowRoot.querySelector(".tabpanel");
+        expect(getComputedStyle(panel).borderTopWidth).to.equal("5px");
+    });
+
+    it("border-width falls back to the legacy --component-tab-border-width token", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        el.style.setProperty("--component-tab-border-width", "3px");
+        el.style.setProperty("--component-tabs-border-color", "rgb(0, 0, 0)");
+        const panel = el.shadowRoot.querySelector(".tabpanel");
+        expect(getComputedStyle(panel).borderTopWidth).to.equal("3px");
+    });
+
     it("activateTab does nothing when the tab is disabled", async () => {
         const el = await fixture(html`
             <y-tabs options="${JSON.stringify(options)}">

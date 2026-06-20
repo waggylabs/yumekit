@@ -27,15 +27,23 @@ export default {
                 "Controls icon size, label font size, and overall dock height.",
             table: { defaultValue: { summary: "medium" } },
         },
+        floating: {
+            control: "boolean",
+            description:
+                "Detaches the dock into a bordered, rounded island inset from the edges (like a non-sticky appbar).",
+            table: { defaultValue: { summary: "false" } },
+        },
     },
     args: {
         position: "bottom",
         size: "medium",
+        floating: false,
     },
-    render: ({ position, size }) => `
+    render: ({ position, size, floating }) => `
         <y-dock
             position="${position}"
             size="${size}"
+            ${floating ? "floating" : ""}
             items='${JSON.stringify(defaultItems)}'
             style="position:relative;"
         ></y-dock>
@@ -50,6 +58,19 @@ export const TopPosition = {
         <y-dock
             position="${position}"
             size="${size}"
+            items='${JSON.stringify(defaultItems)}'
+            style="position:relative;"
+        ></y-dock>
+    `,
+};
+
+export const Floating = {
+    args: { floating: true },
+    render: ({ position, size }) => `
+        <y-dock
+            position="${position}"
+            size="${size}"
+            floating
             items='${JSON.stringify(defaultItems)}'
             style="position:relative;"
         ></y-dock>

@@ -372,7 +372,7 @@
     "break": {
       "line-color": {
         "$type": "color",
-        "$value": "{base.content.lightest}"
+        "$value": "{base.border}"
       },
       "content-color": {
         "$type": "color",
@@ -397,6 +397,24 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "background": {
+          "$type": "color",
+          "$value": "color-mix(in srgb, {primary.content.DEFAULT} 16%, transparent)"
+        },
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
+        "icon": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
       }
     },
     "dock": {
@@ -575,7 +593,7 @@
         },
         "color": {
           "$type": "color",
-          "$value": "{primary.background.component}"
+          "$value": "{primary.content.inverse}"
         }
       },
       "shadow": {
@@ -669,12 +687,20 @@
       "accent": {
         "$type": "color",
         "$value": "{primary.content.active}"
+      },
+      "checked": {
+        "border": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        }
       }
     },
     "select": {
       "background": {
         "$type": "color",
-        "$value": "{base.background.app}"
+        "$value": "{base.background.component}"
       },
       "color": {
         "$type": "color",
@@ -954,6 +980,32 @@
         "shadow": {
           "$type": "shadow",
           "$value": "{base.shadow}"
+        }
+      }
+    },
+    "popover": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        }
+      },
+      "shadow": {
+        "$type": "boxShadow",
+        "$value": "{base.shadow}"
+      },
+      "header-divider": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
         }
       }
     }

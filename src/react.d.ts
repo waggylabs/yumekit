@@ -68,7 +68,7 @@ declare module "react" {
                 variant?: "solid" | "dashed" | "dotted";
                 label?: string;
                 icon?: string;
-                inset?: "none" | "sm" | "md" | "lg";
+                inset?: "none" | "small" | "medium" | "large";
             }>;
             "y-breadcrumbs": El<{
                 items?: string;
@@ -99,6 +99,7 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 "style-type"?: "outlined" | "filled" | "flat";
+                "padding-mode"?: "auto" | "square" | "wide";
                 type?: string;
                 disabled?: boolean | string;
                 name?: string;
@@ -127,6 +128,17 @@ declare module "react" {
                 color?: string;
                 raised?: boolean | string;
             }>;
+            "y-code": El<{
+                language?: string;
+                "line-numbers"?: boolean | string;
+                "max-lines"?: number | string;
+                wrap?: boolean | string;
+                filename?: string;
+                copyable?: boolean | string;
+                disabled?: boolean | string;
+                "copy-label"?: string;
+                "copied-label"?: string;
+            }>;
             "y-checkbox": El<{
                 name?: string;
                 value?: string;
@@ -147,6 +159,7 @@ declare module "react" {
                 clearable?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
+                variant?: "default" | "underline";
             }>;
             "y-colorpicker": El<{
                 value?: string;
@@ -172,9 +185,15 @@ declare module "react" {
                 "show-hours"?: boolean | string;
                 "show-minutes"?: boolean | string;
                 "show-seconds"?: boolean | string;
+                "hour-format"?: "12" | "24";
+                "minute-interval"?: string | number;
+                "second-interval"?: string | number;
                 "show-years"?: string;
                 "show-months"?: string;
                 "show-days"?: string;
+                "mobile-breakpoint"?: string | number;
+                "native-mobile"?: boolean | string;
+                variant?: "default" | "underline";
             }>;
             "y-datepicker": El<{
                 value?: string;
@@ -186,9 +205,13 @@ declare module "react" {
                 "show-hours"?: boolean | string;
                 "show-minutes"?: boolean | string;
                 "show-seconds"?: boolean | string;
+                "hour-format"?: "12" | "24";
+                "minute-interval"?: string | number;
+                "second-interval"?: string | number;
                 "show-years"?: string;
                 "show-months"?: string;
                 "show-days"?: string;
+                "mobile-breakpoint"?: string | number;
             }>;
             "y-dialog": El<{
                 visible?: boolean | string;
@@ -213,6 +236,7 @@ declare module "react" {
                 breakpoint?: string | number;
                 size?: "small" | "medium" | "large";
                 history?: string;
+                floating?: boolean | string;
             }>;
             "y-drawer": El<{
                 visible?: boolean | string;
@@ -293,12 +317,43 @@ declare module "react" {
                 responsive?: boolean | string;
                 dense?: boolean | string;
             }>;
+            "y-help": El<{
+                steps?: unknown[] | string;
+                open?: boolean | string;
+                index?: number | string;
+                "default-position"?:
+                    | "top"
+                    | "bottom"
+                    | "left"
+                    | "right"
+                    | "center"
+                    | "auto";
+                "untargeted-position"?:
+                    | "top"
+                    | "bottom"
+                    | "left"
+                    | "right"
+                    | "center"
+                    | "auto";
+                "default-anchor"?: "bounds" | "first" | "last" | number | string;
+                "highlight-padding"?: number | string;
+                "show-progress"?: boolean | string;
+                "show-arrows"?: boolean | string;
+                "close-on-escape"?: boolean | string;
+                "close-on-overlay-click"?: boolean | string;
+                "disable-target-interaction"?: boolean | string;
+                "prev-label"?: string;
+                "next-label"?: string;
+                "finish-label"?: string;
+                "close-label"?: string;
+                loop?: boolean | string;
+            }>;
             "y-icon": El<{
                 name?: string;
                 size?: "x-small" | "small" | "medium" | "large" | "x-large";
                 color?: string;
                 label?: string;
-                weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick";
+                weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick" | "filled";
             }>;
             "y-input": El<{
                 type?: string;
@@ -311,6 +366,7 @@ declare module "react" {
                 min?: string | number;
                 max?: string | number;
                 step?: string | number;
+                variant?: "default" | "underline";
             }>;
             "y-masonry": El<{
                 columns?: string | number;
@@ -376,6 +432,39 @@ declare module "react" {
             "y-panelbar": El<{
                 exclusive?: boolean | string;
             }>;
+            "y-popover": El<{
+                open?: boolean | string;
+                anchor?: string;
+                position?:
+                    | "auto"
+                    | "top"
+                    | "bottom"
+                    | "left"
+                    | "right"
+                    | "top-start"
+                    | "top-end"
+                    | "bottom-start"
+                    | "bottom-end"
+                    | "left-start"
+                    | "left-end"
+                    | "right-start"
+                    | "right-end";
+                offset?: number | string;
+                pointer?: boolean | string;
+                text?: string;
+                color?: string;
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                trigger?: string;
+                "delay-show"?: number | string;
+                "delay-hide"?: number | string;
+                "close-on-escape"?: boolean | string;
+                "close-on-outside-click"?: boolean | string;
+                "close-on-anchor-click"?: boolean | string;
+                modal?: boolean | string;
+                "show-backdrop"?: boolean | string;
+                portal?: boolean | string;
+            }>;
             "y-sidebar": El<{
                 collapsed?: boolean | string;
                 items?: unknown[] | string;
@@ -435,6 +524,7 @@ declare module "react" {
                 multiple?: boolean | string;
                 size?: "small" | "medium" | "large";
                 placeholder?: string;
+                portal?: boolean | string;
                 options?: Array<{ value: string; label: string }> | string;
                 invalid?: boolean | string;
                 required?: boolean | string;
@@ -443,6 +533,24 @@ declare module "react" {
                 "label-position"?: "top" | "bottom";
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
+                variant?: "default" | "underline";
+            }>;
+            "y-shape": El<{
+                type?:
+                    | "rectangle"
+                    | "circle"
+                    | "ellipse"
+                    | "star"
+                    | "heart"
+                    | "chat-bubble"
+                    | "times"
+                    | "cross"
+                    | "polygon";
+                "polygon-points"?: string;
+                radius?: string | number;
+                fit?: "contain" | "cover" | "fill";
+                "preserve-aspect"?: boolean | string;
+                size?: "small" | "medium" | "large";
             }>;
             "y-slider": El<{
                 name?: string;
@@ -532,6 +640,8 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 linear?: boolean | string;
                 editable?: boolean | string;
+                responsive?: boolean | string;
+                "responsive-breakpoint"?: number | string;
             }>;
             "y-switch": El<{
                 name?: string;
@@ -553,12 +663,46 @@ declare module "react" {
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
+                variant?: "default" | "underline";
             }>;
             "y-table": El<{
                 columns?: unknown[] | string;
                 data?: unknown[] | string;
                 striped?: boolean | string;
                 size?: "small" | "medium" | "large";
+            }>;
+            "y-data-grid": El<{
+                columns?: unknown[] | string;
+                data?: unknown[] | string;
+                mode?: "client" | "server";
+                "page-size"?: string | number;
+                "current-page"?: string | number;
+                "total-rows"?: string | number;
+                loading?: boolean | string;
+                striped?: boolean | string;
+                hover?: boolean | string;
+                "fixed-header"?: boolean | string;
+                filtering?: "inline" | "advanced";
+                "enable-sorting"?: boolean | string;
+                "enable-pagination"?: boolean | string;
+                "show-item-count"?: boolean | string;
+                "enable-selection"?: boolean | string;
+                "enable-editing"?: boolean | string;
+                "selection-mode"?: "single" | "multi";
+                "edit-on"?: "click" | "focus";
+                "row-key"?: string;
+                selected?: string | unknown[];
+                "empty-message"?: string;
+                "row-height"?: string | number;
+                "global-search"?: string;
+                "group-by"?: string | string[];
+                aggregates?: string | Record<string, "sum" | "avg" | "min" | "max" | "count">;
+                virtual?: boolean | string;
+                "viewport-height"?: string | number;
+                "buffer-size"?: string | number;
+                "enable-header-menu"?: boolean | string;
+                "enable-column-resize"?: boolean | string;
+                "enable-column-reorder"?: boolean | string;
             }>;
             "y-tabs": El<{
                 options?:
@@ -573,6 +717,7 @@ declare module "react" {
                     | string;
                 size?: "small" | "medium" | "large";
                 position?: "top" | "bottom" | "left" | "right";
+                variant?: "default" | "accent";
             }>;
             "y-tag": El<{
                 color?: string;

@@ -73,6 +73,17 @@ export const WithFooter = {
     `,
 };
 
+export const Sticky = {
+    render: () => `
+        <y-appbar items='${navItems}' sticky>
+            <span slot="logo">
+                <y-icon name="bolt" size="medium"></y-icon>
+            </span>
+            <span slot="title">MyApp</span>
+        </y-appbar>
+    `,
+};
+
 export const Sizes = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:32px">
@@ -100,7 +111,7 @@ export const NavigateEvent = {
         log.id = "nav-log";
         log.style.cssText =
             "padding:12px;font-family:monospace;font-size:0.8em;background:#1a1a1a;color:#ccc;border-radius:4px";
-        log.textContent = "Click a nav itemâ€¦";
+        log.textContent = "Click a nav item…";
 
         container.innerHTML = `
             <y-appbar

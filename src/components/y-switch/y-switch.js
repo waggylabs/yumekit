@@ -1,4 +1,7 @@
-import { manageLabelVisibility } from "../../modules/helpers.js";
+import {
+    isSafeCssColor,
+    manageLabelVisibility,
+} from "../../modules/helpers.js";
 
 class YumeSwitch extends HTMLElement {
     static formAssociated = true;
@@ -207,7 +210,8 @@ class YumeSwitch extends HTMLElement {
                 display: inline-flex;
                 align-items: center;
                 background: var(--base-background-component);
-                border: var(--component-switch-border-width) solid var(--base-border);
+                border: 1px solid var(--base-border);
+                border-width: var(--component-switch-border-width, 1px);
                 border-radius: var(--component-switch-border-radius);
                 cursor: pointer;
                 height: var(--switch-height);
@@ -215,6 +219,12 @@ class YumeSwitch extends HTMLElement {
                 box-sizing: border-box;
                 padding: var(--switch-padding);
                 width: var(--switch-width, max-content);
+                transition: background 0.35s ease-in-out, border-color 0.35s ease-in-out;
+            }
+
+            :host([checked]) .switch {
+                background: color-mix(in srgb, var(--switch-on-color, var(--primary-content--)) var(--component-switch-on-fill-opacity, 16%), transparent);
+                border-color: var(--switch-on-color, var(--primary-content--));
             }
 
             .track {
@@ -271,7 +281,8 @@ class YumeSwitch extends HTMLElement {
                 display: var(--show-toggle-label, none);
             }
 
-            :host([animate="false"]) .toggle {
+            :host([animate="false"]) .toggle,
+            :host([animate="false"]) .switch {
                 transition: none !important;
             }
 
@@ -336,7 +347,10 @@ class YumeSwitch extends HTMLElement {
             error: "var(--error-content--)",
             help: "var(--help-content--)",
         };
-        return predefined[color] || color || fallback;
+        if (predefined[color]) return predefined[color];
+        if (color && isSafeCssColor(color)) return color;
+
+        return fallback;
     }
 
     _update() {
@@ -432,10 +446,15 @@ class YumeSwitch extends HTMLElement {
                     : "calc(var(--switch-width) - var(--toggle-size) - (var(--switch-padding) * 2) - (var(--component-switch-border-width, 0px) * 2))"
                 : "0",
         );
+        const onColor = this._resolveColor(
+            this.onColor,
+            "var(--primary-content--)",
+        );
+        this.style.setProperty("--switch-on-color", onColor);
         this.style.setProperty(
             "--toggle-bg",
             this.checked
-                ? this._resolveColor(this.onColor, "var(--primary-content--)")
+                ? onColor
                 : this._resolveColor(
                       this.offColor,
                       "var(--base-content-light)",

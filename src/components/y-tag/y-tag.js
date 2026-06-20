@@ -1,5 +1,5 @@
 import { x as xSvg } from "../../icons/index.js";
-import { contrastTextColor } from "../../modules/helpers.js";
+import { contrastTextColor, isSafeCssColor } from "../../modules/helpers.js";
 
 export class YumeTag extends HTMLElement {
     static get observedAttributes() {
@@ -164,11 +164,7 @@ export class YumeTag extends HTMLElement {
         };
 
         const varEntry = vars[color];
-        const isCustomColor =
-            !varEntry &&
-            (color.startsWith("#") ||
-                color.startsWith("rgb") ||
-                color.startsWith("hsl"));
+        const isCustomColor = !varEntry && isSafeCssColor(color);
 
         const borderRadius =
             shape === "round"

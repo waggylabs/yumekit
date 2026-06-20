@@ -50,6 +50,27 @@ describe("YumeMenu", () => {
         expect(menu.hasAttribute("visible")).to.be.true;
     });
 
+    it("does not open when its anchor is disabled", async () => {
+        const wrapper = await fixture(html`
+            <div>
+                <y-button id="trigger" disabled>Menu</y-button>
+                <y-menu id="menu" anchor="trigger" .items=${testItems}></y-menu>
+            </div>
+        `);
+        const trigger = wrapper.querySelector("#trigger");
+        const menu = wrapper.querySelector("#menu");
+
+        trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+        expect(menu.visible).to.be.false;
+
+        // Re-enabling the anchor restores the toggle behavior.
+        trigger.removeAttribute("disabled");
+        trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        await new Promise((r) => setTimeout(r, 0));
+        expect(menu.visible).to.be.true;
+    });
+
     it("sets aria-haspopup and aria-expanded on the resolved anchor", async () => {
         const wrapper = await fixture(html`
             <div>
@@ -627,6 +648,46 @@ describe("YumeMenu", () => {
         expect(menu.style.top).to.match(/\d+px/);
         // Ensure display remains block (still visible after repositioning)
         expect(menu.style.display).to.equal("block");
+    });
+
+    it("caps height and scrolls internally when taller than the viewport", async () => {
+        const manyItems = Array.from({ length: 200 }, (_, i) => ({
+            text: `Item ${i + 1}`,
+        }));
+        const wrapper = await fixture(html`
+            <div>
+                <button id="tall-anchor">Menu</button>
+                <y-menu id="tall-menu" anchor="tall-anchor" .items=${manyItems}></y-menu>
+            </div>
+        `);
+        const menu = wrapper.querySelector("#tall-menu");
+        menu._anchorEl = wrapper.querySelector("#tall-anchor");
+        menu.visible = true;
+        await new Promise((r) => setTimeout(r, 0));
+
+        const menuEl = menu.shadowRoot.querySelector(".menu");
+        expect(menuEl.style.overflowY).to.equal("auto");
+        expect(menuEl.style.maxHeight).to.match(/\d+px/);
+        expect(parseInt(menuEl.style.maxHeight, 10)).to.be.at.most(
+            window.innerHeight,
+        );
+    });
+
+    it("does not cap height for a menu that fits in the viewport", async () => {
+        const wrapper = await fixture(html`
+            <div>
+                <button id="short-anchor">Menu</button>
+                <y-menu id="short-menu" anchor="short-anchor" .items=${testItems}></y-menu>
+            </div>
+        `);
+        const menu = wrapper.querySelector("#short-menu");
+        menu._anchorEl = wrapper.querySelector("#short-anchor");
+        menu.visible = true;
+        await new Promise((r) => setTimeout(r, 0));
+
+        const menuEl = menu.shadowRoot.querySelector(".menu");
+        expect(menuEl.style.overflowY).to.equal("");
+        expect(menuEl.style.maxHeight).to.equal("");
     });
 
     it("closes other visible menus when a new menu is opened", async () => {
