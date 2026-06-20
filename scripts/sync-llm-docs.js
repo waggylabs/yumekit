@@ -13,6 +13,11 @@ import { join } from "path";
 
 const CHECK = process.argv.includes("--check");
 
+// Nested-only sub-elements: registered custom elements that only exist as
+// children of another component (documented under their parent, never used
+// standalone). They are excluded from the headline component count.
+const SUBELEMENTS = new Set(["y-panel", "y-tree-item"]);
+
 const version = JSON.parse(readFileSync("package.json", "utf8")).version;
 const componentCount = countCustomElements("src/components");
 const themeCount = readdirSync("tokens/themes").filter((f) =>
@@ -115,7 +120,8 @@ if (CHECK) {
     );
 }
 
-// Recursively count unique `customElements.define("y-...")` registrations.
+// Recursively count unique `customElements.define("y-...")` registrations,
+// excluding nested-only sub-elements (see SUBELEMENTS).
 function countCustomElements(dir) {
     const names = new Set();
     const re = /customElements\.define\(\s*["'](y-[a-z-]+)["']/g;
@@ -125,6 +131,7 @@ function countCustomElements(dir) {
         let m;
         while ((m = re.exec(src))) names.add(m[1]);
     });
+    for (const sub of SUBELEMENTS) names.delete(sub);
     return names.size;
 }
 
