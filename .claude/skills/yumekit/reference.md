@@ -1363,6 +1363,7 @@ Methods: `.show(opts)` — **single options object**: `{ message, color, duratio
 | `position` | `top` (default) \| `bottom` \| `left` \| `right` |
 | `size`     | `small` \| `medium` \| `large`                   |
 | `variant`  | `default` (bordered boxes) \| `accent` (minimal tabs; active tab shows a primary indicator border on its content-facing edge, like Material/Carbon) |
+| `overflow` | `scroll` (default; one line + prev/next arrows when the strip overflows) \| `wrap` (tabs flow onto multiple rows/columns) |
 
 Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":false,"leftIcon":"home","rightIcon":"arrow-right"}` — `id`, `label`, and `slot` are required; `disabled`, `leftIcon`, `rightIcon` are optional.
 

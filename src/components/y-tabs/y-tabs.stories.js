@@ -36,15 +36,23 @@ export default {
                 "Visual style: 'default' (bordered boxes) or 'accent' (minimal tabs with a primary indicator on the active tab's content-facing edge).",
             table: { defaultValue: { summary: "default" } },
         },
+        overflow: {
+            control: "select",
+            options: ["scroll", "wrap"],
+            description:
+                "How a tab strip wider than its container behaves: 'scroll' keeps one line and shows prev/next arrows when it overflows; 'wrap' flows tabs onto multiple rows.",
+            table: { defaultValue: { summary: "scroll" } },
+        },
     },
     args: {
         options: defaultOptions,
         size: "medium",
         position: "top",
         variant: "default",
+        overflow: "scroll",
     },
-    render: ({ options, size, position, variant }) => `
-        <y-tabs options='${options}' size="${size}" position="${position}" variant="${variant}" style="width:400px">
+    render: ({ options, size, position, variant, overflow }) => `
+        <y-tabs options='${options}' size="${size}" position="${position}" variant="${variant}" overflow="${overflow}" style="width:400px">
             <div slot="tab1"><p>Overview content goes here.</p></div>
             <div slot="tab2"><p>Details content goes here.</p></div>
             <div slot="tab3"><p>Settings content goes here.</p></div>
@@ -163,6 +171,46 @@ export const WithIcons = {
             <div slot="settings"><p>Settings content.</p></div>
         </y-tabs>
     `,
+};
+
+export const ManyTabs = {
+    name: "Many tabs (overflow)",
+    render: () => {
+        const options = Array.from({ length: 20 }, (_, i) => ({
+            id: `tab${i + 1}`,
+            label: `Section ${i + 1}`,
+            slot: `tab${i + 1}`,
+        }));
+        const panels = options
+            .map(
+                (o) =>
+                    `<div slot="${o.slot}"><p>${o.label} content goes here.</p></div>`,
+            )
+            .join("");
+        const json = JSON.stringify(options);
+        return `
+        <div style="display:flex;flex-direction:column;gap:32px">
+            <div>
+                <p style="margin:0 0 8px;font:0.85em sans-serif;opacity:0.7">overflow="scroll" (default) — arrows appear at the edges</p>
+                <y-tabs options='${json}' overflow="scroll" style="width:400px">
+                    ${panels}
+                </y-tabs>
+            </div>
+            <div>
+                <p style="margin:0 0 8px;font:0.85em sans-serif;opacity:0.7">overflow="wrap" — tabs flow onto multiple rows</p>
+                <y-tabs options='${json}' overflow="wrap" style="width:400px">
+                    ${panels}
+                </y-tabs>
+            </div>
+            <div>
+                <p style="margin:0 0 8px;font:0.85em sans-serif;opacity:0.7">Vertical scroll (position="left")</p>
+                <y-tabs options='${json}' overflow="scroll" position="left" style="width:400px;height:240px">
+                    ${panels}
+                </y-tabs>
+            </div>
+        </div>
+    `;
+    },
 };
 
 export const WithTabContentSlot = {

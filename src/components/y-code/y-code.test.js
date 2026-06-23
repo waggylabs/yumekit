@@ -286,6 +286,26 @@ describe("YumeCode", () => {
         ).to.include("Show less");
     });
 
+    it("scrolls its content within a height-constrained container", async () => {
+        const source = Array.from(
+            { length: 40 },
+            (_, i) => `line ${i + 1}`,
+        ).join("\n");
+        const el = await fixture(
+            `<y-code style="max-height:120px">${source}</y-code>`,
+        );
+        await nextFrame();
+
+        const pre = el.shadowRoot.querySelector("pre.code");
+        // The element is capped well below its natural content height, and the
+        // code area scrolls rather than overflowing the box.
+        expect(el.getBoundingClientRect().height).to.be.lessThan(
+            pre.scrollHeight,
+        );
+        expect(pre.scrollHeight).to.be.greaterThan(pre.clientHeight);
+        expect(getComputedStyle(pre).overflowY).to.equal("auto");
+    });
+
     // ── Highlighted slot sanitization ──────────────────────────────────
 
     it("renders sanitized span structure from the highlighted slot", async () => {
