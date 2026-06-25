@@ -73,68 +73,59 @@ Then use the `<y-theme>` component to apply a theme:
 
 ## Components
 
-| Component     | Element            | Description                                              |
-| ------------- | ------------------ | ------------------------------------------------------- |
-| Animate       | `<y-animate>`      | Scroll/viewport-triggered animation wrapper             |
-| App Bar       | `<y-appbar>`       | Top or side navigation bar                              |
-| Avatar        | `<y-avatar>`       | User avatar with shape and color variants               |
-| Avatar Group  | `<y-avatar-group>` | Overlapping avatar group with overflow count            |
-| Badge         | `<y-badge>`        | Status badge or label                                   |
-| Banner        | `<y-banner>`       | Full-width inline message / alert banner                |
-| Break         | `<y-break>`        | Divider with optional centered label, icon, or slot     |
-| Breadcrumbs   | `<y-breadcrumbs>`  | Navigation breadcrumb trail with collapse support       |
-| Button        | `<y-button>`       | Button with icon, size, and style variants              |
-| Button Group  | `<y-button-group>` | Groups buttons (or inputs) into a connected toolbar     |
-| Card          | `<y-card>`         | Content card container                                  |
-| Checkbox      | `<y-checkbox>`     | Form checkbox input                                     |
-| Code          | `<y-code>`         | Code block with built-in syntax highlighting            |
-| Color         | `<y-color>`        | Color swatch / value display                            |
-| Color Picker  | `<y-colorpicker>`  | Interactive color picker                                |
-| Data Grid     | `<y-data-grid>`    | Data grid with sorting, filtering, editing, pagination  |
-| Date          | `<y-date>`         | Date input                                              |
-| DatePicker    | `<y-datepicker>`   | A date and time picker                                  |
-| Dialog        | `<y-dialog>`       | Modal dialog                                            |
-| Dock          | `<y-dock>`         | Fixed navigation dock                                   |
-| Drawer        | `<y-drawer>`       | Side drawer / sidebar                                   |
-| Droplist      | `<y-droplist>`     | Drag-and-drop reorderable list                          |
-| Gallery       | `<y-gallery>`      | Media gallery with lightbox                             |
-| Grid          | `<y-grid>`         | CSS Grid layout container                               |
-| Help          | `<y-help>`         | Guided product tour / onboarding walkthrough            |
-| Icon          | `<y-icon>`         | SVG icon display                                        |
-| Input         | `<y-input>`        | Text input field                                        |
-| Masonry       | `<y-masonry>`      | JS-positioned masonry layout                            |
-| Menu          | `<y-menu>`         | Dropdown navigation menu                                |
-| Paginator     | `<y-paginator>`    | Pagination controls                                     |
-| Panel Bar     | `<y-panelbar>`     | Accordion panel group                                   |
-| Popover       | `<y-popover>`      | Anchored floating popover                               |
-| Progress      | `<y-progress>`     | Progress bar                                            |
-| Radio         | `<y-radio>`        | Radio button input                                      |
-| Rating        | `<y-rating>`       | Star / icon rating input                                |
-| Select        | `<y-select>`       | Select / dropdown input                                 |
-| Shape         | `<y-shape>`        | Decorative CSS shape container                          |
-| Sidebar       | `<y-sidebar>`      | Collapsible app sidebar navigation                      |
-| Slider        | `<y-slider>`       | Range slider input                                      |
-| Splitter      | `<y-splitter>`     | Two-pane container with a draggable resize handle       |
-| Stack         | `<y-stack>`        | Flexbox layout container (row or column)                |
-| Stepper       | `<y-stepper>`      | Multi-step wizard with sequential flow                  |
-| Switch        | `<y-switch>`       | Toggle switch                                           |
-| Table         | `<y-table>`        | Sortable data table                                     |
-| Tabs          | `<y-tabs>`         | Tabbed interface                                        |
-| Tag           | `<y-tag>`          | Tag / chip label                                        |
-| Textarea      | `<y-textarea>`     | Multi-line text input                                   |
-| Theme         | `<y-theme>`        | Theme provider                                          |
-| Toast         | `<y-toast>`        | Notification toast                                      |
-| Tooltip       | `<y-tooltip>`      | Tooltip / popover                                       |
-| Tree          | `<y-tree>`         | Hierarchical tree view                                  |
-
-### Sub-elements
-
-These are building blocks used inside their parent component, not standalone components (and not included in the count above):
-
-| Element         | Used inside    | Description                       |
-| --------------- | -------------- | -------------------------------- |
-| `<y-panel>`     | `<y-panelbar>` | Individual accordion panel       |
-| `<y-tree-item>` | `<y-tree>`     | Individual node within a tree    |
+| Component    | Element            | Description                                            |
+| ------------ | ------------------ | ------------------------------------------------------ |
+| Animate      | `<y-animate>`      | Scroll/viewport-triggered animation wrapper            |
+| App Bar      | `<y-appbar>`       | Top or side navigation bar                             |
+| Avatar       | `<y-avatar>`       | User avatar with shape and color variants              |
+| Avatar Group | `<y-avatar-group>` | Overlapping avatar group with overflow count           |
+| Badge        | `<y-badge>`        | Status badge or label                                  |
+| Banner       | `<y-banner>`       | Full-width inline message / alert banner               |
+| Break        | `<y-break>`        | Divider with optional centered label, icon, or slot    |
+| Breadcrumbs  | `<y-breadcrumbs>`  | Navigation breadcrumb trail with collapse support      |
+| Button       | `<y-button>`       | Button with icon, size, and style variants             |
+| Button Group | `<y-button-group>` | Groups buttons (or inputs) into a connected toolbar    |
+| Card         | `<y-card>`         | Content card container                                 |
+| Checkbox     | `<y-checkbox>`     | Form checkbox input                                    |
+| Code         | `<y-code>`         | Code block with built-in syntax highlighting           |
+| Color        | `<y-color>`        | Color swatch / value display                           |
+| Color Picker | `<y-colorpicker>`  | Interactive color picker                               |
+| Data Grid    | `<y-data-grid>`    | Data grid with sorting, filtering, editing, pagination |
+| Date         | `<y-date>`         | Date input                                             |
+| DatePicker   | `<y-datepicker>`   | A date and time picker                                 |
+| Dialog       | `<y-dialog>`       | Modal dialog                                           |
+| Dock         | `<y-dock>`         | Fixed navigation dock                                  |
+| Drawer       | `<y-drawer>`       | Side drawer / sidebar                                  |
+| Droplist     | `<y-droplist>`     | Drag-and-drop reorderable list                         |
+| Gallery      | `<y-gallery>`      | Media gallery with lightbox                            |
+| Grid         | `<y-grid>`         | CSS Grid layout container                              |
+| Help         | `<y-help>`         | Guided product tour / onboarding walkthrough           |
+| Icon         | `<y-icon>`         | SVG icon display                                       |
+| Input        | `<y-input>`        | Text input field                                       |
+| Masonry      | `<y-masonry>`      | JS-positioned masonry layout                           |
+| Menu         | `<y-menu>`         | Dropdown navigation menu                               |
+| Paginator    | `<y-paginator>`    | Pagination controls                                    |
+| Panel Bar    | `<y-panelbar>`     | Accordion panel group                                  |
+| Popover      | `<y-popover>`      | Anchored floating popover                              |
+| Progress     | `<y-progress>`     | Progress bar                                           |
+| Radio        | `<y-radio>`        | Radio button input                                     |
+| Rating       | `<y-rating>`       | Star / icon rating input                               |
+| Select       | `<y-select>`       | Select / dropdown input                                |
+| Shape        | `<y-shape>`        | Decorative CSS shape container                         |
+| Sidebar      | `<y-sidebar>`      | Collapsible app sidebar navigation                     |
+| Slider       | `<y-slider>`       | Range slider input                                     |
+| Splitter     | `<y-splitter>`     | Two-pane container with a draggable resize handle      |
+| Stack        | `<y-stack>`        | Flexbox layout container (row or column)               |
+| Stepper      | `<y-stepper>`      | Multi-step wizard with sequential flow                 |
+| Switch       | `<y-switch>`       | Toggle switch                                          |
+| Table        | `<y-table>`        | Sortable data table                                    |
+| Tabs         | `<y-tabs>`         | Tabbed interface                                       |
+| Tag          | `<y-tag>`          | Tag / chip label                                       |
+| Textarea     | `<y-textarea>`     | Multi-line text input                                  |
+| Theme        | `<y-theme>`        | Theme provider                                         |
+| Toast        | `<y-toast>`        | Notification toast                                     |
+| Tooltip      | `<y-tooltip>`      | Tooltip / popover                                      |
+| Tree         | `<y-tree>`         | Hierarchical tree view                                 |
 
 ---
 
