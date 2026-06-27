@@ -718,6 +718,7 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 position?: "top" | "bottom" | "left" | "right";
                 variant?: "default" | "accent";
+                overflow?: "scroll" | "wrap";
             }>;
             "y-tag": El<{
                 color?: string;

@@ -21,7 +21,7 @@ describe("YumeTabs", () => {
             </y-tabs>
         `);
 
-        const tabs = el.shadowRoot.querySelectorAll("button");
+        const tabs = el.shadowRoot.querySelectorAll('[role="tab"]');
         expect(tabs.length).to.equal(3);
         expect(el.getAttribute("size")).to.equal("medium");
         expect(el.getAttribute("position")).to.equal("top");
@@ -39,7 +39,8 @@ describe("YumeTabs", () => {
             </y-tabs>
         `);
 
-        const [btn1, btn2, btn3] = el.shadowRoot.querySelectorAll("button");
+        const [btn1, btn2, btn3] =
+            el.shadowRoot.querySelectorAll('[role="tab"]');
         // btn2 disabled
         expect(btn2.disabled).to.be.true;
 
@@ -107,11 +108,13 @@ describe("YumeTabs", () => {
                 <div slot="one-slot">First</div>
             </y-tabs>
         `);
-        expect(el.shadowRoot.querySelectorAll("button").length).to.equal(3);
+        expect(el.shadowRoot.querySelectorAll('[role="tab"]').length).to.equal(
+            3,
+        );
 
         el.options = [{ id: "alpha", label: "Alpha", slot: "alpha-slot" }];
 
-        const buttons = el.shadowRoot.querySelectorAll("button");
+        const buttons = el.shadowRoot.querySelectorAll('[role="tab"]');
         expect(buttons.length).to.equal(1);
         expect(buttons[0].dataset.id).to.equal("alpha");
     });
@@ -121,7 +124,7 @@ describe("YumeTabs", () => {
         const json = '[{"id":"alpha","label":"Alpha","slot":"alpha-slot"}]';
         el.options = json;
         expect(el.getAttribute("options")).to.equal(json);
-        const buttons = el.shadowRoot.querySelectorAll("button");
+        const buttons = el.shadowRoot.querySelectorAll('[role="tab"]');
         expect(buttons.length).to.equal(1);
         expect(buttons[0].dataset.id).to.equal("alpha");
     });
@@ -317,7 +320,7 @@ describe("YumeTabs", () => {
                 <div slot="three-slot">Third</div>
             </y-tabs>
         `);
-        const buttons = el.shadowRoot.querySelectorAll("button");
+        const buttons = el.shadowRoot.querySelectorAll('[role="tab"]');
         buttons.forEach((btn, i) => {
             expect(btn.getAttribute("aria-label")).to.equal(options[i].label);
         });
@@ -472,6 +475,60 @@ describe("YumeTabs", () => {
         const btn1 = el.shadowRoot.querySelector('button[data-id="one"]');
         expect(btn1.querySelector('slot[name="right-icon-one"]')).to.exist;
         expect(warn.calledWith(sinon.match(/right-icon-one.*deprecated/))).to.be.true;
+    });
+
+    it("defaults overflow to scroll and renders hidden scroll buttons", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="two-slot">Second</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        expect(el.overflow).to.equal("scroll");
+        const prev = el.shadowRoot.querySelector(".scroll-prev");
+        const next = el.shadowRoot.querySelector(".scroll-next");
+        expect(prev).to.exist;
+        expect(next).to.exist;
+        // Not overflowing, so both arrows stay hidden.
+        expect(prev.hidden).to.be.true;
+        expect(next.hidden).to.be.true;
+    });
+
+    it("overflow=wrap renders no scroll buttons and wraps the strip", async () => {
+        const el = await fixture(html`
+            <y-tabs overflow="wrap" options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        expect(el.shadowRoot.querySelector(".scroll-btn")).to.not.exist;
+        const css = el.shadowRoot.querySelector("style").textContent;
+        expect(css).to.include("flex-wrap: wrap");
+    });
+
+    it("overflow setter normalises invalid values to scroll", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        el.overflow = "bogus";
+        expect(el.getAttribute("overflow")).to.equal("scroll");
+        el.overflow = "wrap";
+        expect(el.getAttribute("overflow")).to.equal("wrap");
+    });
+
+    it("reveals the next scroll button when the strip overflows", async () => {
+        const many = Array.from({ length: 12 }, (_, i) => ({
+            id: `t${i}`,
+            label: `Tab number ${i}`,
+            slot: `s${i}`,
+        }));
+        const el = await fixture(html`
+            <y-tabs
+                style="width:160px"
+                options="${JSON.stringify(many)}"
+            ></y-tabs>
+        `);
+        el._updateScrollButtons();
+        expect(el.shadowRoot.querySelector(".scroll-prev").hidden).to.be.true;
+        expect(el.shadowRoot.querySelector(".scroll-next").hidden).to.be.false;
     });
 
     it("deprecated right-icon slot warning is emitted only once across re-renders", async () => {

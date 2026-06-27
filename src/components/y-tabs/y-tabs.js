@@ -3,7 +3,7 @@ import { createElement as _el } from "../../modules/helpers.js";
 
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
-        return ["options", "size", "position", "variant"];
+        return ["options", "size", "position", "variant", "overflow"];
     }
 
     // -------------------------------------------------------------------------
@@ -15,13 +15,21 @@ export class YumeTabs extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._activeTab = "";
         this._warnedSlots = new Set();
+        this._resizeObserver = null;
+        this._onTablistScroll = this._onTablistScroll.bind(this);
     }
 
     connectedCallback() {
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("position"))
             this.setAttribute("position", "top");
+        if (!this.hasAttribute("overflow"))
+            this.setAttribute("overflow", "scroll");
         this.render();
+    }
+
+    disconnectedCallback() {
+        this._teardownScroll();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
@@ -47,6 +55,19 @@ export class YumeTabs extends HTMLElement {
         else if (typeof val === "string") this.setAttribute("options", val);
         else this.setAttribute("options", JSON.stringify(val));
         this.render();
+    }
+
+    /**
+     * @type {"scroll"|"wrap"} How a tab strip wider (or taller) than its
+     * container behaves. `"scroll"` keeps tabs on a single line and reveals
+     * prev/next arrow buttons when the strip overflows; `"wrap"` lets tabs flow
+     * onto multiple rows (or columns, for left/right positions).
+     */
+    get overflow() {
+        return this.getAttribute("overflow") === "wrap" ? "wrap" : "scroll";
+    }
+    set overflow(val) {
+        this.setAttribute("overflow", val === "wrap" ? "wrap" : "scroll");
     }
 
     /** @type {"top"|"bottom"|"left"|"right"} Which edge the tab strip is placed on. */
@@ -107,6 +128,7 @@ export class YumeTabs extends HTMLElement {
 
         const activeDef = tabs.find((t) => t.id === this._activeTab);
 
+        this._teardownScroll();
         this.shadowRoot.innerHTML = "";
 
         const style = document.createElement("style");
@@ -119,11 +141,12 @@ export class YumeTabs extends HTMLElement {
             part: "tablist",
         });
         tabs.forEach((tab) => tablist.appendChild(this._createTabButton(tab)));
-        this.shadowRoot.appendChild(tablist);
 
+        this.shadowRoot.appendChild(this._buildTabStrip(tablist));
         this.shadowRoot.appendChild(this._createPanel(activeDef?.slot || ""));
 
         this._setupEvents();
+        this._setupScroll();
     }
 
     // -------------------------------------------------------------------------
@@ -146,6 +169,47 @@ export class YumeTabs extends HTMLElement {
         }
 
         parent.appendChild(_el("slot", { name: slotName, class: "icon-slot" }));
+    }
+
+    _buildScrollButton(direction) {
+        const vertical = this.position === "left" || this.position === "right";
+        const icon =
+            direction === "prev"
+                ? vertical
+                    ? "chevron-up"
+                    : "chevron-left"
+                : vertical
+                  ? "chevron-down"
+                  : "chevron-right";
+        const btn = _el(
+            "button",
+            {
+                type: "button",
+                class: `scroll-btn scroll-${direction}`,
+                part: `scroll-button scroll-${direction}`,
+                "aria-label":
+                    direction === "prev"
+                        ? "Scroll tabs backward"
+                        : "Scroll tabs forward",
+                tabindex: "-1",
+                hidden: "",
+            },
+            [_el("y-icon", { name: icon, size: this.size, "aria-hidden": "true" })],
+        );
+        btn.addEventListener("click", () => this._scrollTabs(direction));
+        return btn;
+    }
+
+    _buildTabStrip(tablist) {
+        const strip = _el("div", { class: "tabstrip", part: "tabstrip" });
+        if (this.overflow === "scroll") {
+            strip.appendChild(this._buildScrollButton("prev"));
+            strip.appendChild(tablist);
+            strip.appendChild(this._buildScrollButton("next"));
+        } else {
+            strip.appendChild(tablist);
+        }
+        return strip;
     }
 
     _createIcon(name) {
@@ -228,16 +292,63 @@ export class YumeTabs extends HTMLElement {
             :host([position="left"]) { flex-direction: row; }
             :host([position="right"]) { flex-direction: row-reverse; }
 
+            .tabstrip {
+                display: flex;
+                position: relative;
+                z-index: 1;
+                min-width: 0;
+                min-height: 0;
+            }
+            :host([position="left"])  .tabstrip,
+            :host([position="right"]) .tabstrip { flex-direction: column; }
+            :host([position="top"])    .tabstrip { margin-bottom: -1px; }
+            :host([position="bottom"]) .tabstrip { margin-top: -1px; }
+            :host([position="left"])   .tabstrip { margin-right: -1px; }
+            :host([position="right"])  .tabstrip { margin-left: -1px; }
+
             .tablist {
                 display: flex;
                 gap: 0;
                 position: relative;
-                z-index: 1;
+                min-width: 0;
+                min-height: 0;
             }
-            :host([position="top"])    .tablist { margin-bottom: -1px; margin-top: 0; }
-            :host([position="bottom"]) .tablist { margin-top: -1px; margin-bottom: 0; }
-            :host([position="left"])   .tablist { flex-direction: column; margin-right: -1px; margin-left: 0; }
-            :host([position="right"])  .tablist { flex-direction: column; margin-left: -1px; margin-right: 0; }
+            :host([position="left"])  .tablist,
+            :host([position="right"]) .tablist { flex-direction: column; }
+
+            /* Scroll mode: tabs stay on one line; arrow buttons drive scrolling,
+               so the native scrollbar is hidden. */
+            :host([overflow="scroll"]) .tablist {
+                flex: 1 1 auto;
+                overflow: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            :host([overflow="scroll"]) .tablist::-webkit-scrollbar { display: none; }
+
+            /* Wrap mode: tabs flow onto multiple rows (or columns). */
+            :host([overflow="wrap"]) .tablist { flex-wrap: wrap; }
+
+            .scroll-btn {
+                flex: 0 0 auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 4px;
+                background: var(--component-tabs-inactive-background, var(--component-tabs-border-color));
+                color: var(--component-tabs-color);
+                border: 1px solid var(--component-tabs-border-color);
+                border-width: var(--component-tabs-border-width, var(--component-tab-border-width, 1px));
+                cursor: pointer;
+                font-family: inherit;
+            }
+            .scroll-btn[hidden] { display: none; }
+            .scroll-btn:hover { background: var(--component-tabs-background); }
+            .scroll-btn:focus-visible {
+                outline: 2px solid var(--component-tabs-accent);
+                outline-offset: -1px;
+            }
+            :host([variant="accent"]) .scroll-btn { background: transparent; border: none; }
 
             :host([position="top"])    .tablist button { border-bottom: none; }
             :host([position="bottom"]) .tablist button { border-top: none; }
@@ -353,6 +464,10 @@ export class YumeTabs extends HTMLElement {
         }
     }
 
+    _onTablistScroll() {
+        this._updateScrollButtons();
+    }
+
     _resolveActiveTab(tabs) {
         const currentInvalid =
             !this._activeTab ||
@@ -362,8 +477,26 @@ export class YumeTabs extends HTMLElement {
         }
     }
 
+    _scrollTabs(direction) {
+        const tablist = this.shadowRoot.querySelector(".tablist");
+        if (!tablist) return;
+
+        const vertical = this.position === "left" || this.position === "right";
+        const amount =
+            (vertical ? tablist.clientHeight : tablist.clientWidth) * 0.75;
+        const delta = direction === "prev" ? -amount : amount;
+
+        tablist.scrollBy(
+            vertical
+                ? { top: delta, behavior: "smooth" }
+                : { left: delta, behavior: "smooth" },
+        );
+    }
+
     _setupEvents() {
-        const buttons = Array.from(this.shadowRoot.querySelectorAll("button"));
+        const buttons = Array.from(
+            this.shadowRoot.querySelectorAll(".tablist button"),
+        );
         buttons.forEach((button) => {
             if (button.disabled) return;
             button.addEventListener("click", () =>
@@ -373,6 +506,58 @@ export class YumeTabs extends HTMLElement {
                 this._handleTabKeydown(e, buttons),
             );
         });
+    }
+
+    _setupScroll() {
+        if (this.overflow !== "scroll") return;
+
+        const tablist = this.shadowRoot.querySelector(".tablist");
+        if (!tablist) return;
+
+        tablist.addEventListener("scroll", this._onTablistScroll, {
+            passive: true,
+        });
+        if (typeof ResizeObserver !== "undefined") {
+            this._resizeObserver = new ResizeObserver(() =>
+                this._updateScrollButtons(),
+            );
+            this._resizeObserver.observe(tablist);
+            this._resizeObserver.observe(this);
+        }
+
+        this._updateScrollButtons();
+    }
+
+    _teardownScroll() {
+        this._resizeObserver?.disconnect();
+        this._resizeObserver = null;
+        const tablist = this.shadowRoot?.querySelector(".tablist");
+        tablist?.removeEventListener("scroll", this._onTablistScroll);
+    }
+
+    _updateScrollButtons() {
+        const tablist = this.shadowRoot.querySelector(".tablist");
+        const prev = this.shadowRoot.querySelector(".scroll-prev");
+        const next = this.shadowRoot.querySelector(".scroll-next");
+        if (!tablist || !prev || !next) return;
+
+        const vertical = this.position === "left" || this.position === "right";
+        const scrollSize = vertical
+            ? tablist.scrollHeight
+            : tablist.scrollWidth;
+        const clientSize = vertical
+            ? tablist.clientHeight
+            : tablist.clientWidth;
+        const scrollPos = vertical ? tablist.scrollTop : tablist.scrollLeft;
+
+        if (scrollSize - clientSize <= 1) {
+            prev.hidden = true;
+            next.hidden = true;
+            return;
+        }
+
+        prev.hidden = scrollPos <= 1;
+        next.hidden = scrollPos >= scrollSize - clientSize - 1;
     }
 }
 

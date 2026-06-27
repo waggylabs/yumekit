@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 51 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.5.1
+0.5.2
 
 ## License
 MIT
@@ -1657,6 +1657,7 @@ Attributes:
 - `position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `variant` — `"default"` (default, bordered boxes) | `"accent"` (minimal tabs; the active tab shows a primary-colored indicator border on its content-facing edge — bottom for `top` tabs, top for `bottom`, etc. — like Material/Carbon)
+- `overflow` — `"scroll"` (default; tabs stay on one line and prev/next arrow buttons appear when the strip overflows its container) | `"wrap"` (tabs flow onto multiple rows, or columns for `left`/`right` positions)
 
 Methods: `activateTab(id)`
 

@@ -12,6 +12,11 @@ const SAMPLE_LONG = Array.from(
     (_, i) => `console.log("line ${i + 1}");`,
 ).join("\n");
 
+const SAMPLE_VERY_LONG = Array.from(
+    { length: 60 },
+    (_, i) => `console.log("processing item ${i + 1} of 60");`,
+).join("\n");
+
 const SAMPLE_HIGHLIGHTED_HTML = `<span class="token keyword">const</span> <span class="token function">add</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token variable">a</span><span class="token punctuation">,</span> <span class="token variable">b</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token variable">a</span> <span class="token operator">+</span> <span class="token variable">b</span><span class="token punctuation">;</span>
 <span class="token comment">// usage</span>
 <span class="token function">add</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>`;
@@ -70,6 +75,19 @@ export const Collapsed = {
     args: { "max-lines": 6, "line-numbers": true },
     render: () =>
         `<y-code max-lines="6" line-numbers language="javascript">${SAMPLE_LONG}</y-code>`,
+};
+
+export const ScrollableHeight = {
+    name: "Height limited (scrolling)",
+    parameters: {
+        docs: {
+            description: {
+                story: "A CSS `max-height` (or `height`) on the element caps its size and scrolls the code area — no `max-lines` needed.",
+            },
+        },
+    },
+    render: () =>
+        `<y-code line-numbers language="javascript" filename="long.js" style="max-height:220px">${SAMPLE_VERY_LONG}</y-code>`,
 };
 
 export const PreHighlighted = {

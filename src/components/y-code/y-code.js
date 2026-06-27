@@ -324,7 +324,8 @@ export class YumeCode extends HTMLElement {
     _buildStyles() {
         return `
             :host {
-                display: block;
+                display: flex;
+                flex-direction: column;
                 font-family: var(--component-code-font-family, var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace));
                 color: var(--component-code-text-color, var(--base-content--, #1a1a1a));
                 background: var(--component-code-bg-color, var(--base-background-component, #f6f8fa));
@@ -374,13 +375,19 @@ export class YumeCode extends HTMLElement {
             .pre-wrap {
                 position: relative;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                min-height: 0;
             }
 
             pre.code {
                 margin: 0;
                 padding: var(--spacing-small, 8px) 0;
+                flex: 1 1 auto;
+                min-height: 0;
                 overflow-x: ${this.wrap ? "hidden" : "auto"};
-                overflow-y: ${this.maxLines ? "auto" : "visible"};
+                overflow-y: auto;
                 font-size: var(--component-code-font-size, 0.9em);
                 line-height: var(--component-code-line-height, 1.55);
                 tab-size: 4;

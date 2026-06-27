@@ -31,6 +31,16 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.2] - 2026-06-27
+
+### Added
+
+- `y-tabs` gains an `overflow` attribute: `scroll` (default) keeps tabs on a single line and shows prev/next arrow buttons when the strip overflows its container, while `wrap` lets tabs flow onto multiple rows.
+
+### Changed
+
+- `y-code` now scrolls its content within a height-constrained container — set a CSS `height` or `max-height` and the code area scrolls, where previously vertical scrolling only kicked in with `max-lines`.
+
 ## [0.5.1] - 2026-06-20
 
 ### Added

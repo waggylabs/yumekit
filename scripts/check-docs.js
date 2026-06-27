@@ -1,18 +1,18 @@
-import { readdirSync, readFileSync, existsSync } from "fs";
-import { join } from "path";
-
 // Cross-checks the AI/consumer-facing API docs against each component's
 // `observedAttributes` — the source of truth for reflected attributes — and
 // reports drift:
 //   • react.d.ts (src/react.d.ts): observed attrs missing from the JSX types,
 //     and typed keys that aren't observed attributes (stale / property-only).
-//   • llm.txt: observed attrs not mentioned in the component's `### y-foo`
-//     section.
+//   • llm.txt / reference.md: observed attrs not mentioned in the component's
+//     `### y-foo` section.
 // These are coverage signals, not generators: attribute *types* and prose
 // descriptions are hand-authored and can't be derived from the source.
 //
 //   node scripts/check-docs.js           report
-//   node scripts/check-docs.js --check    exit 1 if any observed attr is undocumented
+//   node scripts/check-docs.js --check   exit 1 if any observed attr is undocumented
+
+import { readdirSync, readFileSync, existsSync } from "fs";
+import { join } from "path";
 
 const CHECK = process.argv.includes("--check");
 const DTS = "src/react.d.ts";
@@ -32,9 +32,6 @@ const GLOBAL_ATTRS = new Set([
     "class", "style", "slot", "children", "ref", "key",
 ]);
 
-const isGlobalAttr = (a) =>
-    GLOBAL_ATTRS.has(a) || a.startsWith("aria-") || a.startsWith("data-");
-
 // Verified real attributes a component reads (form association, or via
 // hasAttribute/getAttribute at render/interaction time) without listing in
 // observedAttributes — so declaring them in react.d.ts is correct, not stale.
@@ -48,21 +45,15 @@ const INTENTIONAL_EXTRAS = {
     "y-tree-item": ["history"],
 };
 
-const registered = collectRegistered("src/components");
-let failures = 0;
+const isGlobalAttr = (a) =>
+    GLOBAL_ATTRS.has(a) || a.startsWith("aria-") || a.startsWith("data-");
 
-failures += checkReactTypes();
-for (const doc of MARKDOWN_DOCS) failures += checkMarkdownDoc(doc);
+// ---------- react.d.ts coverage ----------
 
-console.log(`\n${registered.size} registered elements checked.`);
-if (CHECK && failures) {
-    console.error(`\n✗ ${failures} doc coverage issue(s). See above.`);
-    process.exit(1);
-}
-
-// --- react.d.ts ----------------------------------------------------------
-
-function checkReactTypes() {
+// Reports observed attributes missing from the JSX types, and typed keys that
+// are neither observed nor an intentional extra. Returns the count of
+// undocumented observed attributes (the --check failure signal).
+function checkReactTypes(registered) {
     const dts = readFileSync(DTS, "utf8");
     const report = [];
     let missing = 0;
@@ -74,11 +65,13 @@ function checkReactTypes() {
             missing += 1;
             continue;
         }
+
         const allowed = new Set(INTENTIONAL_EXTRAS[tag] || []);
         const undoc = [...observed].filter((a) => !typed.has(a) && !isGlobalAttr(a));
         const extra = [...typed].filter(
             (a) => !observed.has(a) && !isGlobalAttr(a) && !allowed.has(a),
         );
+
         if (undoc.length || extra.length) {
             const parts = [];
             if (undoc.length) parts.push(`missing in types: ${undoc.join(", ")}`);
@@ -93,28 +86,91 @@ function checkReactTypes() {
     return missing;
 }
 
-// --- markdown docs (llm.txt, reference.md) -------------------------------
+// Top-level attribute keys declared for `"<tag>": El<{ ... }>` in react.d.ts.
+// Returns null when the tag has no entry, an empty Set for a bare `El`
+// (attribute-less container), otherwise the set of declared key names.
+function reactAttrsFor(dts, tag) {
+    const key = `"${tag}":`;
+    const start = dts.indexOf(key);
+    if (start === -1) return null;
 
-function checkMarkdownDoc({ path, heading }) {
+    const decl = dts.slice(start + key.length).match(/^\s*El\s*(<|;)/);
+    if (!decl) return null;
+    if (decl[1] === ";") return new Set(); // bare El — container, no attrs
+
+    const body = braceBlockFrom(dts, start);
+    if (body === null) return null;
+
+    return topLevelKeys(body);
+}
+
+// Returns the brace-balanced block (including the outer braces) starting at the
+// first `{` at or after `from`, or null if there is none.
+function braceBlockFrom(text, from) {
+    let i = text.indexOf("{", from);
+    if (i === -1) return null;
+
+    let depth = 0;
+    let block = "";
+    for (; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === "{") depth += 1;
+        if (depth >= 1) block += ch;
+        if (ch === "}") {
+            depth -= 1;
+            if (depth === 0) break;
+        }
+    }
+    return block;
+}
+
+// Extracts the top-level object keys from a `{ ... }` block by stripping nested
+// object literals and generics until only the outermost keys remain.
+function topLevelKeys(block) {
+    let flat = block.slice(1, -1);
+
+    let prev;
+    do {
+        prev = flat;
+        flat = flat.replace(/\{[^{}]*\}/g, "");
+    } while (flat !== prev);
+    do {
+        prev = flat;
+        flat = flat.replace(/<[^<>]*>/g, "");
+    } while (flat !== prev);
+
+    const keys = new Set();
+    for (const segment of flat.split(/[;\n]/)) {
+        const keyMatch = segment.match(/^\s*(?:"([^"]+)"|([A-Za-z_][\w-]*))\??\s*:/);
+        if (keyMatch) keys.add(keyMatch[1] || keyMatch[2]);
+    }
+    return keys;
+}
+
+// ---------- markdown coverage (llm.txt, reference.md) ----------
+
+// Reports observed attributes that lack any mention in their component's
+// markdown section. Returns the count of undocumented attributes.
+function checkMarkdownDoc(registered, { path, heading }) {
     const hashes = "#".repeat(heading);
     if (!existsSync(path)) {
         console.log(`\n· ${path} not found — skipped.`);
         return 0;
     }
-    const text = readFileSync(path, "utf8");
-    const sections = mdSections(text, heading);
+
+    const sections = mdSections(readFileSync(path, "utf8"), heading);
     const report = [];
     let missing = 0;
 
     for (const [tag, observed] of [...registered].sort()) {
-        const sec = sections[tag];
-        if (!sec) {
+        const section = sections[tag];
+        if (!section) {
             report.push(`✗ ${tag}: no "${hashes} ${tag}" section`);
             missing += 1;
             continue;
         }
         const undoc = [...observed].filter(
-            (a) => !isGlobalAttr(a) && !mentions(sec, a),
+            (a) => !isGlobalAttr(a) && !mentions(section, a),
         );
         if (undoc.length) {
             report.push(`~ ${tag}: undocumented: ${undoc.join(", ")}`);
@@ -140,17 +196,18 @@ function mentions(section, attr) {
     );
 }
 
+// Maps each y-* tag to the markdown body of its heading. A single heading may
+// cover several elements (e.g. "## y-panelbar + y-panel"); each gets the body.
 function mdSections(text, level) {
-    // Match headings at the given level that start with a y-* tag; a single
-    // heading may cover several elements (e.g. "## y-panelbar + y-panel").
     const re = new RegExp(`^#{${level}} (y-[a-z-].*)$`, "gm");
-    const out = {};
     const marks = [];
     let m;
     while ((m = re.exec(text))) {
         const tags = m[1].match(/y-[a-z-]+/g) || [];
         marks.push([tags, m.index]);
     }
+
+    const out = {};
     for (let i = 0; i < marks.length; i++) {
         const end = i + 1 < marks.length ? marks[i + 1][1] : text.length;
         const body = text.slice(marks[i][1], end);
@@ -159,7 +216,7 @@ function mdSections(text, level) {
     return out;
 }
 
-// --- shared --------------------------------------------------------------
+// ---------- component sources ----------
 
 // Map of tag -> Set(observedAttributes) for every registered y-* element.
 function collectRegistered(dir) {
@@ -183,50 +240,6 @@ function observedAttrsFor(src) {
     return attrs;
 }
 
-// Top-level attribute keys declared for `"<tag>": El<{ ... }>` in react.d.ts.
-function reactAttrsFor(dts, tag) {
-    const key = `"${tag}":`;
-    const start = dts.indexOf(key);
-    if (start === -1) return null;
-
-    const decl = dts.slice(start + key.length).match(/^\s*El\s*(<|;)/);
-    if (!decl) return null;
-    if (decl[1] === ";") return new Set(); // bare El — container, no attrs
-
-    let i = dts.indexOf("{", start);
-    if (i === -1) return null;
-    let depth = 0;
-    let body = "";
-    for (; i < dts.length; i++) {
-        const ch = dts[i];
-        if (ch === "{") depth += 1;
-        if (depth >= 1) body += ch;
-        if (ch === "}") {
-            depth -= 1;
-            if (depth === 0) break;
-        }
-    }
-
-    // Flatten nested object literals and generics so only top-level keys remain.
-    let flat = body.slice(1, -1);
-    let prev;
-    do {
-        prev = flat;
-        flat = flat.replace(/\{[^{}]*\}/g, "");
-    } while (flat !== prev);
-    do {
-        prev = flat;
-        flat = flat.replace(/<[^<>]*>/g, "");
-    } while (flat !== prev);
-
-    const keys = new Set();
-    for (const seg of flat.split(/[;\n]/)) {
-        const km = seg.match(/^\s*(?:"([^"]+)"|([A-Za-z_][\w-]*))\??\s*:/);
-        if (km) keys.add(km[1] || km[2]);
-    }
-    return keys;
-}
-
 function walk(dir, onFile) {
     if (!existsSync(dir)) return;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -235,3 +248,21 @@ function walk(dir, onFile) {
         else onFile(full);
     }
 }
+
+// ---------- run ----------
+
+function main() {
+    const registered = collectRegistered("src/components");
+
+    let failures = checkReactTypes(registered);
+    for (const doc of MARKDOWN_DOCS) failures += checkMarkdownDoc(registered, doc);
+
+    console.log(`\n${registered.size} registered elements checked.`);
+
+    if (CHECK && failures) {
+        console.error(`\n✗ ${failures} doc coverage issue(s). See above.`);
+        process.exit(1);
+    }
+}
+
+main();
