@@ -8,6 +8,13 @@ on:
                 required: false
                 type: string
                 default: storybook.yumekit.com
+    workflow_dispatch:
+        inputs:
+            bucket:
+                description: "Target S3 bucket name"
+                required: false
+                type: string
+                default: storybook.yumekit.com
 
 jobs:
     build-and-deploy:
@@ -31,7 +38,7 @@ jobs:
               uses: aws-actions/configure-aws-credentials@v4
               with:
                   role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-                  aws-region: ${{ vars.AWS_REGION }}
+                  aws-region: ${{ secrets.AWS_REGION }}
 
             - name: Sync to S3
               run: aws s3 sync storybook-static/ "s3://${{ inputs.bucket }}/" --delete

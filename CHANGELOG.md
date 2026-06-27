@@ -47,7 +47,7 @@ Delete any empty sections before publishing.
 
 - New `y-data-grid` component — interactive grid for large datasets with client- or server-side sorting, filtering, and pagination, row selection, inline cell editing, grouping with aggregates, multi-column header groups, virtual scrolling, a per-column header menu, and a sticky header.
 
-- New `y-popover` component — anchored floating panel with slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and a `portal` mode that renders into `<body>`.
+- New `y-popover` component — anchored floating panel with slotted content, composable triggers (`click` / `hover` / `focus` / `context-menu` / `manual`), flip-on-collision positioning, optional modal mode with focus trap, and a `portal` mode that renders into the nearest enclosing `<y-theme>` (falling back to `<body>`).
 
 - New `y-help` component — guided product-tour overlay with ordered steps, a dimmed SVG highlight, anchored tooltip, prev/next controls, and keyboard shortcuts.
 
@@ -87,7 +87,7 @@ Delete any empty sections before publishing.
 
 - `y-button` — new `padding-mode` attribute (`auto` / `square` / `wide`): `auto` makes icon-only buttons square, `square`/`wide` force it. Padding can also be set per-axis via `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}`. `y-paginator` and `y-datepicker` day/month/year buttons use `padding-mode="square"`.
 
-- `y-select` — new opt-in `portal` attribute renders the dropdown into `<body>` so it escapes scrollable or clipped ancestors.
+- `y-select` — new opt-in `portal` attribute renders the dropdown into the nearest enclosing `<y-theme>` (falling back to `<body>`) so it escapes scrollable or clipped ancestors while keeping the active theme.
 
 - `y-switch` — the "on" state now tints the track and border with the switch color (derived from `on-color`); tint strength is themeable via `--component-switch-on-fill-opacity` (16% default).
 
