@@ -285,7 +285,7 @@ export class YumePaginator extends HTMLElement {
         const attrs = {
             class: `button${isCurrent ? " active" : ""}`,
             part: parts.join(" "),
-            "style-type": isCurrent ? "filled" : "flat",
+            "variant": isCurrent ? "filled" : "flat",
             color: isCurrent ? "primary" : "base",
             size: this.size,
             // Number buttons stay square/circular even in themes (e.g. Material)
@@ -358,7 +358,7 @@ export class YumePaginator extends HTMLElement {
         const attrs = {
             class: `nav nav-${direction}`,
             part: `${partName}${isDisabled ? " button--disabled" : ""}`,
-            "style-type": "flat",
+            "variant": "flat",
             color: "base",
             size: this.size,
             "aria-label": cfg.ariaLabel,

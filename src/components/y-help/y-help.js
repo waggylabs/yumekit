@@ -696,7 +696,7 @@ export class YumeHelp extends HTMLElement {
             {
                 class: "y-help-tooltip-close",
                 part: "close-button",
-                "style-type": "flat",
+                "variant": "flat",
                 size: "small",
                 "aria-label": this.closeLabel,
             },
@@ -733,7 +733,7 @@ export class YumeHelp extends HTMLElement {
             {
                 class: "y-help-tooltip-btn",
                 part: "prev-button",
-                "style-type": "outlined",
+                "variant": "outlined",
                 size: "small",
                 "aria-label": this.prevLabel,
             },
@@ -745,7 +745,7 @@ export class YumeHelp extends HTMLElement {
             {
                 class: "y-help-tooltip-btn",
                 part: "next-button",
-                "style-type": "filled",
+                "variant": "filled",
                 color: "primary",
                 size: "small",
                 "aria-label": this.nextLabel,

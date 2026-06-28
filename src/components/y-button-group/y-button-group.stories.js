@@ -34,19 +34,19 @@ export const StyleTypes = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:16px">
             <y-button-group>
-                <y-button color="primary" style-type="outlined">Outlined</y-button>
-                <y-button color="primary" style-type="outlined">Outlined</y-button>
-                <y-button color="primary" style-type="outlined">Outlined</y-button>
+                <y-button color="primary" variant="outlined">Outlined</y-button>
+                <y-button color="primary" variant="outlined">Outlined</y-button>
+                <y-button color="primary" variant="outlined">Outlined</y-button>
             </y-button-group>
             <y-button-group>
-                <y-button color="primary" style-type="filled">Filled</y-button>
-                <y-button color="primary" style-type="filled">Filled</y-button>
-                <y-button color="primary" style-type="filled">Filled</y-button>
+                <y-button color="primary" variant="filled">Filled</y-button>
+                <y-button color="primary" variant="filled">Filled</y-button>
+                <y-button color="primary" variant="filled">Filled</y-button>
             </y-button-group>
             <y-button-group>
-                <y-button color="primary" style-type="flat">Flat</y-button>
-                <y-button color="primary" style-type="flat">Flat</y-button>
-                <y-button color="primary" style-type="flat">Flat</y-button>
+                <y-button color="primary" variant="flat">Flat</y-button>
+                <y-button color="primary" variant="flat">Flat</y-button>
+                <y-button color="primary" variant="flat">Flat</y-button>
             </y-button-group>
         </div>
     `,
@@ -140,17 +140,17 @@ export const InputAndButton = {
         <div style="display:flex;flex-direction:column;gap:16px">
             <y-button-group>
                 <y-input placeholder="Search…"></y-input>
-                <y-button color="primary" style-type="filled">
+                <y-button color="primary" variant="filled">
                     <y-icon slot="left-icon" name="magnifying-glass" size="small"></y-icon>
                     Search
                 </y-button>
             </y-button-group>
             <y-button-group>
-                <y-button style-type="outlined" color="base">
+                <y-button variant="outlined" color="base">
                     <y-icon slot="left-icon" name="stack" size="small"></y-icon>
                 </y-button>
                 <y-input placeholder="Paste or type a URL" style="width:240px"></y-input>
-                <y-button style-type="filled" color="primary">Go</y-button>
+                <y-button variant="filled" color="primary">Go</y-button>
             </y-button-group>
         </div>
     `,
@@ -165,16 +165,16 @@ export const MixedContent = {
                     options='[{"value":"opt1","label":"Option 1"},{"value":"opt2","label":"Option 2"},{"value":"opt3","label":"Option 3"}]'
                     style="width:180px"
                 ></y-select>
-                <y-button color="primary" style-type="filled">Go</y-button>
+                <y-button color="primary" variant="filled">Go</y-button>
             </y-button-group>
             <y-button-group>
-                <y-button style-type="outlined" color="base">All</y-button>
+                <y-button variant="outlined" color="base">All</y-button>
                 <y-select
                     placeholder="Filter by status…"
                     options='[{"value":"active","label":"Active"},{"value":"inactive","label":"Inactive"},{"value":"pending","label":"Pending"}]'
                     style="width:200px"
                 ></y-select>
-                <y-button style-type="filled" color="primary">
+                <y-button variant="filled" color="primary">
                     <y-icon slot="left-icon" name="funnel" size="small"></y-icon>
                     Apply
                 </y-button>

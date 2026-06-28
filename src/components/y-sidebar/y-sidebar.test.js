@@ -143,13 +143,13 @@ describe("YumeSidebar", () => {
         expect(buttons.length).to.equal(3);
     });
 
-    it("renders y-button elements with base color and flat style-type", async () => {
+    it("renders y-button elements with base color and flat variant", async () => {
         const el = await fixture(html`
             <y-sidebar .items=${sampleItems}></y-sidebar>
         `);
         const btn = el.shadowRoot.querySelector(".sidebar-body y-button");
         expect(btn.getAttribute("color")).to.equal("base");
-        expect(btn.getAttribute("style-type")).to.equal("flat");
+        expect(btn.getAttribute("variant")).to.equal("flat");
     });
 
     it("renders icon, label, and arrow on items with children", async () => {

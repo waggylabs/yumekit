@@ -22,9 +22,9 @@ function demoLayout(prefix) {
                 Click the button below to launch this story&apos;s guided tour.
             </p>
             <div style="display:flex;gap:8px">
-                <y-button id="${prefix}-create" color="primary" style-type="filled">+ New agent</y-button>
-                <y-button id="${prefix}-filter" style-type="outlined">Filter</y-button>
-                <y-button id="${prefix}-settings" style-type="outlined">Settings</y-button>
+                <y-button id="${prefix}-create" color="primary" variant="filled">+ New agent</y-button>
+                <y-button id="${prefix}-filter" variant="outlined">Filter</y-button>
+                <y-button id="${prefix}-settings" variant="outlined">Settings</y-button>
             </div>
             <div id="${prefix}-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
                 <div id="${prefix}-card-1" style="padding:16px;border:1px solid var(--base-border);border-radius:8px;background:var(--base-background-component)">Research Assistant</div>
@@ -48,7 +48,7 @@ function tourRender({ prefix, attrs = "", steps }) {
         <div style="padding:0 24px 24px">
             <y-button
                 color="primary"
-                style-type="filled"
+                variant="filled"
                 onclick="document.getElementById('${prefix}-help').start()"
             >Launch tour</y-button>
         </div>

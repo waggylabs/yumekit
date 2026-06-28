@@ -30,17 +30,17 @@ function showcase(theme, label) {
                         </div>
                     </div>
                     <div slot="footer" style="display:flex;gap:8px">
-                        <y-button color="primary" style-type="filled">Save</y-button>
-                        <y-button color="primary" style-type="outlined">Cancel</y-button>
+                        <y-button color="primary" variant="filled">Save</y-button>
+                        <y-button color="primary" variant="outlined">Cancel</y-button>
                     </div>
                 </y-card>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-                    <y-button color="primary" style-type="filled">Primary</y-button>
-                    <y-button color="secondary" style-type="filled">Secondary</y-button>
-                    <y-button color="base" style-type="filled">Base</y-button>
-                    <y-button color="success" style-type="filled">Success</y-button>
-                    <y-button color="warning" style-type="filled">Warning</y-button>
-                    <y-button color="error" style-type="filled">Error</y-button>
+                    <y-button color="primary" variant="filled">Primary</y-button>
+                    <y-button color="secondary" variant="filled">Secondary</y-button>
+                    <y-button color="base" variant="filled">Base</y-button>
+                    <y-button color="success" variant="filled">Success</y-button>
+                    <y-button color="warning" variant="filled">Warning</y-button>
+                    <y-button color="error" variant="filled">Error</y-button>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                     <y-tag color="success">Active</y-tag>

@@ -67,7 +67,7 @@ export const WithFooter = {
             </span>
             <span slot="title">MyApp</span>
             <div slot="footer">
-                <y-button color="base" style-type="flat" size="small">Sign Out</y-button>
+                <y-button color="base" variant="flat" size="small">Sign Out</y-button>
             </div>
         </y-appbar>
     `,
