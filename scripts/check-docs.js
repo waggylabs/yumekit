@@ -33,8 +33,9 @@ const AI_DOC_FILES = [
 const EXAMPLES_DIR = ".claude/skills/yumekit/examples";
 
 // Source of truth for valid icon names. Filled variants live in src/icons/filled
-// as `<name>-fill` weight variants of the same names, so the top-level basenames
-// are the canonical names a consumer passes to `name=`.
+// under the *same* basenames; it's the registry key that gets the `-fill` suffix
+// (see src/icons/all.js / all-filled.js), not the filename. So the top-level
+// basenames are the canonical names a consumer passes to `name=`.
 const ICONS_DIR = "src/icons";
 
 // Tokens that appear in icon-name positions but are schema placeholders, not
@@ -56,8 +57,20 @@ const MARKDOWN_DOCS = [
 // (the React `El<>` base type already provides them; prose treats them as
 // universal). Never drift, in either direction.
 const GLOBAL_ATTRS = new Set([
-    "hidden", "id", "title", "role", "tabindex", "draggable", "lang", "dir",
-    "class", "style", "slot", "children", "ref", "key",
+    "hidden",
+    "id",
+    "title",
+    "role",
+    "tabindex",
+    "draggable",
+    "lang",
+    "dir",
+    "class",
+    "style",
+    "slot",
+    "children",
+    "ref",
+    "key",
 ]);
 
 // Verified real attributes a component reads (form association, or via
@@ -95,21 +108,29 @@ function checkReactTypes(registered) {
         }
 
         const allowed = new Set(INTENTIONAL_EXTRAS[tag] || []);
-        const undoc = [...observed].filter((a) => !typed.has(a) && !isGlobalAttr(a));
+        const undoc = [...observed].filter(
+            (a) => !typed.has(a) && !isGlobalAttr(a),
+        );
         const extra = [...typed].filter(
             (a) => !observed.has(a) && !isGlobalAttr(a) && !allowed.has(a),
         );
 
         if (undoc.length || extra.length) {
             const parts = [];
-            if (undoc.length) parts.push(`missing in types: ${undoc.join(", ")}`);
-            if (extra.length) parts.push(`not an observed attr: ${extra.join(", ")}`);
+            if (undoc.length)
+                parts.push(`missing in types: ${undoc.join(", ")}`);
+            if (extra.length)
+                parts.push(`not an observed attr: ${extra.join(", ")}`);
             report.push(`~ ${tag}: ${parts.join(" | ")}`);
             missing += undoc.length;
         }
     }
 
-    console.log(report.length ? "react.d.ts drift:\n" : "✔ react.d.ts covers every observed attribute.");
+    console.log(
+        report.length
+            ? "react.d.ts drift:\n"
+            : "✔ react.d.ts covers every observed attribute.",
+    );
     if (report.length) console.log(report.map((r) => `  ${r}`).join("\n"));
     return missing;
 }
@@ -169,7 +190,9 @@ function topLevelKeys(block) {
 
     const keys = new Set();
     for (const segment of flat.split(/[;\n]/)) {
-        const keyMatch = segment.match(/^\s*(?:"([^"]+)"|([A-Za-z_][\w-]*))\??\s*:/);
+        const keyMatch = segment.match(
+            /^\s*(?:"([^"]+)"|([A-Za-z_][\w-]*))\??\s*:/,
+        );
         if (keyMatch) keys.add(keyMatch[1] || keyMatch[2]);
     }
     return keys;
@@ -250,7 +273,7 @@ function mdSections(text, level) {
 function aiDocFiles() {
     const files = AI_DOC_FILES.filter(existsSync);
     if (existsSync(EXAMPLES_DIR)) {
-        for (const f of readdirSync(EXAMPLES_DIR)) {
+        for (const f of readdirSync(EXAMPLES_DIR).sort()) {
             if (/\.(html|md)$/.test(f)) files.push(join(EXAMPLES_DIR, f));
         }
     }
@@ -293,8 +316,11 @@ function checkIconNames(files, validIcons) {
         for (const re of patterns) {
             for (const m of text.matchAll(re)) {
                 const name = m[1];
-                if (validIcons.has(name) || ICON_NAME_PLACEHOLDERS.has(name)) continue;
-                report.push(`✗ ${file}:${lineAt(text, m.index)} — unknown icon "${name}"`);
+                if (validIcons.has(name) || ICON_NAME_PLACEHOLDERS.has(name))
+                    continue;
+                report.push(
+                    `✗ ${file}:${lineAt(text, m.index)} — unknown icon "${name}"`,
+                );
             }
         }
     }
@@ -319,7 +345,9 @@ function checkComponentTags(files, registered) {
         const text = readFileSync(file, "utf8");
         for (const m of text.matchAll(re)) {
             if (valid.has(m[1])) continue;
-            report.push(`✗ ${file}:${lineAt(text, m.index)} — unknown component <${m[1]}>`);
+            report.push(
+                `✗ ${file}:${lineAt(text, m.index)} — unknown component <${m[1]}>`,
+            );
         }
     }
 
@@ -340,7 +368,9 @@ function collectRegistered(dir) {
     walk(dir, (file) => {
         if (!file.endsWith(".js") || file.endsWith(".test.js")) return;
         const src = readFileSync(file, "utf8");
-        for (const d of src.matchAll(/customElements\.define\(\s*["'](y-[a-z-]+)["']/g)) {
+        for (const d of src.matchAll(
+            /customElements\.define\(\s*["'](y-[a-z-]+)["']/g,
+        )) {
             map.set(d[1], observedAttrsFor(src));
         }
     });
@@ -372,7 +402,8 @@ function main() {
     const docFiles = aiDocFiles();
 
     let failures = checkReactTypes(registered);
-    for (const doc of MARKDOWN_DOCS) failures += checkMarkdownDoc(registered, doc);
+    for (const doc of MARKDOWN_DOCS)
+        failures += checkMarkdownDoc(registered, doc);
     failures += checkIconNames(docFiles, collectIconNames());
     failures += checkComponentTags(docFiles, registered);
 
