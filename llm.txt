@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 51 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.5.2
+0.5.3
 
 ## License
 MIT
@@ -1472,7 +1472,7 @@ CSS Custom Properties: `--component-dock-height`, `--component-dock-height-{smal
 
 ```html
 <y-dock
-  items='[{"name":"Home","icon":"home","href":"/","selected":true},{"name":"Search","icon":"search","href":"/search"},{"name":"Profile","icon":"settings","href":"/profile"}]'
+  items='[{"name":"Home","icon":"home","href":"/","selected":true},{"name":"Search","icon":"magnifying-glass","href":"/search"},{"name":"Profile","icon":"gear","href":"/profile"}]'
 ></y-dock>
 ```
 
@@ -1483,7 +1483,7 @@ Dropdown menu. Positioned relative to an anchor element. Items can be defined vi
 
 Tag: `<y-menu>`
 Attributes:
-- `items` — JSON string: `[{"text": "Edit", "value": "edit", "href": "...", "icon": "edit", "slot": "name", "selected": true, "children": [...]}, ...]`
+- `items` — JSON string: `[{"text": "Edit", "value": "edit", "href": "...", "icon": "pencil", "slot": "name", "selected": true, "children": [...]}, ...]`
 - `anchor` — element ID (no `#`) of the trigger element; clicking the anchor toggles the menu automatically (no manual listener needed). A disabled anchor (native `disabled`, a reflected `disabled` attribute on a custom element like `y-button`, or `aria-disabled="true"`) will not open the menu.
 - `visible` — boolean
 - `direction` — `"down"` (default) | `"up"` | `"left"` | `"right"`
@@ -1500,7 +1500,7 @@ Item object fields:
 - `text` — display text
 - `value` — value reported in the `select` event (defaults to `text`)
 - `href` — optional navigation URL
-- `icon` — icon name rendered via `<y-icon>` (e.g. `"edit"`, `"trash"`)
+- `icon` — icon name rendered via `<y-icon>` (e.g. `"pencil"`, `"trash"`)
 - `slot` — named slot in light DOM whose content replaces this item's default content
 - `selected` — boolean, highlights the active item
 - `children` — array of sub-items (nested submenu)
@@ -1818,7 +1818,7 @@ Keyboard: ArrowUp/Down move between visible items; ArrowRight expands or focuses
 ```html
 <y-tree route-match="prefix" style="width:280px">
   <y-tree-item href="/docs" expanded>
-    <y-icon slot="icon" name="book" size="small"></y-icon>
+    <y-icon slot="icon" name="folder" size="small"></y-icon>
     <span slot="label">Docs</span>
     <y-tree-item slot="children" href="/docs/install">
       <span slot="label">Installation</span>

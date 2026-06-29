@@ -18,7 +18,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   <y-appbar
     orientation="horizontal"
     sticky="start"
-    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"diagram","href":"/reports"},{"text":"Settings","icon":"gear","href":"/settings"}]'
   >
     <y-icon slot="logo" name="bolt" size="medium"></y-icon>
     <span slot="title">MyApp</span>
@@ -48,7 +48,7 @@ Common multi-component patterns. Adapt these for specific use cases.
     <y-appbar
       orientation="vertical"
       sticky="start"
-      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"diagram","href":"/reports"},{"text":"Settings","icon":"gear","href":"/settings"}]'
     >
       <y-icon slot="logo" name="bolt" size="medium"></y-icon>
       <span slot="title">MyApp</span>
