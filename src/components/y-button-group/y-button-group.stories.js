@@ -30,7 +30,7 @@ export default {
 
 export const Default = {};
 
-export const StyleTypes = {
+export const Variants = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:16px">
             <y-button-group>

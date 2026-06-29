@@ -376,7 +376,10 @@ export class YumeDatepicker extends HTMLElement {
         root.querySelectorAll(".month-btn").forEach((btn) => {
             btn.addEventListener("click", () => {
                 const vd = this._viewDateForSide(btn.dataset.side);
-                this._selectMonth(vd.getFullYear(), parseInt(btn.dataset.month));
+                this._selectMonth(
+                    vd.getFullYear(),
+                    parseInt(btn.dataset.month),
+                );
             });
         });
 
@@ -520,7 +523,7 @@ export class YumeDatepicker extends HTMLElement {
             <div class="cal-header">
                 <div class="nav-start">
                     ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" padding-mode="square" data-side="${side}" variant="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" padding-mode="square"data-side="${side}" variant="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" padding-mode="square" data-side="${side}" variant="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
                 </div>
                 <div class="header-selects">
                     ${this.showMonths ? `<y-select class="month-sel" data-side="${side}" size="small" value="${month}" options='${monthOptions}'></y-select>` : ""}
