@@ -199,7 +199,7 @@ export class YumeBanner extends HTMLElement {
                     part: "close-btn",
                     "aria-label": "Dismiss banner",
                     color,
-                    "style-type": "filled",
+                    "variant": "filled",
                     size,
                 },
                 [_el("y-icon", { name: "x", size: iconSize })],

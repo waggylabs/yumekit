@@ -106,7 +106,7 @@ class YumeDialog extends HTMLElement {
     _buildCloseButton() {
         const btn = document.createElement("y-button");
         btn.setAttribute("size", "small");
-        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("variant", "flat");
         btn.setAttribute("aria-label", "Close");
         btn.textContent = "\u2715";
         btn.addEventListener("click", () => { this.visible = false; });

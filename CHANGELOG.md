@@ -31,6 +31,16 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.3]
+
+### Changed
+
+- `y-button` and `y-tag` rename the `style-type` attribute to `variant`.
+
+### Deprecated
+
+- `y-button`'s and `y-tag`'s `style-type` attribute is deprecated in favor of `variant`; it still works (with `variant` taking precedence) but will be removed in a future major version.
+
 ## [0.5.2] - 2026-06-27
 
 ### Added

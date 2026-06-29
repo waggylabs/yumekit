@@ -158,7 +158,8 @@ Tag: `<y-button>`
 Attributes:
 - `color` — predefined scheme (`"base"` | `"primary"` | `"secondary"` | `"success"` | `"warning"` | `"error"` | `"help"`) or any CSS color (`#hex`, `rgb()`, `hsl()`)
 - `size` — `"small"` | `"medium"` (default) | `"large"`
-- `style-type` — `"outlined"` (default) | `"filled"` | `"flat"`
+- `variant` — `"outlined"` (default) | `"filled"` | `"flat"`
+- `style-type` — **deprecated** alias for `variant`; still honored (with `variant` winning if both are set) but will be removed in a future major version
 - `padding-mode` — `"auto"` (default) | `"square"` | `"wide"`. Controls whether the inline padding collapses to the block value: `auto` does so for icon-only buttons; `square` forces it (e.g. paginator number buttons); `wide` never does
 - `left-icon` — icon name (from registry)
 - `right-icon` — icon name (from registry)
@@ -176,7 +177,7 @@ Attributes:
 <y-button href="/docs" target="_blank" rel="noopener">Docs</y-button>
 ```
 
-CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material and Shadcn themes use this for wider buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets the min-height (shared with `y-input` so fields and buttons stay the same height per theme); falls back to `--sizing-{size}`. For `style-type="outlined"`, the border is sourced from the button's matching semantic border token (`--base-border`, `--primary-border`, `--error-border`, …) per `color`, falling back to the button's text color when that token is unset. `--component-button-border-width` sets the border width and is applied as the `border-width` longhand (not baked into a shorthand), so it accepts a 1–4 value pattern for per-side widths (e.g. `1px 2px` or `0 0 2px 0` for a bottom-only border); defaults to `1px`. Two optional global overrides remain: `--component-button-outline-border` overrides the border style + color as a CSS `border` shorthand (e.g. `1px solid var(--base-border)`) — note its width is superseded by `--component-button-border-width` — and `--component-button-outline-border-color` sets just the border color across resting/hover/focus/active — set either via CSS or a scoped `y-theme` to flatten all outlined borders to one color.
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` sets padding on all sides; `--component-button-padding-block-{size}` and `--component-button-padding-inline-{size}` override the vertical / horizontal axes independently and fall back to `--component-button-padding-{size}` when unset (the Material and Shadcn themes use this for wider buttons). Whether the inline axis collapses to the block value is governed by the `padding-mode` attribute above (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets the min-height (shared with `y-input` so fields and buttons stay the same height per theme); falls back to `--sizing-{size}`. For `variant="outlined"`, the border is sourced from the button's matching semantic border token (`--base-border`, `--primary-border`, `--error-border`, …) per `color`, falling back to the button's text color when that token is unset. `--component-button-border-width` sets the border width and is applied as the `border-width` longhand (not baked into a shorthand), so it accepts a 1–4 value pattern for per-side widths (e.g. `1px 2px` or `0 0 2px 0` for a bottom-only border); defaults to `1px`. Two optional global overrides remain: `--component-button-outline-border` overrides the border style + color as a CSS `border` shorthand (e.g. `1px solid var(--base-border)`) — note its width is superseded by `--component-button-border-width` — and `--component-button-outline-border-color` sets just the border color across resting/hover/focus/active — set either via CSS or a scoped `y-theme` to flatten all outlined borders to one color.
 
 ---
 
@@ -779,7 +780,8 @@ Tag: `<y-tag>`
 Attributes:
 - `color` — predefined scheme or CSS color (`#hex`, `rgb()`, `hsl()`). For `filled`, text is auto-contrasted via WCAG luminance. For `flat`, background is a 20% tint via `color-mix()`.
 - `size` — `"small"` | `"medium"` | `"large"`
-- `style-type` — `"filled"` (default) | `"outlined"` | `"flat"`
+- `variant` — `"filled"` (default) | `"outlined"` | `"flat"`
+- `style-type` — **deprecated** alias for `variant`; still honored (with `variant` winning if both are set) but will be removed in a future major version
 - `shape` — `"square"` (default) | `"round"`
 - `removable` — boolean, shows close button
 
@@ -789,8 +791,8 @@ The `flat` style uses `--{color}-background-app` as the background, so it automa
 
 ```html
 <y-tag color="primary" removable>JavaScript</y-tag>
-<y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
-<y-tag color="base" style-type="flat">Draft</y-tag>
+<y-tag color="success" variant="outlined" shape="round">Active</y-tag>
+<y-tag color="base" variant="flat">Draft</y-tag>
 ```
 
 ---
@@ -976,7 +978,7 @@ CSS Custom Properties: `--component-popover-background`, `--component-popover-co
     <strong slot="header">Confirm change</strong>
     <p>Saving will overwrite the existing layout.</p>
     <div slot="footer">
-        <y-button size="small" style-type="outlined">Cancel</y-button>
+        <y-button size="small" variant="outlined">Cancel</y-button>
         <y-button size="small" color="primary">Save</y-button>
     </div>
 </y-popover>

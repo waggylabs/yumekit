@@ -374,7 +374,7 @@ export class YumeAppbar extends HTMLElement {
             {
                 id,
                 color: "base",
-                "style-type": "flat",
+                "variant": "flat",
                 size: cfg.buttonSize,
                 "aria-label": "Open menu",
                 "aria-controls": panelId,
@@ -526,7 +526,7 @@ export class YumeAppbar extends HTMLElement {
         const btn = _el("y-button", {
             id: btnId,
             color: isActive ? "primary" : "base",
-            "style-type": "flat",
+            "variant": "flat",
             size: cfg.buttonSize,
             "aria-current": isActive ? "page" : false,
         });

@@ -149,7 +149,7 @@ export const Column = {
         <y-stack direction="column" gap="medium" style="width:300px">
             <y-input label="Name" placeholder="Enter your name"></y-input>
             <y-input label="Email" placeholder="Enter your email"></y-input>
-            <y-button color="primary" style-type="filled">Submit</y-button>
+            <y-button color="primary" variant="filled">Submit</y-button>
         </y-stack>
     `,
 };

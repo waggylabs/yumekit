@@ -1177,13 +1177,13 @@ export class YumeDataGrid extends HTMLElement {
 
         const actions = _el("div", { class: "filter-actions" });
         const clearBtn = _el("y-button", {
-            "style-type": "flat",
+            "variant": "flat",
             size: "small",
             type: "button",
         });
         clearBtn.textContent = "Clear";
         const applyBtn = _el("y-button", {
-            "style-type": "filled",
+            "variant": "filled",
             color: "primary",
             size: "small",
             type: "button",

@@ -227,7 +227,7 @@ export class YumeSidebar extends HTMLElement {
             {
                 class: "collapse-btn",
                 color: "base",
-                "style-type": "flat",
+                "variant": "flat",
                 size: cfg.buttonSize,
                 "aria-label": isCollapsed
                     ? "Expand sidebar"
@@ -275,7 +275,7 @@ export class YumeSidebar extends HTMLElement {
         const btn = _el("y-button", {
             id: btnId,
             color: isActive ? "primary" : "base",
-            "style-type": "flat",
+            "variant": "flat",
             size: cfg.buttonSize,
             "aria-current": isActive ? "page" : false,
         });

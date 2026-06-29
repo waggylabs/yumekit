@@ -139,7 +139,8 @@ When `href` is set, the internal element renders as `<a>` instead of `<button>` 
 | ------------ | -------------------------------------------------------------------------------------- |
 | `color`      | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`      |
 | `size`       | `small` \| `medium` \| `large`                                                         |
-| `style-type` | `outlined` (default) \| `filled` \| `flat`                                             |
+| `variant`    | `outlined` (default) \| `filled` \| `flat`                                             |
+| `style-type` | **deprecated** alias for `variant` (still honored; `variant` wins if both set) — removed in a future major version |
 | `padding-mode` | `auto` (default) \| `square` \| `wide` — `square` forces equal block/inline padding (e.g. paginator numbers), `wide` keeps inline padding even when icon-only, `auto` squares icon-only buttons |
 | `disabled`   | boolean                                                                                |
 | `type`       | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                 |
@@ -158,7 +159,7 @@ Slots: default (label), `left-icon`, `right-icon`
 </y-button>
 
 <!-- Link button — renders <a href="/docs"> internally -->
-<y-button href="/docs" color="primary" style-type="outlined"
+<y-button href="/docs" color="primary" variant="outlined"
     >Documentation</y-button
 >
 
@@ -167,7 +168,7 @@ Slots: default (label), `left-icon`, `right-icon`
     href="https://example.com"
     target="_blank"
     rel="noopener noreferrer"
-    style-type="flat"
+    variant="flat"
 >
     External
     <y-icon slot="right-icon" name="arrow-right" size="small"></y-icon>
@@ -177,7 +178,7 @@ Slots: default (label), `left-icon`, `right-icon`
 <y-button href="/restricted" disabled>Unavailable</y-button>
 ```
 
-CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` (all sides), and `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` to override the vertical / horizontal axes independently (fall back to `--component-button-padding-{size}`). The `padding-mode` attribute governs whether the inline axis collapses to the block value (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets min-height (shared with `y-input`; falls back to `--sizing-{size}`). For `style-type="outlined"`: the border is sourced from the button's matching semantic border token (`--base-border`, `--error-border`, …) per `color`, falling back to the text color when that token is unset. `--component-button-border-width` (applied as the `border-width` longhand, default `1px`) accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0`). Optional global overrides: `--component-button-outline-border` (border style + color as a CSS `border` shorthand; its width is superseded by `--component-button-border-width`) and `--component-button-outline-border-color` (border color across all states) — set via CSS or a scoped `y-theme`.
+CSS Custom Properties (per `small|medium|large`): `--component-button-padding-{size}` (all sides), and `--component-button-padding-block-{size}` / `--component-button-padding-inline-{size}` to override the vertical / horizontal axes independently (fall back to `--component-button-padding-{size}`). The `padding-mode` attribute governs whether the inline axis collapses to the block value (default `auto` = collapse for icon-only buttons). `--component-control-height-{size}` sets min-height (shared with `y-input`; falls back to `--sizing-{size}`). For `variant="outlined"`: the border is sourced from the button's matching semantic border token (`--base-border`, `--error-border`, …) per `color`, falling back to the text color when that token is unset. `--component-button-border-width` (applied as the `border-width` longhand, default `1px`) accepts a 1–4 value pattern for per-side widths (e.g. `0 0 2px 0`). Optional global overrides: `--component-button-outline-border` (border style + color as a CSS `border` shorthand; its width is superseded by `--component-button-border-width`) and `--component-button-outline-border-color` (border color across all states) — set via CSS or a scoped `y-theme`.
 
 ---
 
@@ -208,7 +209,7 @@ Slot: default (accepts any child elements — typically `y-button`, `y-input`, o
 <!-- Mixed: input + button (search bar) -->
 <y-button-group>
     <y-input placeholder="Search…"></y-input>
-    <y-button style-type="filled" color="primary">
+    <y-button variant="filled" color="primary">
         <y-icon slot="left-icon" name="search" size="small"></y-icon>
     </y-button>
 </y-button-group>
@@ -683,7 +684,8 @@ Slots: default (the element the badge overlays)
 | ------------ | ------------------------------------------ |
 | `color`      | color scheme name                          |
 | `size`       | `small` \| `medium` \| `large`             |
-| `style-type` | `filled` (default) \| `outlined` \| `flat` |
+| `variant`    | `filled` (default) \| `outlined` \| `flat` |
+| `style-type` | **deprecated** alias for `variant` (still honored; `variant` wins if both set) — removed in a future major version |
 | `shape`      | `square` (default) \| `round`              |
 | `removable`  | boolean — shows close button               |
 
@@ -693,8 +695,8 @@ Slot: default (label text)
 
 ```html
 <y-tag color="primary" removable>JavaScript</y-tag>
-<y-tag color="success" style-type="outlined" shape="round">Active</y-tag>
-<y-tag color="base" style-type="flat">Draft</y-tag>
+<y-tag color="success" variant="outlined" shape="round">Active</y-tag>
+<y-tag color="base" variant="flat">Draft</y-tag>
 ```
 
 ---
@@ -769,7 +771,7 @@ Slot: default (trigger element)
 
 ```html
 <y-tooltip text="Remove this item" position="top">
-    <y-button color="error" style-type="flat"
+    <y-button color="error" variant="flat"
         ><y-icon name="trash"></y-icon
     ></y-button>
 </y-tooltip>
@@ -973,8 +975,8 @@ Slots: `header`, `body`, `footer` — **named slots only**; content without a `s
 <y-drawer id="nav-drawer" position="left" anchor="open-nav-btn">
     <strong slot="header">Navigation</strong>
     <nav slot="body">
-        <y-button style-type="flat">Dashboard</y-button>
-        <y-button style-type="flat">Settings</y-button>
+        <y-button variant="flat">Dashboard</y-button>
+        <y-button variant="flat">Settings</y-button>
     </nav>
 </y-drawer>
 
@@ -1163,7 +1165,7 @@ Slots: `header`, `body`, `footer` — **named slots only**; content without a `s
 <y-dialog id="confirm-dialog">
     <span slot="header">Confirm Delete</span>
     <p slot="body">This action cannot be undone.</p>
-    <y-button slot="footer" style-type="outlined">Cancel</y-button>
+    <y-button slot="footer" variant="outlined">Cancel</y-button>
     <y-button slot="footer" color="error">Delete</y-button>
 </y-dialog>
 
@@ -1219,7 +1221,7 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
     <y-button
         slot="create-action"
         color="primary"
-        style-type="filled"
+        variant="filled"
         size="small"
         left-icon="plus"
         >Create</y-button
@@ -1851,7 +1853,7 @@ Accessibility: non-modal uses `role="tooltip"`; modal uses `role="dialog"` + `ar
     <strong slot="header">Confirm change</strong>
     <p>Saving will overwrite the existing layout.</p>
     <div slot="footer">
-        <y-button size="small" style-type="outlined">Cancel</y-button>
+        <y-button size="small" variant="outlined">Cancel</y-button>
         <y-button size="small" color="primary">Save</y-button>
     </div>
 </y-popover>

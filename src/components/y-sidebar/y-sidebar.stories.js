@@ -80,7 +80,7 @@ export const WithFooter = {
                 </span>
                 <span slot="title">MyApp</span>
                 <div slot="footer">
-                    <y-button color="base" style-type="flat">
+                    <y-button color="base" variant="flat">
                         <y-icon slot="left-icon" name="user" size="medium"></y-icon>
                         Profile
                     </y-button>
