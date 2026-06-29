@@ -128,7 +128,10 @@ export class YumeTextarea extends HTMLElement {
             : "default";
     }
     set variant(val) {
-        this.setAttribute("variant", val === "underline" ? "underline" : "default");
+        this.setAttribute(
+            "variant",
+            val === "underline" ? "underline" : "default",
+        );
     }
 
     /** @type {string} The current textarea value. */
@@ -185,6 +188,13 @@ export class YumeTextarea extends HTMLElement {
     // -------------------------------------------------------------------------
 
     _bindTextareaListeners() {
+        this.inputContainer.addEventListener("mousedown", (e) => {
+            if (e.target !== this.textarea) {
+                e.preventDefault();
+                this.textarea.focus();
+            }
+        });
+
         this.textarea.addEventListener("input", (e) => {
             this.setAttribute("value", e.target.value);
             this._internals.setFormValue(

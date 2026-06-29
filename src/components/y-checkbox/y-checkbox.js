@@ -146,8 +146,14 @@ export class YumeCheckbox extends HTMLElement {
     // -------------------------------------------------------------------------
 
     _bindCheckboxListeners() {
+        const wrapper = this.shadowRoot.querySelector(".wrapper");
         const box = this.shadowRoot.querySelector(".checkbox");
-        box.addEventListener("click", () => this.toggle());
+
+        wrapper.addEventListener("click", () => {
+            if (this.disabled) return;
+            box.focus();
+            this.toggle();
+        });
         box.addEventListener("keydown", (e) => {
             if (e.key === " " || e.key === "Enter") {
                 e.preventDefault();

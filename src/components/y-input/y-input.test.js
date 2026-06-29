@@ -28,6 +28,36 @@ describe("<y-input>", () => {
         expect(cs.borderBottomLeftRadius).to.equal("0px");
     });
 
+    it("focuses the input when the container padding is clicked", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const container = el.shadowRoot.querySelector(".input-container");
+
+        container.dispatchEvent(
+            new MouseEvent("mousedown", { bubbles: true, cancelable: true })
+        );
+
+        expect(el.shadowRoot.activeElement).to.equal(input);
+    });
+
+    it("focuses the input when an icon slot area is clicked", async () => {
+        const el = await fixture(
+            html`<y-input><span slot="left-icon">x</span></y-input>`
+        );
+        const input = el.shadowRoot.querySelector("input");
+        const icon = el.querySelector('[slot="left-icon"]');
+
+        icon.dispatchEvent(
+            new MouseEvent("mousedown", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            })
+        );
+
+        expect(el.shadowRoot.activeElement).to.equal(input);
+    });
+
     it("renders correctly with default props", async () => {
         const el = await fixture(
             html`<y-input><span slot="label">Name</span></y-input>`
