@@ -210,7 +210,7 @@ Slot: default (accepts any child elements — typically `y-button`, `y-input`, o
 <y-button-group>
     <y-input placeholder="Search…"></y-input>
     <y-button variant="filled" color="primary">
-        <y-icon slot="left-icon" name="search" size="small"></y-icon>
+        <y-icon slot="left-icon" name="magnifying-glass" size="small"></y-icon>
     </y-button>
 </y-button-group>
 ```
@@ -1211,12 +1211,12 @@ Fixed navigation bar (dock) for primary app navigation. Displays icon+label item
 ```html
 <!-- Basic bottom dock -->
 <y-dock
-    items='[{"name":"Home","icon":"home","href":"/","selected":true},{"name":"Search","icon":"search","href":"/search"},{"name":"Profile","icon":"settings","href":"/profile"}]'
+    items='[{"name":"Home","icon":"home","href":"/","selected":true},{"name":"Search","icon":"magnifying-glass","href":"/search"},{"name":"Profile","icon":"gear","href":"/profile"}]'
 ></y-dock>
 
 <!-- Per-item custom slot template -->
 <y-dock
-    items='[{"name":"Home","icon":"home","href":"/"},{"name":"Create","icon":"plus","slot":"create-action"},{"name":"Profile","icon":"settings","href":"/profile"}]'
+    items='[{"name":"Home","icon":"home","href":"/"},{"name":"Create","icon":"plus","slot":"create-action"},{"name":"Profile","icon":"gear","href":"/profile"}]'
 >
     <y-button
         slot="create-action"
@@ -1730,7 +1730,7 @@ CSS Parts: `tree`
 ```html
 <y-tree route-match="prefix" style="width:280px">
     <y-tree-item href="/docs" expanded>
-        <y-icon slot="icon" name="book" size="small"></y-icon>
+        <y-icon slot="icon" name="folder" size="small"></y-icon>
         <span slot="label">Docs</span>
         <y-tree-item slot="children" href="/docs/install">
             <span slot="label">Installation</span>

@@ -5,6 +5,11 @@
 //     and typed keys that aren't observed attributes (stale / property-only).
 //   • llm.txt / reference.md: observed attrs not mentioned in the component's
 //     `### y-foo` section.
+//   • icon names: every icon referenced in the AI docs (`<y-icon name="…">`,
+//     `left-icon` / `right-icon` / `icon="…"` attrs, JSON `"icon": "…"`) must
+//     resolve to a real bundled icon (an `src/icons/*.svg` basename).
+//   • component tags: every `<y-foo>` used in the AI docs must be a registered
+//     custom element (catches renamed / removed components).
 // These are coverage signals, not generators: attribute *types* and prose
 // descriptions are hand-authored and can't be derived from the source.
 //
@@ -16,6 +21,29 @@ import { join } from "path";
 
 const CHECK = process.argv.includes("--check");
 const DTS = "src/react.d.ts";
+
+// AI-facing doc files scanned for icon-name and component-tag drift (a superset
+// of MARKDOWN_DOCS, which only covers attribute prose in llm.txt + reference.md).
+const AI_DOC_FILES = [
+    "llm.txt",
+    ".claude/skills/yumekit/reference.md",
+    ".claude/skills/yumekit/patterns.md",
+    ".claude/skills/yumekit/SKILL.md",
+];
+const EXAMPLES_DIR = ".claude/skills/yumekit/examples";
+
+// Source of truth for valid icon names. Filled variants live in src/icons/filled
+// as `<name>-fill` weight variants of the same names, so the top-level basenames
+// are the canonical names a consumer passes to `name=`.
+const ICONS_DIR = "src/icons";
+
+// Tokens that appear in icon-name positions but are schema placeholders, not
+// real icons (e.g. `"icon": "icon-name"` in an attribute JSON example).
+const ICON_NAME_PLACEHOLDERS = new Set(["icon-name"]);
+
+// y-* tags documented as authoring/future API that have no registered element
+// yet (e.g. declarative `<y-help-step>` children, planned for a future release).
+const PLANNED_TAGS = new Set(["y-help-step"]);
 
 // Hand-authored markdown API docs that list attributes per `<heading> y-foo`
 // section. Each is coverage-checked against observedAttributes.
@@ -216,6 +244,94 @@ function mdSections(text, level) {
     return out;
 }
 
+// ---------- icon-name & component-tag drift ----------
+
+// The AI doc files that exist, including every example under EXAMPLES_DIR.
+function aiDocFiles() {
+    const files = AI_DOC_FILES.filter(existsSync);
+    if (existsSync(EXAMPLES_DIR)) {
+        for (const f of readdirSync(EXAMPLES_DIR)) {
+            if (/\.(html|md)$/.test(f)) files.push(join(EXAMPLES_DIR, f));
+        }
+    }
+    return files;
+}
+
+// Set of valid icon names: the basename of every top-level src/icons/*.svg.
+function collectIconNames(dir = ICONS_DIR) {
+    const names = new Set();
+    if (!existsSync(dir)) return names;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.endsWith(".svg")) {
+            names.add(entry.name.slice(0, -4));
+        }
+    }
+    return names;
+}
+
+// 1-based line number of a character offset within text.
+function lineAt(text, index) {
+    let line = 1;
+    for (let i = 0; i < index && i < text.length; i++) {
+        if (text[i] === "\n") line += 1;
+    }
+    return line;
+}
+
+// Reports every icon referenced in the AI docs that isn't a real bundled icon.
+// Returns the count of bad references (the --check failure signal).
+function checkIconNames(files, validIcons) {
+    const patterns = [
+        /\b(?:left-icon|right-icon|icon)="([a-z][a-z0-9-]*)"/g,
+        /<y-icon\b[^>]*?\bname="([a-z][a-z0-9-]*)"/g,
+        /"icon"\s*:\s*"([a-z][a-z0-9-]*)"/g,
+    ];
+
+    const report = [];
+    for (const file of files) {
+        const text = readFileSync(file, "utf8");
+        for (const re of patterns) {
+            for (const m of text.matchAll(re)) {
+                const name = m[1];
+                if (validIcons.has(name) || ICON_NAME_PLACEHOLDERS.has(name)) continue;
+                report.push(`✗ ${file}:${lineAt(text, m.index)} — unknown icon "${name}"`);
+            }
+        }
+    }
+
+    console.log(
+        report.length
+            ? "\nicon name drift:\n"
+            : `\n✔ AI docs reference only bundled icons (${validIcons.size} available).`,
+    );
+    if (report.length) console.log(report.map((r) => `  ${r}`).join("\n"));
+    return report.length;
+}
+
+// Reports every `<y-foo>` tag in the AI docs that isn't a registered element.
+// Returns the count of bad references.
+function checkComponentTags(files, registered) {
+    const valid = new Set([...registered.keys(), ...PLANNED_TAGS]);
+    const re = /<(y-[a-z]+(?:-[a-z]+)*)\b/g;
+
+    const report = [];
+    for (const file of files) {
+        const text = readFileSync(file, "utf8");
+        for (const m of text.matchAll(re)) {
+            if (valid.has(m[1])) continue;
+            report.push(`✗ ${file}:${lineAt(text, m.index)} — unknown component <${m[1]}>`);
+        }
+    }
+
+    console.log(
+        report.length
+            ? "\ncomponent tag drift:\n"
+            : "\n✔ AI docs reference only registered components.",
+    );
+    if (report.length) console.log(report.map((r) => `  ${r}`).join("\n"));
+    return report.length;
+}
+
 // ---------- component sources ----------
 
 // Map of tag -> Set(observedAttributes) for every registered y-* element.
@@ -253,9 +369,12 @@ function walk(dir, onFile) {
 
 function main() {
     const registered = collectRegistered("src/components");
+    const docFiles = aiDocFiles();
 
     let failures = checkReactTypes(registered);
     for (const doc of MARKDOWN_DOCS) failures += checkMarkdownDoc(registered, doc);
+    failures += checkIconNames(docFiles, collectIconNames());
+    failures += checkComponentTags(docFiles, registered);
 
     console.log(`\n${registered.size} registered elements checked.`);
 
