@@ -23,6 +23,13 @@ describe("<y-checkbox>", () => {
         expect(el.checked).to.be.false;
     });
 
+    it("toggles checked state when the label is clicked", async () => {
+        const el = await fixture(html`<y-checkbox>Label</y-checkbox>`);
+        const label = el.shadowRoot.querySelector('[part="label"]');
+        label.click();
+        expect(el.checked).to.be.true;
+    });
+
     it("emits change event when toggled", async () => {
         const el = await fixture(html`<y-checkbox>Label</y-checkbox>`);
         const box = el.shadowRoot.querySelector(".checkbox");
