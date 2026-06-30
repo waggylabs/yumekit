@@ -110,11 +110,11 @@ export const WithAction = {
         <div style="display:flex;flex-direction:column;gap:8px">
             <y-banner color="primary" icon="circle-info" dismissable>
                 A new version is available.
-                <y-button slot="action" size="small" color="primary" style-type="filled">Update now</y-button>
+                <y-button slot="action" size="small" color="primary" variant="filled">Update now</y-button>
             </y-banner>
             <y-banner color="warning" icon="warning">
                 Your trial expires in 3 days.
-                <y-button slot="action" size="small" color="warning" style-type="outlined">Upgrade</y-button>
+                <y-button slot="action" size="small" color="warning" variant="outlined">Upgrade</y-button>
             </y-banner>
         </div>
     `,

@@ -3,7 +3,7 @@ import { contrastTextColor, isSafeCssColor } from "../../modules/helpers.js";
 
 export class YumeTag extends HTMLElement {
     static get observedAttributes() {
-        return ["removable", "color", "style-type", "shape", "size"];
+        return ["removable", "color", "variant", "style-type", "shape", "size"];
     }
 
     // -------------------------------------------------------------------------
@@ -21,6 +21,10 @@ export class YumeTag extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
+        if (name === "style-type" && newValue !== null) {
+            this._warnStyleTypeDeprecated();
+        }
+
         if (oldValue !== newValue) this.render();
     }
 
@@ -61,12 +65,27 @@ export class YumeTag extends HTMLElement {
         this.setAttribute("size", val);
     }
 
-    /** Visual style: "filled" | "outlined" | "flat" (default "filled"). */
+    /**
+     * Deprecated alias for `variant`. Use `variant` instead; retained for
+     * backward compatibility and removed in a future major version.
+     */
     get styleType() {
-        return this.getAttribute("style-type") || "filled";
+        return this.variant;
     }
     set styleType(val) {
         this.setAttribute("style-type", val);
+    }
+
+    /** Visual style: "filled" (default) | "outlined" | "flat". */
+    get variant() {
+        return (
+            this.getAttribute("variant") ||
+            this.getAttribute("style-type") ||
+            "filled"
+        );
+    }
+    set variant(val) {
+        this.setAttribute("variant", val);
     }
 
     // -------------------------------------------------------------------------
@@ -103,7 +122,7 @@ export class YumeTag extends HTMLElement {
             });
     }
 
-    _getCustomColorVariant(color, styleType) {
+    _getCustomColorVariant(color, variant) {
         const textColor = contrastTextColor(color);
         const variants = {
             filled: `
@@ -119,11 +138,11 @@ export class YumeTag extends HTMLElement {
                 .remove { color: ${color}; }
             `,
         };
-        return variants[styleType] || variants.filled;
+        return variants[variant] || variants.filled;
     }
 
     _getStyle() {
-        const { color, styleType, shape, size } = this;
+        const { color, variant, shape, size } = this;
 
         const vars = {
             primary: [
@@ -225,7 +244,7 @@ export class YumeTag extends HTMLElement {
         `;
 
         if (isCustomColor)
-            return baseStyle + this._getCustomColorVariant(color, styleType);
+            return baseStyle + this._getCustomColorVariant(color, variant);
 
         const [content, inverse, flatBackground] = varEntry || vars.base;
 
@@ -244,7 +263,16 @@ export class YumeTag extends HTMLElement {
             `,
         };
 
-        return baseStyle + (styleVariants[styleType] || styleVariants.filled);
+        return baseStyle + (styleVariants[variant] || styleVariants.filled);
+    }
+
+    _warnStyleTypeDeprecated() {
+        if (YumeTag._styleTypeDeprecationWarned) return;
+
+        YumeTag._styleTypeDeprecationWarned = true;
+        console.warn(
+            'y-tag: the "style-type" attribute is deprecated and will be removed in a future major version. Use "variant" instead.',
+        );
     }
 }
 

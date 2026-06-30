@@ -1006,7 +1006,7 @@ export class YumeSelect extends HTMLElement {
             tag.setAttribute("removable", "");
             tag.setAttribute("size", "small");
             tag.setAttribute("color", opt.color || "primary");
-            tag.setAttribute("style-type", "filled");
+            tag.setAttribute("variant", "filled");
             tag.textContent = opt.label;
             tag.dataset.value = opt.value;
 

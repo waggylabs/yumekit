@@ -90,13 +90,13 @@ describe("YumeAppbar", () => {
         expect(navSlot.assignedElements().length).to.equal(1);
     });
 
-    it("renders y-button elements with color and style-type", async () => {
+    it("renders y-button elements with color and variant", async () => {
         const el = await fixture(html`
             <y-appbar .items=${sampleItems}></y-appbar>
         `);
         const btn = el.shadowRoot.querySelector(".appbar-body y-button");
         expect(btn.getAttribute("color")).to.equal("base");
-        expect(btn.getAttribute("style-type")).to.equal("flat");
+        expect(btn.getAttribute("variant")).to.equal("flat");
     });
 
     it("renders icon, label, and arrow on items with children", async () => {

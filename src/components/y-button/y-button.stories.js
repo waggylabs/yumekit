@@ -25,7 +25,7 @@ export default {
             description: "Color theme for the button.",
             table: { defaultValue: { summary: "base" } },
         },
-        styleType: {
+        variant: {
             control: "select",
             options: ["outlined", "filled", "flat"],
             description: "Visual style variant.",
@@ -59,7 +59,7 @@ export default {
     args: {
         label: "Button",
         color: "primary",
-        styleType: "outlined",
+        variant: "outlined",
         size: "medium",
         paddingMode: "auto",
         disabled: false,
@@ -68,7 +68,7 @@ export default {
     render: ({
         label,
         color,
-        styleType,
+        variant,
         size,
         paddingMode,
         disabled,
@@ -76,7 +76,7 @@ export default {
     }) => `
         <y-button
             color="${color}"
-            style-type="${styleType}"
+            variant="${variant}"
             size="${size}"
             padding-mode="${paddingMode}"
             type="${type}"
@@ -87,12 +87,12 @@ export default {
 
 export const Default = {};
 
-export const StyleTypes = {
+export const Variants = {
     render: () => `
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-            <y-button color="primary" style-type="outlined">Outlined</y-button>
-            <y-button color="primary" style-type="filled">Filled</y-button>
-            <y-button color="primary" style-type="flat">Flat</y-button>
+            <y-button color="primary" variant="outlined">Outlined</y-button>
+            <y-button color="primary" variant="filled">Filled</y-button>
+            <y-button color="primary" variant="flat">Flat</y-button>
         </div>
     `,
 };
@@ -116,19 +116,19 @@ export const CustomColors = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:12px">
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <y-button color="#7c3aed" style-type="outlined">Outlined #7c3aed</y-button>
-                <y-button color="#7c3aed" style-type="filled">Filled #7c3aed</y-button>
-                <y-button color="#7c3aed" style-type="flat">Flat #7c3aed</y-button>
+                <y-button color="#7c3aed" variant="outlined">Outlined #7c3aed</y-button>
+                <y-button color="#7c3aed" variant="filled">Filled #7c3aed</y-button>
+                <y-button color="#7c3aed" variant="flat">Flat #7c3aed</y-button>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <y-button color="rgb(13 148 136)" style-type="outlined">Outlined rgb()</y-button>
-                <y-button color="rgb(13 148 136)" style-type="filled">Filled rgb()</y-button>
-                <y-button color="rgb(13 148 136)" style-type="flat">Flat rgb()</y-button>
+                <y-button color="rgb(13 148 136)" variant="outlined">Outlined rgb()</y-button>
+                <y-button color="rgb(13 148 136)" variant="filled">Filled rgb()</y-button>
+                <y-button color="rgb(13 148 136)" variant="flat">Flat rgb()</y-button>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <y-button color="oklch(0.7 0.18 25)" style-type="outlined">Outlined oklch()</y-button>
-                <y-button color="oklch(0.7 0.18 25)" style-type="filled">Filled oklch()</y-button>
-                <y-button color="oklch(0.7 0.18 25)" style-type="flat">Flat oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" variant="outlined">Outlined oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" variant="filled">Filled oklch()</y-button>
+                <y-button color="oklch(0.7 0.18 25)" variant="flat">Flat oklch()</y-button>
             </div>
         </div>
     `,
@@ -169,12 +169,12 @@ export const PaddingMode = {
     render: () => `
         <y-theme theme="material-blue-light" style="display:block">
             <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px">
-                <y-button color="primary" style-type="filled">Auto (label)</y-button>
-                <y-button color="primary" style-type="filled">
+                <y-button color="primary" variant="filled">Auto (label)</y-button>
+                <y-button color="primary" variant="filled">
                     <y-icon slot="left-icon" name="check" size="small"></y-icon>
                 </y-button>
-                <y-button color="primary" style-type="filled" padding-mode="square">5</y-button>
-                <y-button color="primary" style-type="filled" padding-mode="wide">
+                <y-button color="primary" variant="filled" padding-mode="square">5</y-button>
+                <y-button color="primary" variant="filled" padding-mode="wide">
                     <y-icon slot="left-icon" name="check" size="small"></y-icon>
                     Wide icon
                 </y-button>
@@ -191,10 +191,10 @@ export const AsLink = {
     name: "As Link (href)",
     render: () => `
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-            <y-button href="/docs" color="primary" style-type="outlined">Internal Link</y-button>
-            <y-button href="/docs" color="primary" style-type="filled">Filled Link</y-button>
-            <y-button href="/docs" color="primary" style-type="flat">Flat Link</y-button>
-            <y-button href="https://example.com" target="_blank" rel="noopener noreferrer" color="base" style-type="outlined">
+            <y-button href="/docs" color="primary" variant="outlined">Internal Link</y-button>
+            <y-button href="/docs" color="primary" variant="filled">Filled Link</y-button>
+            <y-button href="/docs" color="primary" variant="flat">Flat Link</y-button>
+            <y-button href="https://example.com" target="_blank" rel="noopener noreferrer" color="base" variant="outlined">
                 External
                 <y-icon slot="right-icon" name="arrow-right" size="small"></y-icon>
             </y-button>

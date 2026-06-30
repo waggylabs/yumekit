@@ -59,7 +59,7 @@ export default {
                 </div>
                 <div slot="footer">
                     <y-button id="dialog-cancel" color="base">Cancel</y-button>
-                    <y-button color="primary" style-type="filled">Confirm</y-button>
+                    <y-button color="primary" variant="filled">Confirm</y-button>
                 </div>
             </y-dialog>
         </div>

@@ -18,7 +18,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   <y-appbar
     orientation="horizontal"
     sticky="start"
-    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"diagram","href":"/reports"},{"text":"Settings","icon":"gear","href":"/settings"}]'
   >
     <y-icon slot="logo" name="bolt" size="medium"></y-icon>
     <span slot="title">MyApp</span>
@@ -48,7 +48,7 @@ Common multi-component patterns. Adapt these for specific use cases.
     <y-appbar
       orientation="vertical"
       sticky="start"
-      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"diagram","href":"/reports"},{"text":"Settings","icon":"gear","href":"/settings"}]'
     >
       <y-icon slot="logo" name="bolt" size="medium"></y-icon>
       <span slot="title">MyApp</span>
@@ -85,7 +85,7 @@ Common multi-component patterns. Adapt these for specific use cases.
         <y-button type="submit" color="primary">Sign In</y-button>
       </form>
 
-      <y-button slot="footer" style-type="flat">Forgot password?</y-button>
+      <y-button slot="footer" variant="flat">Forgot password?</y-button>
     </y-card>
   </div>
 
@@ -128,7 +128,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   <y-dialog id="delete-dialog" persistent>
     <span slot="header">Confirm Delete</span>
     <p>This action cannot be undone. Are you sure?</p>
-    <y-button slot="footer" id="cancel-btn" style-type="outlined">Cancel</y-button>
+    <y-button slot="footer" id="cancel-btn" variant="outlined">Cancel</y-button>
     <y-button slot="footer" id="confirm-btn" color="error">Delete</y-button>
   </y-dialog>
 
@@ -186,13 +186,13 @@ Common multi-component patterns. Adapt these for specific use cases.
 
       <y-panel label="Danger Zone">
         <div style="padding:1rem 0;">
-          <y-button color="error" style-type="outlined">Delete Account</y-button>
+          <y-button color="error" variant="outlined">Delete Account</y-button>
         </div>
       </y-panel>
     </y-panelbar>
 
     <div style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
-      <y-button style-type="outlined">Cancel</y-button>
+      <y-button variant="outlined">Cancel</y-button>
       <y-button type="submit" color="primary">Save Changes</y-button>
     </div>
   </form>
@@ -256,7 +256,7 @@ function confirmAction(message) {
     dialog.innerHTML = `
       <span slot="header">Confirm</span>
       <p>${message}</p>
-      <y-button slot="footer" id="cancel" style-type="outlined">Cancel</y-button>
+      <y-button slot="footer" id="cancel" variant="outlined">Cancel</y-button>
       <y-button slot="footer" id="confirm" color="primary">Confirm</y-button>
     `;
     document.body.appendChild(dialog);

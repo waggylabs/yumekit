@@ -80,9 +80,9 @@ export const Floating = {
 export const WithDirectChildren = {
     render: () => `
         <y-dock style="position:relative;">
-            <y-button style-type="flat" size="small" left-icon="home">Home</y-button>
-            <y-button style-type="flat" size="small" left-icon="magnifying-glass">Search</y-button>
-            <y-button style-type="flat" size="small" left-icon="gear">Settings</y-button>
+            <y-button variant="flat" size="small" left-icon="home">Home</y-button>
+            <y-button variant="flat" size="small" left-icon="magnifying-glass">Search</y-button>
+            <y-button variant="flat" size="small" left-icon="gear">Settings</y-button>
         </y-dock>
     `,
 };
@@ -103,7 +103,7 @@ export const WithSlotTemplate = {
                 items='${JSON.stringify(items)}'
                 style="position:relative;"
             >
-                <y-button slot="create-action" color="primary" style-type="filled" size="small" left-icon="plus">
+                <y-button slot="create-action" color="primary" variant="filled" size="small" left-icon="plus">
                     Create
                 </y-button>
             </y-dock>
