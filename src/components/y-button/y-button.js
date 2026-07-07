@@ -7,6 +7,7 @@ export class YumeButton extends HTMLElement {
             "right-icon",
             "color",
             "size",
+            "variant",
             "style-type",
             "type",
             "padding-mode",
@@ -59,9 +60,13 @@ export class YumeButton extends HTMLElement {
             }
         }
 
+        if (name === "style-type" && newValue !== null) {
+            this._warnStyleTypeDeprecated();
+        }
+
         this._init();
 
-        if (["color", "size", "style-type", "disabled"].includes(name)) {
+        if (["color", "size", "variant", "style-type", "disabled"].includes(name)) {
             this._updateStyles();
         }
     }
@@ -143,9 +148,12 @@ export class YumeButton extends HTMLElement {
         this.setAttribute("size", val);
     }
 
-    /** Visual style: "filled" | "outlined" | "flat" (default "outlined"). */
+    /**
+     * Deprecated alias for `variant`. Use `variant` instead; retained for
+     * backward compatibility and removed in a future major version.
+     */
     get styleType() {
-        return this.getAttribute("style-type") || "outlined";
+        return this.variant;
     }
     set styleType(val) {
         this.setAttribute("style-type", val);
@@ -186,6 +194,18 @@ export class YumeButton extends HTMLElement {
             }
         }
         this.setAttribute("value", newVal);
+    }
+
+    /** Visual style: "filled" | "outlined" | "flat" (default "outlined"). */
+    get variant() {
+        return (
+            this.getAttribute("variant") ||
+            this.getAttribute("style-type") ||
+            "outlined"
+        );
+    }
+    set variant(val) {
+        this.setAttribute("variant", val);
     }
 
     // -------------------------------------------------------------------------
@@ -242,7 +262,7 @@ export class YumeButton extends HTMLElement {
         });
     }
 
-    _applyCustomColorStyles(color, styleType, size) {
+    _applyCustomColorStyles(color, variant, size) {
         const text = contrastTextColor(color);
         const hover = `color-mix(in srgb, ${color} 85%, black)`;
         const active = `color-mix(in srgb, ${color} 70%, black)`;
@@ -298,7 +318,7 @@ export class YumeButton extends HTMLElement {
             },
         };
 
-        Object.entries(styles[styleType] || styles.outlined).forEach(
+        Object.entries(styles[variant] || styles.outlined).forEach(
             ([key, val]) => this.button.style.setProperty(key, val),
         );
 
@@ -344,11 +364,11 @@ export class YumeButton extends HTMLElement {
         );
     }
 
-    _applyInteractionStyles(vars, styleType) {
-        if (styleType === "filled") {
+    _applyInteractionStyles(vars, variant) {
+        if (variant === "filled") {
             this._applyFilledInteractionStyles(vars);
         } else {
-            this._applyUnfilledInteractionStyles(vars, styleType);
+            this._applyUnfilledInteractionStyles(vars, variant);
         }
     }
 
@@ -473,7 +493,7 @@ export class YumeButton extends HTMLElement {
         this.shadowRoot.appendChild(style);
     }
 
-    _applyUnfilledInteractionStyles(vars, styleType) {
+    _applyUnfilledInteractionStyles(vars, variant) {
         const borderColor = this._outlineBorderColor(
             `var(${vars[7]}, var(${vars[0]}, #f7f7fa))`,
         );
@@ -503,7 +523,7 @@ export class YumeButton extends HTMLElement {
             `var(${vars[6]}, #0c0c0d)`,
         );
 
-        if (styleType === "outlined") {
+        if (variant === "outlined") {
             // Outlined buttons keep their border color across all states
             this.button.style.setProperty("--hover-border-color", borderColor);
             this.button.style.setProperty("--focus-border-color", borderColor);
@@ -791,11 +811,11 @@ export class YumeButton extends HTMLElement {
     }
 
     _updateStyles() {
-        const { color, size, styleType } = this;
+        const { color, size, variant } = this;
         const colorVars = this._getColorVarsMap();
 
         if (!colorVars[color] && isSafeCssColor(color)) {
-            this._applyCustomColorStyles(color, styleType, size);
+            this._applyCustomColorStyles(color, variant, size);
             return;
         }
 
@@ -824,13 +844,22 @@ export class YumeButton extends HTMLElement {
             },
         };
 
-        const currentStyle = styleVars[styleType] || styleVars.outlined;
+        const currentStyle = styleVars[variant] || styleVars.outlined;
         Object.entries(currentStyle).forEach(([key, value]) => {
             this.button.style.setProperty(key, value);
         });
 
-        this._applyInteractionStyles(vars, styleType);
+        this._applyInteractionStyles(vars, variant);
         this._applySizeStyles(size);
+    }
+
+    _warnStyleTypeDeprecated() {
+        if (YumeButton._styleTypeDeprecationWarned) return;
+
+        YumeButton._styleTypeDeprecationWarned = true;
+        console.warn(
+            'y-button: the "style-type" attribute is deprecated and will be removed in a future major version. Use "variant" instead.',
+        );
     }
 }
 

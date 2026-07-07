@@ -31,6 +31,20 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.3]
+
+### Changed
+
+- `y-button` and `y-tag` rename the `style-type` attribute to `variant`.
+
+### Deprecated
+
+- `y-button`'s and `y-tag`'s `style-type` attribute is deprecated in favor of `variant`; it still works (with `variant` taking precedence) but will be removed in a future major version.
+
+### Fixed
+
+- `y-input`, `y-textarea`, and `y-checkbox` now respond to clicks across their full interactive area. Clicking anywhere in a `y-input`/`y-textarea` (padding and icon slots included) focuses the field, and clicking a `y-checkbox`'s label toggles it, matching the existing hover affordance and `y-radio`'s label behavior.
+
 ## [0.5.2] - 2026-06-27
 
 ### Added

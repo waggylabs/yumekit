@@ -74,13 +74,13 @@ describe("YumePaginator", () => {
         expect(buttons[4].textContent.trim()).to.equal("5");
     });
 
-    it("renders page buttons as <y-button> with style-type=flat", async () => {
+    it("renders page buttons as <y-button> with variant=flat", async () => {
         const el = await fixture(html`<y-paginator total-pages="5"></y-paginator>`);
         const inactive = el.shadowRoot.querySelector(
             '.button:not(.active)',
         );
         expect(inactive.tagName).to.equal("Y-BUTTON");
-        expect(inactive.getAttribute("style-type")).to.equal("flat");
+        expect(inactive.getAttribute("variant")).to.equal("flat");
     });
 
     it("renders the active page as filled primary y-button", async () => {
@@ -89,7 +89,7 @@ describe("YumePaginator", () => {
         );
         const active = el.shadowRoot.querySelector('[aria-current="page"]');
         expect(active.tagName).to.equal("Y-BUTTON");
-        expect(active.getAttribute("style-type")).to.equal("filled");
+        expect(active.getAttribute("variant")).to.equal("filled");
         expect(active.getAttribute("color")).to.equal("primary");
         expect(active.textContent.trim()).to.equal("3");
     });

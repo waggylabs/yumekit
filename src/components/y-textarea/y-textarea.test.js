@@ -12,6 +12,18 @@ describe("YumeTextarea", () => {
         expect(cs.borderBottomLeftRadius).to.equal("0px");
     });
 
+    it("focuses the textarea when the container padding is clicked", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        const textarea = el.shadowRoot.querySelector("textarea");
+        const container = el.shadowRoot.querySelector(".input-container");
+
+        container.dispatchEvent(
+            new MouseEvent("mousedown", { bubbles: true, cancelable: true })
+        );
+
+        expect(el.shadowRoot.activeElement).to.equal(textarea);
+    });
+
     // ── Structure ─────────────────────────────────────────────
     it("renders a textarea element, not an input", async () => {
         const el = await fixture(html`<y-textarea></y-textarea>`);

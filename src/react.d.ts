@@ -98,6 +98,8 @@ declare module "react" {
                 "right-icon"?: string;
                 color?: string;
                 size?: "small" | "medium" | "large";
+                variant?: "outlined" | "filled" | "flat";
+                /** @deprecated Use `variant` instead. */
                 "style-type"?: "outlined" | "filled" | "flat";
                 "padding-mode"?: "auto" | "square" | "wide";
                 type?: string;
@@ -724,6 +726,8 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 removable?: boolean | string;
+                variant?: "filled" | "outlined" | "flat";
+                /** @deprecated Use `variant` instead. */
                 "style-type"?: "filled" | "outlined" | "flat";
                 shape?: "square" | "round";
             }>;

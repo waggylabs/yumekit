@@ -204,7 +204,7 @@ describe("YumeBanner", () => {
         expect(btn.tagName.toLowerCase()).to.equal("y-button");
         expect(btn.getAttribute("aria-label")).to.equal("Dismiss banner");
         expect(btn.getAttribute("part")).to.equal("close-btn");
-        expect(btn.getAttribute("style-type")).to.equal("filled");
+        expect(btn.getAttribute("variant")).to.equal("filled");
     });
 
     it("close button uses the same color as the banner", async () => {

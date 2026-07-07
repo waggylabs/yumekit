@@ -98,10 +98,10 @@ export const WithNavigation = {
                 <div slot="header">Navigation</div>
                 <div slot="body">
                     <nav style="display:flex;flex-direction:column;gap:4px">
-                        <y-button color="primary" style-type="flat">Dashboard</y-button>
-                        <y-button color="base" style-type="flat">Projects</y-button>
-                        <y-button color="base" style-type="flat">Settings</y-button>
-                        <y-button color="base" style-type="flat">Help</y-button>
+                        <y-button color="primary" variant="flat">Dashboard</y-button>
+                        <y-button color="base" variant="flat">Projects</y-button>
+                        <y-button color="base" variant="flat">Settings</y-button>
+                        <y-button color="base" variant="flat">Help</y-button>
                     </nav>
                 </div>
             </y-drawer>

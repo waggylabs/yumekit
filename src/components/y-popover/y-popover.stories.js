@@ -155,13 +155,13 @@ export const HoverTrigger = {
 export const ContextMenuTrigger = {
     render: () => `
         <div style="padding:80px;display:flex;justify-content:center">
-            <y-button id="pop-context" style-type="outlined">Right-click me</y-button>
+            <y-button id="pop-context" variant="outlined">Right-click me</y-button>
             <y-popover anchor="pop-context" trigger="context-menu" position="bottom-start">
                 <strong slot="header">Actions</strong>
                 <div style="display:grid;gap:4px">
-                    <y-button size="small" style-type="flat">Edit</y-button>
-                    <y-button size="small" style-type="flat">Duplicate</y-button>
-                    <y-button size="small" style-type="flat" color="error">Delete</y-button>
+                    <y-button size="small" variant="flat">Edit</y-button>
+                    <y-button size="small" variant="flat">Duplicate</y-button>
+                    <y-button size="small" variant="flat" color="error">Delete</y-button>
                 </div>
             </y-popover>
         </div>
@@ -188,7 +188,7 @@ export const HeaderAndFooter = {
                 <div slot="footer">
                     <y-button
                         size="small"
-                        style-type="outlined"
+                        variant="outlined"
                         onclick="document.getElementById('pop-rich').hide('user')"
                     >Cancel</y-button>
                     <y-button
@@ -294,7 +294,7 @@ export const Modal = {
                 <div slot="footer">
                     <y-button
                         size="small"
-                        style-type="outlined"
+                        variant="outlined"
                         onclick="document.getElementById('pop-modal').hide('user')"
                     >Cancel</y-button>
                     <y-button

@@ -21,7 +21,7 @@ YumeKit is a collection of 51 production-ready components built with native Web 
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
-- **Themeable** — 22 built-in themes plus support for fully custom themes
+- **Themeable** — 60 built-in themes plus support for fully custom themes
 - **Accessible** — ARIA-compliant, keyboard navigable, form-associated inputs
 - **Tree-shakeable** — import only the components you use
 

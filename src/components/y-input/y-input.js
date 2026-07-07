@@ -135,7 +135,10 @@ export class YumeInput extends HTMLElement {
             : "default";
     }
     set variant(val) {
-        this.setAttribute("variant", val === "underline" ? "underline" : "default");
+        this.setAttribute(
+            "variant",
+            val === "underline" ? "underline" : "default",
+        );
     }
 
     /** @type {string} Input type (default "text"). */
@@ -203,6 +206,13 @@ export class YumeInput extends HTMLElement {
     // -------------------------------------------------------------------------
 
     _bindInputListeners() {
+        this.inputContainer.addEventListener("mousedown", (e) => {
+            if (e.target !== this.input) {
+                e.preventDefault();
+                this.input.focus();
+            }
+        });
+
         this.input.addEventListener("input", (e) => {
             this.setAttribute("value", e.target.value);
             this.dispatchEvent(
