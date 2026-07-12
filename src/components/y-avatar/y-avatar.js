@@ -1,6 +1,7 @@
 import {
     getColorVarPair,
     createElement as _el,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeAvatar extends HTMLElement {
@@ -17,6 +18,10 @@ export class YumeAvatar extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._imgFailed = false;
         this.render();
+    }
+
+    connectedCallback() {
+        upgradeProperties(this);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -92,6 +97,10 @@ export class YumeAvatar extends HTMLElement {
         const sheet = new CSSStyleSheet();
         const css = showImg
             ? `
+              :host([hidden]) {
+                  display: none;
+              }
+
               :host {
                 display: inline-block;
                 height: ${dimensions};

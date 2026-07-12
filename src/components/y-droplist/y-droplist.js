@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 const DEFAULT_GHOST_CLASS = "y-droplist__ghost";
 const DEFAULT_DRAG_CLASS = "y-droplist__dragging";
@@ -148,6 +148,7 @@ export class YumeDroplist extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "list");
         this._abort = new AbortController();
         this._wireEvents();
@@ -727,6 +728,10 @@ export class YumeDroplist extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 box-sizing: border-box;

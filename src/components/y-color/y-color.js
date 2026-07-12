@@ -4,6 +4,7 @@ import "../y-input/y-input.js";
 import {
     manageLabelVisibility,
     parseColorString,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeColor extends HTMLElement {
@@ -42,6 +43,7 @@ export class YumeColor extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
@@ -362,6 +364,10 @@ export class YumeColor extends HTMLElement {
         const padding = paddingMap[size] || paddingMap.medium;
 
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);

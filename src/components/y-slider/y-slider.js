@@ -1,4 +1,4 @@
-import { createElement as _el, clamp } from "../../modules/helpers.js";
+import { clamp, createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 import "../y-tooltip/y-tooltip.js";
 
 const VALID_SIZES = new Set(["small", "medium", "large"]);
@@ -64,6 +64,7 @@ export class YumeSlider extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("min")) this.setAttribute("min", "0");
         if (!this.hasAttribute("max")) this.setAttribute("max", "100");
@@ -945,6 +946,10 @@ export class YumeSlider extends HTMLElement {
         if (YumeSlider.__sheet) return YumeSlider.__sheet;
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body);

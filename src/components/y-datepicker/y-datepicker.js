@@ -2,6 +2,7 @@ import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-input/y-input.js";
 import "../y-select/y-select.js";
+import { upgradeProperties } from "../../modules/helpers.js";
 
 const MONTHS = [
     "January",
@@ -65,6 +66,7 @@ export class YumeDatepicker extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._setupMediaQuery();
         this._parseValue();
         this.render();
@@ -601,6 +603,10 @@ export class YumeDatepicker extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body, sans-serif);

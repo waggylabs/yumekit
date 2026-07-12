@@ -1,3 +1,4 @@
+import { upgradeProperties } from "../../modules/helpers.js";
 export class YumeButtonGroup extends HTMLElement {
     static get observedAttributes() {
         return ["orientation"];
@@ -13,6 +14,7 @@ export class YumeButtonGroup extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._render();
         this._updateChildren();
     }
@@ -43,6 +45,10 @@ export class YumeButtonGroup extends HTMLElement {
         }
         const isVertical = this.orientation === "vertical";
         this._styleEl.textContent = `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 flex-direction: ${isVertical ? "column" : "row"};

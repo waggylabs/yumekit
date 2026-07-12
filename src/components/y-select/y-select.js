@@ -5,6 +5,7 @@ import {
     isSafeCssColor,
     manageLabelVisibility,
     resolveThemeMountPoint,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const SEMANTIC_COLOR_VARS = {
@@ -58,6 +59,7 @@ export class YumeSelect extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("label-position")) {
             this.setAttribute("label-position", "top");
         }
@@ -377,6 +379,10 @@ export class YumeSelect extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: flex;
                 flex-direction: column;

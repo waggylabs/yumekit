@@ -1,4 +1,4 @@
-import { contrastTextColor, isSafeCssColor } from "../../modules/helpers.js";
+import { contrastTextColor, isSafeCssColor, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeButton extends HTMLElement {
     static get observedAttributes() {
@@ -45,6 +45,7 @@ export class YumeButton extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         this._init();
     }
@@ -403,6 +404,10 @@ export class YumeButton extends HTMLElement {
     _applyStyles() {
         const style = document.createElement("style");
         style.textContent = `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
             }

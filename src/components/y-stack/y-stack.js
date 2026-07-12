@@ -1,6 +1,7 @@
 import {
     createElement as _el,
     resolveGapToken,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const DIRECTION_VALUES = new Set([
@@ -61,6 +62,7 @@ export class YumeStack extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._applyStyles();
     }
 
@@ -238,6 +240,10 @@ export class YumeStack extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: ${hostDisplay};
                 box-sizing: border-box;

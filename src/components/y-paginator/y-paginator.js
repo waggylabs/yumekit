@@ -1,7 +1,7 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-select/y-select.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 const VARIANT_VALUES = ["default", "compact", "detailed"];
 const SIZE_VALUES = ["small", "medium", "large"];
@@ -65,6 +65,7 @@ export class YumePaginator extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "navigation");
         if (!this.hasAttribute("aria-label")) {
             this.setAttribute("aria-label", "Pagination");

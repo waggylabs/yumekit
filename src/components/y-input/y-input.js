@@ -1,6 +1,7 @@
 import {
-    manageLabelVisibility,
     createElement as _el,
+    manageLabelVisibility,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeInput extends HTMLElement {
@@ -34,6 +35,7 @@ export class YumeInput extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
@@ -262,6 +264,10 @@ export class YumeInput extends HTMLElement {
     _buildStyleSheet(isDisabled, paddingVar, minHeightVar) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);

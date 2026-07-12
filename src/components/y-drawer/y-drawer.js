@@ -1,5 +1,5 @@
 import { ellipsisV, ellipsisH } from "../../icons/index.js";
-import { resolveAnchor } from "../../modules/helpers.js";
+import { resolveAnchor, upgradeProperties } from "../../modules/helpers.js";
 
 class YumeDrawer extends HTMLElement {
     static get observedAttributes() {
@@ -21,6 +21,7 @@ class YumeDrawer extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this._setupAnchor();
         if (this.visible) this._show();
@@ -168,6 +169,10 @@ class YumeDrawer extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;

@@ -2,14 +2,15 @@ import "../y-input/y-input.js";
 import "../y-select/y-select.js";
 import {
     clamp,
-    hsvToRgb,
-    rgbToHsv,
-    hsvToHsl,
-    hslToHsv,
-    rgbToHex,
-    rgbaToHex,
-    parseColorString,
     createElement as _el,
+    hslToHsv,
+    hsvToHsl,
+    hsvToRgb,
+    parseColorString,
+    rgbToHex,
+    rgbToHsv,
+    rgbaToHex,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeColorpicker extends HTMLElement {
@@ -39,6 +40,7 @@ export class YumeColorpicker extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (this.getAttribute("value")) {
             this._parseAndApply(this.getAttribute("value"));
         }
@@ -761,6 +763,10 @@ export class YumeColorpicker extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body, sans-serif);

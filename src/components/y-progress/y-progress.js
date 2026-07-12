@@ -1,9 +1,10 @@
 import {
+    GAP_TOKEN_MAP,
+    clamp,
     createElement as _el,
     getColorVarPair,
-    GAP_TOKEN_MAP,
     measureCSSLength,
-    clamp,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -91,6 +92,7 @@ export class YumeProgress extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("min")) this.setAttribute("min", "0");
         if (!this.hasAttribute("max")) this.setAttribute("max", "100");
@@ -742,6 +744,10 @@ export class YumeProgress extends HTMLElement {
         if (ctor._sheet) return ctor._sheet;
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);

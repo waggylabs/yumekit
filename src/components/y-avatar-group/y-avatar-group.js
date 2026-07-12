@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 import "../y-avatar/y-avatar.js";
 
 const AVATAR_ATTRS = ["alt", "src", "color", "shape"];
@@ -25,6 +25,7 @@ export class YumeAvatarGroup extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "group");
         this.render();
     }
@@ -168,6 +169,10 @@ export class YumeAvatarGroup extends HTMLElement {
         const sheet = new CSSStyleSheet();
         const isVertical = this.orientation === "vertical";
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 flex-direction: ${isVertical ? "column" : "row"};

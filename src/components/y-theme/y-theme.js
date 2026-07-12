@@ -59,6 +59,7 @@ import keplerDarkCSS from "../../../styles/kepler-dark.css";
 import keplerAmberCSS from "../../../styles/kepler-amber.css";
 import keplerGalaxyCSS from "../../../styles/kepler-galaxy.css";
 import keplerMatrixCSS from "../../../styles/kepler-matrix.css";
+import { upgradeProperties } from "../../modules/helpers.js";
 
 const THEMES = {
     "blue-light": blueLightCSS,
@@ -193,6 +194,7 @@ export class YumeTheme extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._injectPageStyles();
         this._applyTheme();
     }
@@ -286,6 +288,10 @@ export class YumeTheme extends HTMLElement {
 
         const baseStyle = document.createElement("style");
         baseStyle.textContent = `${variablesCSS}
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 font-family: var(--font-family-body, sans-serif);
                 color: var(--base-content--, inherit);

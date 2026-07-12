@@ -1,4 +1,4 @@
-import { resolveAnchor } from "../../modules/helpers.js";
+import { resolveAnchor, upgradeProperties } from "../../modules/helpers.js";
 
 class YumeDialog extends HTMLElement {
     static get observedAttributes() {
@@ -17,6 +17,7 @@ class YumeDialog extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this._setupAnchor();
         if (this.visible) this.show();
@@ -159,6 +160,10 @@ class YumeDialog extends HTMLElement {
     _buildStyles() {
         const style = document.createElement("style");
         style.textContent = `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;

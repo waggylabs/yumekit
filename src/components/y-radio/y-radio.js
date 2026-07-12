@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeRadio extends HTMLElement {
     static formAssociated = true;
@@ -19,6 +19,7 @@ export class YumeRadio extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -131,6 +132,10 @@ export class YumeRadio extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);

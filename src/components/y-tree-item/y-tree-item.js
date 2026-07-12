@@ -1,5 +1,5 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeTreeItem extends HTMLElement {
     static get observedAttributes() {
@@ -26,6 +26,7 @@ export class YumeTreeItem extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._level = this._computeLevel();
         if (!this.hasAttribute("role")) this.setAttribute("role", "treeitem");
         if (this.tabIndex < 0 && !this.hasAttribute("tabindex"))
@@ -224,6 +225,10 @@ export class YumeTreeItem extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 box-sizing: border-box;

@@ -1,4 +1,5 @@
 import { arrowUp, arrowDown } from "../../icons/index.js";
+import { upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeTable extends HTMLElement {
     static get observedAttributes() {
@@ -19,6 +20,7 @@ export class YumeTable extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._parseAttributes();
         this.render();
     }
@@ -161,6 +163,10 @@ export class YumeTable extends HTMLElement {
     _buildStyles() {
         const paddingVar = `var(--component-table-padding-${this.size}, 8px)`;
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body, sans-serif);

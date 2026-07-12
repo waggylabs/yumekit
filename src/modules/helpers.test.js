@@ -26,6 +26,7 @@ import {
     GAP_TOKEN_MAP,
     measureCSSLength,
     resolveGapToken,
+    upgradeProperties,
 } from "./helpers.js";
 
 describe("helpers", () => {
@@ -797,6 +798,46 @@ describe("helpers", () => {
             } finally {
                 history.replaceState(initialState, "", initialPath);
             }
+        });
+    });
+
+    describe("upgradeProperties", () => {
+        class UpgradeProbe extends HTMLElement {
+            get foo() {
+                return this._foo;
+            }
+            set foo(v) {
+                this._foo = v;
+                this.setAttribute("foo", v);
+            }
+        }
+        if (!customElements.get("upgrade-probe")) {
+            customElements.define("upgrade-probe", UpgradeProbe);
+        }
+
+        it("reapplies a property set before upgrade so the setter runs", () => {
+            const el = document.createElement("upgrade-probe");
+            // Simulate a pre-upgrade own-property shadowing the accessor.
+            Object.defineProperty(el, "foo", {
+                value: "bar",
+                configurable: true,
+                writable: true,
+                enumerable: true,
+            });
+            expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.true;
+
+            upgradeProperties(el);
+
+            expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.false;
+            expect(el.foo).to.equal("bar");
+            expect(el.getAttribute("foo")).to.equal("bar");
+        });
+
+        it("leaves accessors alone when no pre-upgrade value was set", () => {
+            const el = document.createElement("upgrade-probe");
+            upgradeProperties(el);
+            expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.false;
+            expect(el.hasAttribute("foo")).to.be.false;
         });
     });
 });

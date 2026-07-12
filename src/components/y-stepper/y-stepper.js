@@ -1,5 +1,5 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeStepper extends HTMLElement {
     static get observedAttributes() {
@@ -28,6 +28,7 @@ export class YumeStepper extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._syncStepStates();
         if (this.responsive) this._setupResizeObserver();
         this.render();

@@ -2,10 +2,11 @@ import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-menu/y-menu.js";
 import {
-    createElement as _el,
     buildNavItemIcon,
+    createElement as _el,
     isNavItemActive,
     navigateFrom,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const SIZE_CONFIG = {
@@ -59,6 +60,7 @@ export class YumeSidebar extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -321,6 +323,10 @@ export class YumeSidebar extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body, sans-serif);

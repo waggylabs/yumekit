@@ -1,4 +1,4 @@
-import { createElement as _el, clamp } from "../../modules/helpers.js";
+import { clamp, createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 import "../y-icon/y-icon.js";
 
 const VALID_ORIENTATIONS = new Set(["horizontal", "vertical"]);
@@ -47,6 +47,7 @@ export class YumeSplitter extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "group");
 
         this._split = this._readSplitAttribute();
@@ -288,6 +289,10 @@ export class YumeSplitter extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 position: relative;

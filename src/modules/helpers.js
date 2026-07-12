@@ -606,3 +606,34 @@ export function measureCSSLength(container, cssLength) {
     probe.remove();
     return px;
 }
+
+/**
+ * Reapply any accessor-backed properties that were assigned to `el` as plain
+ * own-properties before the custom element definition upgraded it. Without
+ * this, a value set via `el.foo = x` before upgrade shadows the class getter/
+ * setter, so the setter (and its reflection side effects) never runs. Discovers
+ * every property with a setter on the prototype chain up to HTMLElement, then
+ * deletes and re-assigns any that were pre-upgrade shadowed. Call once at the
+ * top of `connectedCallback`.
+ * @param {HTMLElement} el — the custom element instance (pass `this`)
+ */
+export function upgradeProperties(el) {
+    const setters = new Set();
+
+    let proto = Object.getPrototypeOf(el);
+    while (proto && proto !== HTMLElement.prototype) {
+        for (const [name, desc] of Object.entries(
+            Object.getOwnPropertyDescriptors(proto),
+        )) {
+            if (desc.set) setters.add(name);
+        }
+        proto = Object.getPrototypeOf(proto);
+    }
+
+    for (const name of setters) {
+        if (!Object.prototype.hasOwnProperty.call(el, name)) continue;
+        const value = el[name];
+        delete el[name];
+        el[name] = value;
+    }
+}

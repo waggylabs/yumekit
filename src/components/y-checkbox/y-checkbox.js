@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 import "../y-icon/y-icon.js";
 
 export class YumeCheckbox extends HTMLElement {
@@ -27,6 +27,7 @@ export class YumeCheckbox extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "right");
         this._internals.setFormValue(this.checked ? this.value : null);
@@ -173,6 +174,10 @@ export class YumeCheckbox extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 align-items: center;

@@ -1,5 +1,5 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
@@ -20,6 +20,7 @@ export class YumeTabs extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("position"))
             this.setAttribute("position", "top");
@@ -284,6 +285,10 @@ export class YumeTabs extends HTMLElement {
         const paddingVar = `var(--component-tab-padding-${this.size})`;
         const gapVar = `var(--component-tab-gap-${this.size})`;
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: flex;
             }

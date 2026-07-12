@@ -1,4 +1,4 @@
-import { resolveGapToken } from "../../modules/helpers.js";
+import { resolveGapToken, upgradeProperties } from "../../modules/helpers.js";
 
 const ALIGN_MAP = {
     start: "start",
@@ -57,6 +57,7 @@ export class YumeGrid extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._applyStyles();
     }
 
@@ -293,6 +294,10 @@ export class YumeGrid extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 box-sizing: border-box;

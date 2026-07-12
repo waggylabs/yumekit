@@ -1,9 +1,10 @@
 import "../y-icon/y-icon.js";
 import {
     createElement as _el,
-    isSafeCssColor,
     getColorVarPair,
+    isSafeCssColor,
     resolveThemeMountPoint,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 import { computePosition, pointerOffsetFor } from "../../modules/floating.js";
 
@@ -125,6 +126,7 @@ export class YumePopover extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._triggerSet = this._parseTriggerAttr(this.getAttribute("trigger"));
         this._render();
         this._resolveAnchor();
@@ -1343,6 +1345,10 @@ export class YumePopover extends HTMLElement {
 
     _styles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: contents;
             }

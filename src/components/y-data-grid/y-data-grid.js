@@ -7,7 +7,7 @@ import "../y-paginator/y-paginator.js";
 import "../y-popover/y-popover.js";
 import "../y-button/y-button.js";
 import "../y-progress/y-progress.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 const SORT_CYCLE = { none: "asc", asc: "desc", desc: "none" };
 const EDIT_STATUS_RESET_MS = 1200;
@@ -185,6 +185,7 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._parseAttributes();
         this._render();
     }
@@ -1940,6 +1941,10 @@ export class YumeDataGrid extends HTMLElement {
             ? `tbody tr:not([data-empty]):hover { background: var(--component-data-grid-row-hover-bg, var(--component-table-active-background, #46474a)); cursor: default; }`
             : "";
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: flex;
                 flex-direction: column;

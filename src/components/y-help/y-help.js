@@ -4,6 +4,7 @@ import "../y-popover/y-popover.js";
 import {
     createElement as _el,
     resolveThemeMountPoint,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const VALID_POSITIONS = new Set([
@@ -63,6 +64,7 @@ export class YumeHelp extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         // The component renders no light- or shadow-DOM UI of its own; the
         // tour lives in a portaled root attached to document.body.
         if (this.open) this._mount();

@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 const PRESET_POLYGONS = {
     star:
@@ -55,6 +55,7 @@ export class YumeShape extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -169,6 +170,10 @@ export class YumeShape extends HTMLElement {
                 height: var(--component-shape-size, ${sizeVar});`;
 
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 --component-shape-clip-path: ${clipPath};
                 display: inline-block;

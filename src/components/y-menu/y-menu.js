@@ -1,4 +1,4 @@
-import { resolveAnchor, createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, resolveAnchor, upgradeProperties } from "../../modules/helpers.js";
 import "../y-icon/y-icon.js";
 
 export class YumeMenu extends HTMLElement {
@@ -21,6 +21,7 @@ export class YumeMenu extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("items")) this.items = [];
 
         this._setupAnchor();

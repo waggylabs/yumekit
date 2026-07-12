@@ -31,6 +31,12 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.4]
+
+### Fixed
+
+- Properties assigned before a component upgrades (common in frameworks and with lazy-loaded bundles) are now reapplied through their accessors, so reflection and side effects run as expected. Components that set an explicit `:host` display also honor the `hidden` attribute again.
+
 ## [0.5.3]
 
 ### Changed
