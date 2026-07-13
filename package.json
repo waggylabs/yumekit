@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.5.3",
+    "version": "0.6.0-beta.1",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -17,6 +17,7 @@
             "types": "./dist/react.d.ts"
         },
         "./components/*": "./dist/components/*",
+        "./modules/*": "./dist/modules/*",
         "./icons/all.js": "./dist/icons/all.js",
         "./icons/all-filled.js": "./dist/icons/all-filled.js",
         "./icons/registry.js": "./dist/icons/registry.js",

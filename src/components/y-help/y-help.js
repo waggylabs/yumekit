@@ -280,17 +280,10 @@ export class YumeHelp extends HTMLElement {
         return this._stepsCache;
     }
     set steps(v) {
+        // Rich data held on the property; the `steps` attribute is only read as
+        // an initial value (see the getter) and is not reflected back here.
         this._stepsCache = null;
-        if (v == null) {
-            this._stepsRaw = null;
-            this.removeAttribute("steps");
-        } else if (typeof v === "string") {
-            this._stepsRaw = v;
-            this.setAttribute("steps", v);
-        } else {
-            this._stepsRaw = v;
-            this.setAttribute("steps", JSON.stringify(v));
-        }
+        this._stepsRaw = v ?? null;
         if (this._mounted) {
             this._currentIndex = this._clampIndex(this._currentIndex);
             this._renderStep();

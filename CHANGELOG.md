@@ -31,7 +31,19 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.5.4]
+## [0.6.0]
+
+### Changed
+
+- Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
+
+### Migration
+
+- `y-avatar-group`'s `avatars`, and `y-data-grid`'s and `y-table`'s `columns` and `data`, previously returned the raw JSON **string** from their getters; they now return the parsed **array/object**. Drop any `JSON.parse(el.data)` (and similar) — read the value directly. (Object-array properties such as `items`, `options`, `steps`, and `formats` already returned parsed arrays and are unaffected.)
+
+- Rich-data properties are no longer reflected to their attribute after an imperative set, so anything that reads the attribute rather than the property is affected: cloning a JS-configured element (`el.cloneNode(true)` copies attributes, not properties), serializing `outerHTML`, attribute CSS selectors like `y-select[options]`, and `MutationObserver`s watching these attributes. If you rely on any of these, set the attribute instead of the property, or re-hydrate the property on the target.
+
+- Mutating a returned rich-data array in place (`el.items.push(...)`) now aliases the component's internal array but does not trigger a re-render. Reassign the property to apply changes: `el.items = [...el.items, next]`.
 
 ### Fixed
 

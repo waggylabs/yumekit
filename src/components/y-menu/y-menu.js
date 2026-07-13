@@ -1,4 +1,9 @@
-import { createElement as _el, resolveAnchor, upgradeProperties } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    resolveAnchor,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 import "../y-icon/y-icon.js";
 
 export class YumeMenu extends HTMLElement {
@@ -18,11 +23,11 @@ export class YumeMenu extends HTMLElement {
         this._onScrollOrResize = this._onScrollOrResize.bind(this);
         this._isReady = false;
         this._slottedHandlers = new Map();
+        this._items = null;
     }
 
     connectedCallback() {
         upgradeProperties(this);
-        if (!this.hasAttribute("items")) this.items = [];
 
         this._setupAnchor();
         this.render();
@@ -50,6 +55,8 @@ export class YumeMenu extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+
+        if (name === "items") this._items = coerceRichData(newVal);
 
         if (name === "items" || name === "size") this.render();
 
@@ -107,19 +114,17 @@ export class YumeMenu extends HTMLElement {
         else this.removeAttribute("history");
     }
 
-    /** Menu items array (JSON attribute). */
+    /**
+     * Menu items. Rich data held as a property (identity preserved, not
+     * serialized); the `items` attribute seeds an initial value but is not kept
+     * in sync after an imperative set.
+     */
     get items() {
-        try {
-            return JSON.parse(this.getAttribute("items")) || [];
-        } catch {
-            return [];
-        }
+        return this._items ?? [];
     }
     set items(val) {
-        this.setAttribute(
-            "items",
-            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
-        );
+        this._items = coerceRichData(val);
+        this.render();
     }
 
     /** Size: "small" | "medium" | "large" (default "medium"). */

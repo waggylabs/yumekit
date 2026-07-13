@@ -119,11 +119,11 @@ describe("YumeTabs", () => {
         expect(buttons[0].dataset.id).to.equal("alpha");
     });
 
-    it("options setter mirrors a JSON string instead of double-encoding it", async () => {
+    it("options setter parses a JSON string without reflecting to the attribute", async () => {
         const el = await fixture(html`<y-tabs></y-tabs>`);
         const json = '[{"id":"alpha","label":"Alpha","slot":"alpha-slot"}]';
         el.options = json;
-        expect(el.getAttribute("options")).to.equal(json);
+        expect(el.hasAttribute("options")).to.be.false;
         const buttons = el.shadowRoot.querySelectorAll('[role="tab"]');
         expect(buttons.length).to.equal(1);
         expect(buttons[0].dataset.id).to.equal("alpha");

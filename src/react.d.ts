@@ -71,7 +71,7 @@ declare module "react" {
                 inset?: "none" | "small" | "medium" | "large";
             }>;
             "y-breadcrumbs": El<{
-                items?: string;
+                items?: unknown[] | string;
                 size?: "small" | "medium" | "large";
                 separator?: string;
                 "max-items"?: string | number;

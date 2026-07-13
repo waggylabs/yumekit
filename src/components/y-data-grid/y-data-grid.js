@@ -7,7 +7,11 @@ import "../y-paginator/y-paginator.js";
 import "../y-popover/y-popover.js";
 import "../y-button/y-button.js";
 import "../y-progress/y-progress.js";
-import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 const SORT_CYCLE = { none: "asc", asc: "desc", desc: "none" };
 const EDIT_STATUS_RESET_MS = 1200;
@@ -154,6 +158,9 @@ export class YumeDataGrid extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._columnsInput = [];
+        this._dataInput = [];
+        this._aggregates = {};
         this._parsedColumns = [];
         this._parsedColumnTree = [];
         this._workingTree = [];
@@ -197,6 +204,11 @@ export class YumeDataGrid extends HTMLElement {
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
 
+        if (name === "columns") this._columnsInput = coerceRichData(newVal);
+        if (name === "data") this._dataInput = coerceRichData(newVal);
+        if (name === "aggregates")
+            this._aggregates = coerceRichData(newVal, {});
+
         if (name === "current-page") {
             const next = Number(newVal);
             if (Number.isFinite(next) && next >= 1) this._currentPage = next;
@@ -227,17 +239,13 @@ export class YumeDataGrid extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** Per-column aggregate config — `{ columnKey: "sum" | "avg" | "min" | "max" | "count" }`. */
+    /** Per-column aggregate config — `{ columnKey: "sum" | "avg" | "min" | "max" | "count" }`. Rich data held as a property (identity preserved, not serialized); the `aggregates` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get aggregates() {
-        try {
-            const parsed = JSON.parse(this.getAttribute("aggregates") || "{}");
-            return parsed && typeof parsed === "object" ? parsed : {};
-        } catch {
-            return {};
-        }
+        return this._aggregates ?? {};
     }
     set aggregates(obj) {
-        this.setAttribute("aggregates", JSON.stringify(obj || {}));
+        this._aggregates = coerceRichData(obj, {});
+        if (this.isConnected) this._render();
     }
 
     /** Extra rows rendered above and below the viewport when virtualizing. */
@@ -249,15 +257,14 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("buffer-size", String(val));
     }
 
-    /** Column schema as JSON string or array of column definition objects. */
+    /** Column schema as an array of column definition objects. Rich data held as a property (identity preserved, not serialized); the `columns` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get columns() {
-        return this.getAttribute("columns");
+        return this._columnsInput;
     }
     set columns(val) {
-        this.setAttribute(
-            "columns",
-            typeof val === "string" ? val : JSON.stringify(val),
-        );
+        this._columnsInput = coerceRichData(val);
+        this._parseAttributes();
+        if (this.isConnected) this._render();
     }
 
     /** Current 1-based page index. */
@@ -268,15 +275,14 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("current-page", String(val));
     }
 
-    /** Row data as JSON string or array of objects keyed by column key. */
+    /** Row data as an array of objects keyed by column key. Rich data held as a property (identity preserved, not serialized); the `data` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get data() {
-        return this.getAttribute("data");
+        return this._dataInput;
     }
     set data(val) {
-        this.setAttribute(
-            "data",
-            typeof val === "string" ? val : JSON.stringify(val),
-        );
+        this._dataInput = coerceRichData(val);
+        this._parseAttributes();
+        if (this.isConnected) this._render();
     }
 
     /** Edit trigger: "click" (single click on cell) or "focus" (default "click"). */
@@ -3109,13 +3115,9 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _parseAttributes() {
-        let tree;
-        try {
-            tree = JSON.parse(this.columns || "[]");
-            if (!Array.isArray(tree)) tree = [];
-        } catch {
-            tree = [];
-        }
+        const tree = Array.isArray(this._columnsInput)
+            ? this._columnsInput
+            : [];
         this._parsedColumnTree = tree;
         // Working tree preserves user-applied reorders + hides across re-renders;
         // rebuild it when the structural shape of `columns` changes.
@@ -3127,12 +3129,9 @@ export class YumeDataGrid extends HTMLElement {
         }
         this._parsedColumns = this._flattenColumnTree(this._workingTree);
 
-        try {
-            this._parsedData = JSON.parse(this.data || "[]");
-            if (!Array.isArray(this._parsedData)) this._parsedData = [];
-        } catch {
-            this._parsedData = [];
-        }
+        this._parsedData = Array.isArray(this._dataInput)
+            ? this._dataInput
+            : [];
     }
 
     /**

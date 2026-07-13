@@ -101,7 +101,7 @@ Navigation breadcrumb trail with collapse/expand support and SPA-friendly naviga
 
 | Attribute   | Values / Notes                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------------- |
-| `items`     | JSON array of `{ text, href?, icon? }` objects                                                              |
+| `items`     | Array of `{ text, href?, icon? }` objects. Assign the `.items` property directly (rich data — keeps identity, accepts non-serializable fields); the `items` attribute accepts a JSON string as an initial value but is not kept in sync after a property set |
 | `size`      | `small` \| `medium` (default) \| `large`                                                                    |
 | `separator` | Separator character (default: chevron-right icon). Can also use `separator` slot for custom icon separators |
 | `max-items` | Number — collapses middle items when count exceeds this value                                               |

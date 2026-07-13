@@ -1,5 +1,9 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 export class YumeTabs extends HTMLElement {
     static get observedAttributes() {
@@ -17,6 +21,7 @@ export class YumeTabs extends HTMLElement {
         this._warnedSlots = new Set();
         this._resizeObserver = null;
         this._onTablistScroll = this._onTablistScroll.bind(this);
+        this._options = null;
     }
 
     connectedCallback() {
@@ -35,7 +40,10 @@ export class YumeTabs extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
-        if (name === "options") this._warnedSlots.clear();
+        if (name === "options") {
+            this._options = coerceRichData(newVal);
+            this._warnedSlots.clear();
+        }
         this.render();
     }
 
@@ -43,18 +51,13 @@ export class YumeTabs extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** @type {Array<Object>} Tab definitions. Each object: `{ id, label, slot, disabled?, leftIcon?, rightIcon? }`. `leftIcon`/`rightIcon` are `y-icon` names rendered inside the tab button. Use the `tab-content-{id}` slot to supply fully custom tab button content instead. */
+    /** @type {Array<Object>} Tab definitions. Each object: `{ id, label, slot, disabled?, leftIcon?, rightIcon? }`. `leftIcon`/`rightIcon` are `y-icon` names rendered inside the tab button. Use the `tab-content-{id}` slot to supply fully custom tab button content instead. Rich data is held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
-        try {
-            return JSON.parse(this.getAttribute("options") || "[]");
-        } catch {
-            return [];
-        }
+        return this._options ?? [];
     }
     set options(val) {
-        if (val === null || val === undefined) this.removeAttribute("options");
-        else if (typeof val === "string") this.setAttribute("options", val);
-        else this.setAttribute("options", JSON.stringify(val));
+        this._options = coerceRichData(val);
+        this._warnedSlots.clear();
         this.render();
     }
 

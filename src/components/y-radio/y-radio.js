@@ -1,4 +1,8 @@
-import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 export class YumeRadio extends HTMLElement {
     static formAssociated = true;
@@ -16,6 +20,7 @@ export class YumeRadio extends HTMLElement {
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
         this._value = "";
+        this._options = null;
     }
 
     connectedCallback() {
@@ -30,6 +35,7 @@ export class YumeRadio extends HTMLElement {
             this._internals.setFormValue(newVal, this.name);
             this._updateChecked();
         } else if (["options", "name", "disabled"].includes(name)) {
+            if (name === "options") this._options = coerceRichData(newVal);
             this.render();
         }
     }
@@ -49,16 +55,13 @@ export class YumeRadio extends HTMLElement {
     get name() { return this.getAttribute("name") || ""; }
     set name(val) { this.setAttribute("name", val); }
 
-    /** @type {Array<{value: string, label: string}>} The radio options parsed from the "options" attribute. */
+    /** @type {Array<{value: string, label: string}>} The radio options. Rich data held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
-        try {
-            return JSON.parse(this.getAttribute("options") || "[]");
-        } catch {
-            return [];
-        }
+        return this._options ?? [];
     }
     set options(val) {
-        this.setAttribute("options", Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"));
+        this._options = coerceRichData(val);
+        this.render();
     }
 
     /** @type {string} The currently selected radio value. */

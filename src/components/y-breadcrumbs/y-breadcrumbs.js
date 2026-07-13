@@ -1,5 +1,9 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 export class YumeBreadcrumbs extends HTMLElement {
     static get observedAttributes() {
@@ -14,6 +18,7 @@ export class YumeBreadcrumbs extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
         this._expanded = false;
+        this._items = null;
     }
 
     connectedCallback() {
@@ -24,7 +29,10 @@ export class YumeBreadcrumbs extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
 
-        if (name === "items" || name === "max-items") {
+        if (name === "items") {
+            this._items = coerceRichData(newValue);
+            this._expanded = false;
+        } else if (name === "max-items") {
             this._expanded = false;
         }
 
@@ -46,16 +54,12 @@ export class YumeBreadcrumbs extends HTMLElement {
 
     /** Array of breadcrumb items. */
     get items() {
-        try {
-            return JSON.parse(this.getAttribute("items") || "[]");
-        } catch {
-            return [];
-        }
+        return this._items ?? [];
     }
     set items(val) {
-        if (val === null || val === undefined) this.removeAttribute("items");
-        else if (typeof val === "string") this.setAttribute("items", val);
-        else this.setAttribute("items", JSON.stringify(val));
+        this._items = coerceRichData(val);
+        this._expanded = false;
+        this.render();
     }
 
     /** Maximum visible items before collapsing. */
@@ -204,7 +208,14 @@ export class YumeBreadcrumbs extends HTMLElement {
                 [item.text],
             );
             linkEl.addEventListener("click", (e) => {
-                if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                if (
+                    e.button !== 0 ||
+                    e.metaKey ||
+                    e.ctrlKey ||
+                    e.shiftKey ||
+                    e.altKey
+                )
+                    return;
                 this._onNavigate(e, item.href);
             });
         }
@@ -212,7 +223,11 @@ export class YumeBreadcrumbs extends HTMLElement {
         const itemSlot = _el("slot", { name: `${index}-item` });
         if (item.icon) {
             itemSlot.appendChild(
-                _el("y-icon", { name: item.icon, size: this._getIconSize(), class: "item-icon" }),
+                _el("y-icon", {
+                    name: item.icon,
+                    size: this._getIconSize(),
+                    class: "item-icon",
+                }),
             );
         }
         itemSlot.appendChild(linkEl);
@@ -407,9 +422,7 @@ export class YumeBreadcrumbs extends HTMLElement {
 
         if (this.getAttribute("history") !== "false") {
             window.history.pushState({}, "", href);
-            window.dispatchEvent(
-                new PopStateEvent("popstate", { state: {} }),
-            );
+            window.dispatchEvent(new PopStateEvent("popstate", { state: {} }));
         } else {
             window.location.href = href;
         }

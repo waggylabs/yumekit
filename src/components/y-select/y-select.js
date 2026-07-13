@@ -1,5 +1,6 @@
 import "../y-icon/y-icon.js";
 import {
+    coerceRichData,
     contrastTextColor,
     createElement as _el,
     isSafeCssColor,
@@ -53,6 +54,7 @@ export class YumeSelect extends HTMLElement {
         this.selectedValues = new Set();
         this._onDocumentClick = this._onDocumentClick.bind(this);
         this._portalContainer = null;
+        this._options = null;
 
         this.attachShadow({ mode: "open" });
         this.render();
@@ -106,6 +108,7 @@ export class YumeSelect extends HTMLElement {
                 "clearable",
             ].includes(name)
         ) {
+            if (name === "options") this._options = coerceRichData(newValue);
             this.render();
         }
 
@@ -178,19 +181,13 @@ export class YumeSelect extends HTMLElement {
         this.setAttribute("name", val);
     }
 
-    /** @type {Array<{value: string, label: string}>} The options array for the select. */
+    /** @type {Array<{value: string, label: string}>} The options for the select. Rich data held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
-        try {
-            return JSON.parse(this.getAttribute("options") || "[]");
-        } catch {
-            return [];
-        }
+        return this._options ?? [];
     }
     set options(val) {
-        this.setAttribute(
-            "options",
-            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
-        );
+        this._options = coerceRichData(val);
+        this.render();
     }
 
     /** @type {string} Placeholder text when no value is selected. */

@@ -27,6 +27,7 @@ import {
     measureCSSLength,
     resolveGapToken,
     upgradeProperties,
+    coerceRichData,
 } from "./helpers.js";
 
 describe("helpers", () => {
@@ -838,6 +839,37 @@ describe("helpers", () => {
             upgradeProperties(el);
             expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.false;
             expect(el.hasAttribute("foo")).to.be.false;
+        });
+    });
+
+    describe("coerceRichData", () => {
+        it("passes arrays and objects through with identity intact", () => {
+            const arr = [{ a: 1 }];
+            const obj = { a: 1 };
+            expect(coerceRichData(arr)).to.equal(arr);
+            expect(coerceRichData(obj, {})).to.equal(obj);
+        });
+
+        it("parses a JSON string once", () => {
+            expect(coerceRichData('[{"a":1}]')).to.deep.equal([{ a: 1 }]);
+            expect(coerceRichData('{"a":1}', {})).to.deep.equal({ a: 1 });
+        });
+
+        it("returns the fallback for nullish input", () => {
+            expect(coerceRichData(null)).to.deep.equal([]);
+            expect(coerceRichData(undefined)).to.deep.equal([]);
+            const fallback = {};
+            expect(coerceRichData(null, fallback)).to.equal(fallback);
+        });
+
+        it("returns the fallback for an unparseable string", () => {
+            expect(coerceRichData("not json")).to.deep.equal([]);
+            expect(coerceRichData("{bad", { x: 1 })).to.deep.equal({ x: 1 });
+        });
+
+        it("preserves non-serializable fields on a passed-through value", () => {
+            const fn = () => {};
+            expect(coerceRichData([{ onClick: fn }])[0].onClick).to.equal(fn);
         });
     });
 });

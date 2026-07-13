@@ -3,6 +3,7 @@ import "../y-icon/y-icon.js";
 import "../y-menu/y-menu.js";
 import {
     buildNavItemIcon,
+    coerceRichData,
     createElement as _el,
     isNavItemActive,
     navigateFrom,
@@ -57,6 +58,7 @@ export class YumeSidebar extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._onCollapseClick = this._onCollapseClick.bind(this);
         this._idCounter = 0;
+        this._items = null;
     }
 
     connectedCallback() {
@@ -66,6 +68,9 @@ export class YumeSidebar extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+        if (name === "items") {
+            this._items = coerceRichData(newVal);
+        }
         this.render();
     }
 
@@ -94,18 +99,17 @@ export class YumeSidebar extends HTMLElement {
         else this.removeAttribute("history");
     }
 
-    /** Nav items array parsed from the "items" attribute. */
+    /**
+     * Nav items. Rich data held as a property (identity preserved, not
+     * serialized); the `items` attribute seeds an initial value but is not kept
+     * in sync after an imperative set.
+     */
     get items() {
-        try {
-            return JSON.parse(this.getAttribute("items")) || [];
-        } catch {
-            return [];
-        }
+        return this._items ?? [];
     }
     set items(val) {
-        if (val === null || val === undefined) this.removeAttribute("items");
-        else if (typeof val === "string") this.setAttribute("items", val);
-        else this.setAttribute("items", JSON.stringify(val));
+        this._items = coerceRichData(val);
+        this.render();
     }
 
     /**

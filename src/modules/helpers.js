@@ -637,3 +637,27 @@ export function upgradeProperties(el) {
         el[name] = value;
     }
 }
+
+/**
+ * Coerce a rich-data value (array/object) for a property whose matching
+ * attribute may carry a JSON string. Objects and arrays pass through with their
+ * identity intact; a JSON string is parsed once; anything nullish or unparseable
+ * falls back. Use in a property setter and in `attributeChangedCallback` so both
+ * the imperative and declarative paths converge on the same stored value.
+ * Rich data is intentionally not reflected back to the attribute.
+ * @param {*} val — an array/object, a JSON string, or nullish
+ * @param {*} [fallback=[]] — value returned for nullish/unparseable input
+ * @returns {*}
+ */
+export function coerceRichData(val, fallback = []) {
+    if (val === null || val === undefined) return fallback;
+    if (typeof val === "string") {
+        try {
+            const parsed = JSON.parse(val);
+            return parsed ?? fallback;
+        } catch {
+            return fallback;
+        }
+    }
+    return val;
+}

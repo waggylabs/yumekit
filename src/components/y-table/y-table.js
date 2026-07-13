@@ -1,5 +1,5 @@
 import { arrowUp, arrowDown } from "../../icons/index.js";
-import { upgradeProperties } from "../../modules/helpers.js";
+import { coerceRichData, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeTable extends HTMLElement {
     static get observedAttributes() {
@@ -21,13 +21,13 @@ export class YumeTable extends HTMLElement {
 
     connectedCallback() {
         upgradeProperties(this);
-        this._parseAttributes();
         this.render();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
-        this._parseAttributes();
+        if (name === "columns") this._parsedColumns = coerceRichData(newVal);
+        if (name === "data") this._parsedData = coerceRichData(newVal);
         this.render();
     }
 
@@ -35,16 +35,18 @@ export class YumeTable extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** Column definitions as a JSON string or array of { field, header?, sortable? } objects. */
-    get columns() { return this.getAttribute("columns"); }
+    /** Column definitions as an array of { field, header?, sortable? } objects. Rich data held as a property (identity preserved, not serialized); the `columns` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
+    get columns() { return this._parsedColumns; }
     set columns(val) {
-        this.setAttribute("columns", typeof val === "string" ? val : JSON.stringify(val));
+        this._parsedColumns = coerceRichData(val);
+        this.render();
     }
 
-    /** Row data as a JSON string or array of objects keyed by column field names. */
-    get data() { return this.getAttribute("data"); }
+    /** Row data as an array of objects keyed by column field names. Rich data held as a property (identity preserved, not serialized); the `data` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
+    get data() { return this._parsedData; }
     set data(val) {
-        this.setAttribute("data", typeof val === "string" ? val : JSON.stringify(val));
+        this._parsedData = coerceRichData(val);
+        this.render();
     }
 
     /** Cell padding size: "small" | "medium" | "large" (default "medium"). */
@@ -296,19 +298,6 @@ export class YumeTable extends HTMLElement {
         }));
 
         this.render();
-    }
-
-    _parseAttributes() {
-        try {
-            this._parsedColumns = JSON.parse(this.columns || "[]");
-        } catch {
-            this._parsedColumns = [];
-        }
-        try {
-            this._parsedData = JSON.parse(this.data || "[]");
-        } catch {
-            this._parsedData = [];
-        }
     }
 
     _sortIcon(field) {
