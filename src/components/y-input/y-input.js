@@ -19,6 +19,7 @@ export class YumeInput extends HTMLElement {
             "min",
             "max",
             "step",
+            "placeholder",
             "variant",
         ];
     }
@@ -66,7 +67,12 @@ export class YumeInput extends HTMLElement {
             return;
         }
 
-        if (name === "min" || name === "max" || name === "step") {
+        if (
+            name === "min" ||
+            name === "max" ||
+            name === "step" ||
+            name === "placeholder"
+        ) {
             if (this.input) {
                 if (newValue != null) {
                     this.input.setAttribute(name, newValue);
@@ -116,6 +122,15 @@ export class YumeInput extends HTMLElement {
     }
     set name(val) {
         this.setAttribute("name", val);
+    }
+
+    /** @type {string} Hint text shown when the input is empty. */
+    get placeholder() {
+        return this.getAttribute("placeholder") || "";
+    }
+    set placeholder(val) {
+        if (val == null || val === "") this.removeAttribute("placeholder");
+        else this.setAttribute("placeholder", val);
     }
 
     /** @type {string} Input size: "small" | "medium" | "large" (default "medium"). */
@@ -243,9 +258,11 @@ export class YumeInput extends HTMLElement {
         const min = this.getAttribute("min");
         const max = this.getAttribute("max");
         const step = this.getAttribute("step");
+        const placeholder = this.getAttribute("placeholder");
         if (min != null) input.setAttribute("min", min);
         if (max != null) input.setAttribute("max", max);
         if (step != null) input.setAttribute("step", step);
+        if (placeholder != null) input.setAttribute("placeholder", placeholder);
 
         const container = _el("div", { class: "input-container" }, [
             _el("slot", { name: "left-icon" }),
@@ -346,6 +363,11 @@ export class YumeInput extends HTMLElement {
                 color: inherit;
                 min-width: 0;
                 min-height: 20px;
+            }
+
+            input::placeholder {
+                color: var(--component-input-placeholder-color);
+                opacity: 1;
             }
 
             .input-container:hover {

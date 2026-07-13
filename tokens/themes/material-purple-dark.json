@@ -630,6 +630,12 @@
                     "$value": "{base.content.light}"
                 }
             },
+            "placeholder": {
+                "color": {
+                    "$type": "color",
+                    "$value": "{base.content.lightest}"
+                }
+            },
             "icon": {
                 "color": {
                     "$type": "color",

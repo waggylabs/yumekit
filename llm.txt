@@ -229,7 +229,7 @@ Attributes:
 
 Events: `change`, `input`
 
-CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`. Shared across all form fields: `--component-inputs-border-width` (applied as the `border-width` longhand — accepts a 1–4 value pattern for per-side widths, e.g. `0 0 1px 0`) and `--component-inputs-border-radius-outer` (also takes a 1–4 value pattern). For a true underlined field prefer `variant="underline"`, which also squares the bottom corners.
+CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-placeholder-color` (also used by `y-textarea`, `y-date`, and `y-color` for their placeholder text), `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`. Shared across all form fields: `--component-inputs-border-width` (applied as the `border-width` longhand — accepts a 1–4 value pattern for per-side widths, e.g. `0 0 1px 0`) and `--component-inputs-border-radius-outer` (also takes a 1–4 value pattern). For a true underlined field prefer `variant="underline"`, which also squares the bottom corners.
 
 ```html
 <y-input type="email" name="email" label="Email" required></y-input>

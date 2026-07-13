@@ -33,7 +33,13 @@ Delete any empty sections before publishing.
 
 ## [0.6.0]
 
+### Added
+
+- `y-input` and `y-textarea` support a `placeholder` attribute (and matching property), bringing them in line with `y-select`, `y-date`, and `y-color`. A new `--component-input-placeholder-color` token (defaulting to the `base.content.lightest` shade) styles the hint text across all 60 themes.
+
 ### Changed
+
+- Placeholder text in `y-date` and `y-color` now uses the new `--component-input-placeholder-color` token instead of `--base-content-light`, so it reads as clearly muted against the field's value text and is consistent with `y-input` and `y-textarea`.
 
 - Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
 

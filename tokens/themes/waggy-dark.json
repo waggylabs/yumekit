@@ -224,6 +224,7 @@
       "border": { "color": { "$type": "color", "$value": "{base.border}" } },
       "accent": { "$type": "color", "$value": "{primary.content.DEFAULT}" },
       "label": { "color": { "$type": "color", "$value": "{base.content.light}" } },
+      "placeholder": { "color": { "$type": "color", "$value": "{base.content.lightest}" } },
       "icon": { "color": { "$type": "color", "$value": "{base.content.lighter}" } },
       "error": {
         "color": { "$type": "color", "$value": "{error.content.DEFAULT}" },

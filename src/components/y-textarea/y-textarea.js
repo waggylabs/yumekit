@@ -16,6 +16,7 @@ export class YumeTextarea extends HTMLElement {
             "disabled",
             "invalid",
             "name",
+            "placeholder",
             "variant",
         ];
     }
@@ -63,6 +64,17 @@ export class YumeTextarea extends HTMLElement {
             return;
         }
 
+        if (name === "placeholder") {
+            if (this.textarea) {
+                if (newValue != null) {
+                    this.textarea.setAttribute("placeholder", newValue);
+                } else {
+                    this.textarea.removeAttribute("placeholder");
+                }
+            }
+            return;
+        }
+
         this.render();
     }
 
@@ -102,6 +114,15 @@ export class YumeTextarea extends HTMLElement {
     }
     set name(val) {
         this.setAttribute("name", val);
+    }
+
+    /** @type {string} Hint text shown when the textarea is empty. */
+    get placeholder() {
+        return this.getAttribute("placeholder") || "";
+    }
+    set placeholder(val) {
+        if (val == null || val === "") this.removeAttribute("placeholder");
+        else this.setAttribute("placeholder", val);
     }
 
     /** @type {number} Number of visible text rows (default 3). */
@@ -223,6 +244,7 @@ export class YumeTextarea extends HTMLElement {
         const textarea = _el("textarea", {
             part: "textarea",
             rows,
+            placeholder: this.getAttribute("placeholder"),
             disabled: isDisabled || null,
         });
 
@@ -313,6 +335,11 @@ export class YumeTextarea extends HTMLElement {
                 resize: vertical;
                 overflow-y: auto;
                 box-sizing: border-box;
+            }
+
+            textarea::placeholder {
+                color: var(--component-input-placeholder-color);
+                opacity: 1;
             }
 
             .input-container:hover {

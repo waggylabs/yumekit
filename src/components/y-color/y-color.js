@@ -471,7 +471,7 @@ export class YumeColor extends HTMLElement {
             }
 
             .display.is-placeholder {
-                color: var(--base-content-light);
+                color: var(--component-input-placeholder-color);
             }
 
             /* ── Clear button ── */

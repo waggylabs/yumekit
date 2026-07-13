@@ -982,7 +982,8 @@ export class YumeDate extends HTMLElement {
             }
 
             .display::placeholder {
-                color: var(--base-content-light);
+                color: var(--component-input-placeholder-color);
+                opacity: 1;
             }
 
             .cal-icon {

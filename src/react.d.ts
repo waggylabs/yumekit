@@ -361,6 +361,7 @@ declare module "react" {
                 type?: string;
                 name?: string;
                 value?: string;
+                placeholder?: string;
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
@@ -660,6 +661,7 @@ declare module "react" {
             "y-textarea": El<{
                 name?: string;
                 value?: string;
+                placeholder?: string;
                 rows?: string | number;
                 disabled?: boolean | string;
                 invalid?: boolean | string;

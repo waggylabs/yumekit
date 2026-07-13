@@ -310,7 +310,66 @@ describe("YumeTextarea", () => {
         document.body.removeChild(el);
     });
 
+    describe("placeholder", () => {
+        it("has no placeholder by default", async () => {
+            const el = await fixture(html`<y-textarea></y-textarea>`);
+            expect(el.shadowRoot.querySelector("textarea").placeholder).to.equal("");
+            expect(el.placeholder).to.equal("");
+        });
+
+        it("applies the placeholder attribute to the inner textarea", async () => {
+            const el = await fixture(
+                html`<y-textarea placeholder="Write something..."></y-textarea>`
+            );
+            expect(el.shadowRoot.querySelector("textarea").placeholder).to.equal(
+                "Write something..."
+            );
+        });
+
+        it("updates the inner textarea when the attribute changes", async () => {
+            const el = await fixture(
+                html`<y-textarea placeholder="First"></y-textarea>`
+            );
+            el.setAttribute("placeholder", "Second");
+            expect(el.shadowRoot.querySelector("textarea").placeholder).to.equal("Second");
+
+            el.removeAttribute("placeholder");
+            expect(el.shadowRoot.querySelector("textarea").placeholder).to.equal("");
+        });
+
+        it("reflects the placeholder property to the attribute", async () => {
+            const el = await fixture(html`<y-textarea></y-textarea>`);
+            el.placeholder = "Type here";
+            expect(el.getAttribute("placeholder")).to.equal("Type here");
+            expect(el.shadowRoot.querySelector("textarea").placeholder).to.equal("Type here");
+
+            el.placeholder = "";
+            expect(el.hasAttribute("placeholder")).to.be.false;
+        });
+
+        it("survives a re-render triggered by another attribute", async () => {
+            const el = await fixture(
+                html`<y-textarea placeholder="Keep me"></y-textarea>`
+            );
+            el.setAttribute("size", "large");
+            expect(el.shadowRoot.querySelector("textarea").placeholder).to.equal("Keep me");
+        });
+    });
+
     describe("XSS hardening", () => {
+        it("does not allow attribute breakout via placeholder", async () => {
+            const hostile = `Hi" onfocus="window.__xssTextareaPlaceholder=true" autofocus x="`;
+            const el = document.createElement("y-textarea");
+            el.setAttribute("placeholder", hostile);
+            document.body.appendChild(el);
+
+            expect(el.shadowRoot.querySelector("[onfocus]")).to.be.null;
+            expect(el.shadowRoot.querySelector("[autofocus]")).to.be.null;
+            expect(window.__xssTextareaPlaceholder).to.be.undefined;
+
+            document.body.removeChild(el);
+        });
+
         it("does not allow attribute breakout via rows", async () => {
             const hostile = `3" onfocus="window.__xssTextareaRows=true" autofocus x="`;
             const el = document.createElement("y-textarea");

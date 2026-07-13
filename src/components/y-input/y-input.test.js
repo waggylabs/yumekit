@@ -182,6 +182,48 @@ describe("<y-input>", () => {
         document.body.removeChild(el);
     });
 
+    describe("placeholder", () => {
+        it("has no placeholder by default", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("");
+            expect(el.placeholder).to.equal("");
+        });
+
+        it("applies the placeholder attribute to the inner input", async () => {
+            const el = await fixture(
+                html`<y-input placeholder="you@example.com"></y-input>`
+            );
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal(
+                "you@example.com"
+            );
+        });
+
+        it("updates the inner input when the attribute changes", async () => {
+            const el = await fixture(html`<y-input placeholder="First"></y-input>`);
+            el.setAttribute("placeholder", "Second");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("Second");
+
+            el.removeAttribute("placeholder");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("");
+        });
+
+        it("reflects the placeholder property to the attribute", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.placeholder = "Type here";
+            expect(el.getAttribute("placeholder")).to.equal("Type here");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("Type here");
+
+            el.placeholder = "";
+            expect(el.hasAttribute("placeholder")).to.be.false;
+        });
+
+        it("survives a re-render triggered by another attribute", async () => {
+            const el = await fixture(html`<y-input placeholder="Keep me"></y-input>`);
+            el.setAttribute("size", "large");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("Keep me");
+        });
+    });
+
     describe("XSS hardening", () => {
         const cases = [
             { name: "value", payload: `" onfocus="window.__xssInputValue=true" autofocus x="`, flag: "__xssInputValue" },
@@ -189,6 +231,7 @@ describe("<y-input>", () => {
             { name: "min",   payload: `0" onfocus="window.__xssInputMin=true" autofocus x="`,   flag: "__xssInputMin" },
             { name: "max",   payload: `9" onfocus="window.__xssInputMax=true" autofocus x="`,   flag: "__xssInputMax" },
             { name: "step",  payload: `1" onfocus="window.__xssInputStep=true" autofocus x="`,  flag: "__xssInputStep" },
+            { name: "placeholder", payload: `Hi" onfocus="window.__xssInputPlaceholder=true" autofocus x="`, flag: "__xssInputPlaceholder" },
         ];
 
         for (const { name, payload, flag } of cases) {

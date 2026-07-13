@@ -8,6 +8,10 @@ export default {
             control: "text",
             description: "Current textarea value.",
         },
+        placeholder: {
+            control: "text",
+            description: "Hint text shown when the textarea is empty.",
+        },
         rows: {
             control: "number",
             description: "Number of visible text rows.",
@@ -38,18 +42,28 @@ export default {
     },
     args: {
         value: "",
+        placeholder: "",
         rows: 3,
         size: "medium",
         labelPosition: "top",
         disabled: false,
         invalid: false,
     },
-    render: ({ value, rows, size, labelPosition, disabled, invalid }) => `
+    render: ({
+        value,
+        placeholder,
+        rows,
+        size,
+        labelPosition,
+        disabled,
+        invalid,
+    }) => `
         <y-textarea
             size="${size}"
             rows="${rows}"
             label-position="${labelPosition}"
             ${value ? `value="${value}"` : ""}
+            ${placeholder ? `placeholder="${placeholder}"` : ""}
             ${disabled ? "disabled" : ""}
             ${invalid ? "invalid" : ""}
             style="width:300px"
