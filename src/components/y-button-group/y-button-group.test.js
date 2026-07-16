@@ -143,6 +143,32 @@ describe("YumeButtonGroup", () => {
         expect(buttons[2].style.marginTop).to.equal("-1px");
     });
 
+    it("collapses by the full border width for thick-bordered themes", async () => {
+        const el = await fixture(html`
+            <y-button-group style="--component-button-border-width: 2px;">
+                <y-button>One</y-button>
+                <y-button>Two</y-button>
+            </y-button-group>
+        `);
+        await new Promise((r) => setTimeout(r, 0));
+        const buttons = el.querySelectorAll("y-button");
+        expect(buttons[1].style.marginLeft).to.equal("-2px");
+    });
+
+    it("uses the seam-side width from a multi-value (per-side) border shorthand", async () => {
+        // Waggy-style "top right bottom left" = 2px 2px 6px 2px.
+        const el = await fixture(html`
+            <y-button-group orientation="vertical" style="--component-button-border-width: 2px 2px 6px 2px;">
+                <y-button>Top</y-button>
+                <y-button>Bottom</y-button>
+            </y-button-group>
+        `);
+        await new Promise((r) => setTimeout(r, 0));
+        const buttons = el.querySelectorAll("y-button");
+        // Vertical seam collapses the top side, not the thick bottom shadow.
+        expect(buttons[1].style.marginTop).to.equal("-2px");
+    });
+
     it("re-applies child styles when orientation attribute changes", async () => {
         const el = await fixture(html`
             <y-button-group>

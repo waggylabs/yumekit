@@ -53,6 +53,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-button-group` now collapses the shared border between adjacent items by each item's actual border width instead of a fixed 1px, so thick-bordered themes (e.g. the Waggy themes' 2px outlines) no longer render doubled-up borders along the inner seams.
+
 - Properties assigned before a component upgrades (common in frameworks and with lazy-loaded bundles) are now reapplied through their accessors, so reflection and side effects run as expected. Components that set an explicit `:host` display also honor the `hidden` attribute again.
 
 ## [0.5.3]

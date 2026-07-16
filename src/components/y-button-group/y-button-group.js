@@ -31,8 +31,12 @@ export class YumeButtonGroup extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Layout direction: "horizontal" | "vertical" (default "horizontal"). */
-    get orientation() { return this.getAttribute("orientation") || "horizontal"; }
-    set orientation(val) { this.setAttribute("orientation", val); }
+    get orientation() {
+        return this.getAttribute("orientation") || "horizontal";
+    }
+    set orientation(val) {
+        this.setAttribute("orientation", val);
+    }
 
     // -------------------------------------------------------------------------
     // Private
@@ -61,8 +65,24 @@ export class YumeButtonGroup extends HTMLElement {
         `;
     }
 
+    _getBorderWidth(child, side) {
+        const style = getComputedStyle(child);
+        const raw = (
+            style.getPropertyValue("--component-button-border-width") ||
+            style.getPropertyValue("--component-inputs-border-width")
+        ).trim();
+        if (!raw) return "1px";
+
+        const parts = raw.split(/\s+/);
+        const [top, right = top, bottom = top, left = right] = parts;
+        const bySide = { top, right, bottom, left };
+        return bySide[side] || "1px";
+    }
+
     _getRadius() {
-        const val = getComputedStyle(this).getPropertyValue("--component-button-border-radius-outer").trim();
+        const val = getComputedStyle(this)
+            .getPropertyValue("--component-button-border-radius-outer")
+            .trim();
         return val || "4px";
     }
 
@@ -88,30 +108,62 @@ export class YumeButtonGroup extends HTMLElement {
             const isFirst = index === 0;
             const isLast = index === total - 1;
 
-            // Collapse the shared border between adjacent items
+            // Collapse the shared border between adjacent items by pulling each
+            // item back over its predecessor by its own seam-side border width,
+            // so thick-bordered themes don't double up along the seam.
             if (isVertical) {
                 child.style.marginLeft = "";
-                child.style.marginTop = isFirst ? "" : "-1px";
+                child.style.marginTop = isFirst
+                    ? ""
+                    : `-${this._getBorderWidth(child, "top")}`;
             } else {
                 child.style.marginTop = "";
-                child.style.marginLeft = isFirst ? "" : "-1px";
+                child.style.marginLeft = isFirst
+                    ? ""
+                    : `-${this._getBorderWidth(child, "left")}`;
             }
 
             // Override border-radius on all child types via their respective CSS custom properties
             if (total === 1) {
-                child.style.removeProperty("--component-button-border-radius-outer");
-                child.style.removeProperty("--component-inputs-border-radius-outer");
+                child.style.removeProperty(
+                    "--component-button-border-radius-outer",
+                );
+                child.style.removeProperty(
+                    "--component-inputs-border-radius-outer",
+                );
             } else if (isFirst) {
-                const value = isVertical ? `${radius} ${radius} 0 0` : `${radius} 0 0 ${radius}`;
-                child.style.setProperty("--component-button-border-radius-outer", value);
-                child.style.setProperty("--component-inputs-border-radius-outer", value);
+                const value = isVertical
+                    ? `${radius} ${radius} 0 0`
+                    : `${radius} 0 0 ${radius}`;
+                child.style.setProperty(
+                    "--component-button-border-radius-outer",
+                    value,
+                );
+                child.style.setProperty(
+                    "--component-inputs-border-radius-outer",
+                    value,
+                );
             } else if (isLast) {
-                const value = isVertical ? `0 0 ${radius} ${radius}` : `0 ${radius} ${radius} 0`;
-                child.style.setProperty("--component-button-border-radius-outer", value);
-                child.style.setProperty("--component-inputs-border-radius-outer", value);
+                const value = isVertical
+                    ? `0 0 ${radius} ${radius}`
+                    : `0 ${radius} ${radius} 0`;
+                child.style.setProperty(
+                    "--component-button-border-radius-outer",
+                    value,
+                );
+                child.style.setProperty(
+                    "--component-inputs-border-radius-outer",
+                    value,
+                );
             } else {
-                child.style.setProperty("--component-button-border-radius-outer", "0");
-                child.style.setProperty("--component-inputs-border-radius-outer", "0");
+                child.style.setProperty(
+                    "--component-button-border-radius-outer",
+                    "0",
+                );
+                child.style.setProperty(
+                    "--component-inputs-border-radius-outer",
+                    "0",
+                );
             }
         });
     }
