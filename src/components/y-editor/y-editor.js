@@ -230,7 +230,7 @@ export class YumeEditor extends HTMLElement {
         document.addEventListener("selectionchange", this._onSelectionChange);
 
         if (this.hasAttribute("value")) {
-            this._setHtml(this.getAttribute("value"));
+            this.value = this.getAttribute("value");
         } else {
             this._normalizeDocument();
         }
@@ -258,7 +258,10 @@ export class YumeEditor extends HTMLElement {
 
         switch (name) {
             case "value":
-                if (!this._reflecting) this._setHtml(newValue);
+                if (!this._reflecting) {
+                    this._setHtml(newValue);
+                    this._reflect();
+                }
                 this._internals.setFormValue(this.value, this.name || null);
                 this._updateValidity();
                 break;
@@ -455,11 +458,18 @@ export class YumeEditor extends HTMLElement {
 
     /**
      * @type {string} Plain-text content of the document, as used by `required`
-     * and `max-length`. Read-only — this shadows `Node.prototype.textContent`
-     * so the plain text of the *document* is what callers see.
+     * and `max-length`. Effectively read-only: this shadows
+     * `Node.prototype.textContent` so callers read the plain text of the
+     * *document*. Assignment is ignored rather than throwing — a getter-only
+     * accessor makes `el.textContent = …` throw in strict mode, which breaks
+     * frameworks and utilities that clear a node that way. Set `value` to
+     * change the content.
      */
     get textContent() {
         return this._plainText();
+    }
+    set textContent(_value) {
+        // No-op: content is set through `value`, not textContent.
     }
 
     /**
@@ -1379,6 +1389,12 @@ export class YumeEditor extends HTMLElement {
         );
     }
 
+    /** Whether `sel` carries no active block or inline formatting. */
+    _isEmptySelection(sel) {
+        const empty = this._emptySelection();
+        return Object.keys(empty).every((key) => sel[key] === empty[key]);
+    }
+
     _listItemAtCaret() {
         const range = this._currentRange();
         if (!range) return null;
@@ -1605,6 +1621,10 @@ export class YumeEditor extends HTMLElement {
 
     _onSelectionChange() {
         if (!this.isConnected) return;
+
+        if (!this._currentRange() && this._isEmptySelection(this._selection)) {
+            return;
+        }
         this._refreshSelection();
     }
 

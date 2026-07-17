@@ -195,6 +195,23 @@ describe("y-editor", () => {
             expect(el.value).to.equal("<p>seed</p>");
         });
 
+        it("reflects the sanitized value back to the attribute on connect", async () => {
+            const el = await fixture(html`<y-editor value="bare"></y-editor>`);
+            expect(el.value).to.equal("<p>bare</p>");
+            expect(el.getAttribute("value")).to.equal("<p>bare</p>");
+        });
+
+        it("reflects the sanitized value when the attribute is set at runtime", async () => {
+            const el = await fixture(html`<y-editor></y-editor>`);
+            el.setAttribute(
+                "value",
+                "<p>hi</p><script>window.__pwn = 1;</script>",
+            );
+            expect(el.value).to.equal("<p>hi</p>");
+            expect(el.getAttribute("value")).to.equal("<p>hi</p>");
+            expect(el.getAttribute("value")).to.not.contain("script");
+        });
+
         it("reports empty rather than <p></p>", async () => {
             const el = await fixture(html`<y-editor></y-editor>`);
             el.value = "<p></p>";
@@ -233,6 +250,16 @@ describe("y-editor", () => {
             el.value = "<p>Hello <strong>world</strong></p>";
             expect(el.textContent).to.equal("Hello world");
         });
+
+        it("ignores assignment instead of throwing", async () => {
+            const el = await fixture(html`<y-editor></y-editor>`);
+            el.value = "<p>Hello</p>";
+            expect(() => {
+                el.textContent = "";
+            }).to.not.throw();
+            expect(el.textContent).to.equal("Hello");
+            expect(el.value).to.equal("<p>Hello</p>");
+        });
     });
 
     describe("selection", () => {
@@ -251,6 +278,24 @@ describe("y-editor", () => {
             selectAll(el);
             await new Promise((r) => setTimeout(r, 0));
             expect(el.selection.link).to.equal("https://example.com");
+        });
+
+        it("skips recompute for outside selections when already empty", async () => {
+            const el = await fixture(html`<y-editor></y-editor>`);
+            document.getSelection().removeAllRanges();
+            el._selection = el._emptySelection();
+            const spy = sandbox.spy(el, "_refreshSelection");
+            document.dispatchEvent(new Event("selectionchange"));
+            expect(spy.called).to.be.false;
+        });
+
+        it("still recomputes when leaving a non-empty selection", async () => {
+            const el = await fixture(html`<y-editor></y-editor>`);
+            document.getSelection().removeAllRanges();
+            el._selection = { ...el._emptySelection(), bold: true };
+            const spy = sandbox.spy(el, "_refreshSelection");
+            document.dispatchEvent(new Event("selectionchange"));
+            expect(spy.called).to.be.true;
         });
     });
 
