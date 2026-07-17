@@ -1,5 +1,35 @@
 {
     "component": {
+        "editor": {
+            "border": {
+                "radius": {
+                    "$type": "borderRadius",
+                    "$value": "{radii.small}"
+                },
+                "width": {
+                    "$type": "borderWidth",
+                    "$value": "{border.thin}"
+                }
+            },
+            "padding": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "font-size": {
+                "$type": "dimension",
+                "$value": "1em"
+            },
+            "line-height": {
+                "$type": "number",
+                "$value": 1.6
+            },
+            "toolbar": {
+                "gap": {
+                    "$type": "spacing",
+                    "$value": "{spacing.x-small}"
+                }
+            }
+        },
         "animate": {
             "duration": {
                 "$type": "number",
