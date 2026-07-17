@@ -658,6 +658,23 @@ declare module "react" {
                 "off-color"?: string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-editor": El<{
+                name?: string;
+                value?: string;
+                mode?: "rich";
+                toolbar?: string;
+                placeholder?: string;
+                rows?: string | number;
+                "max-length"?: string | number;
+                "show-count"?: boolean | string;
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                readonly?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                "allowed-blocks"?: string;
+                "image-upload"?: boolean | string;
+            }>;
             "y-textarea": El<{
                 name?: string;
                 value?: string;

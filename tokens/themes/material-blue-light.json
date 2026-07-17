@@ -359,6 +359,82 @@
         }
     },
     "component": {
+        "editor": {
+            "background": {
+                "$type": "color",
+                "$value": "{base.background.component}"
+            },
+            "color": {
+                "$type": "color",
+                "$value": "{base.content.DEFAULT}"
+            },
+            "border": {
+                "color": {
+                    "DEFAULT": {
+                        "$type": "color",
+                        "$value": "{base.border}"
+                    },
+                    "focus": {
+                        "$type": "color",
+                        "$value": "{primary.content.DEFAULT}"
+                    },
+                    "invalid": {
+                        "$type": "color",
+                        "$value": "{error.border}"
+                    }
+                }
+            },
+            "placeholder": {
+                "color": {
+                    "$type": "color",
+                    "$value": "{base.content.lightest}"
+                }
+            },
+            "toolbar": {
+                "background": {
+                    "$type": "color",
+                    "$value": "{base.background.app}"
+                },
+                "border": {
+                    "color": {
+                        "$type": "color",
+                        "$value": "{base.border}"
+                    }
+                }
+            },
+            "link": {
+                "color": {
+                    "$type": "color",
+                    "$value": "{primary.content.DEFAULT}"
+                }
+            },
+            "code": {
+                "background": {
+                    "$type": "color",
+                    "$value": "{base.background.hover}"
+                }
+            },
+            "blockquote": {
+                "border": {
+                    "color": {
+                        "$type": "color",
+                        "$value": "{base.border}"
+                    }
+                }
+            },
+            "counter": {
+                "color": {
+                    "DEFAULT": {
+                        "$type": "color",
+                        "$value": "{base.content.light}"
+                    },
+                    "invalid": {
+                        "$type": "color",
+                        "$value": "{error.content.DEFAULT}"
+                    }
+                }
+            }
+        },
         "appbar": {
             "background": {
                 "$type": "color",

@@ -25,6 +25,7 @@ import bell from "./bell.svg";
 import bluetooth from "./bluetooth.svg";
 import briefcase from "./briefcase.svg";
 import bolt from "./bolt.svg";
+import bold from "./bold.svg";
 import bookmark from "./bookmark.svg";
 import calendar from "./calendar.svg";
 import campfire from "./campfire.svg";
@@ -94,17 +95,20 @@ import flask from "./flask.svg";
 import gasoline from "./gasoline.svg";
 import folder from "./folder.svg";
 import github from "./github.svg";
+import heading from "./heading.svg";
 import heart from "./heart.svg";
 import globe from "./globe.svg";
 import grid from "./grid.svg";
 import home from "./home.svg";
 import image from "./image.svg";
+import italic from "./italic.svg";
 import layout from "./layout.svg";
 import leftFromBracket from "./left-from-bracket.svg";
 import leftToBracket from "./left-to-bracket.svg";
 import link from "./link.svg";
 import listBullet from "./list-bullet.svg";
 import listCheck from "./list-check.svg";
+import listOrdered from "./list-ordered.svg";
 import lock from "./lock.svg";
 import mail from "./mail.svg";
 import mapMarker from "./map-marker.svg";
@@ -147,6 +151,9 @@ import thermometerHigh from "./thermometer-high.svg";
 import thermometerLow from "./thermometer-low.svg";
 import wrench from "./wrench.svg";
 import trash from "./trash.svg";
+import strikethrough from "./strikethrough.svg";
+import quote from "./quote.svg";
+import underline from "./underline.svg";
 import undo from "./undo.svg";
 import unlock from "./unlock.svg";
 import upFromBracket from "./up-from-bracket.svg";
@@ -169,6 +176,7 @@ registerIcons({
     bluetooth,
     bolt,
     briefcase,
+    bold,
     bookmark,
     calendar,
     campfire,
@@ -240,16 +248,19 @@ registerIcons({
 
     github,
     globe,
+    heading,
     heart,
     grid,
     home,
     image,
+    italic,
     layout,
     "left-from-bracket": leftFromBracket,
     "left-to-bracket": leftToBracket,
     link,
     "list-bullet": listBullet,
     "list-check": listCheck,
+    "list-ordered": listOrdered,
     lock,
     mail,
     "map-marker": mapMarker,
@@ -292,6 +303,9 @@ registerIcons({
     "thermometer-low": thermometerLow,
     wrench,
     trash,
+    quote,
+    strikethrough,
+    underline,
     undo,
     unlock,
     "up-from-bracket": upFromBracket,

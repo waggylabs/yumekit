@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-editor` — a form-associated rich text (WYSIWYG) editor built on native `contenteditable` and the Selection/Range APIs. A new shared HTML sanitizer (`src/modules/html-sanitizer.js`, alongside `svg-sanitizer.js`) gates every path that can introduce markup — the `value` setter, the default slot, and paste — and ships with seven new formatting icons (`bold`, `italic`, `underline`, `strikethrough`, `heading`, `quote`, `list-ordered`) plus `--component-editor-*` tokens across all 60 themes.
+
 - `y-input` and `y-textarea` support a `placeholder` attribute (and matching property), bringing them in line with `y-select`, `y-date`, and `y-color`. A new `--component-input-placeholder-color` token (defaulting to the `base.content.lightest` shade) styles the hint text across all 60 themes.
 
 ### Changed
@@ -42,6 +44,12 @@ Delete any empty sections before publishing.
 - Placeholder text in `y-date` and `y-color` now uses the new `--component-input-placeholder-color` token instead of `--base-content-light`, so it reads as clearly muted against the field's value text and is consistent with `y-input` and `y-textarea`.
 
 - Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
+
+### Fixed
+
+- `y-button-group` now collapses the shared border between adjacent items by each item's actual border width instead of a fixed 1px, so thick-bordered themes (e.g. the Waggy themes' 2px outlines) no longer render doubled-up borders along the inner seams.
+
+- Properties assigned before a component upgrades (common in frameworks and with lazy-loaded bundles) are now reapplied through their accessors, so reflection and side effects run as expected. Components that set an explicit `:host` display also honor the `hidden` attribute again.
 
 ### Migration
 
@@ -51,13 +59,7 @@ Delete any empty sections before publishing.
 
 - Mutating a returned rich-data array in place (`el.items.push(...)`) now aliases the component's internal array but does not trigger a re-render. Reassign the property to apply changes: `el.items = [...el.items, next]`.
 
-### Fixed
-
-- `y-button-group` now collapses the shared border between adjacent items by each item's actual border width instead of a fixed 1px, so thick-bordered themes (e.g. the Waggy themes' 2px outlines) no longer render doubled-up borders along the inner seams.
-
-- Properties assigned before a component upgrades (common in frameworks and with lazy-loaded bundles) are now reapplied through their accessors, so reflection and side effects run as expected. Components that set an explicit `:host` display also honor the `hidden` attribute again.
-
-## [0.5.3]
+## [0.5.3] - 2026-07-07
 
 ### Changed
 

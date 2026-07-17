@@ -292,6 +292,61 @@ Events: `change`, `input`
 
 ---
 
+## y-editor
+
+Form-associated. Rich text (WYSIWYG) editor built on `contenteditable`; its value is sanitized HTML. Use `y-textarea` for plain multi-line text and `y-code` for read-only code display.
+
+| Attribute        | Values / Notes                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| `name`           | form field name                                                                                     |
+| `value`          | content as sanitized HTML; reflected on `change`, not on every keystroke                             |
+| `mode`           | `rich` — default and only supported value in v1; reserved for a future markdown mode                 |
+| `toolbar`        | space-separated tool ids, `\|` for a group separator; `false` hides the toolbar                      |
+| `placeholder`    | shown when the editor is empty                                                                       |
+| `rows`           | visible rows at the default font size (default: `6`)                                                 |
+| `max-length`     | max character count of the plain text; blocks further input and marks invalid                        |
+| `show-count`     | boolean — renders a character counter (`n / max-length` when `max-length` is set)                    |
+| `size`           | `small` \| `medium` \| `large`                                                                       |
+| `disabled`       | boolean — non-editable, non-focusable, excluded from submission                                      |
+| `readonly`       | boolean — non-editable but focusable; toolbar hidden; still submits                                  |
+| `required`       | boolean — invalid when the plain-text content is empty                                               |
+| `invalid`        | boolean — applies error state                                                                        |
+| `allowed-blocks` | space-separated block types (default: `p h1 h2 h3 blockquote ul ol code`); anything else becomes `p` |
+| `image-upload`   | boolean — routes image insertion through the `image-upload` event instead of inlining the source     |
+
+Tool ids for `toolbar`: `bold`, `italic`, `underline`, `strike`, `inline-code`, `heading`, `blockquote`, `code`, `ordered-list`, `unordered-list`, `link`, `image`, `undo`, `redo`. Default: `bold italic underline strike | heading blockquote code | ordered-list unordered-list | link image | undo redo`. Block tools are dropped automatically when `allowed-blocks` does not permit what they produce, so `allowed-blocks` is the single source of truth.
+
+Properties (not attributes): `selection` (readonly) — `{blockType, bold, italic, underline, strike, code, link}` at the caret; `textContent` (readonly) — plain text of the document.
+
+Slots: default (initial content — parsed, sanitized, adopted as the starting value when no `value` attribute is present), `label`, `toolbar-start`, `toolbar-end`, `footer` (replaces the character counter).
+
+Events: `input` `{value}`, `change` `{value}` (on blur when changed), `selection-change` `{selection}`, `image-upload` `{file, insert(url), reject(reason)}`, `link-click` `{href, text}` (cancelable — canceling suppresses the link popover).
+
+Methods: `undo()`, `redo()`, `focus()`, `checkValidity()`, `reportValidity()`.
+
+Shortcuts: Ctrl/Cmd+B bold, +I italic, +U underline, +K link, +Shift+X strike, +E inline code, +Alt+1..3 headings, +Shift+7/8 ordered/unordered list, +Shift+. blockquote, +Z / +Shift+Z undo/redo, +Shift+V paste as plain text. `Tab` moves focus out of the surface (it indents inside a list), so the editor is never a keyboard trap.
+
+**Security:** every path that introduces HTML (`value`, the default slot, paste) runs through `src/modules/html-sanitizer.js`. Only the tags implied by `allowed-blocks` plus inline formatting, `<a>` and `<img>` survive; `on*`, `<script>`, `<style>`, `<iframe>` are stripped; only `http`, `https`, `mailto` and `data:` raster images are permitted on `href` / `src`.
+
+**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`
+
+**CSS Parts:** `wrapper`, `label`, `toolbar`, `toolbar-group`, `toolbar-button`, `editor`, `content`, `footer`, `counter`, `link-popover`
+
+```html
+<y-editor
+    name="body"
+    placeholder="Write something..."
+    rows="8"
+    show-count
+    max-length="500"
+>
+    <span slot="label">Description</span>
+</y-editor>
+<y-editor name="comment" toolbar="bold italic | link" allowed-blocks="p ul ol">
+    <span slot="label">Comment</span>
+</y-editor>
+```
+
 ## y-select
 
 Form-associated.
