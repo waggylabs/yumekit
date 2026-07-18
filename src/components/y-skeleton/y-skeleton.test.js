@@ -85,13 +85,36 @@ describe("YumeSkeleton", () => {
         expect(el.style.getPropertyValue("--_skeleton-h")).to.equal("2rem");
     });
 
-    it("rejects an unsafe width and does not paint it", async () => {
+    it("rejects a value that is not a valid width and does not paint it", async () => {
         const hostile = "120px; } :host { background: red;";
         const el = await fixture(
             html`<y-skeleton width=${hostile}></y-skeleton>`,
         );
         expect(el.style.getPropertyValue("--_skeleton-w")).to.equal("");
         expect(getStyleText(el)).to.not.include("background: red");
+    });
+
+    it("accepts calc() and var() expressions as dimensions", async () => {
+        const el = await fixture(
+            html`<y-skeleton
+                width="calc(100% - 16px)"
+                height="var(--x, 2rem)"
+            ></y-skeleton>`,
+        );
+        expect(el.style.getPropertyValue("--_skeleton-w")).to.equal(
+            "calc(100% - 16px)",
+        );
+        expect(el.style.getPropertyValue("--_skeleton-h")).to.equal(
+            "var(--x, 2rem)",
+        );
+    });
+
+    it("rejects unitless non-zero numbers and negative lengths", async () => {
+        const el = await fixture(
+            html`<y-skeleton width="2" height="-4px"></y-skeleton>`,
+        );
+        expect(el.style.getPropertyValue("--_skeleton-w")).to.equal("");
+        expect(el.style.getPropertyValue("--_skeleton-h")).to.equal("");
     });
 
     it("clears the width custom property when the attribute is removed", async () => {

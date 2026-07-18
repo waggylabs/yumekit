@@ -474,6 +474,12 @@ describe("<y-select>", () => {
             expect(el.options).to.deep.equal([]);
         });
 
+        it("options getter returns empty array for a non-array JSON value", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.setAttribute("options", '{"value":"x"}');
+            expect(el.options).to.deep.equal([]);
+        });
+
         it("required setter adds and removes the required attribute", async () => {
             const el = await fixture(html`<y-select></y-select>`);
             el.required = true;

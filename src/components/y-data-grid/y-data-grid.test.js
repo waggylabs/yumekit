@@ -406,6 +406,14 @@ describe("YumeDataGrid", () => {
         expect(trs.length).to.equal(1);
     });
 
+    it("columns and data getters return [] when a non-array is assigned", async () => {
+        const el = await fixture(html`<y-data-grid></y-data-grid>`);
+        el.setAttribute("columns", '{"key":"x"}');
+        el.setAttribute("data", '{"name":"X"}');
+        expect(el.columns).to.deep.equal([]);
+        expect(el.data).to.deep.equal([]);
+    });
+
     // ---------------------------------------------------------------- selection
 
     it("renders a checkbox column when enable-selection is set", async () => {

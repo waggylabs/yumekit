@@ -640,24 +640,26 @@ export function upgradeProperties(el) {
 
 /**
  * Coerce a rich-data value (array/object) for a property whose matching
- * attribute may carry a JSON string. Objects and arrays pass through with their
- * identity intact; a JSON string is parsed once; anything nullish or unparseable
- * falls back. Use in a property setter and in `attributeChangedCallback` so both
- * the imperative and declarative paths converge on the same stored value.
- * Rich data is intentionally not reflected back to the attribute.
+ * attribute may carry a JSON string. Non-null objects and arrays pass through
+ * with their identity intact; a JSON string is parsed once and kept only if it
+ * yields a non-null object/array. Everything else — nullish, a primitive, an
+ * unparseable string, or a string that parses to a primitive (e.g. `"42"`,
+ * `"null"`) — returns the fallback, so callers can safely assume the result is
+ * a non-null object/array. Use in a property setter and in
+ * `attributeChangedCallback` so both the imperative and declarative paths
+ * converge on the same stored value. Rich data is intentionally not reflected
+ * back to the attribute.
  * @param {*} val — an array/object, a JSON string, or nullish
- * @param {*} [fallback=[]] — value returned for nullish/unparseable input
+ * @param {*} [fallback=[]] — value returned for anything that isn't a non-null object/array
  * @returns {*}
  */
 export function coerceRichData(val, fallback = []) {
-    if (val === null || val === undefined) return fallback;
     if (typeof val === "string") {
         try {
-            const parsed = JSON.parse(val);
-            return parsed ?? fallback;
+            val = JSON.parse(val);
         } catch {
             return fallback;
         }
     }
-    return val;
+    return val !== null && typeof val === "object" ? val : fallback;
 }

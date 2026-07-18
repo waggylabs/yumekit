@@ -183,7 +183,7 @@ export class YumeSelect extends HTMLElement {
 
     /** @type {Array<{value: string, label: string}>} The options for the select. Rich data held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
-        return this._options ?? [];
+        return Array.isArray(this._options) ? this._options : [];
     }
     set options(val) {
         this._options = coerceRichData(val);

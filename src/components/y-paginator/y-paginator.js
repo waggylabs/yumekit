@@ -199,7 +199,9 @@ export class YumePaginator extends HTMLElement {
      * least one option is available.
      */
     get pageSizeOptions() {
-        return this._pageSizeOptions ?? [];
+        return Array.isArray(this._pageSizeOptions)
+            ? this._pageSizeOptions
+            : [];
     }
     set pageSizeOptions(v) {
         this._pageSizeOptions = coerceRichData(v);

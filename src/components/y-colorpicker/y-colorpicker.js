@@ -90,7 +90,9 @@ export class YumeColorpicker extends HTMLElement {
      * after an imperative set.
      */
     get formats() {
-        return this._formats ?? ["hex", "rgb", "hsl", "hsv"];
+        return Array.isArray(this._formats)
+            ? this._formats
+            : ["hex", "rgb", "hsl", "hsv"];
     }
     set formats(val) {
         this._formats = coerceRichData(val, null);

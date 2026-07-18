@@ -867,6 +867,21 @@ describe("helpers", () => {
             expect(coerceRichData("{bad", { x: 1 })).to.deep.equal({ x: 1 });
         });
 
+        it("returns the fallback for primitive input", () => {
+            expect(coerceRichData(42)).to.deep.equal([]);
+            expect(coerceRichData(true)).to.deep.equal([]);
+            const fallback = { x: 1 };
+            expect(coerceRichData(7, fallback)).to.equal(fallback);
+        });
+
+        it("returns the fallback for a string that parses to a primitive", () => {
+            // "42" and "null" are valid JSON but not rich data; callers assume
+            // a non-null object/array, so these must not pass through.
+            expect(coerceRichData("42")).to.deep.equal([]);
+            expect(coerceRichData('"hello"')).to.deep.equal([]);
+            expect(coerceRichData("null", { x: 1 })).to.deep.equal({ x: 1 });
+        });
+
         it("preserves non-serializable fields on a passed-through value", () => {
             const fn = () => {};
             expect(coerceRichData([{ onClick: fn }])[0].onClick).to.equal(fn);

@@ -6,12 +6,6 @@ import {
 const VALID_VARIANTS = new Set(["text", "circle", "rect"]);
 const VALID_ANIMATIONS = new Set(["pulse", "wave", "none"]);
 
-// Any CSS length or percentage. Gates width/height before they are painted into
-// an inline custom property so a hostile value cannot close the declaration and
-// inject markup or other rules.
-const SAFE_LENGTH_RE =
-    /^-?\d+(\.\d+)?(px|%|em|rem|vh|vw|vmin|vmax|ch|ex|cm|mm|in|pt|pc)?$/;
-
 export class YumeSkeleton extends HTMLElement {
     static get observedAttributes() {
         return ["variant", "width", "height", "lines", "animation"];
@@ -105,6 +99,50 @@ export class YumeSkeleton extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
+    _animationCSS() {
+        const duration =
+            "var(--component-skeleton-animation-duration, 1500ms)";
+
+        if (this.animation === "pulse") {
+            return `
+                .shape {
+                    animation: yk-skeleton-pulse ${duration} ease-in-out infinite;
+                }
+                @keyframes yk-skeleton-pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.4; }
+                }
+            `;
+        }
+
+        if (this.animation === "wave") {
+            return `
+                .shape {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .shape::after {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    transform: translateX(-100%);
+                    background: linear-gradient(
+                        90deg,
+                        transparent,
+                        var(--component-skeleton-highlight, rgba(255, 255, 255, 0.6)),
+                        transparent
+                    );
+                    animation: yk-skeleton-wave ${duration} linear infinite;
+                }
+                @keyframes yk-skeleton-wave {
+                    100% { transform: translateX(100%); }
+                }
+            `;
+        }
+
+        return "";
+    }
+
     _applyDimensions() {
         const width = this._safeLength(this.width);
         if (width) this.style.setProperty("--_skeleton-w", width);
@@ -113,46 +151,6 @@ export class YumeSkeleton extends HTMLElement {
         const height = this._safeLength(this.height);
         if (height) this.style.setProperty("--_skeleton-h", height);
         else this.style.removeProperty("--_skeleton-h");
-    }
-
-    _buildBars() {
-        const count = this.lines;
-        const bars = [];
-        for (let i = 0; i < count; i++) {
-            const shortLast = count > 1 && i === count - 1;
-            bars.push(
-                _el("div", {
-                    class: `shape bar${shortLast ? " bar--short" : ""}`,
-                    part: "skeleton",
-                }),
-            );
-        }
-        return _el("div", { class: "lines" }, bars);
-    }
-
-    _buildStyleSheet() {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(
-            [
-                this._baseCSS(),
-                this._variantCSS(),
-                this._animationCSS(),
-                this._reducedMotionCSS(),
-            ].join("\n"),
-        );
-        return sheet;
-    }
-
-    _buildView() {
-        const view =
-            this.variant === "text"
-                ? this._buildBars()
-                : _el("div", { class: "shape single", part: "skeleton" });
-
-        return _el("div", { class: "root", "aria-hidden": "true" }, [
-            _el("div", { class: "sizer" }, [_el("slot")]),
-            view,
-        ]);
     }
 
     _baseCSS() {
@@ -196,6 +194,92 @@ export class YumeSkeleton extends HTMLElement {
                 box-sizing: border-box;
             }
         `;
+    }
+
+    _buildBars() {
+        const count = this.lines;
+        const bars = [];
+        for (let i = 0; i < count; i++) {
+            const shortLast = count > 1 && i === count - 1;
+            bars.push(
+                _el("div", {
+                    class: `shape bar${shortLast ? " bar--short" : ""}`,
+                    part: "skeleton",
+                }),
+            );
+        }
+        return _el("div", { class: "lines" }, bars);
+    }
+
+    _buildStyleSheet() {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(
+            [
+                this._baseCSS(),
+                this._variantCSS(),
+                this._animationCSS(),
+                this._reducedMotionCSS(),
+            ].join("\n"),
+        );
+        return sheet;
+    }
+
+    _buildView() {
+        const view =
+            this.variant === "text"
+                ? this._buildBars()
+                : _el("div", { class: "shape single", part: "skeleton" });
+
+        return _el("div", { class: "root", "aria-hidden": "true" }, [
+            _el("div", { class: "sizer" }, [_el("slot")]),
+            view,
+        ]);
+    }
+
+    _onSlotChange() {
+        const slot = this.shadowRoot.querySelector("slot");
+        const root = this.shadowRoot.querySelector(".root");
+        if (!slot || !root) return;
+        const hasContent = slot
+            .assignedNodes({ flatten: true })
+            .some((n) => n.nodeType === Node.ELEMENT_NODE);
+        root.classList.toggle("has-content", hasContent);
+    }
+
+    _reducedMotionCSS() {
+        // Honour the OS "reduce motion" preference: fall back to a static block
+        // equivalent to animation="none" regardless of the animation attribute.
+        return `
+            @media (prefers-reduced-motion: reduce) {
+                .shape {
+                    animation: none;
+                }
+                .shape::after {
+                    content: none;
+                    animation: none;
+                }
+            }
+        `;
+    }
+
+    _safeLength(value) {
+        // Accept anything that is a valid `width`/`height` value — lengths,
+        // percentages, `calc(...)`, `var(--token)`, keywords — and reject the
+        // rest (unitless non-zero numbers, negatives, junk) so the downstream
+        // `width: var(--_skeleton-w, …)` declaration never becomes invalid.
+        // The value reaches the shape only via `setProperty` + `var()`
+        // substitution in a width context, so an invalid substitution simply
+        // drops the declaration rather than injecting anything.
+        if (!value) return "";
+        const str = String(value).trim();
+        if (
+            typeof CSS !== "undefined" &&
+            CSS.supports &&
+            CSS.supports("width", str)
+        ) {
+            return str;
+        }
+        return "";
     }
 
     _variantCSS() {
@@ -248,82 +332,6 @@ export class YumeSkeleton extends HTMLElement {
                 inset: 0;
             }
         `;
-    }
-
-    _animationCSS() {
-        const duration =
-            "var(--component-skeleton-animation-duration, 1500ms)";
-
-        if (this.animation === "pulse") {
-            return `
-                .shape {
-                    animation: yk-skeleton-pulse ${duration} ease-in-out infinite;
-                }
-                @keyframes yk-skeleton-pulse {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.4; }
-                }
-            `;
-        }
-
-        if (this.animation === "wave") {
-            return `
-                .shape {
-                    position: relative;
-                    overflow: hidden;
-                }
-                .shape::after {
-                    content: "";
-                    position: absolute;
-                    inset: 0;
-                    transform: translateX(-100%);
-                    background: linear-gradient(
-                        90deg,
-                        transparent,
-                        var(--component-skeleton-highlight, rgba(255, 255, 255, 0.6)),
-                        transparent
-                    );
-                    animation: yk-skeleton-wave ${duration} linear infinite;
-                }
-                @keyframes yk-skeleton-wave {
-                    100% { transform: translateX(100%); }
-                }
-            `;
-        }
-
-        return "";
-    }
-
-    _reducedMotionCSS() {
-        // Honour the OS "reduce motion" preference: fall back to a static block
-        // equivalent to animation="none" regardless of the animation attribute.
-        return `
-            @media (prefers-reduced-motion: reduce) {
-                .shape {
-                    animation: none;
-                }
-                .shape::after {
-                    content: none;
-                    animation: none;
-                }
-            }
-        `;
-    }
-
-    _onSlotChange() {
-        const slot = this.shadowRoot.querySelector("slot");
-        const root = this.shadowRoot.querySelector(".root");
-        if (!slot || !root) return;
-        const hasContent = slot
-            .assignedNodes({ flatten: true })
-            .some((n) => n.nodeType === Node.ELEMENT_NODE);
-        root.classList.toggle("has-content", hasContent);
-    }
-
-    _safeLength(value) {
-        if (!value) return "";
-        const str = String(value).trim();
-        return SAFE_LENGTH_RE.test(str) ? str : "";
     }
 }
 
