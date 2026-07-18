@@ -122,7 +122,9 @@ export class YumeColor extends HTMLElement {
      * after an imperative set.
      */
     get formats() {
-        return this._formats ?? ["hex", "rgb", "hsl", "hsv"];
+        return Array.isArray(this._formats)
+            ? this._formats
+            : ["hex", "rgb", "hsl", "hsv"];
     }
     set formats(v) {
         this._formats = coerceRichData(v, null);

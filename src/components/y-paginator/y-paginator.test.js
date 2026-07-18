@@ -413,6 +413,20 @@ describe("YumePaginator", () => {
         expect(el.pageSizeOptions).to.deep.equal([10, 25, 50]);
     });
 
+    it("returns [] when page-size-options coerces to a non-array value", async () => {
+        // A JSON object (not an array) is valid rich data but not a valid
+        // options list; the getter must still return an array so callers can
+        // safely read .length / .map.
+        const el = await fixture(
+            html`<y-paginator
+                total-pages="5"
+                page-size-options='{"value":10}'
+            ></y-paginator>`,
+        );
+        expect(el.pageSizeOptions).to.deep.equal([]);
+        expect(el.shadowRoot.querySelector(".page-size-select")).to.not.exist;
+    });
+
     it("accepts {value, label} objects in page-size-options", async () => {
         const el = await fixture(
             html`<y-paginator

@@ -36,14 +36,14 @@ export class YumeTable extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Column definitions as an array of { field, header?, sortable? } objects. Rich data held as a property (identity preserved, not serialized); the `columns` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
-    get columns() { return this._parsedColumns; }
+    get columns() { return Array.isArray(this._parsedColumns) ? this._parsedColumns : []; }
     set columns(val) {
         this._parsedColumns = coerceRichData(val);
         this.render();
     }
 
     /** Row data as an array of objects keyed by column field names. Rich data held as a property (identity preserved, not serialized); the `data` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
-    get data() { return this._parsedData; }
+    get data() { return Array.isArray(this._parsedData) ? this._parsedData : []; }
     set data(val) {
         this._parsedData = coerceRichData(val);
         this.render();
@@ -65,7 +65,7 @@ export class YumeTable extends HTMLElement {
     // -------------------------------------------------------------------------
 
     render() {
-        const columns = this._parsedColumns;
+        const columns = this.columns;
         const rows = this._getSortedData();
 
         this.shadowRoot.innerHTML = "";
@@ -255,7 +255,7 @@ export class YumeTable extends HTMLElement {
     }
 
     _getSortedData() {
-        const data = [...this._parsedData];
+        const data = [...this.data];
         if (!this._sortField || this._sortDir === "none") return data;
 
         const dir = this._sortDir === "asc" ? 1 : -1;

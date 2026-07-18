@@ -104,7 +104,7 @@ export class YumeAppbar extends HTMLElement {
      * in sync after an imperative set.
      */
     get items() {
-        return this._items ?? [];
+        return Array.isArray(this._items) ? this._items : [];
     }
     set items(val) {
         this._items = coerceRichData(val);

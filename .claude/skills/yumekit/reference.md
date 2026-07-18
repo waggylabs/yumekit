@@ -1946,6 +1946,39 @@ CSS Custom Properties: `--component-shape-clip-path` (computed), `--component-sh
 
 ---
 
+## y-skeleton
+
+Presentational placeholder that mimics content while it loads, reducing perceived latency and layout shift. Purely decorative — internals are `aria-hidden`. Compose several skeletons to approximate the final layout.
+
+| Attribute   | Values / Notes                                                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `variant`   | `text` (default) \| `circle` \| `rect` — `text` renders line bars, `circle` a circle, `rect` a rounded rectangle     |
+| `width`     | explicit width, any CSS length (e.g. `120px`, `60%`, `8rem`); applied via a validated inline custom property         |
+| `height`    | explicit height, any CSS length; `text` defaults to `1em`/line, `circle` matches width, `rect` needs a height/content |
+| `lines`     | `text` only — number of line bars (default `1`); the last bar is ~60% width when `> 1`                               |
+| `animation` | `pulse` (default) \| `wave` \| `none` — CSS-only; both animated styles fall back to static under reduced motion       |
+
+Slot: default — optional sizing content, rendered `visibility: hidden` so the skeleton inherits its dimensions. Explicit `width`/`height` take precedence over slotted content.
+
+**Accessibility:** the element exposes no ARIA of its own; its internals are `aria-hidden="true"`. Put `aria-busy="true"` (ideally with `aria-live="polite"`) on the container region being loaded and remove it when real content arrives. Under `prefers-reduced-motion: reduce`, `pulse`/`wave` render as a static block.
+
+CSS Parts: `skeleton` (each rendered shape; every line bar carries the part)
+CSS Custom Properties: `--component-skeleton-bg`, `--component-skeleton-highlight` (wave sweep), `--component-skeleton-radius`, `--component-skeleton-animation-duration`, `--component-skeleton-text-gap`
+
+```html
+<y-skeleton variant="text" lines="3"></y-skeleton>
+<div aria-busy="true" style="display:flex;gap:16px;align-items:center">
+    <y-skeleton variant="circle" width="48px"></y-skeleton>
+    <div style="flex:1">
+        <y-skeleton variant="text" width="60%"></y-skeleton>
+        <y-skeleton variant="text" width="90%"></y-skeleton>
+    </div>
+</div>
+<y-skeleton variant="rect"><img width="210" height="118" alt="" /></y-skeleton>
+```
+
+---
+
 ## y-banner
 
 Full-width inline alert / notification region with optional icon, action, and dismiss button.

@@ -52,7 +52,7 @@ export class YumeAvatarGroup extends HTMLElement {
      * after an imperative set.
      */
     get avatars() {
-        return this._avatars ?? null;
+        return Array.isArray(this._avatars) ? this._avatars : null;
     }
     set avatars(val) {
         this._avatars = coerceRichData(val, null);

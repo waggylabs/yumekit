@@ -555,6 +555,13 @@ declare module "react" {
                 "preserve-aspect"?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-skeleton": El<{
+                variant?: "text" | "circle" | "rect";
+                width?: string;
+                height?: string;
+                lines?: string | number;
+                animation?: "pulse" | "wave" | "none";
+            }>;
             "y-slider": El<{
                 name?: string;
                 value?: string | number;

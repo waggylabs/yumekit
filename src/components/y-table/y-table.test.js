@@ -291,6 +291,18 @@ describe("YumeTable", () => {
         expect(rows.length).to.equal(1);
     });
 
+    it("columns and data getters return [] when a non-array is assigned", async () => {
+        // A JSON object (not an array) is valid rich data but not a valid
+        // columns/data value; the getters must still return arrays and render
+        // must not throw when spreading the stored value.
+        const el = await fixture(html`<y-table></y-table>`);
+        el.setAttribute("columns", '{"field":"x"}');
+        el.setAttribute("data", '{"name":"Eve"}');
+        expect(el.columns).to.deep.equal([]);
+        expect(el.data).to.deep.equal([]);
+        expect(el.shadowRoot.querySelectorAll("tbody tr").length).to.equal(0);
+    });
+
     it("striped setter sets the striped attribute", async () => {
         const el = await fixture(html`
             <y-table columns="${sampleColumns}" data="${sampleData}"></y-table>

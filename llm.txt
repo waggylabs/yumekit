@@ -1,9 +1,9 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 52 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 53 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.6.0-beta.1
+0.5.4-beta.1
 
 ## License
 MIT
@@ -627,6 +627,38 @@ CSS Parts: `host`, `content`.
 </y-shape>
 <y-shape type="rectangle" radius="16px" size="large" style="background: var(--primary-content--);"></y-shape>
 <y-shape type="polygon" polygon-points="50% 0%, 100% 50%, 50% 100%, 0% 50%"></y-shape>
+```
+
+---
+
+### y-skeleton
+Presentational placeholder that mimics the shape of content while it loads, reducing perceived latency and layout shift. Purely decorative — internals are `aria-hidden`. Compose multiple skeletons to approximate a final layout (e.g. a circle beside text lines for a user row).
+
+Tag: `<y-skeleton>`
+Attributes:
+- `variant` — `"text"` (default) | `"circle"` | `"rect"`. `text` renders line bars with the component radius; `circle` renders a circle (avatars/icons); `rect` renders a rectangle with the component radius (images, cards, buttons).
+- `width` — explicit width as any CSS length (e.g. `120px`, `60%`, `8rem`). Applied via a validated inline custom property. Default is variant-dependent (`text`/`circle`/`rect` default to `100%` unless sized by slotted content).
+- `height` — explicit height as any CSS length. `text` defaults to `1em` per line; `circle` defaults to matching its width; `rect` needs an explicit height or slotted content.
+- `lines` — `text` variant only; number of line bars (default `1`). When greater than 1, the last bar renders at ~60% width so it reads as a paragraph.
+- `animation` — `"pulse"` (default) | `"wave"` | `"none"`. `pulse` fades opacity; `wave` sweeps a highlight gradient (clipped to the shape's radius); `none` is a static block. All animation is CSS keyframes only. Under `prefers-reduced-motion: reduce`, `pulse` and `wave` fall back to a static block.
+
+Slots: default — optional sizing content, rendered invisible (`visibility: hidden`) so the skeleton inherits the exact dimensions of the element it stands in for. Explicit `width`/`height` take precedence over slotted content.
+
+Accessibility: the component exposes no role or ARIA on itself; its internals are `aria-hidden="true"`. Set `aria-busy="true"` (and ideally `aria-live="polite"`) on the *container region* being loaded, and remove it when real content arrives.
+
+CSS custom properties: `--component-skeleton-bg`, `--component-skeleton-highlight` (wave sweep), `--component-skeleton-radius`, `--component-skeleton-animation-duration`, `--component-skeleton-text-gap`.
+CSS Parts: `skeleton` (each rendered shape; every line bar carries the part for multi-line `text`).
+
+```html
+<y-skeleton variant="text" lines="3"></y-skeleton>
+<div aria-busy="true" style="display:flex;gap:16px;align-items:center">
+  <y-skeleton variant="circle" width="48px"></y-skeleton>
+  <div style="flex:1">
+    <y-skeleton variant="text" width="60%"></y-skeleton>
+    <y-skeleton variant="text" width="90%"></y-skeleton>
+  </div>
+</div>
+<y-skeleton variant="rect"><img width="210" height="118" alt="" /></y-skeleton>
 ```
 
 ---

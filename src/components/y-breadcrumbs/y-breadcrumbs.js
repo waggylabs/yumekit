@@ -54,7 +54,7 @@ export class YumeBreadcrumbs extends HTMLElement {
 
     /** Array of breadcrumb items. */
     get items() {
-        return this._items ?? [];
+        return Array.isArray(this._items) ? this._items : [];
     }
     set items(val) {
         this._items = coerceRichData(val);

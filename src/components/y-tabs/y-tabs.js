@@ -53,7 +53,7 @@ export class YumeTabs extends HTMLElement {
 
     /** @type {Array<Object>} Tab definitions. Each object: `{ id, label, slot, disabled?, leftIcon?, rightIcon? }`. `leftIcon`/`rightIcon` are `y-icon` names rendered inside the tab button. Use the `tab-content-{id}` slot to supply fully custom tab button content instead. Rich data is held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
-        return this._options ?? [];
+        return Array.isArray(this._options) ? this._options : [];
     }
     set options(val) {
         this._options = coerceRichData(val);

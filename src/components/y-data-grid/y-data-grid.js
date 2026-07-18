@@ -259,7 +259,7 @@ export class YumeDataGrid extends HTMLElement {
 
     /** Column schema as an array of column definition objects. Rich data held as a property (identity preserved, not serialized); the `columns` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get columns() {
-        return this._columnsInput;
+        return Array.isArray(this._columnsInput) ? this._columnsInput : [];
     }
     set columns(val) {
         this._columnsInput = coerceRichData(val);
@@ -277,7 +277,7 @@ export class YumeDataGrid extends HTMLElement {
 
     /** Row data as an array of objects keyed by column key. Rich data held as a property (identity preserved, not serialized); the `data` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get data() {
-        return this._dataInput;
+        return Array.isArray(this._dataInput) ? this._dataInput : [];
     }
     set data(val) {
         this._dataInput = coerceRichData(val);

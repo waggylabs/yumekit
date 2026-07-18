@@ -962,6 +962,20 @@
                 "$value": "192px"
             }
         },
+        "skeleton": {
+            "radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.x-small}"
+            },
+            "animation-duration": {
+                "$type": "duration",
+                "$value": "1500ms"
+            },
+            "text-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            }
+        },
         "sidebar": {
             "border-radius": {
                 "$type": "borderRadius",
