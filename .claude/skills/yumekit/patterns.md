@@ -149,6 +149,55 @@ Common multi-component patterns. Adapt these for specific use cases.
 
 ---
 
+## Loading & Skeleton States
+
+Data-driven components (`y-data-grid`, `y-table`, `y-avatar`) render shape-accurate
+placeholders on first load — no spinner over an empty region. Set `loading` and,
+for the grid, let `loading-mode="auto"` show a skeleton on first load and dim the
+existing data on a refetch.
+
+```html
+<!-- Grid: skeleton on first load, overlay-on-refetch, automatically -->
+<y-data-grid id="grid" columns="..." loading></y-data-grid>
+<!-- Table: skeleton is the only loading presentation -->
+<y-table columns="..." loading skeleton-rows="6"></y-table>
+<!-- Avatar: circle/rounded/square placeholder matching size + shape -->
+<y-avatar loading size="large"></y-avatar>
+
+<script type="module">
+  const grid = document.getElementById("grid");
+  const rows = await fetchRows();        // grid shows placeholder rows meanwhile
+  grid.data = rows;
+  grid.removeAttribute("loading");       // placeholders swap to real rows, no layout shift
+</script>
+```
+
+Containers without a fixed content shape (`y-card`, list rows) compose the Phase 1
+`<y-skeleton>` primitive directly rather than exposing a `loading` attribute:
+
+```html
+<!-- Loading card: media block + title line + two body lines -->
+<y-card>
+  <y-skeleton variant="rect" height="160px" slot="image"></y-skeleton>
+  <y-skeleton variant="text" width="60%"></y-skeleton>
+  <y-skeleton variant="text" lines="2"></y-skeleton>
+</y-card>
+
+<!-- Loading list row: avatar beside stacked text lines -->
+<y-stack direction="row" gap="medium" align="center">
+  <y-skeleton variant="circle" width="40px" height="40px"></y-skeleton>
+  <y-stack direction="column" gap="x-small" style="flex:1">
+    <y-skeleton variant="text" width="40%"></y-skeleton>
+    <y-skeleton variant="text" width="70%"></y-skeleton>
+  </y-stack>
+</y-stack>
+```
+
+`prefers-reduced-motion: reduce` renders every skeleton as a static block — verified
+at the composed level where many placeholders animate at once.
+
+---
+
 ## Settings Form with Sections
 
 ```html

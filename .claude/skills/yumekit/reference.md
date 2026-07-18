@@ -719,6 +719,9 @@ Slots: default (the element the badge overlays)
 | `shape`   | `circle` (default) \| `square` \| `rounded`        |
 | `size`    | `small` \| `medium` \| `large`                     |
 | `color`   | color scheme for initials background               |
+| `loading` | boolean — renders a `y-skeleton` placeholder sized to `size` and shaped by `shape`; takes precedence over `src`/initials and sets `aria-busy` |
+
+CSS parts: `avatar`, `skeleton` (loading placeholder)
 
 ```html
 <y-avatar
@@ -729,6 +732,8 @@ Slots: default (the element the badge overlays)
 ></y-avatar>
 <y-avatar alt="JD" color="primary" size="medium"></y-avatar>
 <!-- initials fallback -->
+<y-avatar loading size="large"></y-avatar>
+<!-- loading placeholder -->
 ```
 
 ---
@@ -1567,10 +1572,14 @@ Methods: `expand()`, `collapse()`, `toggle()`
 
 | Attribute | Values / Notes                                    |
 | --------- | ------------------------------------------------- |
-| `columns` | JSON: `[{"key":"name","label":"Name"}, ...]`      |
-| `data`    | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
-| `striped` | boolean                                           |
-| `size`    | `small` \| `medium` \| `large`                    |
+| `columns`       | JSON: `[{"key":"name","label":"Name"}, ...]`      |
+| `data`          | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
+| `striped`       | boolean                                           |
+| `size`          | `small` \| `medium` \| `large`                    |
+| `loading`       | boolean — renders skeleton rows (from `y-skeleton`) in place of the body, disables sort, sets `aria-busy`. No overlay mode — use `y-data-grid` for spinner-on-refetch |
+| `skeleton-rows` | number of placeholder rows while `loading` (default `5`) |
+
+Slot: `skeleton` overrides the generated placeholder body. CSS parts: `skeleton-body`, `skeleton-row`, `skeleton-cell`.
 
 ```html
 <y-table
@@ -1578,6 +1587,7 @@ Methods: `expand()`, `collapse()`, `toggle()`
     data='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
     striped
 ></y-table>
+<y-table columns="..." loading skeleton-rows="6"></y-table>
 ```
 
 ---
@@ -1829,7 +1839,9 @@ Interactive data grid for large datasets — client- or server-side sorting, fil
 | `page-size`           | rows per page (default `20`)                                                                            |
 | `current-page`        | 1-indexed (default `1`)                                                                                 |
 | `total-rows`          | required in `server` mode for pagination math                                                          |
-| `loading`             | boolean — loading overlay + `aria-busy`                                                                 |
+| `loading`             | boolean — presents a loading state + `aria-busy` (see `loading-mode`)                                   |
+| `loading-mode`        | `auto` (default) \| `overlay` \| `skeleton`. `overlay` dims the body under a spinner; `skeleton` renders placeholder rows; `auto` picks skeleton when no rows are visible (first load) and overlay when rows are present (refetch). Empty state is suppressed while loading in every mode. Slot `skeleton` overrides the placeholder body; parts `skeleton-body`/`skeleton-row`/`skeleton-cell`; `--component-data-grid-skeleton-row-height` overrides row height |
+| `skeleton-rows`       | placeholder row count in skeleton mode (default `page-size`, else `10`; clamped)                         |
 | `striped`             | boolean (default false)                                                                                 |
 | `hover`               | boolean (default true; `hover="false"` to disable)                                                     |
 | `fixed-header`        | boolean (default true) — sticky header                                                                  |

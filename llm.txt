@@ -811,6 +811,9 @@ Attributes:
 - `shape` — `"circle"` (default) | `"square"` | `"rounded"`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `color` — predefined scheme or CSS color for the initials background; text color is auto-contrasted
+- `loading` — boolean; renders a `<y-skeleton>` placeholder sized to `size` and shaped by `shape`, taking precedence over `src`/initials. Sets `aria-busy`.
+
+CSS parts: `avatar`, `skeleton` (the loading placeholder).
 
 ---
 
@@ -1915,6 +1918,8 @@ Attributes:
 - `data` — JSON string: `[{"name": "Alice", ...}, ...]`
 - `striped` — boolean
 - `size` — `"small"` | `"medium"` | `"large"`
+- `loading` — boolean; renders skeleton placeholder rows (built from `<y-skeleton>`) in place of the body and sets `aria-busy`. Sort controls are disabled while loading. `y-table` has no overlay mode — use `y-data-grid` if you need a spinner-on-refetch. Slot `skeleton` overrides the generated placeholder body. CSS parts: `skeleton-body`, `skeleton-row`, `skeleton-cell`.
+- `skeleton-rows` — number of placeholder rows rendered while `loading` (default `5`, clamped to a sane maximum).
 
 Events: `sort` (detail: `{ field, direction }`) — fired on header click when `sortable` is true. Direction cycles `asc` → `desc` → `none`.
 
@@ -1943,7 +1948,9 @@ Attributes:
 - `page-size` — rows per page (default `20`).
 - `current-page` — 1-indexed current page (default `1`).
 - `total-rows` — required in `server` mode for pagination math.
-- `loading` — boolean, shows a loading overlay and sets `aria-busy`.
+- `loading` — boolean; presents a loading state and sets `aria-busy`. What is shown depends on `loading-mode`.
+- `loading-mode` — `"auto"` (default) | `"overlay"` | `"skeleton"`. `overlay` dims the body under a spinner (the pre-0.5.x behavior). `skeleton` always renders placeholder rows. `auto` renders skeleton when there are no rows to show and overlay when rows are already visible — so a first load shows shape-accurate placeholders while a refetch keeps the current data dimmed. The empty state never renders while `loading` is set, in any mode. Slot `skeleton` overrides the generated placeholder body; slot `loading` still overrides the overlay contents. CSS parts: `skeleton-body`, `skeleton-row`, `skeleton-cell`. Override `--component-data-grid-skeleton-row-height` to change placeholder row height (defaults to `row-height`).
+- `skeleton-rows` — number of placeholder rows rendered in skeleton mode (default `page-size`, else `10`; clamped to a sane maximum).
 - `striped` — boolean, defaults to false; add the `striped` attribute to enable alternating row backgrounds.
 - `hover` — boolean, defaults to true; pass `hover="false"` to disable.
 - `fixed-header` — boolean, defaults to true; sticky header on scroll.

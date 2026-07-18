@@ -37,19 +37,33 @@ export default {
             description: "Whether to show alternating row backgrounds.",
             table: { defaultValue: { summary: false } },
         },
+        loading: {
+            control: "boolean",
+            description: "Renders skeleton placeholder rows in place of the body.",
+            table: { defaultValue: { summary: false } },
+        },
+        skeletonRows: {
+            control: "number",
+            description: "Number of placeholder rows rendered while loading.",
+            table: { defaultValue: { summary: "5" } },
+        },
     },
     args: {
         columns: defaultColumns,
         data: defaultData,
         size: "medium",
         striped: false,
+        loading: false,
+        skeletonRows: 5,
     },
-    render: ({ columns, data, size, striped }) => `
+    render: ({ columns, data, size, striped, loading, skeletonRows }) => `
         <y-table
             columns='${columns}'
             data='${data}'
             size="${size}"
             ${striped ? "striped" : ""}
+            ${loading ? "loading" : ""}
+            skeleton-rows="${skeletonRows}"
         ></y-table>
     `,
 };
@@ -86,6 +100,17 @@ export const Sortable = {
             ])}'
         ></y-table>
     `,
+};
+
+export const Loading = {
+    args: { loading: true },
+    parameters: {
+        docs: {
+            description: {
+                story: "With `loading` set, `y-table` replaces its body with skeleton rows generated from the columns. Sort controls are disabled and a single visually-hidden live region announces the load. Skeleton is the table's only loading presentation — reach for `y-data-grid` if you need an overlay on refetch.",
+            },
+        },
+    },
 };
 
 export const StripedSortable = {

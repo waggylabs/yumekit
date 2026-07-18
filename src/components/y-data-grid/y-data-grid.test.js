@@ -205,6 +205,37 @@ describe("YumeDataGrid", () => {
         expect(ev.cancelable).to.be.true;
     });
 
+    it("keeps focus, caret, and value on the inline filter input across keystrokes", async () => {
+        const el = await fixture(html`
+            <y-data-grid columns="${columns}" data="${data}" filtering="inline"></y-data-grid>
+        `);
+        const input = el.shadowRoot.querySelector(
+            '[part="filter-input"][data-col-key="name"]',
+        );
+        // Mirror a real keystroke: focus and populate the native inner input,
+        // then fire a native InputEvent so the full event path runs — y-input's
+        // re-dispatched CustomEvent plus the composed native event reaching
+        // the grid's listener on the host.
+        input.input.focus();
+        input.input.value = "Bo";
+        input.input.setSelectionRange(2, 2);
+        input.input.dispatchEvent(
+            new InputEvent("input", { bubbles: true, composed: true }),
+        );
+
+        // The re-render replaces the input; focus, caret, and the typed value
+        // must all survive it, and the rows must be filtered.
+        const after = el.shadowRoot.querySelector(
+            '[part="filter-input"][data-col-key="name"]',
+        );
+        expect(after.input.value).to.equal("Bo");
+        expect(el.shadowRoot.activeElement).to.equal(after);
+        expect(after.input.selectionStart).to.equal(2);
+        const trs = el.shadowRoot.querySelectorAll("tbody tr");
+        expect(trs.length).to.equal(1);
+        expect(trs[0].querySelector("td").textContent).to.equal("Bob");
+    });
+
     it("clearFilters resets state and re-renders all rows", async () => {
         const el = await fixture(html`
             <y-data-grid columns="${columns}" data="${data}" filtering="inline"></y-data-grid>
@@ -373,6 +404,167 @@ describe("YumeDataGrid", () => {
         expect(el.getAttribute("aria-busy")).to.equal("true");
         const overlay = el.shadowRoot.querySelector("[part='loading-overlay']");
         expect(overlay).to.not.be.null;
+    });
+
+    describe("loading modes", () => {
+        const skeletonBody = (el) =>
+            el.shadowRoot.querySelector("[part='skeleton-body']");
+        const overlay = (el) =>
+            el.shadowRoot.querySelector("[part='loading-overlay']");
+
+        it("auto: renders skeleton when there are no rows to show", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" loading></y-data-grid>
+            `);
+            expect(skeletonBody(el)).to.exist;
+            expect(overlay(el)).to.be.null;
+        });
+
+        it("auto: renders the overlay when rows are already visible", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" data="${data}" loading></y-data-grid>
+            `);
+            expect(overlay(el)).to.exist;
+            expect(skeletonBody(el)).to.be.null;
+        });
+
+        it("auto: falls back to skeleton when a grid empties mid-load", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" data="${data}" loading></y-data-grid>
+            `);
+            expect(overlay(el)).to.exist;
+
+            el.data = [];
+            await waitFrame();
+            expect(skeletonBody(el)).to.exist;
+            expect(overlay(el)).to.be.null;
+        });
+
+        it("overlay: never renders skeleton even with no data", async () => {
+            const el = await fixture(html`
+                <y-data-grid
+                    columns="${columns}"
+                    loading
+                    loading-mode="overlay"
+                ></y-data-grid>
+            `);
+            expect(overlay(el)).to.exist;
+            expect(skeletonBody(el)).to.be.null;
+        });
+
+        it("skeleton: always renders skeleton even with data present", async () => {
+            const el = await fixture(html`
+                <y-data-grid
+                    columns="${columns}"
+                    data="${data}"
+                    loading
+                    loading-mode="skeleton"
+                ></y-data-grid>
+            `);
+            expect(skeletonBody(el)).to.exist;
+            expect(overlay(el)).to.be.null;
+        });
+
+        it("honors skeleton-rows and clamps to a sane maximum", async () => {
+            const el = await fixture(html`
+                <y-data-grid
+                    columns="${columns}"
+                    loading
+                    loading-mode="skeleton"
+                    skeleton-rows="6"
+                ></y-data-grid>
+            `);
+            expect(
+                el.shadowRoot.querySelectorAll("[part='skeleton-row']").length,
+            ).to.equal(6);
+
+            el.setAttribute("skeleton-rows", "500");
+            await waitFrame();
+            expect(
+                el.shadowRoot.querySelectorAll("[part='skeleton-row']").length,
+            ).to.equal(50);
+        });
+
+        it("suppresses the empty state while loading in every mode", async () => {
+            const el = await fixture(html`
+                <y-data-grid
+                    columns="${columns}"
+                    loading
+                    loading-mode="overlay"
+                ></y-data-grid>
+            `);
+            expect(el.shadowRoot.querySelector("[data-empty]")).to.be.null;
+        });
+
+        it("reports aria-rowcount 0 while skeleton rows stand in", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" loading></y-data-grid>
+            `);
+            expect(el.getAttribute("aria-rowcount")).to.equal("0");
+        });
+
+        it("skeleton rows are aria-hidden and carry no row identity", async () => {
+            const el = await fixture(html`
+                <y-data-grid
+                    columns="${columns}"
+                    loading
+                    loading-mode="skeleton"
+                    enable-selection
+                ></y-data-grid>
+            `);
+            const rows = el.shadowRoot.querySelectorAll("[part='skeleton-row']");
+            expect(rows.length).to.be.greaterThan(0);
+            rows.forEach((r) => {
+                expect(r.getAttribute("aria-hidden")).to.equal("true");
+                expect(r.hasAttribute("data-row-key")).to.be.false;
+            });
+        });
+
+        it("bypasses virtualization in skeleton mode", async () => {
+            const el = await fixture(html`
+                <y-data-grid
+                    columns="${columns}"
+                    loading
+                    loading-mode="skeleton"
+                    virtual
+                    viewport-height="200"
+                ></y-data-grid>
+            `);
+            expect(skeletonBody(el)).to.exist;
+            expect(el.shadowRoot.querySelector(".spacer-row")).to.be.null;
+        });
+
+        it("announces once and hides the overlay from assistive tech", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" data="${data}" loading></y-data-grid>
+            `);
+            const statuses = el.shadowRoot.querySelectorAll("[role='status']");
+            expect(statuses.length).to.equal(1);
+            expect(overlay(el).getAttribute("aria-hidden")).to.equal("true");
+        });
+
+        it("disables pagination while loading", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" data="${data}" loading></y-data-grid>
+            `);
+            const paginator = el.shadowRoot.querySelector("y-paginator");
+            expect(paginator).to.exist;
+            expect(paginator.hasAttribute("disabled")).to.be.true;
+        });
+
+        it("clears aria-busy and skeleton once loading completes", async () => {
+            const el = await fixture(html`
+                <y-data-grid columns="${columns}" loading></y-data-grid>
+            `);
+            expect(skeletonBody(el)).to.exist;
+
+            el.removeAttribute("loading");
+            el.data = JSON.parse(data);
+            await waitFrame();
+            expect(el.hasAttribute("aria-busy")).to.be.false;
+            expect(skeletonBody(el)).to.be.null;
+            expect(el.getAttribute("aria-rowcount")).to.equal("4");
+        });
     });
 
     // ---------------------------------------------------------------- row events

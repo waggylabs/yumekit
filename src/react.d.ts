@@ -46,6 +46,7 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 shape?: string;
                 color?: string;
+                loading?: boolean | string;
             }>;
             "y-avatar-group": El<{
                 avatars?:
@@ -698,6 +699,8 @@ declare module "react" {
                 data?: unknown[] | string;
                 striped?: boolean | string;
                 size?: "small" | "medium" | "large";
+                loading?: boolean | string;
+                "skeleton-rows"?: string | number;
             }>;
             "y-data-grid": El<{
                 columns?: unknown[] | string;
@@ -707,6 +710,8 @@ declare module "react" {
                 "current-page"?: string | number;
                 "total-rows"?: string | number;
                 loading?: boolean | string;
+                "loading-mode"?: "auto" | "overlay" | "skeleton";
+                "skeleton-rows"?: string | number;
                 striped?: boolean | string;
                 hover?: boolean | string;
                 "fixed-header"?: boolean | string;
