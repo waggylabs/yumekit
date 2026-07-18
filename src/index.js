@@ -53,6 +53,7 @@ export * from "./components/y-rating/y-rating.js";
 export * from "./components/y-radio/y-radio.js";
 export * from "./components/y-select/y-select.js";
 export * from "./components/y-shape/y-shape.js";
+export * from "./components/y-skeleton/y-skeleton.js";
 export * from "./components/y-slider/y-slider.js";
 export * from "./components/y-splitter/y-splitter.js";
 export * from "./components/y-stack/y-stack.js";

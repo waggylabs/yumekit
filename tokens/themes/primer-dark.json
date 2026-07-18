@@ -359,6 +359,16 @@
     }
   },
   "component": {
+    "skeleton": {
+      "bg": {
+        "$type": "color",
+        "$value": "{base.background.active}"
+      },
+      "highlight": {
+        "$type": "color",
+        "$value": "{base.background.hover}"
+      }
+    },
     "editor": {
       "background": {
         "$type": "color",
