@@ -227,6 +227,57 @@ describe("YumeAvatar", () => {
         expect(el.shadowRoot.querySelector(".avatar")).to.exist;
     });
 
+    describe("loading", () => {
+        it("renders a skeleton placeholder instead of image/initials", async () => {
+            const el = await fixture(
+                html`<y-avatar loading src=${VALID_IMG} alt="Jane Doe"></y-avatar>`,
+            );
+
+            const skeleton = el.shadowRoot.querySelector("y-skeleton");
+            expect(skeleton).to.exist;
+            expect(skeleton.getAttribute("variant")).to.equal("circle");
+            expect(el.shadowRoot.querySelector("img")).to.not.exist;
+            expect(el.shadowRoot.querySelector(".avatar")).to.not.exist;
+        });
+
+        it("sets aria-busy while loading and clears it afterward", async () => {
+            const el = await fixture(html`<y-avatar loading alt="AB"></y-avatar>`);
+            expect(el.getAttribute("aria-busy")).to.equal("true");
+
+            el.loading = false;
+            await new Promise((r) => setTimeout(r, 0));
+            expect(el.hasAttribute("aria-busy")).to.be.false;
+            expect(el.shadowRoot.querySelector(".avatar")).to.exist;
+        });
+
+        it("marks the placeholder aria-hidden and exposes a skeleton part", async () => {
+            const el = await fixture(html`<y-avatar loading alt="AB"></y-avatar>`);
+            const skeleton = el.shadowRoot.querySelector("y-skeleton");
+            expect(skeleton.getAttribute("aria-hidden")).to.equal("true");
+            expect(skeleton.getAttribute("part")).to.equal("skeleton");
+        });
+
+        it("takes its radius from the shape and its size from the size map", async () => {
+            const el = await fixture(
+                html`<y-avatar loading shape="rounded" size="large"></y-avatar>`,
+            );
+            const sheet = el.shadowRoot.adoptedStyleSheets[0];
+            const cssText = [...sheet.cssRules].map((r) => r.cssText).join(" ");
+            expect(cssText).to.include("--component-avatar-border-radius-rounded");
+            expect(cssText).to.include("--component-avatar-size-large");
+        });
+
+        it("loading takes precedence over a failed image state", async () => {
+            const el = await fixture(
+                html`<y-avatar loading src="/img/does-not-exist.png" alt="AB"></y-avatar>`,
+            );
+            await new Promise((r) => setTimeout(r, 0));
+            // Still a skeleton — the image never rendered to fail.
+            expect(el.shadowRoot.querySelector("y-skeleton")).to.exist;
+            expect(el.shadowRoot.querySelector("img")).to.not.exist;
+        });
+    });
+
     describe("XSS hardening", () => {
         it("does not allow attribute breakout via src", async () => {
             const hostile = `" onerror="window.__xssAvatarSrc=true" x="`;

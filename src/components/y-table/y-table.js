@@ -1,9 +1,11 @@
+import "../y-skeleton/y-skeleton.js";
 import { arrowUp, arrowDown } from "../../icons/index.js";
 import { coerceRichData, upgradeProperties } from "../../modules/helpers.js";
+import { buildSkeletonBody } from "../../modules/skeleton-rows.js";
 
 export class YumeTable extends HTMLElement {
     static get observedAttributes() {
-        return ["columns", "data", "striped", "size"];
+        return ["columns", "data", "striped", "size", "loading", "skeleton-rows"];
     }
 
     // -------------------------------------------------------------------------
@@ -49,9 +51,23 @@ export class YumeTable extends HTMLElement {
         this.render();
     }
 
+    /** When present, renders skeleton rows in place of the table body. */
+    get loading() { return this.hasAttribute("loading"); }
+    set loading(val) {
+        if (val) this.setAttribute("loading", "");
+        else this.removeAttribute("loading");
+    }
+
     /** Cell padding size: "small" | "medium" | "large" (default "medium"). */
     get size() { return this.getAttribute("size") || "medium"; }
     set size(val) { this.setAttribute("size", val); }
+
+    /** Number of placeholder rows rendered while `loading` (default 5). */
+    get skeletonRows() {
+        const n = parseInt(this.getAttribute("skeleton-rows"), 10);
+        return Number.isFinite(n) && n > 0 ? n : 5;
+    }
+    set skeletonRows(val) { this.setAttribute("skeleton-rows", val); }
 
     /** Whether to show alternating row backgrounds. */
     get striped() { return this.hasAttribute("striped"); }
@@ -66,7 +82,8 @@ export class YumeTable extends HTMLElement {
 
     render() {
         const columns = this.columns;
-        const rows = this._getSortedData();
+        const loading = this.loading;
+        const rows = loading ? [] : this._getSortedData();
 
         this.shadowRoot.innerHTML = "";
 
@@ -81,11 +98,29 @@ export class YumeTable extends HTMLElement {
         table.setAttribute("role", "grid");
         table.setAttribute("part", "table");
 
-        table.appendChild(this._buildHeader(columns));
-        table.appendChild(this._buildBody(columns, rows));
+        table.appendChild(this._buildHeader(columns, loading));
+        table.appendChild(
+            loading
+                ? buildSkeletonBody({
+                      columnCount: columns.length,
+                      rows: this.skeletonRows,
+                  })
+                : this._buildBody(columns, rows),
+        );
 
         wrapper.appendChild(table);
         this.shadowRoot.appendChild(wrapper);
+
+        if (loading) {
+            this.setAttribute("aria-busy", "true");
+            const status = document.createElement("div");
+            status.className = "sr-only";
+            status.setAttribute("role", "status");
+            status.textContent = "Loading data";
+            this.shadowRoot.appendChild(status);
+        } else {
+            this.removeAttribute("aria-busy");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -113,7 +148,7 @@ export class YumeTable extends HTMLElement {
         return tbody;
     }
 
-    _buildHeader(columns) {
+    _buildHeader(columns, loading = false) {
         const thead = document.createElement("thead");
         thead.setAttribute("part", "header");
         const headerRow = document.createElement("tr");
@@ -122,7 +157,8 @@ export class YumeTable extends HTMLElement {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
 
-            const sortable = col.sortable !== false;
+            // Sort controls are inert while loading — the body is placeholder.
+            const sortable = col.sortable !== false && !loading;
             if (sortable) {
                 th.classList.add("sortable");
                 th.setAttribute(
@@ -243,13 +279,25 @@ export class YumeTable extends HTMLElement {
             }
 
             ${this.striped
-                ? `tbody tr:nth-child(even) {
+                ? `tbody:not(.skeleton-body) tr:nth-child(even) {
                 background: var(--component-table-hover-background, #292a2b);
             }`
                 : ""}
 
-            tbody tr:hover {
+            tbody:not(.skeleton-body) tr:hover {
                 background: var(--component-table-active-background, #46474a);
+            }
+
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
             }
         `;
     }

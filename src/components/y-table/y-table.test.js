@@ -369,4 +369,83 @@ describe("YumeTable", () => {
         // Both have null score — just check neither throws and two rows render
         expect(rows.length).to.equal(2);
     });
+
+    describe("loading", () => {
+        it("renders skeleton rows in place of the body", async () => {
+            const el = await fixture(html`
+                <y-table
+                    columns="${sampleColumns}"
+                    data="${sampleData}"
+                    loading
+                ></y-table>
+            `);
+            const skeletonBody = el.shadowRoot.querySelector(
+                "tbody[part='skeleton-body']",
+            );
+            expect(skeletonBody).to.exist;
+            expect(skeletonBody.getAttribute("aria-hidden")).to.equal("true");
+            // Default 5 rows, each with one skeleton per column.
+            const rows = skeletonBody.querySelectorAll("tr[part='skeleton-row']");
+            expect(rows.length).to.equal(5);
+            expect(
+                rows[0].querySelectorAll("y-skeleton").length,
+            ).to.equal(3);
+            // The real data rows are not rendered.
+            expect(el.shadowRoot.textContent).to.not.include("Alice");
+        });
+
+        it("honors skeleton-rows", async () => {
+            const el = await fixture(html`
+                <y-table
+                    columns="${sampleColumns}"
+                    loading
+                    skeleton-rows="8"
+                ></y-table>
+            `);
+            const rows = el.shadowRoot.querySelectorAll(
+                "tr[part='skeleton-row']",
+            );
+            expect(rows.length).to.equal(8);
+        });
+
+        it("clamps skeleton-rows to a sane maximum", async () => {
+            const el = await fixture(html`
+                <y-table
+                    columns="${sampleColumns}"
+                    loading
+                    skeleton-rows="500"
+                ></y-table>
+            `);
+            const rows = el.shadowRoot.querySelectorAll(
+                "tr[part='skeleton-row']",
+            );
+            expect(rows.length).to.equal(50);
+        });
+
+        it("sets aria-busy and a single status region while loading", async () => {
+            const el = await fixture(html`
+                <y-table columns="${sampleColumns}" loading></y-table>
+            `);
+            expect(el.getAttribute("aria-busy")).to.equal("true");
+            const statuses = el.shadowRoot.querySelectorAll("[role='status']");
+            expect(statuses.length).to.equal(1);
+
+            el.loading = false;
+            await new Promise((r) => setTimeout(r, 0));
+            expect(el.hasAttribute("aria-busy")).to.be.false;
+            expect(el.shadowRoot.querySelector("[role='status']")).to.not.exist;
+        });
+
+        it("disables sort controls while loading", async () => {
+            const el = await fixture(html`
+                <y-table
+                    columns="${sampleColumns}"
+                    data="${sampleData}"
+                    loading
+                ></y-table>
+            `);
+            const sortable = el.shadowRoot.querySelector("thead th.sortable");
+            expect(sortable).to.not.exist;
+        });
+    });
 });

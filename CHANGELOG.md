@@ -41,13 +41,19 @@ Delete any empty sections before publishing.
 
 - `y-input` and `y-textarea` support a `placeholder` attribute (and matching property), bringing them in line with `y-select`, `y-date`, and `y-color`. A new `--component-input-placeholder-color` token (defaulting to the `base.content.lightest` shade) styles the hint text across all 60 themes.
 
+- Skeleton loading states for data-heavy components, built on `y-skeleton`. `y-data-grid` gains `loading-mode` (`auto` / `overlay` / `skeleton`) and `skeleton-rows`; `y-table` and `y-avatar` gain `loading` (plus `skeleton-rows` on the table). The grid and table expose a `skeleton` slot and `skeleton-body` / `skeleton-row` / `skeleton-cell` parts, and the avatar placeholder matches its size and shape. Placeholder rows reuse the real column widths so there is no layout shift when data arrives.
+
 ### Changed
 
 - Placeholder text in `y-date` and `y-color` now uses the new `--component-input-placeholder-color` token instead of `--base-content-light`, so it reads as clearly muted against the field's value text and is consistent with `y-input` and `y-textarea`.
 
+- `y-data-grid`'s new default `loading-mode="auto"` changes what an existing `<y-data-grid loading>` shows on a **first load**: a grid loading with no rows now renders shape-accurate placeholder rows instead of a spinner over an empty grid. This is a presentation change only — the `loading` attribute, the `loading` slot, and the overlay behave exactly as before once rows are present. Set `loading-mode="overlay"` to keep the spinner in every case.
+
 - Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
 
 ### Fixed
+
+- `y-data-grid`'s inline filter row (`filtering="inline"`) was effectively unusable: each keystroke lost focus and reset the typed value. The per-keystroke re-render discarded the focused filter input, and the native composed `input` event double-fired the grid's filter handler with an empty value. The grid now ignores the redundant native event and restores focus, caret position, and value across renders.
 
 - `y-button-group` now collapses the shared border between adjacent items by each item's actual border width instead of a fixed 1px, so thick-bordered themes (e.g. the Waggy themes' 2px outlines) no longer render doubled-up borders along the inner seams.
 
