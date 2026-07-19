@@ -53,6 +53,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- Deep imports (`@waggylabs/yumekit/components/*.js`) are fixed and substantially slimmer. The per-component bundles emitted import paths that pointed outside the package, and each bundle inlined its own copy of every dependency, including a private icon registry, so `registerIcon()` had no effect on deep-imported components. Shared modules and sibling components are now resolved from `dist/modules/` and `dist/components/`, every bundle contains only its own code, and all bundles share the single icon registry.
+
 - `y-data-grid`'s inline filter row (`filtering="inline"`) was effectively unusable: each keystroke lost focus and reset the typed value. The per-keystroke re-render discarded the focused filter input, and the native composed `input` event double-fired the grid's filter handler with an empty value. The grid now ignores the redundant native event and restores focus, caret position, and value across renders.
 
 - `y-button-group` now collapses the shared border between adjacent items by each item's actual border width instead of a fixed 1px, so thick-bordered themes (e.g. the Waggy themes' 2px outlines) no longer render doubled-up borders along the inner seams.
