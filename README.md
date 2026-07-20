@@ -97,6 +97,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Dock         | `<y-dock>`         | Fixed navigation dock                                  |
 | Drawer       | `<y-drawer>`       | Side drawer / sidebar                                  |
 | Droplist     | `<y-droplist>`     | Drag-and-drop reorderable list                         |
+| Form         | `<y-form>`         | Form container that renders and manages form controls  |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                            |
 | Grid         | `<y-grid>`         | CSS Grid layout container                              |
 | Help         | `<y-help>`         | Guided product tour / onboarding walkthrough           |

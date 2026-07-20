@@ -35,6 +35,7 @@ export * from "./components/y-dialog/y-dialog.js";
 export * from "./components/y-drawer/y-drawer.js";
 export * from "./components/y-droplist/y-droplist.js";
 export * from "./components/y-dock/y-dock.js";
+export * from "./components/y-form/y-form.js";
 export * from "./components/y-help/y-help.js";
 export * from "./components/y-gallery/y-gallery.js";
 export * from "./components/y-grid/y-grid.js";

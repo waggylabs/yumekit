@@ -472,6 +472,53 @@ Events: `change`, `input`
 
 ---
 
+## y-form
+
+Form container — renders a group of YumeKit form controls from a JSON `fields` array, plus submit/reset buttons, and collects all values into one payload on submit.
+
+| Attribute        | Values / Notes                                                       |
+| ---------------- | -------------------------------------------------------------------- |
+| `fields`         | JSON array of field descriptors (see below); order defines layout    |
+| `submit-text`    | submit button label (default `Submit`)                               |
+| `reset-text`     | reset button label (default `Reset`)                                 |
+| `no-reset`       | boolean — hide the reset button                                      |
+| `layout`         | `vertical` (default) \| `horizontal` \| `inline`                     |
+| `label-position` | `top` (default) \| `left` (label column via `--component-form-label-width`) |
+| `size`           | `small` \| `medium` \| `large` — propagated to controls and buttons  |
+| `disabled`       | boolean — disables all controls and buttons                          |
+| `loading`        | boolean — blocks re-submission, shows a busy indicator, keeps values |
+| `loading-mode`   | `ring` (default — progress ring in the action row) \| `skeleton` (skeleton placeholders over the fields and labels) |
+| `novalidate`     | boolean — skip built-in validation on submit                         |
+| `action`         | optional native form action URL (progressive enhancement)            |
+| `method`         | `get` \| `post` (default `post`), used when `action` is set          |
+| `name`           | form name                                                            |
+
+Field descriptor keys: `type` (`input` \| `textarea` \| `select` \| `checkbox` \| `radio` \| `switch` \| `slider` \| `date` \| `color` \| `rating`; `input` also takes `inputType`), `name`, `label`, `value`, `placeholder`, `required`, `disabled`, `options` (select/radio), `min`/`max`/`step`, `help`. An entry with a `slot` key renders a named `<slot>` outlet at that position instead — project a child with the matching `slot="…"` attribute, and slotted named controls join value collection and validation.
+
+Property (not attribute): `values` — get/set `{name: value}` (booleans for checkbox/switch); setting merges by name, unknown keys ignored, disabled fields excluded.
+
+Slots: `header`, `actions` (replaces the default button row), `footer`, plus one named outlet per `slot` field entry
+Events: `y-submit` `{values, formData}` (cancelable — prevent for async submission), `y-reset` (cancelable), `y-change` `{name, value, values}`, `y-invalid` `{invalid: [{name, message}]}`
+Methods: `submit()`, `reset()`, `checkValidity()`
+CSS Parts: `form`, `fields`, `header`, `actions`, `footer`, `submit-button`, `reset-button`
+CSS Custom Properties: `--component-form-gap`, `--component-form-actions-gap`, `--component-form-actions-justify`, `--component-form-label-width`
+
+```html
+<y-form
+    submit-text="Save"
+    fields='[
+        {"type":"input","name":"username","label":"Username","required":true},
+        {"type":"select","name":"role","label":"Role","options":[{"value":"admin","label":"Admin"},{"value":"user","label":"User"}]},
+        {"slot":"extra"},
+        {"type":"switch","name":"newsletter","label":"Newsletter"}
+    ]'
+>
+    <y-input slot="extra" name="attachment" placeholder="Attachment URL"></y-input>
+</y-form>
+```
+
+---
+
 ## y-splitter
 
 Two-pane container with a draggable resize handle. The first child becomes the resizable pane (`pane-1`); the second flexes to fill the remainder (`pane-2`). The component auto-assigns `slot="pane-1"` / `slot="pane-2"` to the first two non-handle children — extra children are ignored with a console warning. Host needs a sized container (it stretches to fill 100% width × 100% height).

@@ -700,6 +700,24 @@
                 "$value": "10px"
             }
         },
+        "form": {
+            "gap": {
+                "$type": "spacing",
+                "$value": "{spacing.x-large}"
+            },
+            "actions-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.large}"
+            },
+            "actions-justify": {
+                "$type": "other",
+                "$value": "flex-start"
+            },
+            "label-width": {
+                "$type": "dimension",
+                "$value": "160px"
+            }
+        },
         "inputs": {
             "border-radius-inner": {
                 "$type": "borderRadius",
