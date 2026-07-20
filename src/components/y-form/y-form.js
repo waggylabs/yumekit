@@ -67,6 +67,138 @@ const CONTROL_SELECTOR = [
     .map((tag) => `${tag}[name]`)
     .join(", ");
 
+/**
+ * Shared stylesheet for every <y-form> instance. All state-dependent styling
+ * is expressed through `:host([...])` attribute selectors, so the sheet is
+ * fully static; it is built lazily on first construction and reused.
+ */
+let styleSheet = null;
+
+function getStyleSheet() {
+    if (styleSheet) return styleSheet;
+
+    styleSheet = new CSSStyleSheet();
+    styleSheet.replaceSync(`
+        :host([hidden]) {
+            display: none;
+        }
+
+        :host {
+            display: block;
+            font-family: var(--font-family-body);
+            color: var(--component-input-color);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--component-form-gap, 16px);
+        }
+
+        :host([layout="inline"]) form {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .fields {
+            display: flex;
+            flex-direction: column;
+            gap: var(--component-form-gap, 16px);
+            min-width: 0;
+        }
+
+        :host([layout="horizontal"]) .fields,
+        :host([layout="inline"]) .fields {
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        :host([layout="horizontal"]) .field {
+            flex: 1 1 220px;
+            min-width: 0;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-2x-small, 4px);
+        }
+
+        .field-body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-2x-small, 4px);
+            min-width: 0;
+        }
+
+        /* Inline-flex controls must not stretch across the field row,
+           which would center their content instead of left-aligning it. */
+        .field-body > y-switch,
+        .field-body > y-checkbox,
+        .field-body > y-rating {
+            align-self: flex-start;
+        }
+
+        :host([loading][loading-mode="skeleton"]) .field-body > *:not(.field-skeleton) {
+            display: none;
+        }
+
+        :host([label-position="left"]) .field:not(.field--slot) {
+            display: grid;
+            grid-template-columns: var(--component-form-label-width, 160px) minmax(0, 1fr);
+            column-gap: var(--spacing-medium, 8px);
+            align-items: center;
+        }
+
+        :host([label-position="left"]) .field:not(.field--slot) .field-body {
+            grid-column: 2;
+        }
+
+        .field-label {
+            font-size: 0.875em;
+            font-weight: 500;
+            color: var(--component-input-label-color);
+        }
+
+        .required-mark {
+            margin-inline-start: 0.15em;
+            color: var(--component-input-error-color);
+        }
+
+        .field-help {
+            font-size: 0.8em;
+            color: var(--component-input-placeholder-color);
+        }
+
+        .field-error {
+            font-size: 0.8em;
+            color: var(--component-input-error-color);
+        }
+
+        .field-error[hidden] {
+            display: none;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: var(--component-form-actions-gap, 12px);
+            justify-content: var(--component-form-actions-justify, flex-start);
+        }
+
+        slot[name="actions"] {
+            display: contents;
+        }
+
+        .loading-ring {
+            flex: 0 0 auto;
+        }
+    `);
+    return styleSheet;
+}
+
 export class YumeForm extends HTMLElement {
     static get observedAttributes() {
         return [
@@ -96,10 +228,12 @@ export class YumeForm extends HTMLElement {
         this._fields = null;
         this._controls = [];
         this._fieldSlots = [];
+        this._slottedCache = new Set();
         this._valueCache = {};
         this._form = null;
 
         this.attachShadow({ mode: "open" });
+        this.shadowRoot.adoptedStyleSheets = [getStyleSheet()];
         this.render();
     }
 
@@ -252,6 +386,7 @@ export class YumeForm extends HTMLElement {
     }
     set values(val) {
         const incoming = coerceRichData(val, {});
+        this._refreshSlottedCache();
 
         for (const entry of this._controls) {
             const name = entry.field.name;
@@ -286,10 +421,10 @@ export class YumeForm extends HTMLElement {
                 ? this._collectValues({ includeDisabled: true })
                 : null;
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
         this.shadowRoot.replaceChildren(this._buildTree());
 
         this._form = this.shadowRoot.querySelector("form");
+        this._refreshSlottedCache();
 
         if (previous) this.values = previous;
 
@@ -340,6 +475,10 @@ export class YumeForm extends HTMLElement {
 
     _bindFormListeners() {
         this._form.addEventListener("submit", (e) => this._onSubmit(e));
+        this._form.addEventListener("reset", (e) => {
+            e.preventDefault();
+            this.reset();
+        });
         this._form.addEventListener("change", (e) => this._onFieldInput(e));
         this._form.addEventListener("input", (e) => this._onFieldInput(e));
         this._form.addEventListener("keydown", (e) => this._onKeydown(e));
@@ -347,7 +486,7 @@ export class YumeForm extends HTMLElement {
         const resetButton = this.shadowRoot.querySelector(
             '[part="reset-button"]',
         );
-        resetButton?.addEventListener("click", () => this.reset());
+        resetButton?.addEventListener("click", () => this._form.reset());
 
         for (const name of ["header", "footer"]) {
             const slot = this.shadowRoot.querySelector(`slot[name="${name}"]`);
@@ -356,6 +495,12 @@ export class YumeForm extends HTMLElement {
                     header: ".header",
                     footer: ".footer",
                 }),
+            );
+        }
+
+        for (const slot of this._fieldSlots) {
+            slot.addEventListener("slotchange", () =>
+                this._refreshSlottedCache(),
             );
         }
     }
@@ -467,7 +612,11 @@ export class YumeForm extends HTMLElement {
             const label = _el("span", { class: "field-label" }, [
                 field.label,
                 field.required
-                    ? _el("span", { class: "required-mark", "aria-hidden": "true" }, ["*"])
+                    ? _el(
+                          "span",
+                          { class: "required-mark", "aria-hidden": "true" },
+                          ["*"],
+                      )
                     : null,
             ]);
             label.addEventListener("click", () => this._focusControl(control));
@@ -509,136 +658,15 @@ export class YumeForm extends HTMLElement {
         });
     }
 
-    _buildStyleSheet() {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(`
-            :host([hidden]) {
-                display: none;
-            }
-
-            :host {
-                display: block;
-                font-family: var(--font-family-body);
-                color: var(--component-input-color);
-            }
-
-            form {
-                display: flex;
-                flex-direction: column;
-                gap: var(--component-form-gap, 16px);
-            }
-
-            :host([layout="inline"]) form {
-                flex-direction: row;
-                flex-wrap: wrap;
-                align-items: flex-end;
-            }
-
-            .fields {
-                display: flex;
-                flex-direction: column;
-                gap: var(--component-form-gap, 16px);
-                min-width: 0;
-            }
-
-            :host([layout="horizontal"]) .fields,
-            :host([layout="inline"]) .fields {
-                flex-direction: row;
-                flex-wrap: wrap;
-                align-items: flex-end;
-            }
-
-            :host([layout="horizontal"]) .field {
-                flex: 1 1 220px;
-                min-width: 0;
-            }
-
-            .field {
-                display: flex;
-                flex-direction: column;
-                gap: var(--spacing-2x-small, 4px);
-            }
-
-            .field-body {
-                display: flex;
-                flex-direction: column;
-                gap: var(--spacing-2x-small, 4px);
-                min-width: 0;
-            }
-
-            /* Inline-flex controls must not stretch across the field row,
-               which would center their content instead of left-aligning it. */
-            .field-body > y-switch,
-            .field-body > y-checkbox,
-            .field-body > y-rating {
-                align-self: flex-start;
-            }
-
-            :host([loading][loading-mode="skeleton"]) .field-body > *:not(.field-skeleton) {
-                display: none;
-            }
-
-            :host([label-position="left"]) .field:not(.field--slot) {
-                display: grid;
-                grid-template-columns: var(--component-form-label-width, 160px) minmax(0, 1fr);
-                column-gap: var(--spacing-medium, 8px);
-                align-items: center;
-            }
-
-            :host([label-position="left"]) .field:not(.field--slot) .field-body {
-                grid-column: 2;
-            }
-
-            .field-label {
-                font-size: 0.875em;
-                font-weight: 500;
-                color: var(--component-input-label-color);
-            }
-
-            .required-mark {
-                margin-inline-start: 0.15em;
-                color: var(--component-input-error-color);
-            }
-
-            .field-help {
-                font-size: 0.8em;
-                color: var(--component-input-placeholder-color);
-            }
-
-            .field-error {
-                font-size: 0.8em;
-                color: var(--component-input-error-color);
-            }
-
-            .field-error[hidden] {
-                display: none;
-            }
-
-            .actions {
-                display: flex;
-                align-items: center;
-                gap: var(--component-form-actions-gap, 12px);
-                justify-content: var(--component-form-actions-justify, flex-start);
-            }
-
-            slot[name="actions"] {
-                display: contents;
-            }
-
-            .loading-ring {
-                flex: 0 0 auto;
-            }
-        `);
-        return sheet;
-    }
-
     _buildTree() {
         this._controls = [];
         this._fieldSlots = [];
 
-        const header = _el("div", { class: "header", part: "header", id: "form-header" }, [
-            _el("slot", { name: "header" }),
-        ]);
+        const header = _el(
+            "div",
+            { class: "header", part: "header", id: "form-header" },
+            [_el("slot", { name: "header" })],
+        );
 
         const fields = _el(
             "div",
@@ -746,14 +774,11 @@ export class YumeForm extends HTMLElement {
     }
 
     _onFieldInput(e) {
-        const el = e.target;
+        const el = this._resolveEventControl(e);
+        if (!el) return;
+
         const entry = this._controls.find((c) => c.el === el);
-        const isSlotted = !entry && this._slottedControls().includes(el);
-        const name = entry
-            ? entry.field.name
-            : isSlotted
-              ? el.getAttribute("name")
-              : null;
+        const name = entry ? entry.field.name : el.getAttribute("name");
         if (!name) return;
 
         const value = this._readValue(el);
@@ -782,8 +807,7 @@ export class YumeForm extends HTMLElement {
         const entry = this._controls.find((c) => c.el === e.target);
         const isTextField = entry
             ? entry.field.type === "input" || !entry.field.type
-            : e.target.tagName === "Y-INPUT" ||
-              origin === e.target;
+            : e.target.tagName === "Y-INPUT" || origin === e.target;
         if (!isTextField) return;
 
         this._form.requestSubmit();
@@ -834,6 +858,32 @@ export class YumeForm extends HTMLElement {
         return el.value;
     }
 
+    _refreshSlottedCache() {
+        this._slottedCache = new Set();
+
+        for (const slot of this._fieldSlots) {
+            for (const el of slot.assignedElements({ flatten: true })) {
+                if (el.matches?.(CONTROL_SELECTOR)) this._slottedCache.add(el);
+                else if (el.querySelectorAll)
+                    for (const nested of el.querySelectorAll(CONTROL_SELECTOR))
+                        this._slottedCache.add(nested);
+            }
+        }
+    }
+
+    _resolveEventControl(e) {
+        for (const node of e.composedPath()) {
+            if (node === this) return null;
+            if (!(node instanceof Element)) continue;
+
+            if (this._controls.some((c) => c.el === node)) return node;
+            if (node.matches?.(CONTROL_SELECTOR)) {
+                return this._slottedCache.has(node) ? node : null;
+            }
+        }
+        return null;
+    }
+
     _setFieldValidity(entry, message) {
         const { el, errorEl, errorId } = entry;
 
@@ -852,21 +902,12 @@ export class YumeForm extends HTMLElement {
     }
 
     _slottedControls() {
-        const out = [];
-
-        for (const slot of this._fieldSlots) {
-            for (const el of slot.assignedElements({ flatten: true })) {
-                if (el.matches?.(CONTROL_SELECTOR)) out.push(el);
-                else if (el.querySelectorAll)
-                    out.push(...el.querySelectorAll(CONTROL_SELECTOR));
-            }
-        }
-
-        return out;
+        return [...this._slottedCache];
     }
 
     _validate({ showUI = true } = {}) {
         const invalid = [];
+        this._refreshSlottedCache();
 
         for (const entry of this._controls) {
             const { field, el } = entry;
@@ -880,10 +921,7 @@ export class YumeForm extends HTMLElement {
         for (const el of this._slottedControls()) {
             const name = el.getAttribute("name");
             if (!name || el.disabled) continue;
-            if (
-                typeof el.checkValidity === "function" &&
-                !el.checkValidity()
-            ) {
+            if (typeof el.checkValidity === "function" && !el.checkValidity()) {
                 invalid.push({ name, message: `${name} is invalid` });
                 if (showUI) el.setAttribute("aria-invalid", "true");
             } else if (showUI) {

@@ -202,6 +202,52 @@ describe("<y-form>", () => {
         expect(ev.detail.value).to.equal("Momo");
     });
 
+    it("attributes events originating inside a slotted control's shadow root", async () => {
+        const el = await fixture(html`
+            <y-form>
+                <y-input slot="custom" name="nickname"></y-input>
+            </y-form>
+        `);
+        el.fields = [{ slot: "custom" }];
+
+        const slotted = el.querySelector("y-input");
+        const inner = slotted.shadowRoot.querySelector("input");
+        setTimeout(() => {
+            inner.value = "Momo";
+            inner.dispatchEvent(
+                new Event("input", { bubbles: true, composed: true }),
+            );
+        });
+        const ev = await oneEvent(el, "y-change");
+
+        expect(ev.detail.name).to.equal("nickname");
+        expect(ev.detail.value).to.equal("Momo");
+    });
+
+    it("picks up slotted controls that arrive after render via slotchange", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [{ slot: "custom" }];
+
+        const late = document.createElement("y-input");
+        late.setAttribute("slot", "custom");
+        late.setAttribute("name", "late");
+        late.value = "here";
+        el.appendChild(late);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+
+        setTimeout(() => {
+            late.value = "updated";
+            late.dispatchEvent(
+                new CustomEvent("input", { bubbles: true, composed: true }),
+            );
+        });
+        const ev = await oneEvent(el, "y-change");
+
+        expect(ev.detail.name).to.equal("late");
+        expect(ev.detail.value).to.equal("updated");
+        expect(el.values.late).to.equal("updated");
+    });
+
     it("resets fields to their descriptor values and dispatches y-reset", async () => {
         const el = await fixture(html`<y-form></y-form>`);
         el.fields = [
@@ -227,6 +273,29 @@ describe("<y-form>", () => {
         expect(el.values.username).to.equal("changed");
     });
 
+    it("routes native form resets through the cancelable y-reset flow", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [{ type: "input", name: "username", value: "jeff" }];
+        el.values = { username: "changed" };
+
+        let resets = 0;
+        el.addEventListener("y-reset", (e) => {
+            resets++;
+            if (resets === 1) e.preventDefault();
+        });
+
+        const form = el.shadowRoot.querySelector("form");
+        form.reset();
+        expect(resets).to.equal(1);
+        expect(el.values.username, "canceled y-reset must not clear").to.equal(
+            "changed",
+        );
+
+        form.reset();
+        expect(resets).to.equal(2);
+        expect(el.values.username).to.equal("jeff");
+    });
+
     it("resets via the reset button", async () => {
         const el = await fixture(html`<y-form></y-form>`);
         el.fields = [{ type: "input", name: "username", value: "jeff" }];
@@ -234,6 +303,29 @@ describe("<y-form>", () => {
 
         el.shadowRoot.querySelector('[part="reset-button"]').click();
         expect(el.values.username).to.equal("jeff");
+    });
+
+    it("does not reset via the reset button when y-reset is prevented", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            { type: "input", name: "username", value: "jeff" },
+            { type: "checkbox", name: "subscribe" },
+        ];
+        el.values = { username: "changed", subscribe: true };
+
+        let fired = 0;
+        el.addEventListener("y-reset", (e) => {
+            fired++;
+            e.preventDefault();
+        });
+
+        el.shadowRoot.querySelector('[part="reset-button"]').click();
+
+        expect(fired).to.equal(1);
+        expect(el.values).to.deep.equal({
+            username: "changed",
+            subscribe: true,
+        });
     });
 
     it("excludes disabled fields from values and the payload", async () => {
