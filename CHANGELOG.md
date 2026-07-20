@@ -41,6 +41,8 @@ Delete any empty sections before publishing.
 
 - `y-input` and `y-textarea` support a `placeholder` attribute (and matching property), bringing them in line with `y-select`, `y-date`, and `y-color`. A new `--component-input-placeholder-color` token (defaulting to the `base.content.lightest` shade) styles the hint text across all 60 themes.
 
+- `y-form` — a form container that renders and manages a group of YumeKit form controls from a JSON `fields` array, with configurable submit/reset buttons, built-in required/validity checking, and a single `{values, formData}` payload on submit. Field entries with a `slot` key render named-slot outlets, so custom children interleave with generated fields and still participate in value collection.
+
 - Skeleton loading states for data-heavy components, built on `y-skeleton`. `y-data-grid` gains `loading-mode` (`auto` / `overlay` / `skeleton`) and `skeleton-rows`; `y-table` and `y-avatar` gain `loading` (plus `skeleton-rows` on the table). The grid and table expose a `skeleton` slot and `skeleton-body` / `skeleton-row` / `skeleton-cell` parts, and the avatar placeholder matches its size and shape. Placeholder rows reuse the real column widths so there is no layout shift when data arrives.
 
 ### Changed

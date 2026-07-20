@@ -256,6 +256,22 @@ declare module "react" {
                 "drag-class"?: string;
                 handle?: string;
             }>;
+            "y-form": El<{
+                fields?: unknown[] | string;
+                "submit-text"?: string;
+                "reset-text"?: string;
+                "no-reset"?: boolean | string;
+                layout?: "vertical" | "horizontal" | "inline";
+                "label-position"?: "top" | "left";
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                loading?: boolean | string;
+                "loading-mode"?: "ring" | "skeleton";
+                novalidate?: boolean | string;
+                action?: string;
+                method?: "get" | "post";
+                name?: string;
+            }>;
             "y-gallery": El<{
                 layout?: "grid" | "row" | "column" | "masonry";
                 columns?: string | number;

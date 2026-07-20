@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 53 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 54 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.4-beta.1
@@ -686,6 +686,70 @@ Attributes:
 Events: `change`, `input`
 
 CSS Custom Properties: `--component-slider-track-color`, `--component-slider-track-thickness-{small|medium|large}`, `--component-slider-fill-color` (overrides the per-instance `color` fill), `--component-slider-thumb-size-{small|medium|large}`, `--component-slider-thumb-shadow`, `--component-slider-thumb-border-width`, `--component-slider-tick-color`, `--component-slider-tick-size`, `--component-slider-tick-label-size`, `--component-slider-tick-label-gap`, `--component-slider-border-width`, `--component-slider-padding`
+
+---
+
+### y-form
+Form container that lays out and manages a group of YumeKit form controls from a JSON `fields` array, renders submit/reset buttons, and collects all values into a single payload on submit.
+
+Tag: `<y-form>`
+Attributes:
+- `fields` — JSON string (or array property): ordered field descriptors. Each entry renders a generated control (`type` + `name`), or — when it has a `slot` key — a named `<slot>` outlet at that position so a child with the matching `slot="…"` attribute interleaves with generated fields. Descriptor keys: `type` (`input` | `textarea` | `select` | `checkbox` | `radio` | `switch` | `slider` | `date` | `color` | `rating`; `input` also takes `inputType` for the native type), `name` (payload key, required for generated controls), `label`, `value` (initial), `placeholder`, `required`, `disabled`, `options` (for `select` / `radio`), `min` / `max` / `step`, `help` (helper text under the field), `slot` (named-outlet entry — other keys ignored). Rich data held as a property; the attribute seeds an initial value but is not kept in sync after an imperative set.
+- `submit-text` — submit button label (default `"Submit"`)
+- `reset-text` — reset button label (default `"Reset"`)
+- `no-reset` — boolean; hide the reset button
+- `layout` — `"vertical"` (default) | `"horizontal"` (fields wrap in a row) | `"inline"` (fields and actions on one line)
+- `label-position` — `"top"` (default) | `"left"` (label column sized by `--component-form-label-width`)
+- `size` — `"small"` | `"medium"` | `"large"`; propagated to controls and buttons
+- `disabled` — boolean; disables all controls and buttons
+- `loading` — boolean; submitting state — disables the buttons and shows a busy indicator without clearing values
+- `loading-mode` — `"ring"` (default; indeterminate progress ring in the action row) | `"skeleton"` (skeleton placeholders replace the fields and their labels while loading)
+- `novalidate` — boolean; skip built-in validation on submit
+- `action` — optional native form action URL (progressive enhancement; when set and `y-submit` is not canceled, the native submit proceeds)
+- `method` — `"get"` | `"post"` (default `"post"`), used when `action` is set
+- `name` — form name
+
+Property (not attribute): `values` — get/set current field values as `{name: value}` (checkbox/switch values are booleans). Setting merges by name; unknown keys are ignored. Disabled fields are excluded, per native form semantics.
+
+Slots: `header` (content above the fields), `actions` (replaces the default submit/reset row), `footer` (below the actions), plus one named outlet per `fields` entry with a `slot` key. Slotted form controls with a `name` participate in value collection, `y-change`, and validation.
+
+Events:
+- `y-submit` — `{values, formData}`; cancelable — call `preventDefault()` for async submission. Fired after validation passes.
+- `y-reset` — cancelable; fired before fields are reset to their descriptor values.
+- `y-change` — `{name, value, values}` when any field's value changes.
+- `y-invalid` — `{invalid: [{name, message}]}` on failed submit validation; the first invalid control is focused.
+
+Methods: `submit()`, `reset()`, `checkValidity()`
+
+CSS Parts: `form`, `fields`, `header`, `actions`, `footer`, `submit-button`, `reset-button`
+CSS Custom Properties: `--component-form-gap`, `--component-form-actions-gap`, `--component-form-actions-justify`, `--component-form-label-width`
+
+```html
+<!-- Generated fields -->
+<y-form
+  submit-text="Create account"
+  fields='[
+    {"type":"input","name":"username","label":"Username","required":true},
+    {"type":"input","name":"email","label":"Email","inputType":"email","required":true},
+    {"type":"select","name":"role","label":"Role","options":[{"value":"admin","label":"Admin"},{"value":"user","label":"User"}]},
+    {"type":"switch","name":"newsletter","label":"Newsletter"}
+  ]'
+></y-form>
+
+<!-- Interleaving a custom child via a named-slot entry -->
+<y-form fields='[{"type":"input","name":"title","label":"Title"},{"slot":"extra"},{"type":"textarea","name":"notes","label":"Notes"}]'>
+  <y-input slot="extra" name="attachment" placeholder="Attachment URL"></y-input>
+</y-form>
+```
+
+```js
+form.addEventListener("y-submit", async (e) => {
+  e.preventDefault();               // handle async submission
+  form.loading = true;
+  await api.save(e.detail.values);  // or e.detail.formData
+  form.loading = false;
+});
+```
 
 ---
 
