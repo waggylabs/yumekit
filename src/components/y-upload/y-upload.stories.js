@@ -1,5 +1,4 @@
 import "./y-upload.js";
-import "../y-theme/y-theme.js";
 
 export default {
     title: "Input/Upload",
@@ -68,21 +67,19 @@ export default {
         maxSize,
         maxFiles,
     }) => `
-        <y-theme theme="blue-light">
-            <y-upload
-                variant="${variant}"
-                size="${size}"
-                ${accept ? `accept="${accept}"` : ""}
-                ${multiple ? "multiple" : ""}
-                ${disabled ? "disabled" : ""}
-                ${required ? "required" : ""}
-                ${previews ? "previews" : ""}
-                show-list="${showList}"
-                ${maxSize != null ? `max-size="${maxSize}"` : ""}
-                ${maxFiles != null ? `max-files="${maxFiles}"` : ""}
-                name="files"
-            ></y-upload>
-        </y-theme>
+        <y-upload
+            variant="${variant}"
+            size="${size}"
+            ${accept ? `accept="${accept}"` : ""}
+            ${multiple ? "multiple" : ""}
+            ${disabled ? "disabled" : ""}
+            ${required ? "required" : ""}
+            ${previews ? "previews" : ""}
+            show-list="${showList}"
+            ${maxSize != null ? `max-size="${maxSize}"` : ""}
+            ${maxFiles != null ? `max-files="${maxFiles}"` : ""}
+            name="files"
+        ></y-upload>
     `,
 };
 
@@ -106,9 +103,7 @@ export const Disabled = {
 
 export const WithProgress = {
     render: () => `
-        <y-theme theme="blue-light">
-            <y-upload id="progress-demo" multiple name="files"></y-upload>
-        </y-theme>
+        <y-upload id="progress-demo" multiple name="files"></y-upload>
         <script type="module">
             const el = document.getElementById("progress-demo");
             const seed = (name, type) =>
