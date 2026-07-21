@@ -852,6 +852,32 @@
                 "$value": "{font-size.label}"
             }
         },
+        "upload": {
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.medium}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.thin}"
+            },
+            "file-border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.2x-large}"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.4x-large}"
+            }
+        },
         "radio": {
             "dot-offset": {
                 "$type": "dimension",

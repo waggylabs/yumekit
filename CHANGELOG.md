@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-upload` — a form-associated file upload with a drag-and-drop dropzone, client-side validation (`accept`, `max-size`, `max-files`, `max-total-size`), and a managed file list with optional image previews and per-file progress/status. Selected files submit with the parent form via `FormData` under `name`; the app handles transport and reports back through `setProgress` / `setStatus`. New `--component-upload-*` tokens across all 60 themes.
+
 - `y-skeleton` — a presentational placeholder primitive that mimics the shape of loading content to cut perceived latency and layout shift. Supports `text` (multi-line bars, last line shortened), `circle`, and `rect` variants; `pulse`, `wave`, and `none` animations (pure CSS keyframes, disabled under `prefers-reduced-motion`); explicit `width`/`height`; and optional slotted content that sizes the placeholder to the element it stands in for. New `--component-skeleton-*` tokens across all 60 themes.
 
 - `y-editor` — a form-associated rich text (WYSIWYG) editor built on native `contenteditable` and the Selection/Range APIs. A new shared HTML sanitizer (`src/modules/html-sanitizer.js`, alongside `svg-sanitizer.js`) gates every path that can introduce markup — the `value` setter, the default slot, and paste — and ships with seven new formatting icons (`bold`, `italic`, `underline`, `strikethrough`, `heading`, `quote`, `list-ordered`) plus `--component-editor-*` tokens across all 60 themes.

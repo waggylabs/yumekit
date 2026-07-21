@@ -519,6 +519,48 @@ CSS Custom Properties: `--component-form-gap`, `--component-form-actions-gap`, `
 
 ---
 
+## y-upload
+
+Form-associated. Drag-and-drop file upload with client-side validation, a managed file list (previews + per-file progress), and `FormData` submission. Does not perform network uploads — the app handles transport and reports back via `setProgress` / `setStatus`.
+
+| Attribute        | Values / Notes                                                                 |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `name`           | form field name; each file is appended to `FormData` under this name           |
+| `accept`         | native `accept` syntax (extensions and/or MIME types); enforced on pick + drop |
+| `multiple`       | boolean; when absent a new pick/drop replaces the current file                  |
+| `disabled`       | boolean                                                                         |
+| `required`       | boolean — `:invalid` while no files are selected                               |
+| `max-files`      | number — max count (only meaningful with `multiple`); excess rejected          |
+| `max-size`       | number — max bytes per file                                                    |
+| `max-total-size` | number — max combined bytes                                                    |
+| `variant`        | `dropzone` (default) \| `button` (compact; drop still accepted)                |
+| `size`           | `small` \| `medium` \| `large`                                                 |
+| `show-list`      | `"false"` hides the file list (default shown)                                  |
+| `previews`       | boolean — image thumbnails in the list                                         |
+| `directory`      | boolean — allow folder selection (`webkitdirectory`)                           |
+
+Property (not attribute): `files` — get/set `File[]`. Read-only reflected attribute `dragover` for styling.
+
+Validation order per file: `accept` → `max-size` → `max-files` → `max-total-size`; rejections batch into one `reject` event, valid files from the same batch are still added; duplicates (name + size + lastModified) are ignored silently.
+
+Slots: default (dropzone prompt), `icon` (prompt icon).
+
+Events: `change` (`{files}`), `reject` (`{rejections: {file, reason}[]}`), `remove` (cancelable, `{file}`).
+
+Methods: `browse()`, `clear()`, `setProgress(file, percent)`, `setStatus(file, status, message?)` — status `pending` \| `uploading` \| `done` \| `error`.
+
+```html
+<y-upload
+    name="docs"
+    accept=".pdf,image/*"
+    multiple
+    max-size="5242880"
+    previews
+></y-upload>
+```
+
+---
+
 ## y-splitter
 
 Two-pane container with a draggable resize handle. The first child becomes the resizable pane (`pane-1`); the second flexes to fill the remainder (`pane-2`). The component auto-assigns `slot="pane-1"` / `slot="pane-2"` to the first two non-handle children — extra children are ignored with a console warning. Host needs a sized container (it stretches to fill 100% width × 100% height).
