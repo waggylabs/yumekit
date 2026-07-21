@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 54 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 55 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.4-beta.1
@@ -748,6 +748,59 @@ form.addEventListener("y-submit", async (e) => {
   form.loading = true;
   await api.save(e.detail.values);  // or e.detail.formData
   form.loading = false;
+});
+```
+
+---
+
+### y-upload
+Form-associated file upload with a drag-and-drop dropzone, client-side validation, and a managed file list with previews and per-file progress. Selected files submit with the parent form via `FormData` (each file under `name`). The component does not perform network uploads — the app handles transport and reports status back through `setProgress` / `setStatus`.
+
+Tag: `<y-upload>`
+Attributes:
+- `name` — form field name; each selected file is appended to the form's `FormData` under this name
+- `accept` — native `accept` syntax (comma-separated extensions and/or MIME types); enforced on both picker and drop
+- `multiple` — boolean; allow more than one file. When absent, a new pick/drop replaces the current file
+- `disabled` — boolean; disables the dropzone, picker, and remove buttons
+- `required` — boolean; validation fails (`:invalid`) when no files are selected
+- `max-files` — number; maximum file count (only meaningful with `multiple`). Excess files are rejected, not truncated
+- `max-size` — number; maximum size per file, in bytes
+- `max-total-size` — number; maximum combined size of all files, in bytes
+- `variant` — `"dropzone"` (default; full drop target) | `"button"` (compact browse button; drop still accepted)
+- `size` — `"small"` | `"medium"` | `"large"`
+- `show-list` — boolean-like (`"false"` hides); render the managed file list beneath the dropzone (default on)
+- `previews` — boolean; show image thumbnails (object URLs) for image files in the list
+- `directory` — boolean; allow selecting a folder (`webkitdirectory`)
+
+Property (not attribute): `files` — get/set the current `File[]`.
+Read-only reflected attribute: `dragover` — present while a drag hovers the dropzone (for styling).
+
+Validation order per file: `accept` → `max-size` → `max-files` → `max-total-size`. All rejections from one pick/drop batch into a single `reject` event; valid files from the same batch are still added. Duplicates (name + size + lastModified) are ignored silently.
+
+Slots: default — dropzone prompt content (fallback: upload icon + "Drag files here or click to browse"); `icon` — replaces the default prompt icon.
+
+Events:
+- `change` — `{files: File[]}` when the list changes (add or remove)
+- `reject` — `{rejections: {file, reason: "accept"|"max-size"|"max-files"|"max-total-size"}[]}`
+- `remove` — cancelable; `{file}` before a file is removed via its list button — call `preventDefault()` to keep it
+
+Methods: `browse()`, `clear()`, `setProgress(file, percent)`, `setStatus(file, status, message?)` where status is `"pending"|"uploading"|"done"|"error"`.
+
+CSS Parts: `dropzone prompt icon file-list file file-name file-size file-preview file-progress file-error remove-button`
+CSS Custom Properties: `--component-upload-border-color`, `--component-upload-border-color-dragover`, `--component-upload-background`, `--component-upload-background-dragover`, `--component-upload-border-radius`, `--component-upload-padding-{small|medium|large}`, `--component-upload-prompt-color`, `--component-upload-file-background`, `--component-upload-file-border-radius`, `--component-upload-progress-color`, `--component-upload-error-color`
+
+```html
+<y-upload name="docs" accept=".pdf,image/*" multiple max-size="5242880" previews></y-upload>
+```
+
+```js
+// The app owns transport; report progress/status back to the row.
+upload.addEventListener("change", async ({ detail }) => {
+  for (const file of detail.files) {
+    upload.setStatus(file, "uploading");
+    await send(file, (pct) => upload.setProgress(file, pct));
+    upload.setStatus(file, "done");
+  }
 });
 ```
 

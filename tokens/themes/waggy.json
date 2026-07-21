@@ -138,6 +138,54 @@
     }
   },
   "component": {
+    "upload": {
+      "background": {
+        "$type": "color",
+        "$value": "{base.background.component}"
+      },
+      "background-dragover": {
+        "$type": "color",
+        "$value": "{base.background.hover}"
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{base.content.DEFAULT}"
+      },
+      "border": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        },
+        "color-dragover": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        }
+      },
+      "prompt": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.light}"
+        }
+      },
+      "file": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.hover}"
+        }
+      },
+      "progress": {
+        "color": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        }
+      },
+      "error": {
+        "color": {
+          "$type": "color",
+          "$value": "{error.content.DEFAULT}"
+        }
+      }
+    },
     "skeleton": {
       "bg": {
         "$type": "color",

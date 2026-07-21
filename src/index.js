@@ -68,3 +68,4 @@ export * from "./components/y-tooltip/y-tooltip.js";
 export * from "./components/y-theme/y-theme.js";
 export * from "./components/y-tree/y-tree.js";
 export * from "./components/y-tree-item/y-tree-item.js";
+export * from "./components/y-upload/y-upload.js";

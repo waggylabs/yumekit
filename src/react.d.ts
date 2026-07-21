@@ -814,6 +814,21 @@ declare module "react" {
                 disabled?: boolean | string;
                 history?: "push" | "replace" | "false";
             }>;
+            "y-upload": El<{
+                name?: string;
+                accept?: string;
+                multiple?: boolean | string;
+                disabled?: boolean | string;
+                required?: boolean | string;
+                "max-files"?: string | number;
+                "max-size"?: string | number;
+                "max-total-size"?: string | number;
+                variant?: "dropzone" | "button";
+                size?: "small" | "medium" | "large";
+                "show-list"?: boolean | string;
+                previews?: boolean | string;
+                directory?: boolean | string;
+            }>;
         }
     }
 }

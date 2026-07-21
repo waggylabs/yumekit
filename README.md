@@ -127,6 +127,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Toast        | `<y-toast>`        | Notification toast                                     |
 | Tooltip      | `<y-tooltip>`      | Tooltip / popover                                      |
 | Tree         | `<y-tree>`         | Hierarchical tree view                                 |
+| Upload       | `<y-upload>`       | File upload with drag-and-drop, validation, and previews |
 
 ---
 
