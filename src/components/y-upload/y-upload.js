@@ -65,7 +65,10 @@ export class YumeUpload extends HTMLElement {
             return;
         }
 
+        if (name === "previews" && newValue === null) this._revokeAllUrls();
+
         this.render();
+        this._updateValidity();
     }
 
     // -------------------------------------------------------------------------
@@ -906,7 +909,9 @@ export class YumeUpload extends HTMLElement {
             this.setAttribute("dragover", "");
         });
         this._dropzone.addEventListener("dragleave", (e) => {
-            if (e.target === this._dropzone) this.removeAttribute("dragover");
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                this.removeAttribute("dragover");
+            }
         });
         this._dropzone.addEventListener("drop", (e) => {
             e.preventDefault();
