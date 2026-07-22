@@ -86,6 +86,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Button       | `<y-button>`       | Button with icon, size, and style variants             |
 | Button Group | `<y-button-group>` | Groups buttons (or inputs) into a connected toolbar    |
 | Card         | `<y-card>`         | Content card container                                 |
+| Carousel     | `<y-carousel>`     | Slideshow with arrows, pagination, swipe, and autoplay |
 | Checkbox     | `<y-checkbox>`     | Form checkbox input                                    |
 | Code         | `<y-code>`         | Code block with built-in syntax highlighting           |
 | Color        | `<y-color>`        | Color swatch / value display                           |

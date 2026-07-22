@@ -1295,6 +1295,46 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 
 ---
 
+## y-carousel
+
+Slideshow container. Each direct child becomes one slide. For image galleries with a lightbox use `y-gallery` instead.
+
+| Attribute        | Values / Notes                                                              |
+| ---------------- | -------------------------------------------------------------------------- |
+| `index`          | number (default `0`) — leftmost visible slide; reflects as the user navigates |
+| `per-view`       | number (default `1`) — slides visible at once; fractional values peek the next |
+| `gap`            | CSS length between slides (default `0`)                                    |
+| `orientation`    | `horizontal` (default) \| `vertical` — vertical requires an explicit host height |
+| `loop`           | boolean — wrap from last slide back to first                               |
+| `autoplay`       | boolean — advance automatically                                            |
+| `interval`       | number (default `5000`) — autoplay delay in ms                            |
+| `pause-on-hover` | boolean (default `true`) — pause autoplay while hovered or focused         |
+| `arrows`         | `true` (default) \| `false` \| `hover`                                     |
+| `pagination`     | `dots` (default) \| `fraction` \| `none`                                   |
+| `swipe`          | boolean (default `true`) — pointer/touch drag navigation                   |
+| `snap`           | `start` (default) \| `center` — slide alignment within the viewport        |
+
+Children: any elements — each direct child is one slide.
+
+Events: `change` (`{ index, previousIndex }`, fired after the snap settles)
+Methods: `.next()`, `.previous()`, `.goTo(index)`, `.play()`, `.pause()`
+
+Slots: default, `prev-icon`, `next-icon`
+
+CSS Custom Properties: `--component-carousel-arrow-background`, `--component-carousel-arrow-color`, `--component-carousel-arrow-size`, `--component-carousel-dot-color`, `--component-carousel-dot-color-active`, `--component-carousel-dot-size`, `--component-carousel-pagination-gap`, `--component-carousel-transition-duration`
+
+CSS Parts: `viewport`, `track`, `prev-button`, `next-button`, `pagination`, `dot`, `fraction`
+
+```html
+<y-carousel per-view="1" loop autoplay interval="4000">
+    <img src="slide1.jpg" alt="First" />
+    <img src="slide2.jpg" alt="Second" />
+    <img src="slide3.jpg" alt="Third" />
+</y-carousel>
+```
+
+---
+
 ## y-dialog
 
 | Attribute       | Values / Notes                                                                        |
