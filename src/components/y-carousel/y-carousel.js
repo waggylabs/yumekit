@@ -42,6 +42,18 @@ export class YumeCarousel extends HTMLElement {
         this._reflecting = false;
 
         this._onVisibilityChange = () => this._syncAutoplay();
+        this._onHostHover = (hovered) => {
+            this._hovered = hovered;
+            this._syncAutoplay();
+        };
+        this._onHostFocus = (focused) => {
+            this._focused = focused;
+            this._syncAutoplay();
+        };
+        this._onPointerEnter = () => this._onHostHover(true);
+        this._onPointerLeave = () => this._onHostHover(false);
+        this._onFocusIn = () => this._onHostFocus(true);
+        this._onFocusOut = () => this._onHostFocus(false);
 
         this.attachShadow({ mode: "open" });
         this.render();
@@ -56,6 +68,11 @@ export class YumeCarousel extends HTMLElement {
         }
 
         document.addEventListener("visibilitychange", this._onVisibilityChange);
+        this.addEventListener("pointerenter", this._onPointerEnter);
+        this.addEventListener("pointerleave", this._onPointerLeave);
+        this.addEventListener("focusin", this._onFocusIn);
+        this.addEventListener("focusout", this._onFocusOut);
+
         this._observeOffscreen();
         this._setupSlides();
         this._syncAutoplay();
@@ -67,6 +84,10 @@ export class YumeCarousel extends HTMLElement {
             "visibilitychange",
             this._onVisibilityChange,
         );
+        this.removeEventListener("pointerenter", this._onPointerEnter);
+        this.removeEventListener("pointerleave", this._onPointerLeave);
+        this.removeEventListener("focusin", this._onFocusIn);
+        this.removeEventListener("focusout", this._onFocusOut);
         this._io?.disconnect();
     }
 
@@ -415,7 +436,9 @@ export class YumeCarousel extends HTMLElement {
                 color: var(--component-carousel-arrow-color, var(--base-content--));
                 box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
                 cursor: pointer;
-                transition: opacity 0.2s ease, background 0.2s ease;
+                transition:
+                    opacity var(--component-carousel-transition-duration, 0.3s) ease,
+                    background var(--component-carousel-transition-duration, 0.3s) ease;
             }
 
             .arrow:disabled {
@@ -466,7 +489,7 @@ export class YumeCarousel extends HTMLElement {
                 border-radius: var(--radii-full, 50%);
                 background: var(--component-carousel-dot-color, var(--base-border));
                 cursor: pointer;
-                transition: background 0.2s ease;
+                transition: background var(--component-carousel-transition-duration, 0.3s) ease;
             }
 
             .dot[aria-current="true"] {
@@ -848,23 +871,6 @@ export class YumeCarousel extends HTMLElement {
 
         this._prevBtn.addEventListener("click", () => this.previous());
         this._nextBtn.addEventListener("click", () => this.next());
-
-        this.addEventListener("pointerenter", () => {
-            this._hovered = true;
-            this._syncAutoplay();
-        });
-        this.addEventListener("pointerleave", () => {
-            this._hovered = false;
-            this._syncAutoplay();
-        });
-        this.addEventListener("focusin", () => {
-            this._focused = true;
-            this._syncAutoplay();
-        });
-        this.addEventListener("focusout", () => {
-            this._focused = false;
-            this._syncAutoplay();
-        });
     }
 }
 

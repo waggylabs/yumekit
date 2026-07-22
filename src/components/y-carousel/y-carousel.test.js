@@ -243,5 +243,18 @@ describe("<y-carousel>", () => {
             el.play();
             expect(el._autoplayTimer).to.be.null;
         });
+
+        it("does not accumulate host listeners across re-renders", async () => {
+            const el = await make("", 3);
+            // Attribute changes call render() -> _wireEvents() repeatedly.
+            el.setAttribute("gap", "8px");
+            el.setAttribute("per-view", "2");
+            el.setAttribute("snap", "center");
+
+            const spy = sandbox.spy(el, "_syncAutoplay");
+            el.dispatchEvent(new Event("pointerenter"));
+            expect(spy.callCount).to.equal(1);
+            expect(el._hovered).to.be.true;
+        });
     });
 });
