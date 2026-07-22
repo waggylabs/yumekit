@@ -383,4 +383,46 @@ describe("YumeTextarea", () => {
             document.body.removeChild(el);
         });
     });
+    describe("accessibility forwarding", () => {
+        it("forwards aria-label, required, and autocomplete to the inner textarea", async () => {
+            const el = await fixture(
+                html`<y-textarea
+                    aria-label="Bio"
+                    required
+                    autocomplete="off"
+                ></y-textarea>`,
+            );
+            const textarea = el.shadowRoot.querySelector("textarea");
+
+            expect(textarea.getAttribute("aria-label")).to.equal("Bio");
+            expect(textarea.hasAttribute("required")).to.be.true;
+            expect(textarea.getAttribute("autocomplete")).to.equal("off");
+        });
+
+        it("describes the inner textarea from error-text within its own root", async () => {
+            const el = await fixture(html`<y-textarea></y-textarea>`);
+            el.errorText = "Tell us something";
+
+            const textarea = el.shadowRoot.querySelector("textarea");
+            const message = el.shadowRoot.getElementById(
+                textarea.getAttribute("aria-describedby"),
+            );
+
+            expect(textarea.getAttribute("aria-invalid")).to.equal("true");
+            expect(message).to.exist;
+            expect(message.textContent).to.equal("Tell us something");
+        });
+
+        it("toggles disabled without replacing the textarea", async () => {
+            const el = await fixture(html`<y-textarea></y-textarea>`);
+            const textarea = el.shadowRoot.querySelector("textarea");
+
+            el.disabled = true;
+            expect(textarea.disabled).to.be.true;
+            el.disabled = false;
+
+            expect(el.shadowRoot.querySelector("textarea") === textarea).to.be
+                .true;
+        });
+    });
 });

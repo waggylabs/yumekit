@@ -273,3 +273,73 @@ export const LoadingSkeleton = {
 export const Disabled = {
     args: { disabled: true },
 };
+
+export const CustomValidationMessages = {
+    render: () => {
+        const wrapper = document.createElement("div");
+        const form = document.createElement("y-form");
+        form.submitText = "Create account";
+        form.fields = [
+            {
+                type: "input",
+                name: "username",
+                label: "Username",
+                required: true,
+                errorText: "Pick a username — this is how others find you.",
+            },
+            // A bare native input type is sugar for {type: "input", inputType}.
+            {
+                type: "email",
+                name: "email",
+                label: "Email",
+                required: true,
+                autocomplete: "email",
+            },
+            {
+                type: "password",
+                name: "password",
+                label: "Password",
+                required: true,
+                autocomplete: "new-password",
+            },
+            {
+                type: "password",
+                name: "confirm",
+                label: "Confirm password",
+                required: true,
+                autocomplete: "new-password",
+                validate: (value, values) =>
+                    value === values.password ? null : "Passwords must match",
+            },
+        ];
+
+        wrapper.appendChild(form);
+        return wrapper;
+    },
+};
+
+export const LoadingPreservesFocus = {
+    render: () => {
+        const wrapper = document.createElement("div");
+        const form = document.createElement("y-form");
+        form.fields = [
+            { type: "input", name: "name", label: "Name", value: "Jeff" },
+            { type: "textarea", name: "bio", label: "Bio" },
+        ];
+
+        // Focus and caret position survive the loading/disabled toggle because
+        // state-only attributes no longer rebuild the controls.
+        form.addEventListener("y-submit", (e) => {
+            e.preventDefault();
+            form.loading = true;
+            form.disabled = true;
+            setTimeout(() => {
+                form.loading = false;
+                form.disabled = false;
+            }, 1500);
+        });
+
+        wrapper.appendChild(form);
+        return wrapper;
+    },
+};

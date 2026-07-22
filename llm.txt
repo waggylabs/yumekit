@@ -226,6 +226,10 @@ Attributes:
 - `min-length` — numeric string
 - `min`, `max`, `step` — numeric constraints applied when `type="number"`
 - `pattern` — validation regex
+- `autocomplete` — forwarded to the inner `<input>` (e.g. `"email"`, `"current-password"`)
+- `error-text` — validation message rendered below the field; also applies the error state and becomes the input's accessible description
+
+Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`, `input`
 
@@ -347,6 +351,10 @@ Attributes:
 - `disabled` — boolean
 - `required` — boolean
 - `invalid` — boolean, applies error state
+- `autocomplete` — forwarded to the inner `<textarea>`
+- `error-text` — validation message rendered below the field; also applies the error state and becomes the textarea's accessible description
+
+Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`, `input`
 
@@ -416,6 +424,10 @@ Attributes:
 - `label-position` — `"top"` (default) | `"bottom"`
 - `close-on-click-outside` — set to `"false"` to keep the dropdown open when clicking outside
 - `portal` — boolean; renders the dropdown into the nearest `<y-theme>` (falling back to `<body>`) so it escapes scrollable, clipped, or low-stacking ancestors (e.g. inside a data-grid cell editor or dialog)
+- `error-text` — validation message rendered below the field; also applies the error state and becomes the combobox's accessible description
+
+The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
+Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`
 
@@ -694,7 +706,7 @@ Form container that lays out and manages a group of YumeKit form controls from a
 
 Tag: `<y-form>`
 Attributes:
-- `fields` — JSON string (or array property): ordered field descriptors. Each entry renders a generated control (`type` + `name`), or — when it has a `slot` key — a named `<slot>` outlet at that position so a child with the matching `slot="…"` attribute interleaves with generated fields. Descriptor keys: `type` (`input` | `textarea` | `select` | `checkbox` | `radio` | `switch` | `slider` | `date` | `color` | `rating`; `input` also takes `inputType` for the native type), `name` (payload key, required for generated controls), `label`, `value` (initial), `placeholder`, `required`, `disabled`, `options` (for `select` / `radio`), `min` / `max` / `step`, `help` (helper text under the field), `slot` (named-outlet entry — other keys ignored). Rich data held as a property; the attribute seeds an initial value but is not kept in sync after an imperative set.
+- `fields` — JSON string (or array property): ordered field descriptors. Each entry renders a generated control (`type` + `name`), or — when it has a `slot` key — a named `<slot>` outlet at that position so a child with the matching `slot="…"` attribute interleaves with generated fields. Descriptor keys: `type` (`input` | `textarea` | `select` | `checkbox` | `radio` | `switch` | `slider` | `date` | `color` | `rating`; `input` also takes `inputType` for the native type), `name` (payload key, required for generated controls), `label`, `value` (initial), `placeholder`, `required`, `disabled`, `options` (for `select` / `radio`), `min` / `max` / `step`, `help` (helper text under the field), `autocomplete`, `errorText` (message shown in place of the generic "X is required" / "X is invalid" copy), `validate(value, values)` (returns a message string or `null`; runs after the built-in checks pass, for cross-field and domain rules), `slot` (named-outlet entry — other keys ignored). A `type` that is not one of the component types but names a native input type (`text`, `email`, `url`, `tel`, `number`, `password`, `search`, `time`, `datetime-local`, `month`, `week`) is sugar for `{type: "input", inputType: <that>}`. Rich data held as a property; the attribute seeds an initial value but is not kept in sync after an imperative set.
 - `submit-text` — submit button label (default `"Submit"`)
 - `reset-text` — reset button label (default `"Reset"`)
 - `no-reset` — boolean; hide the reset button
@@ -709,7 +721,11 @@ Attributes:
 - `method` — `"get"` | `"post"` (default `"post"`), used when `action` is set
 - `name` — form name
 
-Property (not attribute): `values` — get/set current field values as `{name: value}` (checkbox/switch values are booleans). Setting merges by name; unknown keys are ignored. Disabled fields are excluded, per native form semantics.
+Property (not attribute): `values` — get/set current field values as `{name: value}` (checkbox/switch values are booleans). Setting merges by name; unknown keys are ignored. The getter reports the form's full state **including disabled fields**, so a form that disables its controls while saving still reports what it holds; native submission semantics (omitting disabled fields) apply to `formData` on `y-submit`, not to `values`.
+
+Validation messages for `input` / `textarea` / `select` fields are handed to the control's own `error-text`, so the message lives in the same shadow root as the input and `aria-describedby` resolves. Other field types keep their message in the form's `field-error` live region and get `aria-invalid` shimmed onto their inner control.
+
+Changing any attribute other than `fields` updates the existing tree in place — focus, caret position, IME composition, and open dropdowns survive a `loading` or `disabled` toggle mid-submit. Only `fields` rebuilds.
 
 Slots: `header` (content above the fields), `actions` (replaces the default submit/reset row), `footer` (below the actions), plus one named outlet per `fields` entry with a `slot` key. Slotted form controls with a `name` participate in value collection, `y-change`, and validation.
 

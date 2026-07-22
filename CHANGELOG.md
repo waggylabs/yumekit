@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-input`, `y-textarea`, and `y-select` gain an `error-text` attribute that renders a validation message below the field, applies the error state, and — because the message lives in the component's own shadow root — becomes the control's accessible description. All three also forward `aria-label` / `aria-labelledby` (plus `required` and `autocomplete` on the input and textarea) to their inner control, and `y-select`'s trigger, panel, and options now carry `combobox` / `listbox` / `option` roles.
+
 - `y-carousel` — a slideshow container that presents its slotted children as slides, one or more per view (`per-view`, including fractional peeks), with arrow/dot/fraction navigation, pointer and touch swipe, `loop`, and optional `autoplay`. Built on CSS scroll-snap so swipe and programmatic navigation share one path; autoplay pauses on hover, focus, off-screen, hidden tabs, and `prefers-reduced-motion`. New `--component-carousel-*` tokens across all 60 themes.
 
 - `y-upload` — a form-associated file upload with a drag-and-drop dropzone, client-side validation (`accept`, `max-size`, `max-files`, `max-total-size`), and a managed file list with optional image previews and per-file progress/status. Selected files submit with the parent form via `FormData` under `name`; the app handles transport and reports back through `setProgress` / `setStatus`. New `--component-upload-*` tokens across all 60 themes.
@@ -45,7 +47,7 @@ Delete any empty sections before publishing.
 
 - `y-input` and `y-textarea` support a `placeholder` attribute (and matching property), bringing them in line with `y-select`, `y-date`, and `y-color`. A new `--component-input-placeholder-color` token (defaulting to the `base.content.lightest` shade) styles the hint text across all 60 themes.
 
-- `y-form` — a form container that renders and manages a group of YumeKit form controls from a JSON `fields` array, with configurable submit/reset buttons, built-in required/validity checking, and a single `{values, formData}` payload on submit. Field entries with a `slot` key render named-slot outlets, so custom children interleave with generated fields and still participate in value collection.
+- `y-form` — a form container that renders and manages a group of YumeKit form controls from a JSON `fields` array, with configurable submit/reset buttons, built-in required/validity checking, and a single `{values, formData}` payload on submit. Field descriptors take `errorText` and `validate(value, values)` to replace the generic validation copy and add cross-field rules, and a bare native input type (`{type: "email"}`) is shorthand for `{type: "input", inputType: "email"}`. Entries with a `slot` key render named-slot outlets, so custom children interleave with generated fields and still participate in value collection. `values` reports the full form state including disabled fields; `formData` omits them, per native form semantics.
 
 - Skeleton loading states for data-heavy components, built on `y-skeleton`. `y-data-grid` gains `loading-mode` (`auto` / `overlay` / `skeleton`) and `skeleton-rows`; `y-table` and `y-avatar` gain `loading` (plus `skeleton-rows` on the table). The grid and table expose a `skeleton` slot and `skeleton-body` / `skeleton-row` / `skeleton-cell` parts, and the avatar placeholder matches its size and shape. Placeholder rows reuse the real column widths so there is no layout shift when data arrives.
 
@@ -58,6 +60,8 @@ Delete any empty sections before publishing.
 - Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
 
 ### Fixed
+
+- `y-input` and `y-textarea` no longer replace their inner `<input>` / `<textarea>` when `disabled` toggles, so focus, caret position, and IME composition survive a form disabling its controls mid-submit. Their disabled styling is now driven by `:host([disabled])` selectors rather than a rebuilt stylesheet.
 
 - Deep imports (`@waggylabs/yumekit/components/*.js`) are fixed and substantially slimmer. The per-component bundles emitted import paths that pointed outside the package, and each bundle inlined its own copy of every dependency, including a private icon registry, so `registerIcon()` had no effect on deep-imported components. Shared modules and sibling components are now resolved from `dist/modules/` and `dist/components/`, every bundle contains only its own code, and all bundles share the single icon registry.
 

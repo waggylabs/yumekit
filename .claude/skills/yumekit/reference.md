@@ -239,6 +239,10 @@ Form-associated. Always set `name` inside a `<form>`.
 | `min-length`     | number string                                                             |
 | `min`, `max`, `step` | numeric constraints applied when `type="number"`                      |
 | `pattern`        | regex string                                                              |
+| `autocomplete`   | forwarded to the inner `<input>` (e.g. `email`, `current-password`)       |
+| `error-text`     | validation message below the field; applies the error state and describes the input |
+
+Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`, `input`
 
@@ -272,6 +276,10 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 | `disabled`       | boolean                                          |
 | `required`       | boolean                                          |
 | `invalid`        | boolean — applies error state                    |
+| `autocomplete`   | forwarded to the inner `<textarea>`              |
+| `error-text`     | validation message below the field; applies the error state and describes the textarea |
+
+Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`, `input`
 
@@ -369,6 +377,11 @@ Form-associated.
 | `label-position` | `top` (default) \| `bottom`                   |
 | `close-on-click-outside` | `"false"` keeps the dropdown open on outside click |
 | `portal`       | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors |
+| `error-text`   | validation message below the field; applies the error state and describes the combobox |
+
+The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
+
+Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`
 
@@ -493,9 +506,13 @@ Form container — renders a group of YumeKit form controls from a JSON `fields`
 | `method`         | `get` \| `post` (default `post`), used when `action` is set          |
 | `name`           | form name                                                            |
 
-Field descriptor keys: `type` (`input` \| `textarea` \| `select` \| `checkbox` \| `radio` \| `switch` \| `slider` \| `date` \| `color` \| `rating`; `input` also takes `inputType`), `name`, `label`, `value`, `placeholder`, `required`, `disabled`, `options` (select/radio), `min`/`max`/`step`, `help`. An entry with a `slot` key renders a named `<slot>` outlet at that position instead — project a child with the matching `slot="…"` attribute, and slotted named controls join value collection and validation.
+Field descriptor keys: `type` (`input` \| `textarea` \| `select` \| `checkbox` \| `radio` \| `switch` \| `slider` \| `date` \| `color` \| `rating`; `input` also takes `inputType`), `name`, `label`, `value`, `placeholder`, `required`, `disabled`, `options` (select/radio), `min`/`max`/`step`, `help`, `autocomplete`, `errorText` (message used in place of the generic "X is required" / "X is invalid" copy), `validate(value, values)` (returns a message or `null`; runs after the built-in checks pass, for cross-field and domain rules). A `type` that is not a component type but names a native input type (`text`, `email`, `url`, `tel`, `number`, `password`, `search`, `time`, `datetime-local`, `month`, `week`) is sugar for `{type: "input", inputType: <that>}`. An entry with a `slot` key renders a named `<slot>` outlet at that position instead — project a child with the matching `slot="…"` attribute, and slotted named controls join value collection and validation.
 
-Property (not attribute): `values` — get/set `{name: value}` (booleans for checkbox/switch); setting merges by name, unknown keys ignored, disabled fields excluded.
+Property (not attribute): `values` — get/set `{name: value}` (booleans for checkbox/switch); setting merges by name, unknown keys ignored. The getter reports the form's full state **including disabled fields**, so disabling controls during an async save does not blank out `values`; native submission semantics (omitting disabled fields) apply to `formData` on `y-submit`.
+
+Validation messages for `input` / `textarea` / `select` fields are handed to the control's own `error-text` so the message shares a shadow root with the input and `aria-describedby` resolves. Other field types keep their message in the form's `field-error` live region and get `aria-invalid` shimmed onto their inner control.
+
+Changing any attribute other than `fields` updates the existing tree in place — focus, caret, IME composition, and open dropdowns survive a `loading` / `disabled` toggle mid-submit. Only `fields` rebuilds.
 
 Slots: `header`, `actions` (replaces the default button row), `footer`, plus one named outlet per `slot` field entry
 Events: `y-submit` `{values, formData}` (cancelable — prevent for async submission), `y-reset` (cancelable), `y-change` `{name, value, values}`, `y-invalid` `{invalid: [{name, message}]}`

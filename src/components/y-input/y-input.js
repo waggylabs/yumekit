@@ -1,5 +1,7 @@
 import {
+    applyControlError,
     createElement as _el,
+    forwardControlAttributes,
     manageLabelVisibility,
     upgradeProperties,
 } from "../../modules/helpers.js";
@@ -21,6 +23,11 @@ export class YumeInput extends HTMLElement {
             "step",
             "placeholder",
             "variant",
+            "required",
+            "autocomplete",
+            "error-text",
+            "aria-label",
+            "aria-labelledby",
         ];
     }
 
@@ -67,6 +74,30 @@ export class YumeInput extends HTMLElement {
             return;
         }
 
+        if (name === "error-text") {
+            this._updateErrorText();
+            return;
+        }
+
+        // Re-rendering here would replace the <input>, dropping focus, caret
+        // position, and IME composition — exactly what a form does on submit.
+        if (name === "disabled") {
+            if (this.input) this.input.disabled = this.disabled;
+            this._updateValidationState();
+            return;
+        }
+
+        if (
+            name === "required" ||
+            name === "autocomplete" ||
+            name === "aria-label" ||
+            name === "aria-labelledby"
+        ) {
+            forwardControlAttributes(this, this.input);
+            this._updateValidationState();
+            return;
+        }
+
         if (
             name === "min" ||
             name === "max" ||
@@ -97,6 +128,19 @@ export class YumeInput extends HTMLElement {
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
+    }
+
+    /**
+     * @type {string} Validation message shown below the field. A non-empty
+     * value also puts the input in the invalid state and becomes its accessible
+     * description.
+     */
+    get errorText() {
+        return this.getAttribute("error-text") || "";
+    }
+    set errorText(val) {
+        if (val == null || val === "") this.removeAttribute("error-text");
+        else this.setAttribute("error-text", val);
     }
 
     /** @type {boolean} Whether the input is in an invalid state. */
@@ -200,7 +244,7 @@ export class YumeInput extends HTMLElement {
         const minHeightVar = this._getMinHeightVar(size);
 
         this.shadowRoot.adoptedStyleSheets = [
-            this._buildStyleSheet(isDisabled, paddingVar, minHeightVar),
+            this._buildStyleSheet(paddingVar, minHeightVar),
         ];
         this.shadowRoot.replaceChildren(
             this._buildTree(type, value, isLabelTop, isDisabled),
@@ -209,13 +253,13 @@ export class YumeInput extends HTMLElement {
         this.input = this.shadowRoot.querySelector("input");
         this.inputContainer = this.shadowRoot.querySelector(".input-container");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+        this.errorElement = this.shadowRoot.querySelector(".error-text");
 
         manageLabelVisibility(this.labelWrapper);
-
-        if (!isDisabled) {
-            this._bindInputListeners();
-            this._updateValidationState();
-        }
+        forwardControlAttributes(this, this.input);
+        this._updateErrorText();
+        this._bindInputListeners();
+        this._updateValidationState();
     }
 
     // -------------------------------------------------------------------------
@@ -270,15 +314,24 @@ export class YumeInput extends HTMLElement {
             _el("slot", { name: "right-icon" }),
         ]);
 
+        const error = _el("div", {
+            class: "error-text",
+            part: "error-text",
+            id: "error-text",
+            "aria-live": "polite",
+            hidden: true,
+        });
+
         const children = [];
         if (isLabelTop) children.push(buildLabelSlot());
         children.push(container);
         if (!isLabelTop) children.push(buildLabelSlot());
+        children.push(error);
 
         return _el("div", { class: "input-wrapper" }, children);
     }
 
-    _buildStyleSheet(isDisabled, paddingVar, minHeightVar) {
+    _buildStyleSheet(paddingVar, minHeightVar) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host([hidden]) {
@@ -289,8 +342,15 @@ export class YumeInput extends HTMLElement {
                 display: block;
                 font-family: var(--font-family-body);
                 color: var(--component-input-color);
-                opacity: ${isDisabled ? "0.75" : "1"};
-                pointer-events: ${isDisabled ? "none" : "auto"};
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* Expressed as a selector, not interpolated, so toggling disabled
+               never has to rebuild the shadow tree. */
+            :host([disabled]) {
+                opacity: 0.75;
+                pointer-events: none;
             }
 
             .input-wrapper {
@@ -310,7 +370,7 @@ export class YumeInput extends HTMLElement {
                 display: flex;
                 align-items: center;
                 gap: var(--spacing-x-small);
-                background: ${isDisabled ? "var(--component-input-background-disabled)" : "var(--component-input-background)"};
+                background: var(--component-input-background);
                 /* Style + color via the shorthand (fixed, always-valid 1px
                    width); real width as a longhand so
                    --component-inputs-border-width accepts a 1–4 value pattern
@@ -323,6 +383,10 @@ export class YumeInput extends HTMLElement {
                 min-height: ${minHeightVar};
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
+            }
+
+            :host([disabled]) .input-container {
+                background: var(--component-input-background-disabled);
             }
 
             /* Underline variant: bottom border only, square bottom corners.
@@ -383,6 +447,16 @@ export class YumeInput extends HTMLElement {
                 color: var(--component-input-error-color);
             }
 
+            .error-text {
+                margin-top: var(--spacing-2x-small, 4px);
+                font-size: 0.8em;
+                color: var(--component-input-error-color);
+            }
+
+            .error-text[hidden] {
+                display: none;
+            }
+
             ::slotted([slot="label"]) {
                 font-weight: 500;
                 font-size: 0.875em;
@@ -418,9 +492,22 @@ export class YumeInput extends HTMLElement {
         return map[size] || map.medium;
     }
 
+    _updateErrorText() {
+        applyControlError(this.input, this.errorElement, this.errorText);
+        this._updateValidationState();
+    }
+
     _updateValidationState() {
-        const isManuallyInvalid = this.hasAttribute("invalid");
-        const isAutomaticallyInvalid = this.input && !this.checkValidity();
+        const isManuallyInvalid =
+            this.hasAttribute("invalid") || this.errorText !== "";
+
+        // A pristine empty `required` field is not styled as an error — that
+        // only lands once something asks for it (a form submit setting
+        // `error-text`/`invalid`). Format failures still show immediately.
+        const validity = this.input?.validity;
+        const isAutomaticallyInvalid =
+            !!validity && !validity.valid && !validity.valueMissing;
+
         const isInvalid = isManuallyInvalid || isAutomaticallyInvalid;
 
         this.inputContainer?.classList.toggle("is-invalid", isInvalid);

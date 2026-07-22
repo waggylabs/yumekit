@@ -113,12 +113,50 @@ describe("<y-form>", () => {
 
         el.submit();
 
-        const error = el.shadowRoot.querySelector(".field-error");
         const control = el.shadowRoot.querySelector("y-input");
-        expect(error.hidden).to.be.false;
-        expect(error.textContent).to.equal("Username is required");
-        expect(control.getAttribute("aria-invalid")).to.equal("true");
-        expect(control.getAttribute("aria-describedby")).to.equal(error.id);
+        expect(control.errorText).to.equal("Username is required");
+        expect(control.invalid).to.be.true;
+    });
+
+    it("associates the message with the inner control, not the host", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            { type: "input", name: "username", label: "Username", required: true },
+        ];
+
+        el.submit();
+
+        const host = el.shadowRoot.querySelector("y-input");
+        const input = host.shadowRoot.querySelector("input");
+        const message = host.shadowRoot.getElementById(
+            input.getAttribute("aria-describedby"),
+        );
+
+        expect(input.getAttribute("aria-label")).to.equal("Username");
+        expect(input.getAttribute("aria-invalid")).to.equal("true");
+        expect(message, "describedby must resolve in the control's own root").to
+            .exist;
+        expect(message.textContent).to.equal("Username is required");
+    });
+
+    it("shims aria-invalid onto the inner control of types without error-text", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            { type: "checkbox", name: "terms", label: "Terms", required: true },
+        ];
+
+        el.submit();
+
+        const host = el.shadowRoot.querySelector("y-checkbox");
+        const inner = host.shadowRoot.querySelector(
+            "input, textarea, select, [tabindex]",
+        );
+        const error = el.shadowRoot.querySelector(".field-error");
+
+        expect(inner.getAttribute("aria-invalid")).to.equal("true");
+        expect(error.hidden, "message stays in the form's live region").to.be
+            .false;
+        expect(error.textContent).to.equal("Terms is required");
     });
 
     it("clears the error once the field becomes valid again", async () => {
@@ -127,17 +165,22 @@ describe("<y-form>", () => {
             { type: "input", name: "username", label: "Username", required: true },
         ];
 
-        el.submit();
-        expect(el.shadowRoot.querySelector(".field-error").hidden).to.be.false;
-
         const control = el.shadowRoot.querySelector("y-input");
+        el.submit();
+        expect(control.errorText).to.equal("Username is required");
+
         control.value = "jeff";
         control.dispatchEvent(
             new CustomEvent("input", { bubbles: true, composed: true }),
         );
 
-        expect(el.shadowRoot.querySelector(".field-error").hidden).to.be.true;
-        expect(control.hasAttribute("aria-invalid")).to.be.false;
+        expect(control.errorText).to.equal("");
+        expect(control.invalid).to.be.false;
+        expect(
+            control.shadowRoot.querySelector("input").hasAttribute(
+                "aria-invalid",
+            ),
+        ).to.be.false;
     });
 
     it("skips validation when novalidate is set", async () => {
@@ -328,18 +371,29 @@ describe("<y-form>", () => {
         });
     });
 
-    it("excludes disabled fields from values and the payload", async () => {
+    it("excludes disabled fields from the payload but not from values", async () => {
         const el = await fixture(html`<y-form novalidate></y-form>`);
         el.fields = [
             { type: "input", name: "username", value: "jeff" },
             { type: "input", name: "secret", value: "hidden", disabled: true },
         ];
 
-        expect(el.values).to.deep.equal({ username: "jeff" });
+        expect(el.values).to.deep.equal({
+            username: "jeff",
+            secret: "hidden",
+        });
 
         setTimeout(() => el.submit());
         const ev = await oneEvent(el, "y-submit");
         expect(ev.detail.formData.has("secret")).to.be.false;
+    });
+
+    it("still reports values while every control is disabled", async () => {
+        const el = await fixture(html`<y-form novalidate disabled></y-form>`);
+        el.fields = [{ type: "input", name: "username", value: "jeff" }];
+
+        expect(el.values).to.deep.equal({ username: "jeff" });
+        expect(el._collectFormData().has("username")).to.be.false;
     });
 
     it("disables all controls and buttons when disabled", async () => {
@@ -389,21 +443,29 @@ describe("<y-form>", () => {
         el.setAttribute("loading-mode", "skeleton");
         el.setAttribute("loading", "");
 
-        expect(
-            el.shadowRoot.querySelectorAll("y-skeleton.field-skeleton").length,
-        ).to.equal(2);
-        expect(
-            el.shadowRoot.querySelectorAll("y-skeleton.label-skeleton").length,
-        ).to.equal(1);
-        expect(el.shadowRoot.querySelector(".field-label")).to.not.exist;
+        const skeletons = el.shadowRoot.querySelectorAll(
+            "y-skeleton.field-skeleton",
+        );
+        const labelSkeleton = el.shadowRoot.querySelector(
+            "y-skeleton.label-skeleton",
+        );
+        const label = el.shadowRoot.querySelector(".field-label");
+
+        expect(skeletons.length).to.equal(2);
+        expect([...skeletons].every((s) => !s.hidden)).to.be.true;
+        expect(labelSkeleton.hidden).to.be.false;
+        expect(label.hidden, "the real label yields to its skeleton").to.be
+            .true;
         expect(el.shadowRoot.querySelector("y-progress")).to.not.exist;
 
         const control = el.shadowRoot.querySelector("y-input");
         expect(getComputedStyle(control).display).to.equal("none");
 
         el.removeAttribute("loading");
-        expect(el.shadowRoot.querySelector("y-skeleton")).to.not.exist;
-        expect(el.shadowRoot.querySelector(".field-label")).to.exist;
+        expect([...skeletons].every((s) => s.hidden)).to.be.true;
+        expect(labelSkeleton.hidden).to.be.true;
+        expect(label.hidden).to.be.false;
+        expect(getComputedStyle(control).display).to.not.equal("none");
         expect(el.values.username).to.equal("jeff");
     });
 
@@ -420,13 +482,152 @@ describe("<y-form>", () => {
         expect(getComputedStyle(checkboxEl).alignSelf).to.equal("flex-start");
     });
 
-    it("preserves typed values when an unrelated attribute re-renders the form", async () => {
+    it("preserves typed values when an unrelated attribute changes", async () => {
         const el = await fixture(html`<y-form></y-form>`);
         el.fields = [{ type: "input", name: "username", value: "jeff" }];
         el.values = { username: "typed" };
 
         el.setAttribute("loading", "");
         expect(el.values.username).to.equal("typed");
+    });
+
+    it("keeps focus and selection when loading toggles mid-submit", async () => {
+        const el = await fixture(html`<y-form novalidate></y-form>`);
+        el.fields = [{ type: "input", name: "username", value: "jeffrey" }];
+
+        const host = el.shadowRoot.querySelector("y-input");
+        const input = host.shadowRoot.querySelector("input");
+        input.focus();
+        input.setSelectionRange(2, 5);
+
+        el.loading = true;
+
+        expect(host.shadowRoot.activeElement === input).to.be.true;
+        expect(input.selectionStart).to.equal(2);
+        expect(input.selectionEnd).to.equal(5);
+    });
+
+    it("keeps the same control element when disabled toggles", async () => {
+        const el = await fixture(html`<y-form novalidate></y-form>`);
+        el.fields = [{ type: "input", name: "username", value: "jeffrey" }];
+
+        const host = el.shadowRoot.querySelector("y-input");
+        const input = host.shadowRoot.querySelector("input");
+        input.setSelectionRange(2, 5);
+
+        // Disabling necessarily blurs, but the element itself must survive so
+        // the caret is still there when the form re-enables.
+        el.disabled = true;
+        expect(input.disabled).to.be.true;
+        el.disabled = false;
+
+        expect(
+            host.shadowRoot.querySelector("input") === input,
+            "the control must not be recreated",
+        ).to.be.true;
+        expect(input.disabled).to.be.false;
+        expect(input.selectionStart).to.equal(2);
+        expect(input.selectionEnd).to.equal(5);
+    });
+
+    it("does not touch the tree for layout, label-position, or novalidate", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [{ type: "input", name: "username" }];
+        const control = el.shadowRoot.querySelector("y-input");
+
+        el.setAttribute("layout", "horizontal");
+        el.setAttribute("label-position", "left");
+        el.setAttribute("novalidate", "");
+
+        expect(el.shadowRoot.querySelector("y-input")).to.equal(control);
+    });
+
+    it("applies size, button labels, and no-reset without rebuilding controls", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [{ type: "input", name: "username" }];
+        const control = el.shadowRoot.querySelector("y-input");
+
+        el.setAttribute("size", "large");
+        el.setAttribute("submit-text", "Save");
+        el.setAttribute("no-reset", "");
+
+        expect(el.shadowRoot.querySelector("y-input")).to.equal(control);
+        expect(control.getAttribute("size")).to.equal("large");
+        expect(
+            el.shadowRoot
+                .querySelector('[part="submit-button"]')
+                .textContent.trim(),
+        ).to.equal("Save");
+        expect(el.shadowRoot.querySelector('[part="reset-button"]')).to.not
+            .exist;
+
+        el.removeAttribute("no-reset");
+        expect(el.shadowRoot.querySelector('[part="reset-button"]')).to.exist;
+    });
+
+    it("uses a field's errorText in place of the generic message", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            {
+                type: "input",
+                name: "username",
+                label: "Username",
+                required: true,
+                errorText: "Pick a username",
+            },
+        ];
+
+        el.submit();
+        expect(el.shadowRoot.querySelector("y-input").errorText).to.equal(
+            "Pick a username",
+        );
+    });
+
+    it("defaults to type-aware copy for natively validated input types", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            { type: "email", name: "email", label: "Email", value: "nope" },
+        ];
+
+        el.submit();
+        expect(el.shadowRoot.querySelector("y-input").errorText).to.equal(
+            "Enter a valid email address",
+        );
+    });
+
+    it("runs a field's validate() for cross-field rules", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            { type: "password", name: "password", value: "hunter2" },
+            {
+                type: "password",
+                name: "confirm",
+                value: "hunter3",
+                validate: (value, values) =>
+                    value === values.password ? null : "Passwords must match",
+            },
+        ];
+
+        setTimeout(() => el.submit());
+        const ev = await oneEvent(el, "y-invalid");
+        expect(ev.detail.invalid).to.deep.equal([
+            { name: "confirm", message: "Passwords must match" },
+        ]);
+    });
+
+    it("treats a bare input type as sugar for type: input", async () => {
+        const el = await fixture(html`<y-form></y-form>`);
+        el.fields = [
+            { type: "email", name: "email" },
+            { type: "tel", name: "phone" },
+            { type: "nonsense", name: "other" },
+        ];
+
+        const inputs = el.shadowRoot.querySelectorAll("y-input");
+        expect(inputs.length).to.equal(3);
+        expect(inputs[0].getAttribute("type")).to.equal("email");
+        expect(inputs[1].getAttribute("type")).to.equal("tel");
+        expect(inputs[2].getAttribute("type")).to.equal("text");
     });
 
     it("hides the reset button with no-reset and applies custom button labels", async () => {

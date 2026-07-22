@@ -56,6 +56,37 @@ const PLACEHOLDER_TYPES = new Set([
     "color",
 ]);
 
+/**
+ * Native input types accepted as a flat `type` shorthand — `{type: "email"}` is
+ * sugar for `{type: "input", inputType: "email"}`. Types that already have a
+ * dedicated component (`date`, `color`) are deliberately absent; `FIELD_TAGS`
+ * resolves those first.
+ */
+const INPUT_TYPE_SHORTHANDS = new Set([
+    "text",
+    "email",
+    "url",
+    "tel",
+    "number",
+    "password",
+    "search",
+    "time",
+    "datetime-local",
+    "month",
+    "week",
+]);
+
+/** Default validation copy for input types the browser checks natively. */
+const INVALID_MESSAGES = {
+    email: "Enter a valid email address",
+    url: "Enter a valid URL",
+    tel: "Enter a valid phone number",
+    number: "Enter a valid number",
+};
+
+/** Attributes that are purely `:host([...])` CSS hooks or read on demand. */
+const INERT_ATTRIBUTES = new Set(["layout", "label-position", "novalidate"]);
+
 /** Selector matching form controls inside slotted (projected) content. */
 const CONTROL_SELECTOR = [
     ...Object.values(FIELD_TAGS),
@@ -141,7 +172,13 @@ function getStyleSheet() {
             align-self: flex-start;
         }
 
+        /* Skeletons are always in the tree and toggled via [hidden], so a
+           loading change never rebuilds a control. */
         :host([loading][loading-mode="skeleton"]) .field-body > *:not(.field-skeleton) {
+            display: none;
+        }
+
+        .field-label[hidden] {
             display: none;
         }
 
@@ -231,6 +268,7 @@ export class YumeForm extends HTMLElement {
         this._slottedCache = new Set();
         this._valueCache = {};
         this._form = null;
+        this._actionsSlot = null;
 
         this.attachShadow({ mode: "open" });
         this.shadowRoot.adoptedStyleSheets = [getStyleSheet()];
@@ -250,7 +288,12 @@ export class YumeForm extends HTMLElement {
             return;
         }
 
-        this.render();
+        if (INERT_ATTRIBUTES.has(name)) return;
+
+        // Every remaining attribute is state, not structure. Re-rendering would
+        // drop focus, selection, IME composition, and open dropdowns — which is
+        // exactly what `loading`/`disabled` toggle during a submit.
+        this._applyState();
     }
 
     // -------------------------------------------------------------------------
@@ -380,9 +423,9 @@ export class YumeForm extends HTMLElement {
         this.setAttribute("submit-text", val);
     }
 
-    /** @type {Object} Current field values keyed by name. Setting merges by name into the rendered controls; unknown keys are ignored. Disabled fields are excluded, per native form semantics. */
+    /** @type {Object} Current field values keyed by name — the form's full state, including disabled fields, so a form that disables its controls while saving still reports what it holds. Native submission semantics (omitting disabled fields) apply to `formData`, not here. Setting merges by name into the rendered controls; unknown keys are ignored. */
     get values() {
-        return this._collectValues();
+        return this._collectValues({ includeDisabled: true });
     }
     set values(val) {
         const incoming = coerceRichData(val, {});
@@ -417,14 +460,13 @@ export class YumeForm extends HTMLElement {
 
     render({ preserveValues = true } = {}) {
         const previous =
-            preserveValues && this._controls.length
-                ? this._collectValues({ includeDisabled: true })
-                : null;
+            preserveValues && this._controls.length ? this.values : null;
 
         this.shadowRoot.replaceChildren(this._buildTree());
 
         this._form = this.shadowRoot.querySelector("form");
         this._refreshSlottedCache();
+        this._applyState();
 
         if (previous) this.values = previous;
 
@@ -473,6 +515,20 @@ export class YumeForm extends HTMLElement {
     // Private
     // -------------------------------------------------------------------------
 
+    /**
+     * Syncs every state-only attribute onto the tree that already exists.
+     * Nothing here replaces a generated control, so focus, caret position, IME
+     * composition, and open dropdowns all survive a `loading` or `disabled`
+     * toggle mid-submit.
+     */
+    _applyState() {
+        if (!this._form) return;
+
+        this._syncFormAttributes();
+        this._syncControls();
+        this._syncActions();
+    }
+
     _bindFormListeners() {
         this._form.addEventListener("submit", (e) => this._onSubmit(e));
         this._form.addEventListener("reset", (e) => {
@@ -482,11 +538,6 @@ export class YumeForm extends HTMLElement {
         this._form.addEventListener("change", (e) => this._onFieldInput(e));
         this._form.addEventListener("input", (e) => this._onFieldInput(e));
         this._form.addEventListener("keydown", (e) => this._onKeydown(e));
-
-        const resetButton = this.shadowRoot.querySelector(
-            '[part="reset-button"]',
-        );
-        resetButton?.addEventListener("click", () => this._form.reset());
 
         for (const name of ["header", "footer"]) {
             const slot = this.shadowRoot.querySelector(`slot[name="${name}"]`);
@@ -505,9 +556,12 @@ export class YumeForm extends HTMLElement {
         }
     }
 
+    /**
+     * Builds the bare action row. Button text, size, disabled state, and the
+     * presence of the reset button and busy ring are all applied by
+     * `_applyState` so they can change without a rebuild.
+     */
     _buildActions() {
-        const blocked = this.disabled || this.loading;
-
         const submit = _el(
             "y-button",
             {
@@ -515,56 +569,32 @@ export class YumeForm extends HTMLElement {
                 type: "submit",
                 color: "primary",
                 variant: "filled",
-                size: this.size,
-                disabled: blocked || null,
-                "aria-disabled": blocked ? "true" : null,
             },
             [this.submitText],
         );
 
-        const reset = this.noReset
-            ? null
-            : _el(
-                  "y-button",
-                  {
-                      part: "reset-button",
-                      type: "reset",
-                      color: "base",
-                      variant: "flat",
-                      size: this.size,
-                      disabled: blocked || null,
-                  },
-                  [this.resetText],
-              );
-
-        const ring =
-            this.loading && this.loadingMode === "ring"
-                ? _el("y-progress", {
-                      class: "loading-ring",
-                      mode: "ring",
-                      size: "small",
-                      indeterminate: true,
-                      "aria-label": "Submitting",
-                  })
-                : null;
-
-        const slot = _el("slot", { name: "actions" }, [submit, reset, ring]);
-        return _el("div", { class: "actions", part: "actions" }, [slot]);
+        this._actionsSlot = _el("slot", { name: "actions" }, [submit]);
+        return _el("div", { class: "actions", part: "actions" }, [
+            this._actionsSlot,
+        ]);
     }
 
     _buildControl(field) {
         const tag = FIELD_TAGS[field.type] || "y-input";
         const isChecked = CHECKED_TAGS.has(tag.toUpperCase());
 
+        // The visible label lives in this shadow root, so it cannot name the
+        // control by IDREF; `aria-label` carries the same string instead and
+        // the control forwards it to its own inner element.
         const attrs = {
             name: field.name,
-            disabled: this.disabled || field.disabled || null,
             "aria-label": field.label || null,
         };
         if (tag === "y-input") attrs.type = field.inputType || "text";
-        if (SIZED_TYPES.has(field.type)) attrs.size = this.size;
         if (PLACEHOLDER_TYPES.has(field.type) && field.placeholder != null)
             attrs.placeholder = field.placeholder;
+        if (field.autocomplete != null)
+            attrs.autocomplete = field.autocomplete;
         if (field.required) attrs.required = true;
         if (field.min != null) attrs.min = field.min;
         if (field.max != null) attrs.max = field.max;
@@ -581,13 +611,14 @@ export class YumeForm extends HTMLElement {
         return el;
     }
 
-    _buildField(field, index) {
-        if (field.slot) {
-            const outlet = _el("slot", { name: field.slot });
+    _buildField(rawField, index) {
+        if (rawField.slot) {
+            const outlet = _el("slot", { name: rawField.slot });
             this._fieldSlots.push(outlet);
             return _el("div", { class: "field field--slot" }, [outlet]);
         }
 
+        const field = this._resolveField(rawField);
         const control = this._buildControl(field);
         const errorId = `field-error-${index}`;
         const error = _el("div", {
@@ -597,19 +628,19 @@ export class YumeForm extends HTMLElement {
             hidden: true,
         });
 
-        const showSkeleton = this.loading && this.loadingMode === "skeleton";
+        const skeleton = this._buildSkeleton(field);
 
         const body = [control];
         if (field.help)
             body.push(_el("div", { class: "field-help" }, [field.help]));
-        body.push(error);
-        if (showSkeleton) body.push(this._buildSkeleton(field));
+        body.push(error, skeleton);
 
         const children = [];
-        if (field.label && showSkeleton) {
-            children.push(this._buildLabelSkeleton(field));
-        } else if (field.label) {
-            const label = _el("span", { class: "field-label" }, [
+        let label = null;
+        let labelSkeleton = null;
+        if (field.label) {
+            labelSkeleton = this._buildLabelSkeleton(field);
+            label = _el("span", { class: "field-label" }, [
                 field.label,
                 field.required
                     ? _el(
@@ -620,11 +651,19 @@ export class YumeForm extends HTMLElement {
                     : null,
             ]);
             label.addEventListener("click", () => this._focusControl(control));
-            children.push(label);
+            children.push(label, labelSkeleton);
         }
         children.push(_el("div", { class: "field-body" }, body));
 
-        this._controls.push({ field, el: control, errorEl: error, errorId });
+        this._controls.push({
+            field,
+            el: control,
+            errorEl: error,
+            errorId,
+            skeletonEl: skeleton,
+            labelEl: label,
+            labelSkeletonEl: labelSkeleton,
+        });
         return _el("div", { class: "field" }, children);
     }
 
@@ -635,26 +674,17 @@ export class YumeForm extends HTMLElement {
             class: "label-skeleton",
             variant: "text",
             width: `${chars}ch`,
+            hidden: true,
         });
     }
 
     _buildSkeleton(field) {
-        const tag = FIELD_TAGS[field.type] || "y-input";
-        const compact =
-            CHECKED_TAGS.has(tag.toUpperCase()) ||
-            field.type === "rating" ||
-            field.type === "radio";
-
-        const height = compact
-            ? "24px"
-            : `var(--component-control-height-${this.size}, var(--sizing-${this.size}, 40px))`;
-        const width = compact ? "40%" : "";
-
         return _el("y-skeleton", {
             class: "field-skeleton",
             variant: "rect",
-            height,
-            width: width || null,
+            height: this._skeletonHeight(field),
+            width: this._isCompactField(field) ? "40%" : null,
+            hidden: true,
         });
     }
 
@@ -736,22 +766,40 @@ export class YumeForm extends HTMLElement {
         return values;
     }
 
-    _fieldError(field, el) {
+    /**
+     * Resolves a field's validation message. Built-in checks run first so
+     * `field.errorText` can replace the generic copy without reimplementing
+     * them; `field.validate` runs last, once the value is known well-formed, so
+     * it only handles cross-field and domain rules.
+     * @param {Object} field — resolved field descriptor
+     * @param {HTMLElement} el — the generated control
+     * @param {Object} [values] — all current values, for cross-field rules
+     * @returns {string|null} the message, or null when valid
+     */
+    _fieldError(field, el, values) {
         const value = this._readValue(el);
         const label = field.label || field.name;
         const empty =
             typeof value === "boolean" ? !value : value == null || value === "";
 
-        if (field.required && empty) return `${label} is required`;
+        if (field.required && empty)
+            return field.errorText || `${label} is required`;
+
         if (typeof el.checkValidity === "function" && !el.checkValidity())
-            return `${label} is invalid`;
+            return (
+                field.errorText ||
+                INVALID_MESSAGES[field.inputType] ||
+                `${label} is invalid`
+            );
+
+        if (typeof field.validate === "function")
+            return field.validate(value, values ?? this.values) || null;
+
         return null;
     }
 
     _focusControl(el) {
-        const inner = el.shadowRoot?.querySelector(
-            "input, textarea, select, [tabindex]",
-        );
+        const inner = this._innerControl(el);
         if (inner) inner.focus();
         else el.focus?.();
     }
@@ -765,12 +813,45 @@ export class YumeForm extends HTMLElement {
         return "";
     }
 
+    /**
+     * The focusable element inside a control's shadow root — the node assistive
+     * technology actually reads. Attributes set on the host itself never reach
+     * it.
+     * @param {HTMLElement} el — the control host
+     * @returns {HTMLElement|null}
+     */
+    _innerControl(el) {
+        return (
+            el.input ??
+            el.textarea ??
+            el.shadowRoot?.querySelector(
+                "input, textarea, select, [tabindex]",
+            ) ??
+            null
+        );
+    }
+
     _isCheckedControl(el) {
         return (
             CHECKED_TAGS.has(el.tagName) ||
             (el instanceof HTMLInputElement &&
                 (el.type === "checkbox" || el.type === "radio"))
         );
+    }
+
+    _isCompactField(field) {
+        const tag = FIELD_TAGS[field.type] || "y-input";
+        return (
+            CHECKED_TAGS.has(tag.toUpperCase()) ||
+            field.type === "rating" ||
+            field.type === "radio"
+        );
+    }
+
+    _isShowingError(entry) {
+        return "errorText" in entry.el
+            ? entry.el.errorText !== ""
+            : !entry.errorEl.hidden;
     }
 
     _onFieldInput(e) {
@@ -785,14 +866,21 @@ export class YumeForm extends HTMLElement {
         if (this._valueCache[name] === value) return;
         this._valueCache[name] = value;
 
-        if (entry && !entry.errorEl.hidden)
-            this._setFieldValidity(entry, this._fieldError(entry.field, el));
+        const values = this.values;
+
+        // Re-check only a field already showing an error, so typing clears the
+        // message but a pristine field is not marked invalid mid-entry.
+        if (entry && this._isShowingError(entry))
+            this._setFieldValidity(
+                entry,
+                this._fieldError(entry.field, el, values),
+            );
 
         this.dispatchEvent(
             new CustomEvent("y-change", {
                 bubbles: true,
                 composed: true,
-                detail: { name, value, values: this.values },
+                detail: { name, value, values },
             }),
         );
     }
@@ -884,36 +972,161 @@ export class YumeForm extends HTMLElement {
         return null;
     }
 
+    /**
+     * Shows or clears a field's validation message.
+     *
+     * Controls that own an `error-text` API render the message in their own
+     * shadow root, where an `aria-describedby` IDREF can actually reach the
+     * inner control. For the rest the message stays in this shadow root — an
+     * IDREF cannot cross the boundary, so it is announced through the field's
+     * live region and only `aria-invalid` is shimmed onto the inner control.
+     */
+    /**
+     * Normalizes a descriptor into the shape the rest of the component expects,
+     * without mutating the caller's object. An unrecognized `type` that names a
+     * native input type is sugar for `{type: "input", inputType: <that>}`.
+     * @param {Object} field — the caller's descriptor
+     * @returns {Object} a resolved copy
+     */
+    _resolveField(field) {
+        const type = field.type || "input";
+        if (FIELD_TAGS[type]) return { ...field, type };
+
+        return {
+            ...field,
+            type: "input",
+            inputType: INPUT_TYPE_SHORTHANDS.has(type)
+                ? type
+                : field.inputType || "text",
+        };
+    }
+
     _setFieldValidity(entry, message) {
-        const { el, errorEl, errorId } = entry;
+        const { el, errorEl } = entry;
+        const delegates = "errorText" in el;
 
-        errorEl.textContent = message || "";
-        errorEl.hidden = !message;
-
-        if (message) {
-            el.setAttribute("aria-invalid", "true");
-            el.setAttribute("aria-describedby", errorId);
-            if ("invalid" in el) el.invalid = true;
+        if (delegates) {
+            el.errorText = message || "";
+            errorEl.textContent = "";
+            errorEl.hidden = true;
         } else {
-            el.removeAttribute("aria-invalid");
-            el.removeAttribute("aria-describedby");
-            if ("invalid" in el) el.invalid = false;
+            errorEl.textContent = message || "";
+            errorEl.hidden = !message;
+            this._toggleAttribute(
+                this._innerControl(el),
+                "aria-invalid",
+                !!message,
+                "true",
+            );
         }
+
+        if ("invalid" in el) el.invalid = !!message;
+    }
+
+    _skeletonHeight(field) {
+        if (this._isCompactField(field)) return "24px";
+        return `var(--component-control-height-${this.size}, var(--sizing-${this.size}, 40px))`;
     }
 
     _slottedControls() {
         return [...this._slottedCache];
     }
 
+    _syncActions() {
+        const blocked = this.disabled || this.loading;
+        const slot = this._actionsSlot;
+        const submit = this.shadowRoot.querySelector('[part="submit-button"]');
+        let reset = this.shadowRoot.querySelector('[part="reset-button"]');
+
+        if (submit) {
+            submit.textContent = this.submitText;
+            submit.setAttribute("size", this.size);
+            this._toggleAttribute(submit, "disabled", blocked);
+            this._toggleAttribute(submit, "aria-disabled", blocked, "true");
+        }
+
+        if (this.noReset) {
+            reset?.remove();
+            reset = null;
+        } else if (!reset) {
+            reset = _el("y-button", {
+                part: "reset-button",
+                type: "reset",
+                color: "base",
+                variant: "flat",
+            });
+            reset.addEventListener("click", () => this._form.reset());
+            submit?.after(reset);
+        }
+
+        if (reset) {
+            reset.textContent = this.resetText;
+            reset.setAttribute("size", this.size);
+            this._toggleAttribute(reset, "disabled", blocked);
+        }
+
+        const showRing = this.loading && this.loadingMode === "ring";
+        let ring = this.shadowRoot.querySelector(".loading-ring");
+
+        if (!showRing) {
+            ring?.remove();
+        } else if (!ring) {
+            ring = _el("y-progress", {
+                class: "loading-ring",
+                mode: "ring",
+                size: "small",
+                indeterminate: true,
+                "aria-label": "Submitting",
+            });
+            slot?.appendChild(ring);
+        }
+    }
+
+    _syncControls() {
+        const showSkeleton = this.loading && this.loadingMode === "skeleton";
+
+        for (const entry of this._controls) {
+            const { field, el, skeletonEl, labelEl, labelSkeletonEl } = entry;
+
+            this._toggleAttribute(
+                el,
+                "disabled",
+                this.disabled || !!field.disabled,
+            );
+            if (SIZED_TYPES.has(field.type)) el.setAttribute("size", this.size);
+
+            skeletonEl.hidden = !showSkeleton;
+            skeletonEl.setAttribute("height", this._skeletonHeight(field));
+            if (labelEl) labelEl.hidden = showSkeleton;
+            if (labelSkeletonEl) labelSkeletonEl.hidden = !showSkeleton;
+        }
+    }
+
+    _syncFormAttributes() {
+        const form = this._form;
+
+        this._toggleAttribute(form, "name", !!this.name, this.name);
+        this._toggleAttribute(form, "action", !!this.action, this.action);
+        this._toggleAttribute(form, "method", !!this.action, this.method);
+        this._toggleAttribute(form, "aria-busy", this.loading, "true");
+    }
+
+    _toggleAttribute(el, name, on, value = "") {
+        if (!el) return;
+        if (on) el.setAttribute(name, value);
+        else el.removeAttribute(name);
+    }
+
     _validate({ showUI = true } = {}) {
         const invalid = [];
         this._refreshSlottedCache();
+        const values = this.values;
 
         for (const entry of this._controls) {
             const { field, el } = entry;
             if (this.disabled || field.disabled || !field.name) continue;
 
-            const message = this._fieldError(field, el);
+            const message = this._fieldError(field, el, values);
             if (showUI) this._setFieldValidity(entry, message);
             if (message) invalid.push({ name: field.name, message });
         }

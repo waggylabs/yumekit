@@ -1,5 +1,7 @@
 import {
+    applyControlError,
     createElement as _el,
+    forwardControlAttributes,
     manageLabelVisibility,
     upgradeProperties,
 } from "../../modules/helpers.js";
@@ -18,6 +20,11 @@ export class YumeTextarea extends HTMLElement {
             "name",
             "placeholder",
             "variant",
+            "required",
+            "autocomplete",
+            "error-text",
+            "aria-label",
+            "aria-labelledby",
         ];
     }
 
@@ -64,6 +71,30 @@ export class YumeTextarea extends HTMLElement {
             return;
         }
 
+        if (name === "error-text") {
+            this._updateErrorText();
+            return;
+        }
+
+        // Re-rendering here would replace the <textarea>, dropping focus, caret
+        // position, and IME composition — exactly what a form does on submit.
+        if (name === "disabled") {
+            if (this.textarea) this.textarea.disabled = this.disabled;
+            this._updateValidationState();
+            return;
+        }
+
+        if (
+            name === "required" ||
+            name === "autocomplete" ||
+            name === "aria-label" ||
+            name === "aria-labelledby"
+        ) {
+            forwardControlAttributes(this, this.textarea);
+            this._updateValidationState();
+            return;
+        }
+
         if (name === "placeholder") {
             if (this.textarea) {
                 if (newValue != null) {
@@ -89,6 +120,19 @@ export class YumeTextarea extends HTMLElement {
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
+    }
+
+    /**
+     * @type {string} Validation message shown below the field. A non-empty
+     * value also puts the textarea in the invalid state and becomes its
+     * accessible description.
+     */
+    get errorText() {
+        return this.getAttribute("error-text") || "";
+    }
+    set errorText(val) {
+        if (val == null || val === "") this.removeAttribute("error-text");
+        else this.setAttribute("error-text", val);
     }
 
     /** @type {boolean} Whether the textarea is in an invalid state. */
@@ -186,7 +230,7 @@ export class YumeTextarea extends HTMLElement {
         const paddingVar = this._getPaddingVar(size);
 
         this.shadowRoot.adoptedStyleSheets = [
-            this._buildStyleSheet(isDisabled, paddingVar),
+            this._buildStyleSheet(paddingVar),
         ];
         this.shadowRoot.replaceChildren(
             this._buildTree(rows, isLabelTop, isDisabled),
@@ -195,15 +239,17 @@ export class YumeTextarea extends HTMLElement {
         this.textarea = this.shadowRoot.querySelector("textarea");
         this.inputContainer = this.shadowRoot.querySelector(".input-container");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+        this.errorElement = this.shadowRoot.querySelector(".error-text");
+
         manageLabelVisibility(this.labelWrapper);
+        forwardControlAttributes(this, this.textarea);
+        this._updateErrorText();
 
         // <textarea> value must be set via property, not HTML attribute
         this.textarea.value = value;
 
-        if (!isDisabled) {
-            this._bindTextareaListeners();
-            this._updateValidationState();
-        }
+        this._bindTextareaListeners();
+        this._updateValidationState();
     }
 
     // -------------------------------------------------------------------------
@@ -250,15 +296,24 @@ export class YumeTextarea extends HTMLElement {
 
         const container = _el("div", { class: "input-container" }, [textarea]);
 
+        const error = _el("div", {
+            class: "error-text",
+            part: "error-text",
+            id: "error-text",
+            "aria-live": "polite",
+            hidden: true,
+        });
+
         const children = [];
         if (isLabelTop) children.push(buildLabelSlot());
         children.push(container);
         if (!isLabelTop) children.push(buildLabelSlot());
+        children.push(error);
 
         return _el("div", { class: "input-wrapper" }, children);
     }
 
-    _buildStyleSheet(isDisabled, paddingVar) {
+    _buildStyleSheet(paddingVar) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
             :host([hidden]) {
@@ -269,8 +324,15 @@ export class YumeTextarea extends HTMLElement {
                 display: block;
                 font-family: var(--font-family-body);
                 color: var(--component-input-color);
-                opacity: ${isDisabled ? "0.75" : "1"};
-                pointer-events: ${isDisabled ? "none" : "auto"};
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* Expressed as a selector, not interpolated, so toggling disabled
+               never has to rebuild the shadow tree. */
+            :host([disabled]) {
+                opacity: 0.75;
+                pointer-events: none;
             }
 
             .input-wrapper {
@@ -287,13 +349,17 @@ export class YumeTextarea extends HTMLElement {
             .input-container {
                 display: flex;
                 align-items: flex-start;
-                background: ${isDisabled ? "var(--component-input-background-disabled)" : "var(--component-input-background)"};
+                background: var(--component-input-background);
                 border: 1px solid var(--component-input-border-color);
                 border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
+            }
+
+            :host([disabled]) .input-container {
+                background: var(--component-input-background-disabled);
             }
 
             /* Underline variant: bottom border only, square bottom corners. */
@@ -355,6 +421,15 @@ export class YumeTextarea extends HTMLElement {
                 color: var(--component-input-error-color);
             }
 
+            .error-text {
+                font-size: 0.8em;
+                color: var(--component-input-error-color);
+            }
+
+            .error-text[hidden] {
+                display: none;
+            }
+
             ::slotted([slot="label"]) {
                 font-weight: 500;
                 font-size: 0.875em;
@@ -373,10 +448,20 @@ export class YumeTextarea extends HTMLElement {
         return map[size] || map.medium;
     }
 
+    _updateErrorText() {
+        applyControlError(this.textarea, this.errorElement, this.errorText);
+        this._updateValidationState();
+    }
+
     _updateValidationState() {
+        // A pristine empty `required` field is not styled as an error — that
+        // only lands once something asks for it (a form submit setting
+        // `error-text`/`invalid`). Format failures still show immediately.
+        const validity = this.textarea?.validity;
         const isInvalid =
             this.hasAttribute("invalid") ||
-            (this.textarea && !this.checkValidity());
+            this.errorText !== "" ||
+            (!!validity && !validity.valid && !validity.valueMissing);
         this.inputContainer?.classList.toggle("is-invalid", isInvalid);
         this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }

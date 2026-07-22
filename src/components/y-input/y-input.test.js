@@ -248,4 +248,99 @@ describe("<y-input>", () => {
             });
         }
     });
+    describe("accessibility forwarding", () => {
+        it("forwards aria-label, required, and autocomplete to the inner input", async () => {
+            const el = await fixture(
+                html`<y-input
+                    aria-label="Email"
+                    required
+                    autocomplete="email"
+                ></y-input>`,
+            );
+            const input = el.shadowRoot.querySelector("input");
+
+            expect(input.getAttribute("aria-label")).to.equal("Email");
+            expect(input.hasAttribute("required")).to.be.true;
+            expect(input.getAttribute("autocomplete")).to.equal("email");
+        });
+
+        it("re-forwards when the host attribute changes", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.setAttribute("aria-label", "First");
+            expect(
+                el.shadowRoot.querySelector("input").getAttribute("aria-label"),
+            ).to.equal("First");
+
+            el.removeAttribute("aria-label");
+            expect(
+                el.shadowRoot.querySelector("input").hasAttribute("aria-label"),
+            ).to.be.false;
+        });
+
+        it("describes the inner input from error-text within its own root", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.errorText = "Enter a valid email address";
+
+            const input = el.shadowRoot.querySelector("input");
+            const message = el.shadowRoot.getElementById(
+                input.getAttribute("aria-describedby"),
+            );
+
+            expect(input.getAttribute("aria-invalid")).to.equal("true");
+            expect(message).to.exist;
+            expect(message.textContent).to.equal("Enter a valid email address");
+            expect(message.hidden).to.be.false;
+            expect(
+                el.shadowRoot
+                    .querySelector(".input-container")
+                    .classList.contains("is-invalid"),
+            ).to.be.true;
+        });
+
+        it("clears the description when error-text is removed", async () => {
+            const el = await fixture(html`<y-input error-text="Bad"></y-input>`);
+            el.errorText = "";
+
+            const input = el.shadowRoot.querySelector("input");
+            expect(input.hasAttribute("aria-invalid")).to.be.false;
+            expect(input.hasAttribute("aria-describedby")).to.be.false;
+            expect(el.shadowRoot.querySelector(".error-text").hidden).to.be
+                .true;
+        });
+
+        it("does not style a pristine empty required field as an error", async () => {
+            const el = await fixture(html`<y-input required></y-input>`);
+
+            expect(el.checkValidity()).to.be.false;
+            expect(
+                el.shadowRoot
+                    .querySelector(".input-container")
+                    .classList.contains("is-invalid"),
+            ).to.be.false;
+        });
+
+        it("still styles a format failure immediately", async () => {
+            const el = await fixture(
+                html`<y-input type="email" value="nope"></y-input>`,
+            );
+
+            expect(
+                el.shadowRoot
+                    .querySelector(".input-container")
+                    .classList.contains("is-invalid"),
+            ).to.be.true;
+        });
+
+        it("toggles disabled without replacing the input", async () => {
+            const el = await fixture(html`<y-input value="abc"></y-input>`);
+            const input = el.shadowRoot.querySelector("input");
+
+            el.disabled = true;
+            expect(input.disabled).to.be.true;
+            el.disabled = false;
+
+            expect(el.shadowRoot.querySelector("input") === input).to.be.true;
+            expect(input.disabled).to.be.false;
+        });
+    });
 });

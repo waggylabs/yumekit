@@ -401,6 +401,9 @@ declare module "react" {
                 max?: string | number;
                 step?: string | number;
                 variant?: "default" | "underline";
+                required?: boolean | string;
+                autocomplete?: string;
+                "error-text"?: string;
             }>;
             "y-masonry": El<{
                 columns?: string | number;
@@ -568,6 +571,7 @@ declare module "react" {
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
                 variant?: "default" | "underline";
+                "error-text"?: string;
             }>;
             "y-shape": El<{
                 type?:
@@ -723,6 +727,9 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
                 variant?: "default" | "underline";
+                required?: boolean | string;
+                autocomplete?: string;
+                "error-text"?: string;
             }>;
             "y-table": El<{
                 columns?: unknown[] | string;

@@ -339,6 +339,69 @@ export function createElement(tag, attrs, children) {
 }
 
 /**
+ * Host attributes mirrored onto a component's inner form control.
+ *
+ * `aria-describedby` is deliberately absent: an IDREF cannot cross a shadow
+ * boundary, so forwarding one from the host would always dangle. Components
+ * describe their own control instead — see `applyControlError`.
+ */
+export const FORWARDED_CONTROL_ATTRIBUTES = [
+    "aria-label",
+    "aria-labelledby",
+    "autocomplete",
+    "required",
+];
+
+/**
+ * Mirror accessibility and native-validation attributes from a component host
+ * onto the focusable control inside its shadow root. Without this the host
+ * carries the attributes but assistive technology reads the inner control,
+ * leaving it unnamed. Safe to call on every render.
+ * @param {HTMLElement} host — the custom element
+ * @param {HTMLElement} control — the inner focusable control
+ * @param {string[]} [attributes] — override the forwarded set; components whose
+ *   control is not a native form field (or that own an attribute themselves)
+ *   narrow this list.
+ */
+export function forwardControlAttributes(
+    host,
+    control,
+    attributes = FORWARDED_CONTROL_ATTRIBUTES,
+) {
+    if (!control) return;
+
+    for (const name of attributes) {
+        const value = host.getAttribute(name);
+        if (value == null) control.removeAttribute(name);
+        else control.setAttribute(name, value);
+    }
+}
+
+/**
+ * Render a validation message into a component's own shadow root and point the
+ * control's accessible description at it. Both elements share a root, so the
+ * `aria-describedby` IDREF resolves.
+ * @param {HTMLElement} control — the inner focusable control
+ * @param {HTMLElement} errorEl — the message element; must carry an `id`
+ * @param {string} message — the message, or empty to clear
+ */
+export function applyControlError(control, errorEl, message) {
+    if (errorEl) {
+        errorEl.textContent = message || "";
+        errorEl.hidden = !message;
+    }
+    if (!control) return;
+
+    if (message) {
+        control.setAttribute("aria-invalid", "true");
+        if (errorEl?.id) control.setAttribute("aria-describedby", errorEl.id);
+    } else {
+        control.removeAttribute("aria-invalid");
+        control.removeAttribute("aria-describedby");
+    }
+}
+
+/**
  * Watch a label slot inside a wrapper element and toggle the wrapper's
  * visibility based on whether the slot has meaningful content.
  * CSS should default the wrapper to `display: none`.
