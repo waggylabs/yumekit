@@ -359,6 +359,28 @@
     }
   },
   "component": {
+    "carousel": {
+      "arrow": {
+        "background": {
+          "$type": "color",
+          "$value": "{base.background.component}"
+        },
+        "color": {
+          "$type": "color",
+          "$value": "{base.content.DEFAULT}"
+        }
+      },
+      "dot": {
+        "color": {
+          "$type": "color",
+          "$value": "{base.border}"
+        },
+        "color-active": {
+          "$type": "color",
+          "$value": "{primary.content.DEFAULT}"
+        }
+      }
+    },
     "upload": {
       "background": {
         "$type": "color",

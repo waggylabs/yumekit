@@ -632,6 +632,24 @@
                 "$value": 5000
             }
         },
+        "carousel": {
+            "arrow-size": {
+                "$type": "sizing",
+                "$value": "{sizing.medium}"
+            },
+            "dot-size": {
+                "$type": "dimension",
+                "$value": "8px"
+            },
+            "pagination-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "transition-duration": {
+                "$type": "duration",
+                "$value": "300ms"
+            }
+        },
         "gallery": {
             "gap-small": {
                 "$type": "spacing",

@@ -23,6 +23,7 @@ export * from "./components/y-breadcrumbs/y-breadcrumbs.js";
 export * from "./components/y-button/y-button.js";
 export * from "./components/y-button-group/y-button-group.js";
 export * from "./components/y-card/y-card.js";
+export * from "./components/y-carousel/y-carousel.js";
 export * from "./components/y-checkbox/y-checkbox.js";
 export * from "./components/y-code/y-code.js";
 export * from "./components/y-color/y-color.js";

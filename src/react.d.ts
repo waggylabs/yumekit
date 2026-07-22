@@ -131,6 +131,20 @@ declare module "react" {
                 color?: string;
                 raised?: boolean | string;
             }>;
+            "y-carousel": El<{
+                index?: string | number;
+                "per-view"?: string | number;
+                gap?: string;
+                orientation?: "horizontal" | "vertical";
+                loop?: boolean | string;
+                autoplay?: boolean | string;
+                interval?: string | number;
+                "pause-on-hover"?: boolean | string;
+                arrows?: "true" | "false" | "hover";
+                pagination?: "dots" | "fraction" | "none";
+                swipe?: boolean | string;
+                snap?: "start" | "center";
+            }>;
             "y-code": El<{
                 language?: string;
                 "line-numbers"?: boolean | string;
