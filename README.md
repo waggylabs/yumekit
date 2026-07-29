@@ -126,6 +126,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Textarea     | `<y-textarea>`     | Multi-line text input                                  |
 | Theme        | `<y-theme>`        | Theme provider                                         |
 | Toast        | `<y-toast>`        | Notification toast                                     |
+| Tokens       | `<y-tokens>`       | Multi-value token (chip) input with typeahead          |
 | Tooltip      | `<y-tooltip>`      | Tooltip / popover                                      |
 | Tree         | `<y-tree>`         | Hierarchical tree view                                 |
 | Upload       | `<y-upload>`       | File upload with drag-and-drop, validation, and previews |

@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 56 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 57 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.4-beta.1
@@ -440,6 +440,85 @@ Events: `change`
 
 <!-- Multi-select with tags and inline search -->
 <y-select multiple display-mode="tag" searchable options='[{"value":"a","label":"Alpha"},{"value":"b","label":"Beta"}]'></y-select>
+```
+
+---
+
+### y-tokens
+Multi-value token (chip) input with typeahead. Form-associated. The user types into a single-line field and commits entries as removable tokens, optionally chosen from a suggestion list. Fills the gap between `y-select multiple` (a dropdown over a fixed option list) and `y-tag` (display only): use it for facet chips (`allow-custom` off) and free-form topic/recipient entry (`allow-custom` on).
+
+Tag: `<y-tokens>`
+Attributes:
+- `value` — the committed tokens. Property: an array of `Token` objects or bare strings. Attribute: a JSON array or a separator-delimited string (`value="a, b, c"`). Rich data, **not reflected** — reading the property always returns objects
+- `options` — suggestion list, same shape as a token. JSON array attribute or an array property. Rich data, not reflected. In async mode the app replaces this in response to `query`
+- `name` — form field name; **one entry per token** is submitted under it, so three tokens produce three `name=…` pairs rather than one joined string
+- `async` — boolean; typing emits `query` instead of filtering `options` locally. The component **never** fetches
+- `loading` — boolean; shows the busy state in the popup. Set automatically between `query` and the next `options` assignment; the app may also set it
+- `query-delay` — number of ms to debounce before `query` is emitted (default `200`; `0` disables debouncing)
+- `filter` — `"contains"` (default) | `"starts-with"` | `"none"`. Local matching of `options` against the typed text; `"none"` means the app has already filtered
+- `allow-custom` — boolean; whether text matching no option may become a token. Off for facets, on for free entry
+- `max` — number; maximum token count. At the limit commits are blocked and the control reports `rangeOverflow`
+- `duplicates` — `"ignore"` (default; the repeat is dropped, the existing token pulses, the live region announces it) | `"allow"` | `"error"` (dropped, and the control goes invalid). Comparison is on `value`, case-insensitive, with the first-committed casing kept for display. This governs values arriving as **text** (typed, pasted, separator-committed); the listbox is `aria-multiselectable`, so activating an already-committed option there toggles it back off instead — as `y-select multiple` does — except under `"allow"`, where no single token a toggle could mean exists and another copy is added
+- `separators` — characters that commit the pending text in addition to Enter (default `","`; each character is its own separator, e.g. `separators=",;"`)
+- `placeholder` — hint shown while the field is empty; hidden once a token exists
+- `placeholder-persist` — boolean; keep the placeholder visible while tokens are present
+- `token-variant` — `"filled"` (default) | `"outlined"` | `"flat"`, forwarded to each token's `y-tag`. Tokens with no `color` use `primary`, so a token strip reads the same as `y-select multiple display-mode="tag"`
+- `token-shape` — `"square"` (default) | `"round"`, forwarded to each `y-tag`
+- `size` — `"small"` | `"medium"` (default) | `"large"`. Tokens render one step down
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
+- `label-position` — `"top"` (default) | `"left"` | `"hidden"`
+- `clearable` — boolean; shows a control that removes every token at once
+- `portal` — boolean; renders the popup into the nearest `<y-theme>` (falling back to `<body>`) so it escapes clipped or low-stacking ancestors
+- `disabled` — boolean; non-interactive and excluded from form submission
+- `readonly` — boolean; tokens are visible and focusable but not removable, and there is no input or popup
+- `required` — boolean; at least one token (`valueMissing`)
+- `invalid` — boolean, forces the error state
+- `error-text` — validation message rendered below the control; also applies the error state and becomes the combobox's accessible description
+
+Token / Option shape: `{value, label?, icon?, color?, invalid?, disabled?}` — `value` is required and is the identity used for dedupe and form submission; `label` falls back to `value`; `icon` is a `y-icon` name rendered leading inside the chip; `color` is a semantic name or a CSS color gated by `isSafeCssColor`; `invalid` renders the token in the error state (it stays visible and removable — a token the user typed is never silently dropped); `disabled` applies to options only.
+
+Slots: `label`, `left-icon` (before the token strip), `empty` (fallback "No matches"), `loading` (fallback: a spinner and "Searching…").
+
+Events:
+- `change` — `{value}` when tokens are added, removed, or cleared; `value` is the new array
+- `token-add` — **cancelable**; `{token, source}` before a token is appended, where `source` is `"enter"|"separator"|"paste"|"select"|"api"`. Preventing it blocks the add and leaves the text in the input
+- `token-remove` — **cancelable**; `{token, index, source}` before a removal, where `source` is `"click"` (the chip's own control) | `"deselect"` (an already-committed option toggled off in the popup) | `"backspace"` | `"clear"` | `"api"`
+- `query` — async mode only; `{query, id}`. The app filters and assigns `options`; `id` correlates the response
+- `input` — `{text}` when the pending text changes. Does not fire on commit
+
+Methods: `addToken(token)`, `removeToken(index, source?)`, `clear()`, `openPopup()`, `closePopup()`, `focus()`, `checkValidity()`, `reportValidity()`, and `setOptions(options, queryId?)` — passing the `id` from a `query` event makes the assignment a no-op once a newer query has gone out, so stale async responses are discarded. Read-only `validity` / `validationMessage`.
+
+Keyboard: one tab stop for the whole control. `Down`/`Up` move the suggestion highlight (opening the popup, wrapping, skipping disabled options); `Enter` commits the highlighted option, or the typed text when nothing is highlighted and `allow-custom` is set — it is swallowed only when the popup is open or text is pending, so an empty field still submits the form; any `separators` character commits; `Escape` closes the popup without clearing the text, and a second `Escape` clears it; `Left`/`Right` from an empty input move the highlight through the token strip and back; `Backspace` in an empty input highlights the last token and only a **second, separate** press deletes it (auto-repeat is ignored, so a held key cannot eat the field); `Backspace`/`Delete` on a highlighted token removes it; `Home`/`End` jump to the first/last token. Blur commits the pending text when `allow-custom` is set, and otherwise discards and announces it.
+
+Accessibility: ARIA 1.2 combobox — `role="combobox"` on the input with `aria-expanded`, `aria-controls`, `aria-autocomplete="list"`, and `aria-activedescendant` tracking the highlighted option or token so DOM focus never leaves the input. The popup is `role="listbox"` with `role="option"` children; the token strip is a `role="list"` of `role="listitem"` chips. Each remove control names its own token (`aria-label="Remove Design"`), never a generic "Remove tag". A polite live region reports the suggestion count on each filter and every add and remove. `aria-label` / `aria-labelledby` on the host are forwarded to the input.
+
+Validation: `valueMissing` when `required` and empty, `rangeOverflow` past `max`, `customError` when a token carries `invalid: true` or `duplicates="error"` is triggered. `formResetCallback` restores the initial `value`; `formStateRestoreCallback` restores from session state.
+
+A committed option stays in the list rather than disappearing, rendered with the `y-select` accent fill (or its own `color`, gated by `isSafeCssColor`) and `aria-selected="true"`; the keyboard highlight shows as an inset ring on those rows so it stays visible over the fill.
+
+CSS Parts: `wrapper label control token-list token token-remove input clear-button popup option option-icon option-label empty loading error-text`
+CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{small|medium|large}`, `--component-tokens-min-height-{small|medium|large}`, `--component-tokens-max-height`, `--component-tokens-input-min-width`, `--component-tokens-popup-max-height`. Chip appearance reuses the existing `--component-tag-*` tokens and field chrome reuses `--component-input-*` / `--component-inputs-*` — no parallel token set is introduced for the chips.
+
+```html
+<!-- Facet chips: only the listed options may be committed -->
+<y-tokens name="team" clearable placeholder="Filter by team…"
+    options='[{"value":"design","label":"Design","color":"primary"},{"value":"eng","label":"Engineering","color":"success"}]'
+    value='["design"]'>
+    <span slot="label">Team</span>
+</y-tokens>
+
+<!-- Free entry: anything the user types becomes a token -->
+<y-tokens name="topics" allow-custom separators=",;" max="5" placeholder="Add a topic…"></y-tokens>
+```
+
+```js
+// Async suggestions — the component asks, the app answers.
+const tokens = document.querySelector("y-tokens");
+tokens.async = true;
+tokens.addEventListener("query", async ({ detail: { query, id } }) => {
+    const results = await fetch(`/api/topics?q=${encodeURIComponent(query)}`).then((r) => r.json());
+    tokens.setOptions(results, id); // ignored if a newer query already went out
+});
 ```
 
 ---

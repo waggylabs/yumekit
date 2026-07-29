@@ -815,6 +815,56 @@ declare module "react" {
                 duration?: string | number;
                 max?: string | number;
             }>;
+            "y-tokens": El<{
+                value?:
+                    | Array<
+                          | string
+                          | {
+                                value: string;
+                                label?: string;
+                                icon?: string;
+                                color?: string;
+                                invalid?: boolean;
+                            }
+                      >
+                    | string;
+                options?:
+                    | Array<
+                          | string
+                          | {
+                                value: string;
+                                label?: string;
+                                icon?: string;
+                                color?: string;
+                                invalid?: boolean;
+                                disabled?: boolean;
+                            }
+                      >
+                    | string;
+                name?: string;
+                async?: boolean | string;
+                loading?: boolean | string;
+                "query-delay"?: string | number;
+                filter?: "contains" | "starts-with" | "none";
+                "allow-custom"?: boolean | string;
+                max?: string | number;
+                duplicates?: "ignore" | "allow" | "error";
+                separators?: string;
+                placeholder?: string;
+                "placeholder-persist"?: boolean | string;
+                "token-variant"?: "filled" | "outlined" | "flat";
+                "token-shape"?: "square" | "round";
+                size?: "small" | "medium" | "large";
+                variant?: "default" | "underline";
+                "label-position"?: "top" | "left" | "hidden";
+                clearable?: boolean | string;
+                portal?: boolean | string;
+                disabled?: boolean | string;
+                readonly?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                "error-text"?: string;
+            }>;
             "y-tooltip": El<{
                 text?: string;
                 position?: "top" | "bottom" | "left" | "right";
