@@ -716,6 +716,9 @@ declare module "react" {
                 invalid?: boolean | string;
                 "allowed-blocks"?: string;
                 "image-upload"?: boolean | string;
+                triggers?: unknown[] | string;
+                "mention-loading"?: boolean | string;
+                "mention-query-delay"?: string | number;
             }>;
             "y-textarea": El<{
                 name?: string;
@@ -730,6 +733,9 @@ declare module "react" {
                 required?: boolean | string;
                 autocomplete?: string;
                 "error-text"?: string;
+                triggers?: unknown[] | string;
+                "mention-loading"?: boolean | string;
+                "mention-query-delay"?: string | number;
             }>;
             "y-table": El<{
                 columns?: unknown[] | string;

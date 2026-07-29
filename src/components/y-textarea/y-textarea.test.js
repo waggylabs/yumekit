@@ -1,5 +1,41 @@
-import { html, fixture, expect, oneEvent } from "@open-wc/testing";
+import { html, fixture, expect, oneEvent, aTimeout } from "@open-wc/testing";
 import "./y-textarea.js";
+
+function control(el) {
+    return el.shadowRoot.querySelector("textarea");
+}
+
+/** Set the value and drop the caret at the end, as typing would. */
+function typeInto(el, text) {
+    const textarea = control(el);
+    textarea.value = text;
+    textarea.setSelectionRange(text.length, text.length);
+    textarea.dispatchEvent(new InputEvent("input", { bubbles: true }));
+}
+
+/** Type a fragment, answer the query it raises, and hand back the query detail. */
+async function openMentions(el, text, candidates) {
+    const queried = oneEvent(el, "mention-query");
+    typeInto(el, text);
+    const { detail } = await queried;
+    el.setMentionCandidates(detail.id, candidates);
+    return detail;
+}
+
+function options(el) {
+    return [...el.shadowRoot.querySelectorAll(".mention-option")];
+}
+
+function press(el, key) {
+    control(el).dispatchEvent(
+        new KeyboardEvent("keydown", { key, bubbles: true }),
+    );
+}
+
+const PEOPLE = [
+    { value: "ada", label: "Ada Lovelace", description: "Engineering" },
+    { value: "grace", label: "Grace Hopper" },
+];
 
 describe("YumeTextarea", () => {
     it("variant='underline' renders a bottom-only border with square bottom corners", async () => {
@@ -423,6 +459,213 @@ describe("YumeTextarea", () => {
 
             expect(el.shadowRoot.querySelector("textarea") === textarea).to.be
                 .true;
+        });
+    });
+
+    describe("mentions", () => {
+        const mentionFixture = () =>
+            fixture(
+                html`<y-textarea
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user"}]'
+                ></y-textarea>`,
+            );
+
+        it("stays inert until triggers are configured", async () => {
+            const el = await fixture(
+                html`<y-textarea mention-query-delay="0"></y-textarea>`,
+            );
+            let queried = false;
+            el.addEventListener("mention-query", () => {
+                queried = true;
+            });
+
+            typeInto(el, "@jo");
+            await aTimeout(20);
+            expect(queried).to.be.false;
+        });
+
+        it("queries with the trigger, type, query, and a monotonic id", async () => {
+            const el = await mentionFixture();
+            const first = await openMentions(el, "@jo", PEOPLE);
+
+            expect(first).to.include({
+                trigger: "@",
+                type: "user",
+                query: "jo",
+            });
+
+            const second = await openMentions(el, "@joh", PEOPLE);
+            expect(second.id).to.be.greaterThan(first.id);
+        });
+
+        it("does not query a trigger sitting mid-word", async () => {
+            const el = await mentionFixture();
+            let queried = false;
+            el.addEventListener("mention-query", () => {
+                queried = true;
+            });
+
+            typeInto(el, "mail@example");
+            await aTimeout(20);
+            expect(queried).to.be.false;
+        });
+
+        it("activates a trigger at the start of a wrapped line", async () => {
+            const el = await mentionFixture();
+            const { query } = await openMentions(el, "first line\n@jo", PEOPLE);
+            expect(query).to.equal("jo");
+        });
+
+        it("gives the textarea combobox semantics while open", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            const textarea = control(el);
+            const list = el.shadowRoot.querySelector(".mention-list");
+            expect(textarea.getAttribute("role")).to.equal("combobox");
+            expect(textarea.getAttribute("aria-expanded")).to.equal("true");
+            expect(textarea.getAttribute("aria-autocomplete")).to.equal("list");
+            expect(textarea.getAttribute("aria-haspopup")).to.equal("listbox");
+            expect(textarea.getAttribute("aria-controls")).to.equal(list.id);
+            expect(textarea.getAttribute("aria-activedescendant")).to.equal(
+                options(el)[0].id,
+            );
+            expect(options(el).length).to.equal(2);
+        });
+
+        it("reverts to plain textbox semantics on close", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            press(el, "Escape");
+
+            const textarea = control(el);
+            expect(textarea.hasAttribute("role")).to.be.false;
+            expect(textarea.hasAttribute("aria-expanded")).to.be.false;
+            expect(textarea.hasAttribute("aria-controls")).to.be.false;
+            expect(textarea.hasAttribute("aria-activedescendant")).to.be.false;
+        });
+
+        it("replaces the fragment with plain text on Enter", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "hi @a", PEOPLE);
+
+            press(el, "Enter");
+
+            expect(control(el).value).to.equal("hi @Ada Lovelace ");
+            expect(el.value).to.equal("hi @Ada Lovelace ");
+        });
+
+        it("ignores atomic — the value stays an unstructured string", async () => {
+            const el = await fixture(
+                html`<y-textarea
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user","atomic":true}]'
+                ></y-textarea>`,
+            );
+            await openMentions(el, "@a", PEOPLE);
+
+            press(el, "Enter");
+
+            expect(el.value).to.equal("@Ada Lovelace ");
+            expect(
+                el.shadowRoot.querySelectorAll("[data-mention-value]").length,
+            ).to.equal(0);
+        });
+
+        it("discards candidates for a superseded query", async () => {
+            const el = await mentionFixture();
+            const stale = await openMentions(el, "@a", PEOPLE);
+            await openMentions(el, "@ad", [{ value: "ada" }]);
+
+            el.setMentionCandidates(stale.id, [
+                { value: "x" },
+                { value: "y" },
+            ]);
+            expect(options(el).length).to.equal(1);
+        });
+
+        it("closes on Escape, leaving the typed trigger intact", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            const closed = oneEvent(el, "mention-close");
+            press(el, "Escape");
+            const { detail } = await closed;
+
+            expect(detail).to.include({ type: "user", reason: "escape" });
+            expect(el.value).to.equal("@a");
+        });
+
+        it("stays dismissed after Escape until the query moves on", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+            press(el, "Escape");
+
+            // A caret refresh over the same fragment must not re-query.
+            let requeried = false;
+            el.addEventListener("mention-query", () => {
+                requeried = true;
+            });
+            control(el).dispatchEvent(
+                new KeyboardEvent("keyup", { key: "Escape", bubbles: true }),
+            );
+            await aTimeout(20);
+
+            expect(requeried).to.be.false;
+            expect(options(el).length).to.equal(0);
+            expect(control(el).hasAttribute("aria-expanded")).to.be.false;
+
+            // Typing again reopens it.
+            await openMentions(el, "@ad", PEOPLE);
+            expect(options(el).length).to.equal(2);
+        });
+
+        it("lets several triggers coexist, one active at a time", async () => {
+            const el = await fixture(
+                html`<y-textarea
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user"},{"trigger":"#","type":"topic"}]'
+                ></y-textarea>`,
+            );
+
+            expect((await openMentions(el, "@bo", PEOPLE)).type).to.equal(
+                "user",
+            );
+            expect(
+                (await openMentions(el, "@bob #ta", PEOPLE)).type,
+            ).to.equal("topic");
+        });
+
+        it("never triggers while disabled", async () => {
+            const el = await mentionFixture();
+            let queried = false;
+            el.addEventListener("mention-query", () => {
+                queried = true;
+            });
+
+            el.disabled = true;
+            typeInto(el, "@jo");
+            await aTimeout(20);
+            expect(queried).to.be.false;
+        });
+
+        it("anchors the popup to the caret", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "hello @a", PEOPLE);
+
+            const anchor = el.shadowRoot.querySelector(".mention-anchor");
+            expect(parseFloat(anchor.style.left)).to.be.greaterThan(0);
+            expect(anchor.style.height).to.not.equal("");
+        });
+
+        it("inserts programmatically, replacing the active fragment", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            el.insertMention(PEOPLE[1]);
+            expect(el.value).to.equal("@Grace Hopper ");
         });
     });
 });

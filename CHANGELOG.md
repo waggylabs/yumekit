@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-editor` and `y-textarea` gain caret-triggered mention autocomplete. A `triggers` array defines any number of literal prefixes (`@` people, `#` topics, anything else); the component detects the trigger at a word boundary, debounces by `mention-query-delay`, emits `mention-query`, and renders the candidates the app supplies through `setMentionCandidates(id, …)`. It never fetches, and stale responses are discarded. Insertion is one undo step, and `y-editor` can insert `atomic` mentions as a single non-editable unit that survives the sanitize round trip.
+
 - `y-tokens` — a form-associated multi-value token (chip) input with typeahead, filling the gap between `y-select multiple` and the display-only `y-tag`. Typed, pasted, or picked entries become removable tokens, governed by `allow-custom`, `max`, and `duplicates`, with suggestions filtered locally or supplied by the app in `async` mode. Submits one form entry per token.
 
 - `y-input`, `y-textarea`, and `y-select` gain an `error-text` attribute that renders a validation message below the field, applies the error state, and becomes the control's accessible description. All three also forward `aria-label` / `aria-labelledby` to their inner control, and `y-select` now carries proper `combobox` / `listbox` / `option` roles.
@@ -62,6 +64,8 @@ Delete any empty sections before publishing.
 - Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
 
 ### Fixed
+
+- `y-popover` now positions correctly when it lives inside another component's shadow root and the page has a transformed ancestor. Its `position: fixed` surface resolves against the nearest ancestor that establishes a containing block (any `transform`, `filter`, `perspective`, or paint/layout `contain` — even an identity transform), but the search used `parentElement`, which returns null at a shadow boundary and so never found a wrapper out in the light DOM. The surface landed offset by that wrapper's position, or off screen entirely. This affected `y-editor`'s link and mention popups; the shared walk now crosses shadow roots and is exported from `src/modules/floating.js` as `containingBlockOffset`.
 
 - `y-input` and `y-textarea` no longer replace their inner `<input>` / `<textarea>` when `disabled` toggles, so focus, caret position, and IME composition survive a form disabling its controls mid-submit. Their disabled styling is now driven by `:host([disabled])` selectors rather than a rebuilt stylesheet.
 

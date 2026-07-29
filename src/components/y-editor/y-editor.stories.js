@@ -72,6 +72,16 @@ export default {
                 "Route image insertion through the image-upload event.",
             table: { defaultValue: { summary: false } },
         },
+        triggers: {
+            control: "text",
+            description:
+                "JSON array of mention triggers — `{ trigger, type?, minChars?, maxChars?, allowSpaces?, insert?, atomic? }`. Empty disables mentions.",
+        },
+        mentionQueryDelay: {
+            control: "number",
+            description: "Debounce in ms before mention-query fires.",
+            table: { defaultValue: { summary: "150" } },
+        },
     },
     args: {
         value: "",
@@ -87,6 +97,8 @@ export default {
         required: false,
         invalid: false,
         imageUpload: false,
+        triggers: "",
+        mentionQueryDelay: 150,
     },
     render: ({
         value,
@@ -102,6 +114,8 @@ export default {
         required,
         invalid,
         imageUpload,
+        triggers,
+        mentionQueryDelay,
     }) => `
         <y-editor
             size="${size}"
@@ -117,6 +131,8 @@ export default {
             ${required ? "required" : ""}
             ${invalid ? "invalid" : ""}
             ${imageUpload ? "image-upload" : ""}
+            ${triggers ? `triggers='${triggers}'` : ""}
+            ${mentionQueryDelay !== 150 ? `mention-query-delay="${mentionQueryDelay}"` : ""}
             style="max-width:640px"
         >
             <span slot="label">Description</span>
@@ -266,4 +282,207 @@ export const ImageUpload = {
             });
         </script>
     `,
+};
+
+// ── Mentions ──────────────────────────────────────────────────
+// The editor never fetches. It detects the trigger at the caret, emits
+// `mention-query`, and renders whatever the app hands back through
+// `setMentionCandidates(id, list)`.
+
+const PEOPLE = [
+    {
+        value: "ada",
+        label: "Ada Lovelace",
+        description: "Engineering",
+        avatar: "https://i.pravatar.cc/64?img=47",
+    },
+    {
+        value: "grace",
+        label: "Grace Hopper",
+        description: "Compilers",
+        avatar: "https://i.pravatar.cc/64?img=45",
+    },
+    {
+        value: "alan",
+        label: "Alan Turing",
+        description: "Research",
+        avatar: "https://i.pravatar.cc/64?img=12",
+    },
+    {
+        value: "katherine",
+        label: "Katherine Johnson",
+        description: "Trajectories",
+        avatar: "https://i.pravatar.cc/64?img=32",
+    },
+    {
+        value: "onleave",
+        label: "Margaret Hamilton",
+        description: "On leave — cannot be mentioned",
+        disabled: true,
+    },
+];
+
+const TOPICS = [
+    { value: "accessibility", label: "accessibility", icon: "accessibility" },
+    { value: "design", label: "design", icon: "palette" },
+    { value: "performance", label: "performance", icon: "bolt" },
+    { value: "testing", label: "testing", icon: "check" },
+];
+
+const matches = (list, query) =>
+    list.filter((entry) =>
+        (entry.label ?? entry.value)
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+    );
+
+/**
+ * Reserve room below the field for the open popup.
+ *
+ * The popup is `position: fixed`, so it is clipped by any ancestor that both
+ * scrolls and establishes a containing block for fixed descendants — which is
+ * exactly Storybook's docs preview (a transformed wrapper inside an
+ * `overflow: auto` story box). Padding the story out means the candidate list
+ * has somewhere to land in the docs view as well as the canvas.
+ */
+const withRoom = (markup) =>
+    `<div style="padding-bottom:17rem">${markup}</div>`;
+
+/**
+ * Wire an editor's `mention-query` to a local catalog once the story's markup
+ * has landed. `delay` stands in for a network round trip.
+ */
+function wireMentions(id, catalogs, { delay = 0 } = {}) {
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener("mention-query", (e) => {
+            const { type, query, id: queryId } = e.detail;
+            const catalog = catalogs[type] ?? [];
+
+            if (!delay) {
+                el.setMentionCandidates(queryId, matches(catalog, query));
+                return;
+            }
+
+            el.mentionLoading = true;
+            setTimeout(
+                () => el.setMentionCandidates(queryId, matches(catalog, query)),
+                delay,
+            );
+        });
+    });
+}
+
+export const PeopleMentions = {
+    name: "Mentions — @ people",
+    render: () => {
+        const id = `editor-mention-${Math.random().toString(36).slice(2, 8)}`;
+        wireMentions(id, { user: PEOPLE });
+        return withRoom(`
+            <y-editor
+                id="${id}"
+                style="max-width:640px"
+                triggers='[{"trigger":"@","type":"user"}]'
+                placeholder="Type @ to mention a teammate…"
+            >
+                <span slot="label">Comment</span>
+            </y-editor>
+        `);
+    },
+};
+
+export const TopicTags = {
+    name: "Mentions — # topics",
+    render: () => {
+        const id = `editor-topic-${Math.random().toString(36).slice(2, 8)}`;
+        wireMentions(id, { topic: TOPICS });
+        return withRoom(`
+            <y-editor
+                id="${id}"
+                style="max-width:640px"
+                triggers='[{"trigger":"#","type":"topic","insert":"{trigger}{value} "}]'
+                placeholder="Type # to tag a topic…"
+            >
+                <span slot="label">Post</span>
+            </y-editor>
+        `);
+    },
+};
+
+export const MultipleTriggers = {
+    name: "Mentions — @ and # together",
+    render: () => {
+        const id = `editor-both-${Math.random().toString(36).slice(2, 8)}`;
+        wireMentions(id, { user: PEOPLE, topic: TOPICS });
+        return withRoom(`
+            <y-editor
+                id="${id}"
+                style="max-width:640px"
+                triggers='[{"trigger":"@","type":"user"},{"trigger":"#","type":"topic","insert":"{trigger}{value} "}]'
+                placeholder="Mention people with @ and topics with #…"
+            >
+                <span slot="label">Update</span>
+            </y-editor>
+        `);
+    },
+};
+
+export const AsyncCandidates = {
+    name: "Mentions — async candidates",
+    render: () => {
+        const id = `editor-async-${Math.random().toString(36).slice(2, 8)}`;
+        // Each query carries a monotonic id; answering a superseded one is a
+        // no-op, so slow responses cannot repopulate a moved-on popup.
+        wireMentions(id, { user: PEOPLE }, { delay: 700 });
+        return withRoom(`
+            <y-editor
+                id="${id}"
+                style="max-width:640px"
+                triggers='[{"trigger":"@","type":"user","minChars":1}]'
+                mention-query-delay="250"
+                placeholder="Type @ then a letter — results arrive after a beat…"
+            >
+                <span slot="label">Reviewers</span>
+                <span slot="mention-loading">Searching the directory…</span>
+                <span slot="mention-empty">Nobody by that name</span>
+            </y-editor>
+        `);
+    },
+};
+
+export const AtomicMentions = {
+    name: "Mentions — atomic chips",
+    render: () => {
+        const id = `editor-atomic-${Math.random().toString(36).slice(2, 8)}`;
+        const outId = `${id}-out`;
+        wireMentions(id, { user: PEOPLE });
+        setTimeout(() => {
+            const el = document.getElementById(id);
+            const out = document.getElementById(outId);
+            if (!el || !out) return;
+            const show = () => {
+                out.textContent = el.value;
+            };
+            el.addEventListener("input", show);
+            show();
+        });
+        return withRoom(`
+            <y-editor
+                id="${id}"
+                style="max-width:640px"
+                triggers='[{"trigger":"@","type":"user","atomic":true}]'
+                placeholder="Inserted mentions become one non-editable unit…"
+                show-count
+            >
+                <span slot="label">Atomic mentions</span>
+            </y-editor>
+            <p style="margin:12px 0 4px;font-size:12px;opacity:0.7">
+                Serialized value — the chip survives the round trip, and the
+                character count sees it as its insert template:
+            </p>
+            <pre id="${outId}" style="max-width:640px;white-space:pre-wrap;font-size:12px;margin:0"></pre>
+        `);
+    },
 };

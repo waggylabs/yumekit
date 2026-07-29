@@ -1,4 +1,4 @@
-import { html, fixture, expect, oneEvent } from "@open-wc/testing";
+import { html, fixture, expect, oneEvent, aTimeout } from "@open-wc/testing";
 import sinon from "sinon";
 import "./y-editor.js";
 
@@ -22,6 +22,57 @@ function content(editor) {
 function tool(editor, id) {
     return editor.shadowRoot.querySelector(`y-button[data-tool="${id}"]`);
 }
+
+function setCaret(editor, node, offset) {
+    const range = document.createRange();
+    range.setStart(node, offset);
+    range.collapse(true);
+    const selection = editor.shadowRoot.getSelection
+        ? editor.shadowRoot.getSelection()
+        : document.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
+/** Replace the first block's text and drop the caret at the end of it. */
+function typeInto(editor, text) {
+    const block = content(editor).firstElementChild;
+    block.textContent = text;
+    setCaret(editor, block.firstChild, text.length);
+    content(editor).dispatchEvent(new InputEvent("input", { bubbles: true }));
+}
+
+/** Type a fragment, answer the query it raises, and hand back the query detail. */
+async function openMentions(editor, text, candidates) {
+    const queried = oneEvent(editor, "mention-query");
+    typeInto(editor, text);
+    const { detail } = await queried;
+    editor.setMentionCandidates(detail.id, candidates);
+    return detail;
+}
+
+function options(editor) {
+    return [...editor.shadowRoot.querySelectorAll(".mention-option")];
+}
+
+/**
+ * Count rather than return the chips: a DOM node handed to a failing assertion
+ * is serialized into the failure diff, which stalls the test reporter.
+ */
+function chipCount(editor) {
+    return content(editor).querySelectorAll("span[data-mention-value]").length;
+}
+
+function press(editor, key) {
+    content(editor).dispatchEvent(
+        new KeyboardEvent("keydown", { key, bubbles: true }),
+    );
+}
+
+const PEOPLE = [
+    { value: "ada", label: "Ada Lovelace", description: "Engineering" },
+    { value: "grace", label: "Grace Hopper" },
+];
 
 describe("y-editor", () => {
     const sandbox = sinon.createSandbox();
@@ -650,6 +701,357 @@ describe("y-editor", () => {
             const popover = el.shadowRoot.querySelector("y-popover");
             expect(popover).to.exist;
             expect(popover.hasAttribute("portal")).to.be.false;
+        });
+    });
+
+    describe("mentions", () => {
+        const mentionFixture = () =>
+            fixture(
+                html`<y-editor
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user"}]'
+                ></y-editor>`,
+            );
+
+        it("stays inert until triggers are configured", async () => {
+            const el = await fixture(
+                html`<y-editor mention-query-delay="0"></y-editor>`,
+            );
+            const spy = sandbox.spy();
+            el.addEventListener("mention-query", spy);
+
+            typeInto(el, "@jo");
+            await aTimeout(20);
+            expect(spy.called).to.be.false;
+        });
+
+        it("queries with the trigger, type, query, and a monotonic id", async () => {
+            const el = await mentionFixture();
+            const first = await openMentions(el, "@jo", PEOPLE);
+
+            expect(first).to.include({
+                trigger: "@",
+                type: "user",
+                query: "jo",
+            });
+            expect(first.id).to.be.a("number");
+
+            const second = await openMentions(el, "@joh", PEOPLE);
+            expect(second.id).to.be.greaterThan(first.id);
+        });
+
+        it("does not query a trigger sitting mid-word", async () => {
+            const el = await mentionFixture();
+            const spy = sandbox.spy();
+            el.addEventListener("mention-query", spy);
+
+            typeInto(el, "mail@example");
+            await aTimeout(20);
+            expect(spy.called).to.be.false;
+        });
+
+        it("renders candidates as a listbox and takes combobox semantics", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            const surface = content(el);
+            expect(surface.getAttribute("role")).to.equal("combobox");
+            expect(surface.getAttribute("aria-expanded")).to.equal("true");
+            expect(surface.getAttribute("aria-autocomplete")).to.equal("list");
+            expect(surface.getAttribute("aria-haspopup")).to.equal("listbox");
+
+            const list = el.shadowRoot.querySelector(".mention-list");
+            expect(surface.getAttribute("aria-controls")).to.equal(list.id);
+            expect(list.getAttribute("role")).to.equal("listbox");
+            expect(options(el).length).to.equal(2);
+            expect(options(el)[0].getAttribute("aria-selected")).to.equal(
+                "true",
+            );
+            expect(surface.getAttribute("aria-activedescendant")).to.equal(
+                options(el)[0].id,
+            );
+        });
+
+        it("moves the highlight with the arrow keys, wrapping", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            press(el, "ArrowDown");
+            expect(options(el)[1].getAttribute("aria-selected")).to.equal(
+                "true",
+            );
+            press(el, "ArrowDown");
+            expect(options(el)[0].getAttribute("aria-selected")).to.equal(
+                "true",
+            );
+            press(el, "ArrowUp");
+            expect(options(el)[1].getAttribute("aria-selected")).to.equal(
+                "true",
+            );
+        });
+
+        it("discards candidates for a superseded query", async () => {
+            const el = await mentionFixture();
+            const stale = await openMentions(el, "@a", PEOPLE);
+            await openMentions(el, "@ad", [{ value: "ada" }]);
+
+            el.setMentionCandidates(stale.id, [
+                { value: "x" },
+                { value: "y" },
+                { value: "z" },
+            ]);
+            expect(options(el).length).to.equal(1);
+        });
+
+        it("replaces the fragment on Enter and restores the surface roles", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "hi @a", PEOPLE);
+
+            press(el, "Enter");
+
+            expect(el.textContent).to.equal("hi @Ada Lovelace ");
+            expect(content(el).getAttribute("role")).to.equal("textbox");
+            expect(content(el).hasAttribute("aria-expanded")).to.be.false;
+            expect(content(el).hasAttribute("aria-activedescendant")).to.be
+                .false;
+        });
+
+        it("makes the insertion a single undo step", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            press(el, "Enter");
+            expect(el.textContent).to.equal("@Ada Lovelace ");
+
+            el.undo();
+            expect(el.textContent).to.equal("@a");
+        });
+
+        it("lets mention-insert be cancelled", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            el.addEventListener("mention-insert", (e) => e.preventDefault());
+            press(el, "Enter");
+
+            expect(el.textContent).to.equal("@a");
+        });
+
+        it("closes on Escape, leaving the typed trigger intact", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            const closed = oneEvent(el, "mention-close");
+            press(el, "Escape");
+            const { detail } = await closed;
+
+            expect(detail).to.include({ type: "user", reason: "escape" });
+            expect(el.textContent).to.equal("@a");
+            expect(content(el).getAttribute("role")).to.equal("textbox");
+        });
+
+        it("closes when the fragment is abandoned", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            const closed = oneEvent(el, "mention-close");
+            typeInto(el, "@a done");
+            const { detail } = await closed;
+
+            expect(detail.reason).to.be.a("string");
+            expect(options(el).length).to.equal(0);
+        });
+
+        it("suspends detection while an IME composition is running", async () => {
+            const el = await mentionFixture();
+            const spy = sandbox.spy();
+            el.addEventListener("mention-query", spy);
+
+            content(el).dispatchEvent(
+                new CompositionEvent("compositionstart", { bubbles: true }),
+            );
+            typeInto(el, "@ab");
+            await aTimeout(20);
+            expect(spy.called).to.be.false;
+
+            const queried = oneEvent(el, "mention-query");
+            content(el).dispatchEvent(
+                new CompositionEvent("compositionend", { bubbles: true }),
+            );
+            const { detail } = await queried;
+            expect(detail.query).to.equal("ab");
+        });
+
+        it("never triggers while disabled or readonly", async () => {
+            const el = await mentionFixture();
+            const spy = sandbox.spy();
+            el.addEventListener("mention-query", spy);
+
+            el.readonly = true;
+            typeInto(el, "@jo");
+            await aTimeout(20);
+            expect(spy.called).to.be.false;
+
+            el.readonly = false;
+            el.disabled = true;
+            typeInto(el, "@jo");
+            await aTimeout(20);
+            expect(spy.called).to.be.false;
+        });
+
+        it("dismisses the popup from closeMentions without touching the text", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            el.closeMentions();
+            expect(options(el).length).to.equal(0);
+            expect(el.textContent).to.equal("@a");
+        });
+
+        it("inserts programmatically at the caret", async () => {
+            const el = await mentionFixture();
+            typeInto(el, "hello");
+            el.insertMention({ value: "ada", label: "Ada" }, "@");
+            expect(el.textContent).to.equal("hello@Ada ");
+        });
+
+        it("replaces the active fragment when inserting programmatically", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@a", PEOPLE);
+
+            el.insertMention(PEOPLE[1]);
+            expect(el.textContent).to.equal("@Grace Hopper ");
+        });
+
+        it("anchors the popup on the fragment, below the caret line", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "hello world @a", PEOPLE);
+            await aTimeout(0);
+
+            const popover = el.shadowRoot.querySelector(".mention-popover");
+            const surface = popover.shadowRoot.querySelector(".surface");
+            expect(popover.open).to.be.true;
+            expect(surface.hidden).to.be.false;
+
+            // The anchor tracks the fragment, so it sits well right of the
+            // surface's left edge only if it were parked at the origin.
+            const anchor = el.shadowRoot.querySelector(".mention-anchor");
+            const anchorBox = anchor.getBoundingClientRect();
+            const contentBox = content(el).getBoundingClientRect();
+            expect(anchorBox.left).to.be.greaterThan(contentBox.left);
+            expect(anchorBox.height).to.be.greaterThan(0);
+
+            // Placed under the caret rather than over it.
+            expect(surface.getBoundingClientRect().top).to.be.at.least(
+                anchorBox.top,
+            );
+        });
+
+        it("shows the empty state when a query returns nothing", async () => {
+            const el = await mentionFixture();
+            await openMentions(el, "@zz", []);
+
+            const empty = el.shadowRoot.querySelector(".mention-empty");
+            expect(empty.hidden).to.be.false;
+            expect(options(el).length).to.equal(0);
+        });
+
+        it("shows the busy state while mention-loading is set", async () => {
+            const el = await mentionFixture();
+            const queried = oneEvent(el, "mention-query");
+            typeInto(el, "@a");
+            await queried;
+
+            el.mentionLoading = true;
+            const busy = el.shadowRoot.querySelector(".mention-loading");
+            expect(busy.hidden).to.be.false;
+
+            el.mentionCandidates = PEOPLE;
+            expect(busy.hidden).to.be.true;
+            expect(options(el).length).to.equal(2);
+        });
+    });
+
+    describe("atomic mentions", () => {
+        const atomicFixture = () =>
+            fixture(
+                html`<y-editor
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user","atomic":true}]'
+                ></y-editor>`,
+            );
+
+        async function insertAtomic(el) {
+            await openMentions(el, "@a", PEOPLE);
+            press(el, "Enter");
+        }
+
+        it("inserts one non-editable node carrying the mention data", async () => {
+            const el = await atomicFixture();
+            await insertAtomic(el);
+
+            const chip = content(el).querySelector("span[data-mention-value]");
+            expect(chip).to.exist;
+            expect(chip.getAttribute("contenteditable")).to.equal("false");
+            expect(chip.dataset.mentionType).to.equal("user");
+            expect(chip.dataset.mentionValue).to.equal("ada");
+            expect(chip.getAttribute("part")).to.equal("mention-chip");
+        });
+
+        it("renders as its insert template for plain-text counting", async () => {
+            const el = await atomicFixture();
+            await insertAtomic(el);
+            expect(el.textContent).to.equal("@Ada Lovelace ");
+        });
+
+        it("survives the serialize / parse round trip", async () => {
+            const el = await atomicFixture();
+            await insertAtomic(el);
+
+            const value = el.value;
+            expect(value).to.contain('data-mention-value="ada"');
+
+            el.value = value;
+            const chip = content(el).querySelector("span[data-mention-value]");
+            expect(chip).to.exist;
+            expect(chip.getAttribute("contenteditable")).to.equal("false");
+            expect(el.textContent).to.equal("@Ada Lovelace ");
+        });
+
+        it("deletes as one unit on Backspace", async () => {
+            const el = await atomicFixture();
+            // The state a user reaches by backspacing over the trailing space:
+            // the chip is the last thing in the block, caret right after it.
+            el.value =
+                '<p><span data-mention-type="user" data-mention-value="ada">@Ada Lovelace</span></p>';
+            const block = content(el).firstElementChild;
+            setCaret(el, block, block.childNodes.length);
+
+            const event = new InputEvent("beforeinput", {
+                inputType: "deleteContentBackward",
+                bubbles: true,
+                cancelable: true,
+            });
+            content(el).dispatchEvent(event);
+
+            expect(event.defaultPrevented).to.be.true;
+            expect(chipCount(el)).to.equal(0);
+            expect(el.textContent).to.equal("");
+        });
+
+        it("leaves the chip alone when Backspace lands on the trailing space", async () => {
+            const el = await atomicFixture();
+            await insertAtomic(el);
+
+            const event = new InputEvent("beforeinput", {
+                inputType: "deleteContentBackward",
+                bubbles: true,
+                cancelable: true,
+            });
+            content(el).dispatchEvent(event);
+
+            expect(event.defaultPrevented).to.be.false;
+            expect(chipCount(el)).to.equal(1);
         });
     });
 });

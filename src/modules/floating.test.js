@@ -1,7 +1,8 @@
-import { expect } from "@open-wc/testing";
+import { expect, fixture, html } from "@open-wc/testing";
 import {
     computePosition,
     candidateSides,
+    containingBlockOffset,
     parsePosition,
     pointerOffsetFor,
 } from "./floating.js";
@@ -176,5 +177,98 @@ describe("floating: pointerOffsetFor", () => {
         const { offset } = pointerOffsetFor("bottom", anchor, placement, size, 10);
         // anchor center is way past the right edge; clamped to width-pointer-half.
         expect(offset).to.equal(200 - 10 - 5);
+    });
+});
+
+describe("containingBlockOffset", () => {
+    it("returns the origin when no ancestor establishes a containing block", async () => {
+        const host = await fixture(html`<div><span></span></div>`);
+        expect(containingBlockOffset(host.firstElementChild)).to.deep.equal({
+            x: 0,
+            y: 0,
+        });
+    });
+
+    it("finds a transformed ancestor and reports its viewport corner", async () => {
+        const host = await fixture(html`
+            <div style="position:absolute;top:120px;left:60px;transform:translateZ(0)">
+                <span></span>
+            </div>
+        `);
+        const offset = containingBlockOffset(host.firstElementChild);
+        const box = host.getBoundingClientRect();
+        expect(Math.round(offset.x)).to.equal(Math.round(box.left));
+        expect(Math.round(offset.y)).to.equal(Math.round(box.top));
+    });
+
+    it("treats an identity transform as a containing block", async () => {
+        // Storybook's docs preview wraps stories in exactly this.
+        const host = await fixture(html`
+            <div style="position:absolute;top:80px;left:40px;transform:matrix(1,0,0,1,0,0)">
+                <span></span>
+            </div>
+        `);
+        expect(containingBlockOffset(host.firstElementChild).y).to.be.closeTo(
+            host.getBoundingClientRect().top,
+            1,
+        );
+    });
+
+    it("crosses shadow boundaries to find a transformed ancestor in the light DOM", async () => {
+        // The regression: a floating surface living inside a component's shadow
+        // root must still see a transformed wrapper outside it. `parentElement`
+        // returns null at the shadow root, which silently reported (0, 0).
+        const host = await fixture(html`
+            <div style="position:absolute;top:150px;left:70px;transform:translateZ(0)">
+                <div id="shadow-host"></div>
+            </div>
+        `);
+        const inner = host.querySelector("#shadow-host");
+        const root = inner.attachShadow({ mode: "open" });
+        const deep = document.createElement("span");
+        root.appendChild(deep);
+
+        const offset = containingBlockOffset(deep);
+        const box = host.getBoundingClientRect();
+        expect(Math.round(offset.x)).to.equal(Math.round(box.left));
+        expect(Math.round(offset.y)).to.equal(Math.round(box.top));
+    });
+
+    it("crosses several nested shadow roots", async () => {
+        const host = await fixture(html`
+            <div style="position:absolute;top:200px;left:90px;filter:blur(0px)">
+                <div id="outer-host"></div>
+            </div>
+        `);
+        const outer = host.querySelector("#outer-host");
+        const outerRoot = outer.attachShadow({ mode: "open" });
+        const middle = document.createElement("div");
+        outerRoot.appendChild(middle);
+        const middleRoot = middle.attachShadow({ mode: "open" });
+        const deep = document.createElement("span");
+        middleRoot.appendChild(deep);
+
+        expect(containingBlockOffset(deep).y).to.be.closeTo(
+            host.getBoundingClientRect().top,
+            1,
+        );
+    });
+
+    it("stops at the nearest containing block, not the outermost", async () => {
+        const host = await fixture(html`
+            <div style="position:absolute;top:40px;left:20px;transform:translateZ(0)">
+                <div
+                    id="near"
+                    style="position:absolute;top:60px;left:30px;transform:translateZ(0)"
+                >
+                    <span></span>
+                </div>
+            </div>
+        `);
+        const near = host.querySelector("#near");
+        const offset = containingBlockOffset(near.firstElementChild);
+        expect(Math.round(offset.y)).to.equal(
+            Math.round(near.getBoundingClientRect().top),
+        );
     });
 });
