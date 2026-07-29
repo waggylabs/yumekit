@@ -421,7 +421,7 @@ Form-associated. Multi-value token (chip) input with typeahead — the user type
 | `variant`              | `default` \| `underline` (bottom border only, square bottom corners)                                  |
 | `label-position`       | `top` (default) \| `left` \| `hidden`                                                                 |
 | `clearable`            | boolean — control that removes every token at once                                                    |
-| `portal`               | boolean — render the popup into the nearest `<y-theme>` (or `<body>`)                                 |
+| `portal`               | boolean — render the popup into the nearest `<y-theme>` (or `<body>`). Custom properties set inline on the host are forwarded onto the portal, so e.g. an inline `--component-select-z-index` still lifts the popup above another portaled surface |
 | `disabled`             | boolean — non-interactive, not submitted                                                              |
 | `readonly`             | boolean — tokens visible and focusable but not removable; no input, no popup                          |
 | `required`             | boolean — at least one token (`valueMissing`)                                                         |

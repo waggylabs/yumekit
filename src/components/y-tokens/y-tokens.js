@@ -125,7 +125,6 @@ export class YumeTokens extends HTMLElement {
         this._onScrollOrResize = null;
 
         this._onDocumentClick = this._onDocumentClick.bind(this);
-        this._onViewportChange = this._onViewportChange.bind(this);
 
         this.attachShadow({ mode: "open" });
         this.render();
@@ -580,7 +579,10 @@ export class YumeTokens extends HTMLElement {
         const label = token.label || token.value;
 
         this._applyTokens(next);
-        this._setActiveToken(next.length ? Math.min(index, next.length - 1) : -1, false);
+        this._setActiveToken(
+            next.length ? Math.min(index, next.length - 1) : -1,
+            false,
+        );
         this._announce(`${label} removed, ${next.length} tokens.`);
         this._emitChange();
         return true;
@@ -593,7 +595,11 @@ export class YumeTokens extends HTMLElement {
         this._queryRefs();
 
         manageLabelVisibility(this._labelWrapper);
-        forwardControlAttributes(this, this._input, TOKENS_FORWARDED_ATTRIBUTES);
+        forwardControlAttributes(
+            this,
+            this._input,
+            TOKENS_FORWARDED_ATTRIBUTES,
+        );
         this._bindListeners();
 
         if (this._input) this._input.value = this._text;
@@ -632,6 +638,8 @@ export class YumeTokens extends HTMLElement {
         if (this._portalContainer || !this._popup) return;
 
         const portal = _el("div", { class: "y-tokens-portal" });
+        this._forwardCustomProperties(portal);
+
         const shadow = portal.attachShadow({ mode: "open" });
         shadow.adoptedStyleSheets = this.shadowRoot.adoptedStyleSheets;
         shadow.appendChild(this._popup);
@@ -649,7 +657,9 @@ export class YumeTokens extends HTMLElement {
 
     /** Summarize one commit batch for the live region. */
     _announceCommit(added, rejected) {
-        const parts = added.map((token) => `${token.label || token.value} added`);
+        const parts = added.map(
+            (token) => `${token.label || token.value} added`,
+        );
 
         for (const { raw, reason } of rejected) {
             const label = this._rawLabel(raw);
@@ -1432,6 +1442,14 @@ export class YumeTokens extends HTMLElement {
         });
     }
 
+    _forwardCustomProperties(portal) {
+        for (let i = 0; i < this.style.length; i++) {
+            const name = this.style[i];
+            if (!name.startsWith("--")) continue;
+            portal.style.setProperty(name, this.style.getPropertyValue(name));
+        }
+    }
+
     _handleArrowHorizontal(e, key) {
         if (this._input?.value || !this._tokens.length) return;
 
@@ -1508,8 +1526,12 @@ export class YumeTokens extends HTMLElement {
         this._syncOptionState();
     }
 
-    /** Normalize one raw entry into a token; returns null when it has no value. */
-    _normalizeToken(entry) {
+    /**
+     * Normalize one raw entry into an option; returns null when it has no
+     * value. `disabled` is meaningful here and only here — it marks a
+     * suggestion as unselectable.
+     */
+    _normalizeOption(entry) {
         const source =
             typeof entry === "string" || typeof entry === "number"
                 ? { value: String(entry) }
@@ -1519,14 +1541,36 @@ export class YumeTokens extends HTMLElement {
         const value = source.value == null ? "" : String(source.value).trim();
         if (!value) return null;
 
-        const token = { value };
-        if (source.label != null) token.label = String(source.label);
-        if (source.icon != null) token.icon = String(source.icon);
-        if (source.color != null) token.color = String(source.color);
-        if (source.invalid) token.invalid = true;
-        if (source.disabled) token.disabled = true;
+        const option = { value };
+        if (source.label != null) option.label = String(source.label);
+        if (source.icon != null) option.icon = String(source.icon);
+        if (source.color != null) option.color = String(source.color);
+        if (source.invalid) option.invalid = true;
+        if (source.disabled) option.disabled = true;
 
-        return token;
+        return option;
+    }
+
+    _normalizeOptions(entries) {
+        if (!Array.isArray(entries)) return [];
+        return entries
+            .map((entry) => this._normalizeOption(entry))
+            .filter(Boolean);
+    }
+
+    /**
+     * Normalize one raw entry into a committed token. Identical to an option
+     * except that `disabled` is dropped: it describes whether a suggestion can
+     * be picked, which says nothing once the entry is already committed. Keeping
+     * it would leak an options-only key into `value`, where neither the docs nor
+     * `react.d.ts` declare it.
+     */
+    _normalizeToken(entry) {
+        const option = this._normalizeOption(entry);
+        if (!option) return null;
+
+        delete option.disabled;
+        return option;
     }
 
     _normalizeTokens(entries) {
@@ -1680,14 +1724,6 @@ export class YumeTokens extends HTMLElement {
         this._setActiveToken(Math.min(last, Math.max(0, from + delta)));
     }
 
-    _onViewportChange() {
-        if (this.portal) {
-            this._setOpen(false);
-            return;
-        }
-        this._positionPopup();
-    }
-
     /**
      * The [background, foreground] pair a committed option paints itself with,
      * or null to keep the stylesheet's accent default. Mirrors how `y-select`
@@ -1824,7 +1860,7 @@ export class YumeTokens extends HTMLElement {
                 (String(option.value).toLowerCase() === needle ||
                     String(option.label || "").toLowerCase() === needle),
         );
-        if (match) return this._normalizeToken({ ...match, disabled: false });
+        if (match) return this._normalizeToken(match);
 
         return this.allowCustom ? { value: text } : null;
     }
@@ -1868,7 +1904,7 @@ export class YumeTokens extends HTMLElement {
             this.removeToken(existing, "deselect");
             this._setActiveToken(-1, false);
         } else {
-            this._commitValues([{ ...option, disabled: false }], "select");
+            this._commitValues([option], "select");
         }
 
         this._setText("");
@@ -1926,14 +1962,14 @@ export class YumeTokens extends HTMLElement {
 
         if (this.portal) this._activatePortal();
         this._positionPopup();
-        this._onScrollOrResize = this._onViewportChange;
+        this._onScrollOrResize = this._positionPopup.bind(this);
         window.addEventListener("scroll", this._onScrollOrResize, true);
         window.addEventListener("resize", this._onScrollOrResize);
         document.addEventListener("click", this._onDocumentClick, true);
     }
 
     _setOptions(data) {
-        this._options = this._normalizeTokens(data);
+        this._options = this._normalizeOptions(data);
         clearTimeout(this._queryTimer);
         this.loading = false;
         this._renderOptions();

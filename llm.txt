@@ -468,7 +468,7 @@ Attributes:
 - `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
 - `label-position` — `"top"` (default) | `"left"` | `"hidden"`
 - `clearable` — boolean; shows a control that removes every token at once
-- `portal` — boolean; renders the popup into the nearest `<y-theme>` (falling back to `<body>`) so it escapes clipped or low-stacking ancestors
+- `portal` — boolean; renders the popup into the nearest `<y-theme>` (falling back to `<body>`) so it escapes clipped or low-stacking ancestors. Custom properties set **inline on the host** are forwarded onto the portal, so a per-instance override still reaches the popup once it has been moved out — set `--component-select-z-index` inline to lift it above another portaled surface such as a dialog
 - `disabled` — boolean; non-interactive and excluded from form submission
 - `readonly` — boolean; tokens are visible and focusable but not removable, and there is no input or popup
 - `required` — boolean; at least one token (`valueMissing`)

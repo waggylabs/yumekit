@@ -138,6 +138,37 @@ describe("<y-tokens>", () => {
             expect(el.hasAttribute("value")).to.be.false;
         });
 
+        it("strips the options-only disabled key from committed tokens", async () => {
+            const el = await fixture(
+                html`<y-tokens
+                    value='[{"value":"a","disabled":true}]'
+                ></y-tokens>`,
+            );
+            expect(el.value[0]).to.eql({ value: "a" });
+
+            el.value = [{ value: "b", label: "B", disabled: true }];
+            expect(el.value[0]).to.eql({ value: "b", label: "B" });
+
+            el.addToken({ value: "c", disabled: true });
+            expect(el.value[1]).to.eql({ value: "c" });
+        });
+
+        it("keeps disabled on options", async () => {
+            const el = await fixture(html`<y-tokens></y-tokens>`);
+            el.options = [{ value: "a", disabled: true }, { value: "b" }];
+            expect(el.options[0].disabled).to.be.true;
+            expect(el.options[1].disabled).to.be.undefined;
+        });
+
+        it("does not carry disabled across when an option is committed", async () => {
+            const el = await fixture(html`<y-tokens></y-tokens>`);
+            el.options = [{ value: "a", label: "Alpha" }];
+            input(el).dispatchEvent(new FocusEvent("focus"));
+            options(el)[0].click();
+
+            expect(el.value[0]).to.eql({ value: "a", label: "Alpha" });
+        });
+
         it("drops entries with no value", async () => {
             const el = await fixture(html`<y-tokens></y-tokens>`);
             el.value = ["a", "", { label: "no value" }, { value: "  " }];
@@ -976,6 +1007,101 @@ describe("<y-tokens>", () => {
             el.options = OPTIONS;
             el.openPopup();
             expect(popup(el).hidden).to.be.true;
+        });
+
+        it("repositions instead of closing when anything scrolls", async () => {
+            for (const portal of [false, true]) {
+                const theme = await fixture(html`
+                    <y-theme><y-tokens></y-tokens></y-theme>
+                `);
+                const el = theme.querySelector("y-tokens");
+                el.portal = portal;
+                el.options = OPTIONS;
+                el.openPopup();
+
+                const panel = portal
+                    ? theme
+                          .querySelector(".y-tokens-portal")
+                          .shadowRoot.querySelector(".popup")
+                    : popup(el);
+                expect(panel.hidden, `portal=${portal}`).to.be.false;
+
+                window.dispatchEvent(new Event("scroll"));
+                window.dispatchEvent(new Event("resize"));
+                expect(panel.hidden, `portal=${portal}`).to.be.false;
+
+                // Capture-phase listener: a scroll inside the popup's own
+                // listbox reaches it too, and must not dismiss the popup.
+                panel.dispatchEvent(new Event("scroll"));
+                expect(panel.hidden, `portal=${portal}`).to.be.false;
+
+                el.closePopup();
+            }
+        });
+
+        it("keeps the portaled popup anchored to the control as it moves", async () => {
+            const theme = await fixture(html`
+                <y-theme style="position:absolute;top:40px;left:24px">
+                    <y-tokens portal></y-tokens>
+                </y-theme>
+            `);
+            const el = theme.querySelector("y-tokens");
+            el.options = OPTIONS;
+            el.openPopup();
+
+            const panel = theme
+                .querySelector(".y-tokens-portal")
+                .shadowRoot.querySelector(".popup");
+            const before = panel.style.top;
+
+            theme.style.top = "180px";
+            window.dispatchEvent(new Event("scroll"));
+
+            expect(panel.style.position).to.equal("fixed");
+            expect(panel.style.top).to.not.equal(before);
+            el.closePopup();
+        });
+
+        it("forwards inline custom properties onto the portal", async () => {
+            const theme = await fixture(html`
+                <y-theme>
+                    <y-tokens
+                        portal
+                        style="--component-select-z-index: 9999;
+                               --component-tokens-popup-max-height: 90px;
+                               color: rebeccapurple"
+                    ></y-tokens>
+                </y-theme>
+            `);
+            const el = theme.querySelector("y-tokens");
+            el.options = OPTIONS;
+            el.openPopup();
+
+            const portal = theme.querySelector(".y-tokens-portal");
+            const panel = portal.shadowRoot.querySelector(".popup");
+
+            // The stacking override is the case that bites, but every custom
+            // property the popup reads has the same hole.
+            expect(getComputedStyle(panel).zIndex).to.equal("9999");
+            expect(getComputedStyle(panel).maxHeight).to.equal("90px");
+            // Regular declarations are not the portal's business.
+            expect(portal.style.color).to.equal("");
+
+            el.closePopup();
+        });
+
+        it("leaves the portal alone when the host has no inline overrides", async () => {
+            const theme = await fixture(html`
+                <y-theme><y-tokens portal></y-tokens></y-theme>
+            `);
+            const el = theme.querySelector("y-tokens");
+            el.options = OPTIONS;
+            el.openPopup();
+
+            expect(
+                theme.querySelector(".y-tokens-portal").getAttribute("style"),
+            ).to.be.oneOf([null, ""]);
+            el.closePopup();
         });
 
         it("mounts the popup inside the nearest y-theme when portaled", async () => {
