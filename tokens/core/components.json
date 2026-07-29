@@ -1495,6 +1495,48 @@
                 "$type": "number",
                 "$value": 7500
             }
+        },
+        "tokens": {
+            "gap": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{component.inputs.padding-small}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{component.inputs.padding-medium}"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{component.inputs.padding-large}"
+            },
+            "min-height-small": {
+                "$type": "sizing",
+                "$value": "{component.control.height-small}"
+            },
+            "min-height-medium": {
+                "$type": "sizing",
+                "$value": "{component.control.height-medium}"
+            },
+            "min-height-large": {
+                "$type": "sizing",
+                "$value": "{component.control.height-large}"
+            },
+            "max-height": {
+                "$type": "sizing",
+                "$value": "120px"
+            },
+            "input-min-width": {
+                "$type": "sizing",
+                "$value": "60px"
+            },
+            "popup-max-height": {
+                "$type": "sizing",
+                "$value": "240px"
+            }
         }
     }
 }
