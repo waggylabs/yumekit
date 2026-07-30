@@ -2482,7 +2482,7 @@ Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`
 - Media & display (`image`, `monitor`, `smartphone`, `tablet`, `moon`, `sun`, `palette`, `calendar`, `clock`, `play`, `pause`, `stop`, `skip-back`, `skip-forward`, `fast-back`, `fast-forward`)
 - People (`user`, `users`, `accessibility`)
 - Science & work (`flask`, `briefcase`, `puzzle`, `robot`, `wrench`, `bug`)
-- Social (`discord`, `figma`, `github`)
+- Brands & sign-in providers (`apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `discord`, `dropbox`, `facebook`, `figma`, `github`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, `zoom`) — solid single-colour marks; these have no filled variant, so `weight="filled"` falls back to the same glyph
 - Nature (`flower`, `campfire`)
 - Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `unlock`, `shield`, `circle-slash`, `triangle-exclamation`, `circle-exclamation`, `circle-info`, `circle-question`)
 - Utilities & devices (`plug`, `bluetooth`, `fan`, `thermometer-high`, `thermometer-low`, `gasoline`, `ev-charger`)

@@ -162,6 +162,29 @@ import user from "./user.svg";
 import users from "./users.svg";
 import triangleExclamation from "./triangle-exclamation.svg";
 
+// Brand marks. Solid single-colour logos — no filled variants, since a logo
+// only reads one way.
+import apple from "./apple.svg";
+import atlassian from "./atlassian.svg";
+import auth0 from "./auth0.svg";
+import aws from "./aws.svg";
+import bitbucket from "./bitbucket.svg";
+import dropbox from "./dropbox.svg";
+import facebook from "./facebook.svg";
+import gitlab from "./gitlab.svg";
+import google from "./google.svg";
+import linkedin from "./linkedin.svg";
+import microsoft from "./microsoft.svg";
+import notion from "./notion.svg";
+import okta from "./okta.svg";
+import reddit from "./reddit.svg";
+import salesforce from "./salesforce.svg";
+import slack from "./slack.svg";
+import spotify from "./spotify.svg";
+import twitch from "./twitch.svg";
+import xTwitter from "./x-twitter.svg";
+import zoom from "./zoom.svg";
+
 registerIcons({
     accessibility,
     robot,
@@ -313,4 +336,24 @@ registerIcons({
     user,
     users,
     "triangle-exclamation": triangleExclamation,
+    apple,
+    atlassian,
+    auth0,
+    aws,
+    bitbucket,
+    dropbox,
+    facebook,
+    gitlab,
+    google,
+    linkedin,
+    microsoft,
+    notion,
+    okta,
+    reddit,
+    salesforce,
+    slack,
+    spotify,
+    twitch,
+    "x-twitter": xTwitter,
+    zoom,
 });

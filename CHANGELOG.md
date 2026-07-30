@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-colour glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
+
 - `y-editor` and `y-textarea` gain caret-triggered mention autocomplete. A `triggers` array defines any number of literal prefixes (`@` people, `#` topics, anything else); the component detects the trigger at a word boundary, debounces by `mention-query-delay`, emits `mention-query`, and renders the candidates the app supplies through `setMentionCandidates(id, …)`. It never fetches, and stale responses are discarded. Insertion is one undo step, and `y-editor` can insert `atomic` mentions as a single non-editable unit that survives the sanitize round trip.
 
 - `y-tokens` — a form-associated multi-value token (chip) input with typeahead, filling the gap between `y-select multiple` and the display-only `y-tag`. Typed, pasted, or picked entries become removable tokens, governed by `allow-custom`, `max`, and `duplicates`, with suggestions filtered locally or supplied by the app in `async` mode. Submits one form entry per token.
