@@ -14,10 +14,7 @@ import {
     sanitizeHtmlToFragment,
     tagsForBlocks,
 } from "../../modules/html-sanitizer.js";
-import {
-    MENTION_STYLES,
-    MentionController,
-} from "../../modules/mentions.js";
+import { MENTION_STYLES, MentionController } from "../../modules/mentions.js";
 
 const DEFAULT_ALLOWED_BLOCKS = [
     "p",
@@ -1591,21 +1588,9 @@ export class YumeEditor extends HTMLElement {
             defaultRole: "textbox",
             isInactive: () => this.disabled || this.readonly,
             getContext: () => this._mentionContext(),
-            getAnchorRect: (fragment) => this._mentionAnchorRect(fragment),
+            getCaretRect: (fragment) => this._mentionCaretRect(fragment),
             applyInsertion: (payload) => this._applyMention(payload),
         };
-    }
-
-    /** Viewport rect of the active fragment, used to park the popup anchor. */
-    _mentionAnchorRect(fragment) {
-        const range = fragment
-            ? this._mentionRange(fragment)
-            : this._currentRange();
-        if (!range) return null;
-
-        const rect = range.getBoundingClientRect();
-        if (rect.width || rect.height) return rect;
-        return this._content.getBoundingClientRect();
     }
 
     /** The top-level block (or list item) the caret sits in. */
@@ -1617,6 +1602,22 @@ export class YumeEditor extends HTMLElement {
             el = el.parentNode;
         }
         return this._content.firstElementChild ?? this._content;
+    }
+
+    _mentionCaretRect(fragment) {
+        const end = fragment?.end ?? null;
+        const range =
+            end !== null && end > 0
+                ? this._mentionRange({ start: end - 1, end })
+                : this._currentRange();
+        if (!range) return null;
+
+        // A wrapped range reports one rect per line; the caret is on the last.
+        const rects = range.getClientRects();
+        const rect = rects[rects.length - 1] ?? range.getBoundingClientRect();
+        if (!rect.height) return this._content.getBoundingClientRect();
+
+        return new DOMRect(rect.right, rect.top, 1, rect.height);
     }
 
     /** The atomic mention chip containing `node`, if any. */
@@ -1655,17 +1656,17 @@ export class YumeEditor extends HTMLElement {
     }
 
     /**
-     * DOM range covering a detected fragment's character offsets. The offsets
+     * DOM range covering a `{start, end}` pair of character offsets. The offsets
      * are relative to the block `_mentionContext` last measured, which is the
      * block the fragment was detected in — the controller always re-reads the
      * context before asking for a rect or an insertion.
      */
-    _mentionRange(fragment) {
+    _mentionRange({ start: from, end: to }) {
         const block = this._mentionBlockEl;
         if (!block || !block.isConnected) return null;
 
-        const start = this._positionAt(block, fragment.start);
-        const end = this._positionAt(block, fragment.end);
+        const start = this._positionAt(block, from);
+        const end = this._positionAt(block, to);
         const range = document.createRange();
         try {
             range.setStart(start.node, start.offset);
@@ -1758,6 +1759,11 @@ export class YumeEditor extends HTMLElement {
      * Re-apply the inertness an atomic mention needs. `part` and
      * `contenteditable` are stripped on serialization, so a chip arriving from
      * `value` or the default slot gets them back here.
+     *
+     * Chips are also flattened to text, matching what the sanitizer does on the
+     * way out. A chip's inner text node is still a text node in the document, so
+     * an inline format applied across a selection that spans one would wrap it —
+     * leaving a chip that looks half-formatted until the next serialize.
      */
     _normalizeMentions() {
         for (const chip of this._content.querySelectorAll(
@@ -1765,6 +1771,13 @@ export class YumeEditor extends HTMLElement {
         )) {
             chip.setAttribute("contenteditable", "false");
             chip.setAttribute("part", "mention-chip");
+
+            if (chip.firstElementChild) {
+                const text = chip.textContent;
+                chip.replaceChildren();
+                if (text) chip.appendChild(document.createTextNode(text));
+            }
+            if (!chip.firstChild) chip.remove();
         }
     }
 
@@ -1774,7 +1787,10 @@ export class YumeEditor extends HTMLElement {
             return;
         }
 
-        if (e.inputType === "deleteContentBackward" && this._removeMentionBefore()) {
+        if (
+            e.inputType === "deleteContentBackward" &&
+            this._removeMentionBefore()
+        ) {
             e.preventDefault();
             return;
         }

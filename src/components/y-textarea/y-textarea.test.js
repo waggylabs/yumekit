@@ -660,6 +660,65 @@ describe("YumeTextarea", () => {
             expect(anchor.style.height).to.not.equal("");
         });
 
+        it("keeps the anchor at the caret as the query grows", async () => {
+            // The popup must not stay pinned to the trigger character: a long
+            // query would leave it sitting well behind what is being typed.
+            const el = await mentionFixture();
+            const anchor = el.shadowRoot.querySelector(".mention-anchor");
+
+            await openMentions(el, "@a", PEOPLE);
+            const short = parseFloat(anchor.style.left);
+
+            await openMentions(el, "@abcdefghij", PEOPLE);
+            const long = parseFloat(anchor.style.left);
+
+            expect(long).to.be.greaterThan(short);
+        });
+
+        it("does not reopen on the text it just inserted", async () => {
+            // With allowSpaces the inserted "@ada " is itself a valid fragment
+            // (one space, within maxChars), so a naive re-scan reopens the popup
+            // on the mention that was just committed.
+            const el = await fixture(
+                html`<y-textarea
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user","allowSpaces":true,"insert":"{trigger}{value} "}]'
+                ></y-textarea>`,
+            );
+            await openMentions(el, "@a", [{ value: "ada" }]);
+            press(el, "Enter");
+            expect(el.value).to.equal("@ada ");
+
+            let reopened = false;
+            el.addEventListener("mention-query", () => {
+                reopened = true;
+            });
+            // Re-evaluate the caret the way selectionchange / keyup would.
+            control(el).dispatchEvent(new Event("keyup", { bubbles: true }));
+            await aTimeout(30);
+
+            expect(reopened).to.be.false;
+            expect(options(el).length).to.equal(0);
+        });
+
+        it("reopens once the query moves past the inserted text", async () => {
+            const el = await fixture(
+                html`<y-textarea
+                    mention-query-delay="0"
+                    triggers='[{"trigger":"@","type":"user","allowSpaces":true,"insert":"{trigger}{value} "}]'
+                ></y-textarea>`,
+            );
+            await openMentions(el, "@a", [{ value: "ada" }]);
+            press(el, "Enter");
+
+            // Typing on turns "@ada " into a different fragment, so suppression
+            // lapses and the trigger is live again.
+            const { query } = await openMentions(el, "@ada b", [
+                { value: "bob" },
+            ]);
+            expect(query).to.equal("ada b");
+        });
+
         it("inserts programmatically, replacing the active fragment", async () => {
             const el = await mentionFixture();
             await openMentions(el, "@a", PEOPLE);

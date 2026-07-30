@@ -229,9 +229,21 @@ function isMentionChip(el, tag) {
 }
 
 /**
- * Reduce a mention chip to the inert shape the editor round-trips.
+ * Reduce a mention chip to the inert shape the editor round-trips: the
+ * allowlisted data attributes, `contenteditable="false"`, and one text node.
+ *
+ * The chip is flattened rather than kept as a subtree. It is a single
+ * non-editable unit, so markup that survives the tag allowlist — a link, an
+ * image, nested formatting — would otherwise be preserved inside something the
+ * user cannot select into, edit, or remove a piece of. Reducing the chip to the
+ * text it renders as also keeps it equal to its `insert` template, which is what
+ * plain-text extraction and `max-length` counting already assume.
+ *
+ * Callers must scrub the subtree first, so text belonging to a dropped element
+ * (a `<script>` body, say) is gone before it can surface as visible chip text.
  *
  * @param {Element} el
+ * @returns {boolean} whether any text survived — an empty chip is not worth keeping
  */
 function scrubMention(el) {
     for (const attr of [...el.attributes]) {
@@ -240,6 +252,13 @@ function scrubMention(el) {
         }
     }
     el.setAttribute("contenteditable", "false");
+
+    const text = el.textContent;
+    el.replaceChildren();
+    if (!text) return false;
+
+    el.appendChild(el.ownerDocument.createTextNode(text));
+    return true;
 }
 
 /**
@@ -269,8 +288,10 @@ function scrub(root, policy, depth) {
         }
 
         if (allowMentions && isMentionChip(child, tag)) {
-            scrubMention(child);
+            // Scrub first so a dropped subtree's text cannot survive the
+            // flattening, then reduce the chip to that text.
             scrub(child, policy, depth + 1);
+            if (!scrubMention(child)) child.remove();
             continue;
         }
 

@@ -600,8 +600,7 @@ export class YumeTextarea extends HTMLElement {
                 return host.textarea;
             },
             defaultRole: null,
-            isInactive: () =>
-                host.disabled || host.hasAttribute("readonly"),
+            isInactive: () => host.disabled || host.hasAttribute("readonly"),
             getContext: () => {
                 const textarea = host.textarea;
                 if (!textarea) return null;
@@ -613,12 +612,13 @@ export class YumeTextarea extends HTMLElement {
                     caret: textarea.selectionStart,
                 };
             },
-            getAnchorRect: (fragment) => {
+
+            getCaretRect: (fragment) => {
                 const textarea = host.textarea;
                 if (!textarea) return null;
                 return caretRectInTextarea(
                     textarea,
-                    fragment ? fragment.start : textarea.selectionStart,
+                    fragment?.end ?? textarea.selectionStart,
                 );
             },
             applyInsertion: (payload) => host._applyMention(payload),

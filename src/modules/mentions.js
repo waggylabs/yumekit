@@ -33,6 +33,12 @@ const OPENING_CHARS = new Set(["(", "[", "{", "<", '"', "'", "«", "‘", "“"]
  */
 const CARET_MARKER = String.fromCharCode(0x200b);
 
+/**
+ * Stands in for "the fragment the last insertion wrote", recorded before that
+ * fragment can be measured and resolved to a real key on the next evaluation.
+ */
+const JUST_INSERTED = Symbol("just-inserted");
+
 /** Textarea styles the mirror must copy for its line breaks to match. */
 const MIRRORED_STYLES = [
     "borderBottomWidth",
@@ -224,8 +230,13 @@ export function detectTriggerFragment(text, caret, triggers) {
 }
 
 /**
- * Resolve a trigger's `insert` template against a candidate, guaranteeing the
- * single trailing space that separates the mention from whatever is typed next.
+ * Resolve a trigger's `insert` template against a candidate.
+ *
+ * The result always ends in whitespace, so the mention reads as a finished word
+ * and the next keystroke starts a new one. A single space is appended only when
+ * the resolved template does not already end in whitespace; whatever trailing
+ * whitespace a template does specify is kept as authored rather than collapsed
+ * to one space.
  *
  * @param {Object} config — normalized trigger config
  * @param {Object} candidate
@@ -247,10 +258,10 @@ export function renderMentionText(config, candidate) {
 }
 
 /**
- * Viewport rect of a character position inside a `<textarea>`. A textarea has
- * no Range API, so the text up to `index` is laid out again in an off-screen
- * mirror that copies every style affecting line breaking, and the marker's
- * offset within the mirror is mapped back onto the real control.
+ * Viewport rect of the caret at a character position inside a `<textarea>`. A
+ * textarea has no Range API, so the text up to `index` is laid out again in an
+ * off-screen mirror that copies every style affecting line breaking, and the
+ * marker's offset within the mirror is mapped back onto the real control.
  *
  * @param {HTMLTextAreaElement} textarea
  * @param {number} index — character offset to measure
@@ -270,12 +281,14 @@ export function caretRectInTextarea(textarea, index) {
     mirror.style.whiteSpace = "pre-wrap";
     mirror.style.overflowWrap = "break-word";
 
+    const value = textarea.value;
+    const at = Math.max(0, Math.min(index, value.length));
     const marker = doc.createElement("span");
     marker.textContent = CARET_MARKER;
     mirror.append(
-        doc.createTextNode(textarea.value.slice(0, index)),
+        doc.createTextNode(value.slice(0, at)),
         marker,
-        doc.createTextNode(textarea.value.slice(index)),
+        doc.createTextNode(value.slice(at)),
     );
 
     (textarea.parentNode ?? doc.body).appendChild(mirror);
@@ -302,7 +315,7 @@ export function caretRectInTextarea(textarea, index) {
  * - `defaultRole` — role restored on close (`"textbox"`, or null for none)
  * - `isInactive()` — true while the host is disabled or readonly
  * - `getContext()` — `{text, caret}` at the caret, or null
- * - `getAnchorRect(fragment)` — viewport rect of the fragment, or null
+ * - `getCaretRect(fragment)` — viewport rect of the caret, or null
  * - `applyInsertion({config, candidate, text, fragment})` — write the insertion
  */
 export class MentionController {
@@ -567,6 +580,15 @@ export class MentionController {
         this.close("insert");
         if (!proceed) return;
 
+        // Armed *before* the write, because the write itself can re-enter:
+        // `execCommand` fires `input` synchronously, so the host's own refresh
+        // runs inside `applyInsertion` and would otherwise query the text that
+        // was just committed. The text can read as a live fragment on its own —
+        // a one-word label under an `allowSpaces` trigger leaves `@ada ` behind,
+        // whose query still holds the one space that trigger permits. Suppress
+        // exactly that fragment; it comes back once the query text moves on.
+        this._dismissed = JUST_INSERTED;
+
         this._adapter.applyInsertion({ config, candidate, text, fragment });
         this._announce(`${candidate.label ?? candidate.value} inserted`);
     }
@@ -599,8 +621,15 @@ export class MentionController {
             return;
         }
 
-        // Escape dismissed exactly this fragment; it reopens only once the
-        // query text moves on.
+        // An insertion records its own result before that result can be
+        // measured; pin it to the real key now that there is one.
+        if (this._dismissed === JUST_INSERTED) {
+            this._dismissed = this._fragmentKey(fragment);
+            return;
+        }
+
+        // Escape, or an insertion, dismissed exactly this fragment; it reopens
+        // only once the query text moves on.
         if (this._dismissed === this._fragmentKey(fragment)) return;
         this._dismissed = null;
 
@@ -746,11 +775,11 @@ export class MentionController {
         event.preventDefault();
     }
 
-    /** Park the invisible anchor on the fragment so the popover tracks the caret. */
+    /** Park the invisible anchor on the caret so the popover tracks it. */
     _position() {
         if (!this._open || !this._anchorEl || !this._anchorHost) return;
 
-        const rect = this._adapter.getAnchorRect(this._fragment);
+        const rect = this._adapter.getCaretRect(this._fragment);
         if (!rect) return;
 
         const base = this._anchorHost.getBoundingClientRect();

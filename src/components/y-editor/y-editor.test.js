@@ -947,6 +947,21 @@ describe("y-editor", () => {
             );
         });
 
+        it("keeps the anchor at the caret as the query grows", async () => {
+            // The popup must not stay pinned to the trigger character: a long
+            // query would leave it sitting well behind what is being typed.
+            const el = await mentionFixture();
+            const anchor = el.shadowRoot.querySelector(".mention-anchor");
+
+            await openMentions(el, "@a", PEOPLE);
+            const short = parseFloat(anchor.style.left);
+
+            await openMentions(el, "@abcdefghij", PEOPLE);
+            const long = parseFloat(anchor.style.left);
+
+            expect(long).to.be.greaterThan(short);
+        });
+
         it("shows the empty state when a query returns nothing", async () => {
             const el = await mentionFixture();
             await openMentions(el, "@zz", []);

@@ -1,5 +1,6 @@
-import { expect } from "@open-wc/testing";
+import { expect, fixture, html } from "@open-wc/testing";
 import {
+    caretRectInTextarea,
     detectTriggerFragment,
     normalizeTriggers,
     renderMentionText,
@@ -126,6 +127,38 @@ describe("mentions", () => {
         });
     });
 
+    describe("caretRectInTextarea", () => {
+        const build = (value) =>
+            fixture(html`
+                <textarea
+                    style="width:220px;height:90px;font:16px/20px monospace;padding:0;border:0"
+                    .value=${value}
+                ></textarea>
+            `);
+
+        it("advances with the character offset along a line", async () => {
+            const textarea = await build("@abcdefgh");
+            const atTrigger = caretRectInTextarea(textarea, 0);
+            const atCaret = caretRectInTextarea(textarea, 9);
+            expect(atCaret.left).to.be.greaterThan(atTrigger.left);
+            expect(atCaret.top).to.be.closeTo(atTrigger.top, 1);
+        });
+
+        it("reports the next line once the text has wrapped", async () => {
+            // 220px / ~9.6px per monospace char wraps well before 60 chars.
+            const textarea = await build("x".repeat(60));
+            const first = caretRectInTextarea(textarea, 0);
+            const last = caretRectInTextarea(textarea, 60);
+            expect(last.top).to.be.greaterThan(first.top);
+        });
+
+        it("clamps an out-of-range offset instead of throwing", async () => {
+            const textarea = await build("hi");
+            expect(() => caretRectInTextarea(textarea, 999)).to.not.throw();
+            expect(() => caretRectInTextarea(textarea, -5)).to.not.throw();
+        });
+    });
+
     describe("renderMentionText", () => {
         it("substitutes trigger, label, and value", () => {
             const [config] = normalizeTriggers([
@@ -140,13 +173,36 @@ describe("mentions", () => {
             expect(renderMentionText(AT[0], { value: "ada" })).to.equal("@ada ");
         });
 
-        it("guarantees a single trailing space", () => {
+        it("appends a space when the template does not end in whitespace", () => {
+            const [config] = normalizeTriggers([
+                { trigger: "@", insert: "{trigger}{label}" },
+            ]);
+            expect(renderMentionText(config, { value: "ada" })).to.equal(
+                "@ada ",
+            );
+        });
+
+        it("keeps the template's own trailing whitespace as authored", () => {
             const [config] = normalizeTriggers([
                 { trigger: "@", insert: "{label}  " },
             ]);
             expect(renderMentionText(config, { value: "ada" })).to.equal(
                 "ada  ",
             );
+        });
+
+        it("accepts a trailing newline or tab as the separator", () => {
+            const [newline] = normalizeTriggers([
+                { trigger: "@", insert: "{label}\n" },
+            ]);
+            expect(renderMentionText(newline, { value: "ada" })).to.equal(
+                "ada\n",
+            );
+
+            const [tab] = normalizeTriggers([
+                { trigger: "@", insert: "{label}\t" },
+            ]);
+            expect(renderMentionText(tab, { value: "ada" })).to.equal("ada\t");
         });
     });
 });
