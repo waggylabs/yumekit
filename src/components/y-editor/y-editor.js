@@ -14,6 +14,7 @@ import {
     sanitizeHtmlToFragment,
     tagsForBlocks,
 } from "../../modules/html-sanitizer.js";
+import { MENTION_STYLES, MentionController } from "../../modules/mentions.js";
 
 const DEFAULT_ALLOWED_BLOCKS = [
     "p",
@@ -180,6 +181,8 @@ export class YumeEditor extends HTMLElement {
             "image-upload",
             "invalid",
             "max-length",
+            "mention-loading",
+            "mention-query-delay",
             "mode",
             "name",
             "placeholder",
@@ -189,6 +192,7 @@ export class YumeEditor extends HTMLElement {
             "show-count",
             "size",
             "toolbar",
+            "triggers",
             "value",
         ];
     }
@@ -215,6 +219,7 @@ export class YumeEditor extends HTMLElement {
         this._uploadSeq = 0;
 
         this._onSelectionChange = this._onSelectionChange.bind(this);
+        this._mentions = new MentionController(this, this._mentionAdapter());
 
         this._sheet = new CSSStyleSheet();
         this.shadowRoot.adoptedStyleSheets = [this._sheet];
@@ -251,6 +256,7 @@ export class YumeEditor extends HTMLElement {
             this._onSelectionChange,
         );
         clearTimeout(this._historyTimer);
+        this._mentions.close("blur");
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -279,6 +285,18 @@ export class YumeEditor extends HTMLElement {
             case "readonly":
                 this._applyEditableState();
                 this._syncAria();
+                if (this.disabled || this.readonly) {
+                    this._mentions.close("blur");
+                }
+                break;
+            case "triggers":
+                this._mentions.triggers = newValue;
+                break;
+            case "mention-loading":
+                this._mentions.loading = newValue !== null;
+                break;
+            case "mention-query-delay":
+                this._mentions.queryDelay = newValue;
                 break;
             case "placeholder":
                 this._syncPlaceholder();
@@ -372,6 +390,36 @@ export class YumeEditor extends HTMLElement {
     set maxLength(val) {
         if (val == null) this.removeAttribute("max-length");
         else this.setAttribute("max-length", String(val));
+    }
+
+    /**
+     * @type {Array<Object>} Candidates for the open mention popup. Assigning
+     * opens or refreshes it; prefer `setMentionCandidates` so a stale response
+     * cannot repopulate a popup the caret has already moved past.
+     */
+    get mentionCandidates() {
+        return this._mentions.candidates;
+    }
+    set mentionCandidates(val) {
+        this._mentions.candidates = val;
+    }
+
+    /** @type {boolean} Whether the mention popup shows its busy state. */
+    get mentionLoading() {
+        return this.hasAttribute("mention-loading");
+    }
+    set mentionLoading(val) {
+        if (val) this.setAttribute("mention-loading", "");
+        else this.removeAttribute("mention-loading");
+    }
+
+    /** @type {number} Debounce in ms before `mention-query` fires (default 150). */
+    get mentionQueryDelay() {
+        return this._mentions.queryDelay;
+    }
+    set mentionQueryDelay(val) {
+        if (val == null) this.removeAttribute("mention-query-delay");
+        else this.setAttribute("mention-query-delay", String(val));
     }
 
     /**
@@ -484,6 +532,18 @@ export class YumeEditor extends HTMLElement {
         this.setAttribute("toolbar", String(val ?? ""));
     }
 
+    /**
+     * @type {Array<Object>} Mention trigger definitions —
+     * `{trigger, type, minChars, maxChars, allowSpaces, insert, atomic}`. Rich
+     * data: not reflected to the attribute. An empty list disables the feature.
+     */
+    get triggers() {
+        return this._mentions.triggers;
+    }
+    set triggers(val) {
+        this._mentions.triggers = val;
+    }
+
     /** @type {string} Current content as sanitized HTML. */
     get value() {
         return this._serialize();
@@ -507,10 +567,25 @@ export class YumeEditor extends HTMLElement {
         return this._internals.checkValidity();
     }
 
+    /** Dismiss the mention popup, leaving the typed text untouched. */
+    closeMentions() {
+        this._mentions.close("escape");
+    }
+
     /** Move focus into the editing surface. */
     focus(options) {
         if (this.disabled) return;
         this._content.focus(options);
+    }
+
+    /**
+     * Insert a mention at the caret, replacing the active trigger fragment when
+     * there is one.
+     * @param {{value: string, label?: string}} candidate
+     * @param {string} [trigger] — trigger literal or type; defaults to the active one
+     */
+    insertMention(candidate, trigger) {
+        this._mentions.insert(candidate, trigger);
     }
 
     /** Re-apply the most recently undone change. */
@@ -527,6 +602,16 @@ export class YumeEditor extends HTMLElement {
      */
     reportValidity() {
         return this._internals.reportValidity();
+    }
+
+    /**
+     * Supply results for a `mention-query`. A superseded or closed query id is
+     * ignored.
+     * @param {number} id — the `id` carried by the `mention-query` event
+     * @param {Array<Object>} candidates
+     */
+    setMentionCandidates(id, candidates) {
+        this._mentions.setCandidates(id, candidates);
     }
 
     /** Revert the most recent change. */
@@ -645,6 +730,67 @@ export class YumeEditor extends HTMLElement {
         this._commit();
     }
 
+    /**
+     * Write a mention into the document. The pending typing snapshot is flushed
+     * first so the fragment the user typed becomes its own undo step and the
+     * insertion becomes the next one — `Ctrl+Z` lands on `@joh`, not on `@jo`.
+     */
+    _applyMention({ config, candidate, text, fragment }) {
+        const range = fragment
+            ? this._mentionRange(fragment)
+            : this._currentRange();
+        if (!range) return;
+
+        this._flushHistory();
+        range.deleteContents();
+
+        const body = text.replace(/\s+$/, "");
+        const tail = text.slice(body.length) || " ";
+        const nodes = config.atomic
+            ? [
+                  _el(
+                      "span",
+                      {
+                          part: "mention-chip",
+                          contenteditable: "false",
+                          "data-mention-type": config.type,
+                          "data-mention-value": String(candidate.value ?? ""),
+                          "data-mention-label": String(
+                              candidate.label ?? candidate.value ?? "",
+                          ),
+                      },
+                      [body],
+                  ),
+                  document.createTextNode(tail),
+              ]
+            : [document.createTextNode(text)];
+
+        const fragmentNode = document.createDocumentFragment();
+        for (const node of nodes) fragmentNode.appendChild(node);
+        const last = nodes[nodes.length - 1];
+        range.insertNode(fragmentNode);
+
+        // Deleting the fragment and inserting at a text-node boundary leaves
+        // empty text stubs on either side. They are invisible but the browser
+        // parks the caret in them, which would put a Backspace out of reach of
+        // the chip it is meant to delete.
+        for (const sibling of [...last.parentNode.childNodes]) {
+            if (
+                sibling.nodeType === Node.TEXT_NODE &&
+                sibling.textContent === ""
+            ) {
+                sibling.remove();
+            }
+        }
+
+        const after = document.createRange();
+        after.setStartAfter(last);
+        after.collapse(true);
+        this._selectRange(after);
+
+        this._afterMutation();
+    }
+
     /** Regenerate the shadow stylesheet. Cheap enough to redo on size / rows. */
     _applyStyles() {
         this._sheet.replaceSync(this._css());
@@ -659,6 +805,12 @@ export class YumeEditor extends HTMLElement {
         this._content.addEventListener("paste", (e) => this._onPaste(e));
         this._content.addEventListener("blur", () => this._onBlur());
         this._content.addEventListener("click", (e) => this._onContentClick(e));
+        this._content.addEventListener("compositionstart", () =>
+            this._mentions.handleCompositionStart(),
+        );
+        this._content.addEventListener("compositionend", () =>
+            this._mentions.handleCompositionEnd(),
+        );
         this._content.addEventListener("dragover", (e) => {
             if (this.disabled || this.readonly) return;
             e.preventDefault();
@@ -887,6 +1039,7 @@ export class YumeEditor extends HTMLElement {
         manageLabelVisibility(this._labelWrapper);
         this._buildToolbar();
         this._syncPlaceholder();
+        this._mentions.mount(wrapper);
     }
 
     _closeLinkPopover() {
@@ -960,6 +1113,7 @@ export class YumeEditor extends HTMLElement {
             }
 
             .wrapper {
+                position: relative;
                 display: flex;
                 flex-direction: column;
                 gap: var(--spacing-2x-small, 4px);
@@ -1147,6 +1301,17 @@ export class YumeEditor extends HTMLElement {
                 justify-content: flex-end;
                 gap: var(--spacing-x-small, 4px);
             }
+
+            .content [data-mention-value] {
+                background: var(--component-editor-mention-chip-background);
+                color: var(--component-editor-mention-chip-color);
+                border-radius: var(--component-inputs-border-radius-inner, 2px);
+                padding: 0.05em 0.25em;
+                white-space: nowrap;
+                user-select: all;
+            }
+
+            ${MENTION_STYLES}
         `;
     }
 
@@ -1413,6 +1578,105 @@ export class YumeEditor extends HTMLElement {
             : node.childNodes.length;
     }
 
+    /** Host hooks the shared mention controller drives the editor through. */
+    _mentionAdapter() {
+        const host = this;
+        return {
+            get surface() {
+                return host._content;
+            },
+            defaultRole: "textbox",
+            isInactive: () => this.disabled || this.readonly,
+            getContext: () => this._mentionContext(),
+            getCaretRect: (fragment) => this._mentionCaretRect(fragment),
+            applyInsertion: (payload) => this._applyMention(payload),
+        };
+    }
+
+    /** The top-level block (or list item) the caret sits in. */
+    _mentionBlock(node) {
+        let el = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentNode;
+        while (el && el !== this._content) {
+            if (el.tagName === "LI") return el;
+            if (el.parentNode === this._content) return el;
+            el = el.parentNode;
+        }
+        return this._content.firstElementChild ?? this._content;
+    }
+
+    _mentionCaretRect(fragment) {
+        const end = fragment?.end ?? null;
+        const range =
+            end !== null && end > 0
+                ? this._mentionRange({ start: end - 1, end })
+                : this._currentRange();
+        if (!range) return null;
+
+        // A wrapped range reports one rect per line; the caret is on the last.
+        const rects = range.getClientRects();
+        const rect = rects[rects.length - 1] ?? range.getBoundingClientRect();
+        if (!rect.height) return this._content.getBoundingClientRect();
+
+        return new DOMRect(rect.right, rect.top, 1, rect.height);
+    }
+
+    /** The atomic mention chip containing `node`, if any. */
+    _mentionChipAt(node) {
+        let el = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentNode;
+        while (el && el !== this._content) {
+            if (el.hasAttribute?.("data-mention-value")) return el;
+            el = el.parentNode;
+        }
+        return null;
+    }
+
+    /**
+     * Text and caret offset for trigger detection. Scoped to the caret's own
+     * block so a trigger at the start of a paragraph counts as a word boundary,
+     * and refused inside an atomic mention so a chip's own text cannot reopen
+     * the popup.
+     */
+    _mentionContext() {
+        const range = this._currentRange();
+        if (!range || !range.collapsed) return null;
+
+        const block = this._mentionBlock(range.startContainer);
+        if (!block) return null;
+        if (this._mentionChipAt(range.startContainer)) return null;
+
+        this._mentionBlockEl = block;
+        return {
+            text: block.textContent,
+            caret: this._textOffsetIn(
+                block,
+                range.startContainer,
+                range.startOffset,
+            ),
+        };
+    }
+
+    /**
+     * DOM range covering a `{start, end}` pair of character offsets. The offsets
+     * are relative to the block `_mentionContext` last measured, which is the
+     * block the fragment was detected in — the controller always re-reads the
+     * context before asking for a rect or an insertion.
+     */
+    _mentionRange({ start: from, end: to }) {
+        const block = this._mentionBlockEl;
+        if (!block || !block.isConnected) return null;
+
+        const start = this._positionAt(block, from);
+        const end = this._positionAt(block, to);
+        const range = document.createRange();
+        try {
+            range.setStart(start.node, start.offset);
+            range.setEnd(end.node, end.offset);
+        } catch {
+            return null;
+        }
+        return range;
+    }
+
     _nodeFromPath(entry) {
         let node = this._content;
         for (const index of entry.path) {
@@ -1488,10 +1752,45 @@ export class YumeEditor extends HTMLElement {
 
         if (!content.firstChild) content.appendChild(this._emptyBlock());
         for (const block of content.children) this._ensureFiller(block);
+        this._normalizeMentions();
+    }
+
+    /**
+     * Re-apply the inertness an atomic mention needs. `part` and
+     * `contenteditable` are stripped on serialization, so a chip arriving from
+     * `value` or the default slot gets them back here.
+     *
+     * Chips are also flattened to text, matching what the sanitizer does on the
+     * way out. A chip's inner text node is still a text node in the document, so
+     * an inline format applied across a selection that spans one would wrap it —
+     * leaving a chip that looks half-formatted until the next serialize.
+     */
+    _normalizeMentions() {
+        for (const chip of this._content.querySelectorAll(
+            "span[data-mention-value]",
+        )) {
+            chip.setAttribute("contenteditable", "false");
+            chip.setAttribute("part", "mention-chip");
+
+            if (chip.firstElementChild) {
+                const text = chip.textContent;
+                chip.replaceChildren();
+                if (text) chip.appendChild(document.createTextNode(text));
+            }
+            if (!chip.firstChild) chip.remove();
+        }
     }
 
     _onBeforeInput(e) {
         if (this.disabled || this.readonly) {
+            e.preventDefault();
+            return;
+        }
+
+        if (
+            e.inputType === "deleteContentBackward" &&
+            this._removeMentionBefore()
+        ) {
             e.preventDefault();
             return;
         }
@@ -1507,6 +1806,7 @@ export class YumeEditor extends HTMLElement {
     }
 
     _onBlur() {
+        this._mentions.close("blur");
         this._commit();
     }
 
@@ -1548,9 +1848,12 @@ export class YumeEditor extends HTMLElement {
         this._emitInput();
         this._recordHistory(false);
         this._refreshSelection();
+        this._mentions.refresh();
     }
 
     _onKeyDown(e) {
+        if (this._mentions.handleKeyDown(e)) return;
+
         if (e.key === "Escape" && this._linkPopover.open) {
             e.preventDefault();
             this._closeLinkPopover();
@@ -1608,6 +1911,7 @@ export class YumeEditor extends HTMLElement {
         if (html) {
             const fragment = sanitizeHtmlToFragment(html, {
                 allowedTags: this._allowedTags(),
+                allowMentions: true,
             });
             this._insertFragment(fragment);
         } else {
@@ -1626,6 +1930,7 @@ export class YumeEditor extends HTMLElement {
             return;
         }
         this._refreshSelection();
+        this._mentions.refresh();
     }
 
     _onToolbarKeyDown(e) {
@@ -1694,6 +1999,23 @@ export class YumeEditor extends HTMLElement {
         return (node?.textContent ?? "").split(ZWSP).join("");
     }
 
+    /** Inverse of `_textOffsetIn`: a character offset back to a DOM position. */
+    _positionAt(root, offset) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        let seen = 0;
+
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const length = node.textContent.length;
+            if (seen + length >= offset) {
+                return { node, offset: offset - seen };
+            }
+            seen += length;
+        }
+
+        return { node: root, offset: root.childNodes.length };
+    }
+
     /**
      * Record a snapshot. Commands record immediately; typing coalesces into one
      * step per pause so undo does not walk back one character at a time.
@@ -1748,6 +2070,35 @@ export class YumeEditor extends HTMLElement {
         this._closeLinkPopover();
         this._afterMutation();
         this._commit();
+    }
+
+    /**
+     * Delete an atomic mention sitting immediately before a collapsed caret as
+     * one unit. Browsers mostly do this for `contenteditable="false"` already,
+     * but not consistently across engines.
+     * @returns {boolean} whether a chip was removed.
+     */
+    _removeMentionBefore() {
+        const range = this._currentRange();
+        if (!range || !range.collapsed) return false;
+
+        const { startContainer: node, startOffset: offset } = range;
+        if (node.nodeType === Node.TEXT_NODE && offset > 0) return false;
+
+        const previous =
+            node.nodeType === Node.TEXT_NODE
+                ? node.previousSibling
+                : (node.childNodes[offset - 1] ?? null);
+
+        if (!previous?.hasAttribute?.("data-mention-value")) return false;
+
+        const after = document.createRange();
+        after.setStartBefore(previous);
+        after.collapse(true);
+        previous.remove();
+        this._selectRange(after);
+        this._afterMutation();
+        return true;
     }
 
     /** Rewrite each block to `tag`, lifting list items out of their list. */
@@ -1908,6 +2259,7 @@ export class YumeEditor extends HTMLElement {
 
         return sanitizeHtml(clone.innerHTML, {
             allowedTags: this._allowedTags(),
+            allowMentions: true,
         });
     }
 
@@ -1940,6 +2292,7 @@ export class YumeEditor extends HTMLElement {
     _setHtml(html) {
         const fragment = sanitizeHtmlToFragment(html ?? "", {
             allowedTags: this._allowedTags(),
+            allowMentions: true,
         });
         this._content.replaceChildren(fragment);
         this._normalizeDocument();
@@ -2136,6 +2489,18 @@ export class YumeEditor extends HTMLElement {
             nodes.push(node);
         }
         return nodes;
+    }
+
+    /** Character offset of a DOM position within `root`, matching `textContent`. */
+    _textOffsetIn(root, node, offset) {
+        const range = document.createRange();
+        range.selectNodeContents(root);
+        try {
+            range.setEnd(node, offset);
+        } catch {
+            return 0;
+        }
+        return range.toString().length;
     }
 
     _toggleBlock(type) {

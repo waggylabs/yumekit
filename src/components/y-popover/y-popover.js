@@ -6,7 +6,11 @@ import {
     resolveThemeMountPoint,
     upgradeProperties,
 } from "../../modules/helpers.js";
-import { computePosition, pointerOffsetFor } from "../../modules/floating.js";
+import {
+    computePosition,
+    containingBlockOffset,
+    pointerOffsetFor,
+} from "../../modules/floating.js";
 
 const VALID_POSITIONS = new Set([
     "auto",
@@ -741,37 +745,15 @@ export class YumePopover extends HTMLElement {
         }
     }
 
+    /**
+     * Viewport offset of the containing block the surface's `position: fixed`
+     * actually resolves against — subtracted from computed viewport coords.
+     * The walk crosses shadow boundaries, so a popover living inside another
+     * component's shadow root (the editor's link and mention popups) still
+     * finds a transformed wrapper out in the light DOM.
+     */
     _containingBlockOffset() {
-        // Walk the flattened DOM ancestry to find the nearest element that
-        // establishes a containing block for `position: fixed`. Returns its
-        // viewport-coord top-left so the caller can subtract it from computed
-        // viewport coords.
-        let el = this._portalContainer
-            ? this._portalContainer
-            : this.parentElement;
-        while (el) {
-            const cs = getComputedStyle(el);
-            const willChange = cs.willChange || "";
-            const contain = cs.contain || "";
-            if (
-                cs.transform !== "none" ||
-                cs.perspective !== "none" ||
-                cs.filter !== "none" ||
-                cs.backdropFilter !== "none" ||
-                willChange.includes("transform") ||
-                willChange.includes("filter") ||
-                willChange.includes("perspective") ||
-                contain.includes("paint") ||
-                contain.includes("layout") ||
-                contain.includes("strict") ||
-                contain.includes("content")
-            ) {
-                const r = el.getBoundingClientRect();
-                return { x: r.left, y: r.top };
-            }
-            el = el.parentElement;
-        }
-        return { x: 0, y: 0 };
+        return containingBlockOffset(this._portalContainer ?? this);
     }
 
     _cssNumber(varName, fallback) {

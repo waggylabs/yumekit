@@ -278,10 +278,15 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 | `invalid`        | boolean — applies error state                    |
 | `autocomplete`   | forwarded to the inner `<textarea>`              |
 | `error-text`     | validation message below the field; applies the error state and describes the textarea |
+| `triggers`       | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?}`; empty (default) disables mentions |
+| `mention-loading` | boolean — shows the mention popup's busy state  |
+| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`) |
 
 Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
-Events: `change`, `input`
+Events: `change`, `input`, plus the mention events documented under `y-editor`.
+
+**Mentions:** identical API to `y-editor` — same attributes, slots (`mention-empty`, `mention-loading`), methods (`setMentionCandidates`, `closeMentions`, `insertMention`), and events. The one difference is that `atomic` is ignored: a textarea value is an unstructured string, so a mention is always inserted as plain text.
 
 ```html
 <y-textarea
@@ -321,24 +326,47 @@ Form-associated. Rich text (WYSIWYG) editor built on `contenteditable`; its valu
 | `invalid`        | boolean — applies error state                                                                        |
 | `allowed-blocks` | space-separated block types (default: `p h1 h2 h3 blockquote ul ol code`); anything else becomes `p` |
 | `image-upload`   | boolean — routes image insertion through the `image-upload` event instead of inlining the source     |
+| `triggers`       | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?, atomic?}`; empty (default) disables mentions |
+| `mention-loading` | boolean — shows the mention popup's busy state                                                     |
+| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`)                                   |
 
 Tool ids for `toolbar`: `bold`, `italic`, `underline`, `strike`, `inline-code`, `heading`, `blockquote`, `code`, `ordered-list`, `unordered-list`, `link`, `image`, `undo`, `redo`. Default: `bold italic underline strike | heading blockquote code | ordered-list unordered-list | link image | undo redo`. Block tools are dropped automatically when `allowed-blocks` does not permit what they produce, so `allowed-blocks` is the single source of truth.
 
-Properties (not attributes): `selection` (readonly) — `{blockType, bold, italic, underline, strike, code, link}` at the caret; `textContent` (readonly) — plain text of the document.
+Properties (not attributes): `selection` (readonly) — `{blockType, bold, italic, underline, strike, code, link}` at the caret; `textContent` (readonly) — plain text of the document; `mentionCandidates` — candidate list for the open mention popup; `triggers` — the trigger array (rich data, not reflected to the attribute).
 
-Slots: default (initial content — parsed, sanitized, adopted as the starting value when no `value` attribute is present), `label`, `toolbar-start`, `toolbar-end`, `footer` (replaces the character counter).
+Slots: default (initial content — parsed, sanitized, adopted as the starting value when no `value` attribute is present), `label`, `toolbar-start`, `toolbar-end`, `footer` (replaces the character counter), `mention-empty` (shown when a query returns nothing; default "No matches"), `mention-loading` (shown while `mention-loading` is set).
 
-Events: `input` `{value}`, `change` `{value}` (on blur when changed), `selection-change` `{selection}`, `image-upload` `{file, insert(url), reject(reason)}`, `link-click` `{href, text}` (cancelable — canceling suppresses the link popover).
+Events: `input` `{value}`, `change` `{value}` (on blur when changed), `selection-change` `{selection}`, `image-upload` `{file, insert(url), reject(reason)}`, `link-click` `{href, text}` (cancelable — canceling suppresses the link popover), `mention-query` `{trigger, type, query, id}`, `mention-insert` `{trigger, type, candidate, text, range}` (cancelable), `mention-close` `{trigger, type, reason}` — reason is `escape` | `blur` | `no-match` | `insert` | `caret-moved`.
 
-Methods: `undo()`, `redo()`, `focus()`, `checkValidity()`, `reportValidity()`.
+Methods: `undo()`, `redo()`, `focus()`, `checkValidity()`, `reportValidity()`, `setMentionCandidates(id, candidates)`, `closeMentions()`, `insertMention(candidate, trigger?)`.
+
+**Mentions:** caret-triggered autocomplete for `@name` mentions, `#topic` tags, or any literal prefix. The component never fetches. It detects the trigger at the caret, debounces by `mention-query-delay`, emits `mention-query`, and renders whatever the app hands back through `setMentionCandidates(id, list)`. A candidate is `{value, label?, description?, icon?, avatar?, disabled?}` — `avatar` (an image URL) takes precedence over `icon` (a `y-icon` name).
+
+- A trigger activates only at a word boundary (start of text, start of a block, or right after whitespace or an opening bracket), so `a@b` inside an email address stays inert. The fragment ends at whitespace unless `allowSpaces` lets it span one space; passing `maxChars` (default 32) abandons it.
+- The default insertion replaces the fragment — trigger character included — with the `insert` template (`"{trigger}{label} "`, substituting `{trigger}`, `{value}`, `{label}`), as one undo step. The result always ends in whitespace, so the mention reads as a finished word: a single space is appended only when the template does not already end in whitespace, and whitespace the template specifies is kept as written.
+- An insertion never reopens the popup on the text it just wrote, even when that text would match the trigger again — `@ada ` under an `allowSpaces` trigger still holds the one space that trigger permits. The trigger goes live again as soon as the query text moves on. `Escape` suppresses the current fragment the same way.
+- `atomic: true` (y-editor only) inserts one `contenteditable="false"` inline element carrying `data-mention-type` / `data-mention-value`. It deletes with a single Backspace, survives the sanitize/serialize round trip in `value`, and counts toward `max-length` as its rendered template.
+- Each query carries a monotonic `id`; candidates supplied for a superseded or closed query are discarded, so an out-of-order response never flashes stale results.
+- The popup is anchored to the caret, not to the trigger character, so it stays beside what is being typed however long the query grows and follows the text down when the line wraps. It flips above the caret when it would overflow the viewport.
+- Accessibility: while open, the editing surface takes `role="combobox"` plus `aria-expanded` / `aria-controls` / `aria-autocomplete="list"` / `aria-haspopup="listbox"`, and `aria-activedescendant` tracks the highlight — focus and the caret never leave the text, which is what makes typing-through work. Down/Up move the highlight (wrapping), Enter/Tab insert, Escape closes and leaves the typed text including the trigger. Every added attribute is removed on close. No trigger fires while `disabled` or `readonly`, and detection is suspended between `compositionstart` and `compositionend`.
+
+```html
+<y-editor
+    triggers='[{"trigger":"@","type":"user"},{"trigger":"#","type":"topic"}]'
+    mention-query-delay="200"
+>
+    <span slot="label">Comment</span>
+    <span slot="mention-empty">Nobody by that name</span>
+</y-editor>
+```
 
 Shortcuts: Ctrl/Cmd+B bold, +I italic, +U underline, +K link, +Shift+X strike, +E inline code, +Alt+1..3 headings, +Shift+7/8 ordered/unordered list, +Shift+. blockquote, +Z / +Shift+Z undo/redo, +Shift+V paste as plain text. `Tab` moves focus out of the surface (it indents inside a list), so the editor is never a keyboard trap.
 
 **Security:** every path that introduces HTML (`value`, the default slot, paste) runs through `src/modules/html-sanitizer.js`. Only the tags implied by `allowed-blocks` plus inline formatting, `<a>` and `<img>` survive; `on*`, `<script>`, `<style>`, `<iframe>` are stripped; only `http`, `https`, `mailto` and `data:` raster images are permitted on `href` / `src`.
 
-**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`
+**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`, `--component-editor-mention-popup-max-height`, `--component-editor-mention-popup-min-width`, `--component-editor-mention-chip-background`, `--component-editor-mention-chip-color` (the four mention properties are also read by `y-textarea`'s popup)
 
-**CSS Parts:** `wrapper`, `label`, `toolbar`, `toolbar-group`, `toolbar-button`, `editor`, `content`, `footer`, `counter`, `link-popover`
+**CSS Parts:** `wrapper`, `label`, `toolbar`, `toolbar-group`, `toolbar-button`, `editor`, `content`, `footer`, `counter`, `link-popover`, `mention-popup`, `mention-option`, `mention-option-avatar`, `mention-option-label`, `mention-option-description`, `mention-empty`, `mention-loading`, `mention-chip`
 
 ```html
 <y-editor

@@ -52,6 +52,18 @@ const ATTR_POLICY = {
     img: new Set(["src", "alt", "title", "width", "height"]),
 };
 
+/**
+ * Attributes kept on an atomic mention chip. The values are plain text that
+ * only ever reaches `textContent` and `dataset`, never a URL or CSS context, so
+ * the risk is bounded by the allowlist itself. `contenteditable` is normalized
+ * to `"false"` rather than trusted — an inert chip is the only shape allowed.
+ */
+const MENTION_ATTRS = new Set([
+    "data-mention-label",
+    "data-mention-type",
+    "data-mention-value",
+]);
+
 /** Inline formatting, links, and images — permitted regardless of block set. */
 export const INLINE_TAGS = ["strong", "em", "u", "s", "code", "a", "img", "br"];
 
@@ -204,14 +216,62 @@ function scrubAttributes(el, tag) {
 }
 
 /**
+ * Whether an element is an atomic mention chip: a `<span>` carrying the value
+ * that identifies what was mentioned. A `<span>` without one is an ordinary
+ * unallowed tag and gets unwrapped as usual.
+ *
+ * @param {Element} el
+ * @param {string} tag — lowercased tag name
+ * @returns {boolean}
+ */
+function isMentionChip(el, tag) {
+    return tag === "span" && el.hasAttribute("data-mention-value");
+}
+
+/**
+ * Reduce a mention chip to the inert shape the editor round-trips: the
+ * allowlisted data attributes, `contenteditable="false"`, and one text node.
+ *
+ * The chip is flattened rather than kept as a subtree. It is a single
+ * non-editable unit, so markup that survives the tag allowlist — a link, an
+ * image, nested formatting — would otherwise be preserved inside something the
+ * user cannot select into, edit, or remove a piece of. Reducing the chip to the
+ * text it renders as also keeps it equal to its `insert` template, which is what
+ * plain-text extraction and `max-length` counting already assume.
+ *
+ * Callers must scrub the subtree first, so text belonging to a dropped element
+ * (a `<script>` body, say) is gone before it can surface as visible chip text.
+ *
+ * @param {Element} el
+ * @returns {boolean} whether any text survived — an empty chip is not worth keeping
+ */
+function scrubMention(el) {
+    for (const attr of [...el.attributes]) {
+        if (!MENTION_ATTRS.has(attr.name.toLowerCase())) {
+            el.removeAttribute(attr.name);
+        }
+    }
+    el.setAttribute("contenteditable", "false");
+
+    const text = el.textContent;
+    el.replaceChildren();
+    if (!text) return false;
+
+    el.appendChild(el.ownerDocument.createTextNode(text));
+    return true;
+}
+
+/**
  * Recursively enforce the tag and attribute allowlists over a parsed subtree,
  * mutating it in place.
  *
  * @param {Node} root
- * @param {Set<string>} allowed — lowercased allowed tag names
+ * @param {{allowed: Set<string>, allowMentions: boolean}} policy
  * @param {number} depth
  */
-function scrub(root, allowed, depth) {
+function scrub(root, policy, depth) {
+    const { allowed, allowMentions } = policy;
+
     for (const child of [...root.childNodes]) {
         if (child.nodeType === Node.TEXT_NODE) continue;
 
@@ -227,8 +287,16 @@ function scrub(root, allowed, depth) {
             continue;
         }
 
+        if (allowMentions && isMentionChip(child, tag)) {
+            // Scrub first so a dropped subtree's text cannot survive the
+            // flattening, then reduce the chip to that text.
+            scrub(child, policy, depth + 1);
+            if (!scrubMention(child)) child.remove();
+            continue;
+        }
+
         if (!allowed.has(tag)) {
-            scrub(child, allowed, depth + 1);
+            scrub(child, policy, depth + 1);
             unwrap(child);
             continue;
         }
@@ -238,7 +306,7 @@ function scrub(root, allowed, depth) {
         // A link with no surviving href is just text; an image with no
         // surviving src has nothing to show.
         if (tag === "a" && !child.hasAttribute("href")) {
-            scrub(child, allowed, depth + 1);
+            scrub(child, policy, depth + 1);
             unwrap(child);
             continue;
         }
@@ -247,7 +315,7 @@ function scrub(root, allowed, depth) {
             continue;
         }
 
-        scrub(child, allowed, depth + 1);
+        scrub(child, policy, depth + 1);
     }
 }
 
@@ -260,19 +328,24 @@ function scrub(root, allowed, depth) {
  * round trip mXSS payloads are built to exploit.
  *
  * @param {string} raw — untrusted HTML markup
- * @param {{allowedTags?: string[]}} [options]
+ * @param {{allowedTags?: string[], allowMentions?: boolean}} [options] —
+ *   `allowMentions` keeps `<span data-mention-value>` chips intact so an atomic
+ *   mention survives the editor's serialize / parse round trip.
  * @returns {DocumentFragment}
  */
-export function sanitizeHtmlToFragment(raw, { allowedTags } = {}) {
+export function sanitizeHtmlToFragment(raw, { allowedTags, allowMentions } = {}) {
     const fragment = document.createDocumentFragment();
     if (!raw || typeof raw !== "string") return fragment;
 
-    const allowed = new Set(
-        (allowedTags ?? DEFAULT_ALLOWED_TAGS).map((t) => t.toLowerCase()),
-    );
+    const policy = {
+        allowed: new Set(
+            (allowedTags ?? DEFAULT_ALLOWED_TAGS).map((t) => t.toLowerCase()),
+        ),
+        allowMentions: allowMentions === true,
+    };
 
     const doc = new DOMParser().parseFromString(raw, "text/html");
-    scrub(doc.body, allowed, 0);
+    scrub(doc.body, policy, 0);
 
     for (const node of [...doc.body.childNodes]) {
         fragment.appendChild(document.importNode(node, true));
@@ -285,7 +358,7 @@ export function sanitizeHtmlToFragment(raw, { allowedTags } = {}) {
  * Sanitize an HTML string and return sanitized markup.
  *
  * @param {string} raw — untrusted HTML markup
- * @param {{allowedTags?: string[]}} [options]
+ * @param {{allowedTags?: string[], allowMentions?: boolean}} [options]
  * @returns {string} — sanitized markup
  */
 export function sanitizeHtml(raw, options) {

@@ -28,6 +28,18 @@
                     "$type": "spacing",
                     "$value": "{spacing.x-small}"
                 }
+            },
+            "mention": {
+                "popup": {
+                    "max-height": {
+                        "$type": "sizing",
+                        "$value": "16rem"
+                    },
+                    "min-width": {
+                        "$type": "sizing",
+                        "$value": "14rem"
+                    }
+                }
             }
         },
         "animate": {

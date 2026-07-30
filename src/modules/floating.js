@@ -269,6 +269,75 @@ function visibleArea(placement, size, vw, vh) {
     return Math.max(0, right - left) * Math.max(0, bottom - top);
 }
 
+/**
+ * Viewport offset of the nearest ancestor that establishes a containing block
+ * for `position: fixed`, so a caller can subtract it from computed viewport
+ * coordinates before writing them to `top` / `left`.
+ *
+ * Per the CSS Transforms spec, `transform`, `perspective`, `filter`,
+ * `backdrop-filter`, `will-change` on any of those, and the paint/layout
+ * `contain` values all make an element the containing block for its fixed
+ * descendants — at which point `top: 0` means the ancestor's corner, not the
+ * viewport's. Storybook's docs preview wraps every story in such a div (with an
+ * *identity* transform, which still counts), so a floating surface anchored
+ * there lands offset by the wrapper's position unless this is compensated for.
+ *
+ * The walk crosses shadow boundaries via `getRootNode().host`. `parentElement`
+ * alone returns null at a shadow root, so a component floating from inside its
+ * own shadow tree would never see the transformed ancestor in the light DOM and
+ * would silently mis-place the surface.
+ *
+ * @param {Element} el — the element whose ancestry to search (exclusive)
+ * @returns {{x: number, y: number}} — viewport top-left, or (0, 0) if none
+ */
+export function containingBlockOffset(el) {
+    let node = flatParent(el);
+
+    while (node) {
+        if (node.nodeType === Node.ELEMENT_NODE && establishesContainingBlock(node)) {
+            const rect = node.getBoundingClientRect();
+            return { x: rect.left, y: rect.top };
+        }
+        node = flatParent(node);
+    }
+
+    return { x: 0, y: 0 };
+}
+
+/** Next node up the flattened tree, stepping out of shadow roots at their host. */
+function flatParent(node) {
+    if (!node) return null;
+    const parent = node.parentNode;
+    if (!parent) {
+        // A shadow root reached as a node rather than through parentNode.
+        const root = node.getRootNode?.();
+        return root instanceof ShadowRoot ? root.host : null;
+    }
+    if (parent instanceof ShadowRoot) return parent.host;
+    if (parent.nodeType === Node.DOCUMENT_NODE) return null;
+    return parent;
+}
+
+function establishesContainingBlock(el) {
+    const cs = getComputedStyle(el);
+    const willChange = cs.willChange || "";
+    const contain = cs.contain || "";
+
+    return (
+        cs.transform !== "none" ||
+        cs.perspective !== "none" ||
+        cs.filter !== "none" ||
+        cs.backdropFilter !== "none" ||
+        willChange.includes("transform") ||
+        willChange.includes("filter") ||
+        willChange.includes("perspective") ||
+        contain.includes("paint") ||
+        contain.includes("layout") ||
+        contain.includes("strict") ||
+        contain.includes("content")
+    );
+}
+
 // Re-export for callers that want to introspect the alignment options.
 export const ALIGN_VALUES = ["start", "center", "end"];
 // Kept private but exported for tests / internal access.

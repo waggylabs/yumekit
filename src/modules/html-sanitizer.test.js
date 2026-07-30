@@ -304,4 +304,117 @@ describe("html-sanitizer", () => {
             ]);
         });
     });
+
+    describe("mention chips", () => {
+        const chip = (inner, attrs = 'data-mention-value="ada"') =>
+            sanitizeHtml(`<p><span ${attrs}>${inner}</span></p>`, {
+                allowMentions: true,
+            });
+
+        it("keeps a chip and its identifying data attributes", () => {
+            const out = chip("@Ada");
+            expect(out).to.contain('data-mention-value="ada"');
+            expect(out).to.contain('contenteditable="false"');
+            expect(out).to.contain("@Ada");
+        });
+
+        it("keeps only the allowlisted attributes", () => {
+            const out = chip(
+                "@Ada",
+                'data-mention-value="ada" data-mention-type="user" data-mention-label="Ada" class="x" style="color:red" onclick="pwn()" part="mention-chip"',
+            );
+            expect(out).to.contain('data-mention-value="ada"');
+            expect(out).to.contain('data-mention-type="user"');
+            expect(out).to.contain('data-mention-label="Ada"');
+            expect(out).to.not.contain("class=");
+            expect(out).to.not.contain("style=");
+            expect(out).to.not.contain("onclick");
+            expect(out).to.not.contain("part=");
+        });
+
+        it("forces contenteditable to false", () => {
+            const out = chip(
+                "@Ada",
+                'data-mention-value="ada" contenteditable="true"',
+            );
+            expect(out).to.contain('contenteditable="false"');
+            expect(out).to.not.contain('contenteditable="true"');
+        });
+
+        it("flattens a nested link to its text", () => {
+            const out = chip('<a href="http://evil.example">@Ada</a>');
+            expect(out).to.not.contain("<a");
+            expect(out).to.not.contain("href");
+            expect(out).to.contain("@Ada");
+        });
+
+        it("flattens nested formatting to its text", () => {
+            const out = chip("<strong>@Ada</strong> <em>L</em>");
+            expect(out).to.not.contain("<strong");
+            expect(out).to.not.contain("<em");
+            expect(out).to.contain("@Ada L");
+        });
+
+        it("drops a nested image, leaving no embedded content", () => {
+            const out = chip('@Ada<img src="http://example.com/a.png">');
+            expect(out).to.not.contain("<img");
+            expect(out).to.contain("@Ada");
+        });
+
+        it("drops a chip left with no text at all", () => {
+            // An image-only chip renders as nothing once flattened.
+            expect(chip('<img src="http://example.com/a.png">')).to.not.contain(
+                "data-mention-value",
+            );
+        });
+
+        it("does not surface a dropped subtree's text as chip text", () => {
+            const out = chip("<script>alert(1)</script>");
+            expect(out).to.not.contain("alert");
+            expect(out).to.not.contain("data-mention-value");
+        });
+
+        it("keeps chip text that sits alongside a dropped subtree", () => {
+            const out = chip("@Ada<script>alert(1)</script>");
+            expect(out).to.not.contain("alert");
+            expect(out).to.contain("@Ada");
+        });
+
+        it("flattens a nested chip into the outer one", () => {
+            const out = chip(
+                '@A<span data-mention-value="b">@B</span>',
+            );
+            expect(out.match(/data-mention-value/g)).to.have.lengthOf(1);
+            expect(out).to.contain("@A@B");
+        });
+
+        it("unwraps the chip entirely when mentions are not allowed", () => {
+            const out = sanitizeHtml(
+                '<p><span data-mention-value="ada">@Ada</span></p>',
+            );
+            expect(out).to.not.contain("<span");
+            expect(out).to.not.contain("data-mention-value");
+            expect(out).to.contain("@Ada");
+        });
+
+        it("still unwraps a plain span when mentions are allowed", () => {
+            const out = sanitizeHtml("<p><span>hi</span></p>", {
+                allowMentions: true,
+            });
+            expect(out).to.equal("<p>hi</p>");
+        });
+
+        it("applies the same flattening through the fragment entry point", () => {
+            const holder = document.createElement("div");
+            holder.appendChild(
+                sanitizeHtmlToFragment(
+                    '<p><span data-mention-value="ada"><a href="http://evil.example">@Ada</a></span></p>',
+                    { allowMentions: true },
+                ),
+            );
+            const el = holder.querySelector("span[data-mention-value]");
+            expect(el.querySelectorAll("*").length).to.equal(0);
+            expect(el.textContent).to.equal("@Ada");
+        });
+    });
 });

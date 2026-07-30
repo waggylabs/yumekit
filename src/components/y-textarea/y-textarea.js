@@ -1,3 +1,5 @@
+import "../y-icon/y-icon.js";
+import "../y-popover/y-popover.js";
 import {
     applyControlError,
     createElement as _el,
@@ -5,6 +7,11 @@ import {
     manageLabelVisibility,
     upgradeProperties,
 } from "../../modules/helpers.js";
+import {
+    caretRectInTextarea,
+    MENTION_STYLES,
+    MentionController,
+} from "../../modules/mentions.js";
 
 export class YumeTextarea extends HTMLElement {
     static formAssociated = true;
@@ -23,6 +30,9 @@ export class YumeTextarea extends HTMLElement {
             "required",
             "autocomplete",
             "error-text",
+            "mention-loading",
+            "mention-query-delay",
+            "triggers",
             "aria-label",
             "aria-labelledby",
         ];
@@ -36,6 +46,7 @@ export class YumeTextarea extends HTMLElement {
         super();
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
+        this._mentions = new MentionController(this, this._mentionAdapter());
         this.render();
     }
 
@@ -47,8 +58,27 @@ export class YumeTextarea extends HTMLElement {
         this._internals.setFormValue(this.value);
     }
 
+    disconnectedCallback() {
+        this._mentions.close("blur");
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+
+        if (name === "triggers") {
+            this._mentions.triggers = newValue;
+            return;
+        }
+
+        if (name === "mention-loading") {
+            this._mentions.loading = newValue !== null;
+            return;
+        }
+
+        if (name === "mention-query-delay") {
+            this._mentions.queryDelay = newValue;
+            return;
+        }
 
         if (name === "value") {
             if (this.textarea) this.textarea.value = newValue;
@@ -80,6 +110,7 @@ export class YumeTextarea extends HTMLElement {
         // position, and IME composition — exactly what a form does on submit.
         if (name === "disabled") {
             if (this.textarea) this.textarea.disabled = this.disabled;
+            if (this.disabled) this._mentions.close("blur");
             this._updateValidationState();
             return;
         }
@@ -152,6 +183,36 @@ export class YumeTextarea extends HTMLElement {
         this.setAttribute("label-position", val);
     }
 
+    /**
+     * @type {Array<Object>} Candidates for the open mention popup. Assigning
+     * opens or refreshes it; prefer `setMentionCandidates` so a stale response
+     * cannot repopulate a popup the caret has already moved past.
+     */
+    get mentionCandidates() {
+        return this._mentions.candidates;
+    }
+    set mentionCandidates(val) {
+        this._mentions.candidates = val;
+    }
+
+    /** @type {boolean} Whether the mention popup shows its busy state. */
+    get mentionLoading() {
+        return this.hasAttribute("mention-loading");
+    }
+    set mentionLoading(val) {
+        if (val) this.setAttribute("mention-loading", "");
+        else this.removeAttribute("mention-loading");
+    }
+
+    /** @type {number} Debounce in ms before `mention-query` fires (default 150). */
+    get mentionQueryDelay() {
+        return this._mentions.queryDelay;
+    }
+    set mentionQueryDelay(val) {
+        if (val == null) this.removeAttribute("mention-query-delay");
+        else this.setAttribute("mention-query-delay", String(val));
+    }
+
     /** @type {string} The form field name. */
     get name() {
         return this.getAttribute("name") || "";
@@ -183,6 +244,19 @@ export class YumeTextarea extends HTMLElement {
     }
     set size(val) {
         this.setAttribute("size", val);
+    }
+
+    /**
+     * @type {Array<Object>} Mention trigger definitions —
+     * `{trigger, type, minChars, maxChars, allowSpaces, insert}`. Rich data:
+     * not reflected to the attribute. An empty list disables the feature.
+     * `atomic` is ignored here — a textarea value is plain text.
+     */
+    get triggers() {
+        return this._mentions.triggers;
+    }
+    set triggers(val) {
+        this._mentions.triggers = val;
     }
 
     /**
@@ -219,6 +293,21 @@ export class YumeTextarea extends HTMLElement {
         return this.textarea?.checkValidity?.() ?? true;
     }
 
+    /** Dismiss the mention popup, leaving the typed text untouched. */
+    closeMentions() {
+        this._mentions.close("escape");
+    }
+
+    /**
+     * Insert a mention at the caret, replacing the active trigger fragment when
+     * there is one.
+     * @param {{value: string, label?: string}} candidate
+     * @param {string} [trigger] — trigger literal or type; defaults to the active one
+     */
+    insertMention(candidate, trigger) {
+        this._mentions.insert(candidate, trigger);
+    }
+
     render() {
         const size = this.getAttribute("size") || "medium";
         const rows = this.getAttribute("rows") || "3";
@@ -250,11 +339,48 @@ export class YumeTextarea extends HTMLElement {
 
         this._bindTextareaListeners();
         this._updateValidationState();
+
+        // The shadow tree was replaced, taking the popup with it.
+        this._mentions.destroy();
+        this._mentions.mount(this.shadowRoot.querySelector(".input-wrapper"));
+    }
+
+    /**
+     * Supply results for a `mention-query`. A superseded or closed query id is
+     * ignored.
+     * @param {number} id — the `id` carried by the `mention-query` event
+     * @param {Array<Object>} candidates
+     */
+    setMentionCandidates(id, candidates) {
+        this._mentions.setCandidates(id, candidates);
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
+
+    /**
+     * Replace the trigger fragment with the resolved mention text. Routed
+     * through `execCommand` so the browser's own undo stack records it as one
+     * step; the manual fallback covers engines that refuse the command.
+     */
+    _applyMention({ text, fragment }) {
+        const textarea = this.textarea;
+        if (!textarea) return;
+
+        const start = fragment ? fragment.start : textarea.selectionStart;
+        const end = fragment ? fragment.end : textarea.selectionEnd;
+        const caret = start + text.length;
+
+        textarea.focus();
+        textarea.setSelectionRange(start, end);
+        if (document.execCommand?.("insertText", false, text)) return;
+
+        const value = textarea.value;
+        textarea.value = value.slice(0, start) + text + value.slice(end);
+        textarea.setSelectionRange(caret, caret);
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
 
     _bindTextareaListeners() {
         this.inputContainer.addEventListener("mousedown", (e) => {
@@ -278,7 +404,23 @@ export class YumeTextarea extends HTMLElement {
                 }),
             );
             this._updateValidationState();
+            this._mentions.refresh();
         });
+
+        this.textarea.addEventListener("keydown", (e) => {
+            this._mentions.handleKeyDown(e);
+        });
+        this.textarea.addEventListener("keyup", () => this._mentions.refresh());
+        this.textarea.addEventListener("click", () => this._mentions.refresh());
+        this.textarea.addEventListener("blur", () =>
+            this._mentions.close("blur"),
+        );
+        this.textarea.addEventListener("compositionstart", () =>
+            this._mentions.handleCompositionStart(),
+        );
+        this.textarea.addEventListener("compositionend", () =>
+            this._mentions.handleCompositionEnd(),
+        );
     }
 
     _buildTree(rows, isLabelTop, isDisabled) {
@@ -435,6 +577,8 @@ export class YumeTextarea extends HTMLElement {
                 font-size: 0.875em;
                 color: var(--component-input-label-color);
             }
+
+            ${MENTION_STYLES}
         `);
         return sheet;
     }
@@ -446,6 +590,39 @@ export class YumeTextarea extends HTMLElement {
             large: "--component-inputs-padding-large",
         };
         return map[size] || map.medium;
+    }
+
+    /** Host hooks the shared mention controller drives the textarea through. */
+    _mentionAdapter() {
+        const host = this;
+        return {
+            get surface() {
+                return host.textarea;
+            },
+            defaultRole: null,
+            isInactive: () => host.disabled || host.hasAttribute("readonly"),
+            getContext: () => {
+                const textarea = host.textarea;
+                if (!textarea) return null;
+                if (textarea.selectionStart !== textarea.selectionEnd) {
+                    return null;
+                }
+                return {
+                    text: textarea.value,
+                    caret: textarea.selectionStart,
+                };
+            },
+
+            getCaretRect: (fragment) => {
+                const textarea = host.textarea;
+                if (!textarea) return null;
+                return caretRectInTextarea(
+                    textarea,
+                    fragment?.end ?? textarea.selectionStart,
+                );
+            },
+            applyInsertion: (payload) => host._applyMention(payload),
+        };
     }
 
     _updateErrorText() {
