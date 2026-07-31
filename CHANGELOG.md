@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-tabs` now fires a cancelable `change` event whenever the active tab switches by click, keyboard, or `activateTab(id)`. The detail carries `{ id, previousId, tab, previousTab }`, and calling `preventDefault()` leaves the current tab in place so apps can guard a switch behind unsaved changes.
+
 - Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-colour glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
 
 - `y-editor` and `y-textarea` gain caret-triggered mention autocomplete. A `triggers` array defines any number of literal prefixes (`@` people, `#` topics, anything else); the component detects the trigger at a word boundary, debounces by `mention-query-delay`, emits `mention-query`, and renders the candidates the app supplies through `setMentionCandidates(id, …)`. It never fetches, and stale responses are discarded. Insertion is one undo step, and `y-editor` can insert `atomic` mentions as a single non-editable unit that survives the sanitize round trip.
@@ -66,6 +68,10 @@ Delete any empty sections before publishing.
 - Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
 
 ### Fixed
+
+- `y-input` and `y-textarea` now fire the `change` event they have always documented. A native `change` is not composed, so the one raised by the inner `<input>` / `<textarea>` stopped at the shadow boundary and never reached a listener on the host — only `input` ever arrived. The host now re-emits it with native commit semantics (blur after an edit, or Enter), carrying `detail: { value }`.
+
+- `y-dialog` and `y-drawer` now fire the documented `open` and `close` events. Neither dispatched anything before, so an app had no way to observe a dialog or drawer that closed itself via Escape, the overlay, or the close button. Both fire on every transition regardless of what caused it; mounting already `visible` is a starting state and fires nothing.
 
 - `y-popover` now positions correctly when it lives inside another component's shadow root and the page has a transformed ancestor. Its `position: fixed` surface resolves against the nearest ancestor that establishes a containing block (any `transform`, `filter`, `perspective`, or paint/layout `contain` — even an identity transform), but the search used `parentElement`, which returns null at a shadow boundary and so never found a wrapper out in the light DOM. The surface landed offset by that wrapper's position, or off screen entirely. This affected `y-editor`'s link and mention popups; the shared walk now crosses shadow roots and is exported from `src/modules/floating.js` as `containingBlockOffset`.
 

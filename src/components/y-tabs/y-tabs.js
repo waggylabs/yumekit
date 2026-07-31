@@ -115,13 +115,29 @@ export class YumeTabs extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /**
-     * Activates a tab by its id.
+     * Activates a tab by its id. Fires a cancelable `change` event before the
+     * switch is applied — calling `preventDefault()` on it keeps the current
+     * tab active. No event fires when the tab is missing, disabled, or already
+     * active.
      * @param {string} id - The id of the tab to activate.
      */
     activateTab(id) {
         const tab = this.options.find((t) => t.id === id);
         if (!tab || tab.disabled) return;
         if (this._activeTab === id) return;
+
+        const previousId = this._activeTab;
+        const previousTab = this.options.find((t) => t.id === previousId);
+
+        const event = new CustomEvent("change", {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            detail: { id, previousId, tab, previousTab },
+        });
+
+        if (!this.dispatchEvent(event)) return;
+
         this._activeTab = id;
         this.render();
     }

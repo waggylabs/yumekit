@@ -252,6 +252,89 @@ describe("YumeTabs", () => {
         expect(panel.name).to.equal("three-slot");
     });
 
+    it("fires a change event when a tab button is clicked", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        el.shadowRoot.querySelector('button[data-id="three"]').click();
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.id).to.equal("three");
+        expect(events[0].detail.previousId).to.equal("one");
+        expect(events[0].detail.tab.label).to.equal("Three");
+        expect(events[0].detail.previousTab.label).to.equal("One");
+    });
+
+    it("change event bubbles and crosses the shadow boundary", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        const events = [];
+        const onChange = (e) => events.push(e);
+        document.addEventListener("change", onChange);
+
+        el.activateTab("three");
+        document.removeEventListener("change", onChange);
+
+        expect(events.length).to.equal(1);
+        expect(events[0].composed).to.be.true;
+        expect(events[0].cancelable).to.be.true;
+    });
+
+    it("canceling the change event keeps the current tab active", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}">
+                <div slot="one-slot">First</div>
+                <div slot="three-slot">Third</div>
+            </y-tabs>
+        `);
+        el.addEventListener("change", (e) => e.preventDefault());
+
+        el.activateTab("three");
+
+        expect(el._activeTab).to.equal("one");
+        expect(
+            el.shadowRoot.querySelector(".tabpanel slot").name,
+        ).to.equal("one-slot");
+    });
+
+    it("does not fire change for disabled or already-active tabs", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        el.activateTab("one"); // already active
+        el.activateTab("two"); // disabled
+        el.activateTab("nope"); // unknown
+
+        expect(events.length).to.equal(0);
+    });
+
+    it("fires change when the keyboard activates a tab", async () => {
+        const el = await fixture(html`
+            <y-tabs options="${JSON.stringify(options)}"></y-tabs>
+        `);
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        el.shadowRoot
+            .querySelector('button[data-id="three"]')
+            .dispatchEvent(
+                new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+            );
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.id).to.equal("three");
+    });
+
     it("resolves active tab to first non-disabled tab automatically", async () => {
         const disabledFirstOptions = [
             { id: "x", label: "X", slot: "x-slot", disabled: true },

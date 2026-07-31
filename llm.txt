@@ -231,7 +231,7 @@ Attributes:
 
 Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
 
-Events: `change`, `input`
+Events: `input` (detail: `{ value }`) on every keystroke, `change` (detail: `{ value }`) on commit — native semantics, so blur after an edit, or Enter. Setting `value` programmatically fires neither. Both bubble and are composed; the inner control's own native `change` is not composed and never escapes the shadow root, so listen on the host.
 
 CSS Custom Properties: `--component-input-background`, `--component-input-background-disabled`, `--component-input-color`, `--component-input-border-color`, `--component-input-accent`, `--component-input-label-color`, `--component-input-placeholder-color` (also used by `y-textarea`, `y-date`, and `y-color` for their placeholder text), `--component-input-icon-color`, `--component-input-error-color`, `--component-input-error-background`, `--component-input-error-border-color`. Shared across all form fields: `--component-inputs-border-width` (applied as the `border-width` longhand — accepts a 1–4 value pattern for per-side widths, e.g. `0 0 1px 0`) and `--component-inputs-border-radius-outer` (also takes a 1–4 value pattern). For a true underlined field prefer `variant="underline"`, which also squares the bottom corners.
 
@@ -359,7 +359,7 @@ Attributes:
 
 Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
 
-Events: `change`, `input`, plus the mention events below.
+Events: `input` (detail: `{ value }`) on every keystroke, `change` (detail: `{ value }`) on commit — native semantics, so blur after an edit. Setting `value` programmatically fires neither. Both bubble and are composed. Plus the mention events below.
 
 Mentions: identical API to `y-editor` (see below), except `atomic` is ignored — a textarea value is plain text, so mentions are always inserted as text.
 
@@ -1407,7 +1407,7 @@ Attributes:
 - `position` — `"left"` (default) | `"right"` | `"top"` | `"bottom"`
 - `resizable` — boolean, adds a drag handle for resizing
 
-Events: `open`, `close`
+Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, the anchor click, the overlay click, or Escape. A drawer that mounts already `visible` does not fire `open` — that is a starting state, not a transition.
 
 Slots: `header`, `body`, `footer` — named slots only; content without a `slot` attribute is not rendered
 
@@ -1789,7 +1789,7 @@ Attributes:
 - `animate` — open/close animation
 - `position` — dialog placement
 
-Events: `open`, `close`
+Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, `show()` / `hide()`, the anchor click, the close button, or Escape. A dialog that mounts already `visible` does not fire `open` — that is a starting state, not a transition.
 
 Slots: `header`, `body`, `footer` — named slots only; content without a `slot` attribute is not rendered
 
@@ -2018,6 +2018,8 @@ Attributes:
 - `overflow` — `"scroll"` (default; tabs stay on one line and prev/next arrow buttons appear when the strip overflows its container) | `"wrap"` (tabs flow onto multiple rows, or columns for `left`/`right` positions)
 
 Methods: `activateTab(id)`
+
+Events: `change` (cancelable, `detail: { id, previousId, tab, previousTab }`) — fired before the new tab is applied, on click, keyboard activation, and `activateTab(id)`; `preventDefault()` keeps the current tab active. Not fired for disabled, unknown, or already-active tabs, nor for the initial tab resolved at render.
 
 CSS Custom Properties: `--component-tabs-border-width` (box/rail border width; falls back to the legacy `--component-tab-border-width`), `--component-tabs-border-color`, `--component-tabs-background` (selected tab + panel surface), `--component-tabs-inactive-background` (unselected tab background; falls back to `--component-tabs-border-color`), `--component-tabs-color`, `--component-tabs-accent` (indicator/active color), `--component-tabs-accent-width` (indicator thickness, default 2px), `--component-tab-border-radius-outer`, `--component-tab-padding-{size}`, `--component-tab-gap-{size}`, `--component-tab-content-padding`
 

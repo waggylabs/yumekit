@@ -280,6 +280,33 @@ describe("YumeTextarea", () => {
         expect(el.getAttribute("value")).to.equal("new content");
     });
 
+    it("re-emits the inner textarea's native 'change' on the host", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        const textarea = control(el);
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        // The browser fires this on commit (blur after an edit); native
+        // `change` is not composed, so it stops at the shadow boundary.
+        textarea.value = "committed";
+        textarea.dispatchEvent(new Event("change", { bubbles: true }));
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.value).to.equal("committed");
+        expect(events[0].composed).to.be.true;
+        expect(el.getAttribute("value")).to.equal("committed");
+    });
+
+    it("does not fire 'change' while typing", async () => {
+        const el = await fixture(html`<y-textarea></y-textarea>`);
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        typeInto(el, "typ");
+
+        expect(events.length).to.equal(0);
+    });
+
     // ── Re-render ─────────────────────────────────────────────
     it("re-renders when size attribute changes", async () => {
         const el = await fixture(

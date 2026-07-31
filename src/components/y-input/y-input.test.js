@@ -109,6 +109,50 @@ describe("<y-input>", () => {
         expect(e.detail.value).to.equal("hello");
     });
 
+    it("re-emits the inner input's native 'change' on the host", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        // The browser fires this on commit (blur after an edit, or Enter);
+        // native `change` is not composed, so it stops at the shadow boundary.
+        input.value = "committed";
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.value).to.equal("committed");
+        expect(events[0].composed).to.be.true;
+        expect(el.getAttribute("value")).to.equal("committed");
+    });
+
+    it("the host 'change' event escapes the shadow root", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const events = [];
+        const onChange = (e) => events.push(e);
+        document.addEventListener("change", onChange);
+
+        input.value = "escaped";
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        document.removeEventListener("change", onChange);
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.value).to.equal("escaped");
+    });
+
+    it("does not fire 'change' while typing", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        input.value = "typ";
+        input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+        expect(events.length).to.equal(0);
+    });
+
     it("reflects 'disabled' attribute correctly", async () => {
         const el = await fixture(html`<y-input disabled></y-input>`);
         const input = el.shadowRoot.querySelector("input");

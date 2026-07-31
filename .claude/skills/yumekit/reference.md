@@ -244,7 +244,7 @@ Form-associated. Always set `name` inside a `<form>`.
 
 Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
-Events: `change`, `input`
+Events: `input` (`{value}`) on every keystroke, `change` (`{value}`) on commit — native semantics, so blur after an edit, or Enter. Setting `value` programmatically fires neither. Both bubble and are composed; the inner `<input>`'s own native `change` is not composed and never escapes the shadow root, so listen on the host.
 
 ```html
 <y-input
@@ -284,7 +284,7 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 
 Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
-Events: `change`, `input`, plus the mention events documented under `y-editor`.
+Events: `input` (`{value}`) on every keystroke, `change` (`{value}`) on commit — native semantics, so blur after an edit. Setting `value` programmatically fires neither. Both bubble and are composed. Plus the mention events documented under `y-editor`.
 
 **Mentions:** identical API to `y-editor` — same attributes, slots (`mention-empty`, `mention-loading`), methods (`setMentionCandidates`, `closeMentions`, `insertMention`), and events. The one difference is that `atomic` is ignored: a textarea value is an unstructured string, so a mention is always inserted as plain text.
 
@@ -1226,7 +1226,7 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
 | `position`  | `left` (default) \| `right` \| `top` \| `bottom`                                     |
 | `resizable` | boolean — adds a drag handle for resizing                                            |
 
-Events: `open`, `close`
+Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, the anchor click, the overlay click, or Escape. Mounting already `visible` does not fire `open`; that is a starting state, not a transition.
 
 Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
@@ -1456,7 +1456,7 @@ CSS Parts: `viewport`, `track`, `prev-button`, `next-button`, `pagination`, `dot
 | `animate`       | open/close animation                                                                  |
 | `position`      | dialog placement                                                                      |
 
-Events: `open`, `close`
+Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, `show()` / `hide()`, the anchor click, the close button, or Escape. Mounting already `visible` does not fire `open`; that is a starting state, not a transition.
 
 Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
@@ -1671,6 +1671,8 @@ Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":fal
 - `leftIcon` / `rightIcon` — `y-icon` name; renders a `<y-icon>` inside the tab button
 
 Methods: `activateTab(id)`
+
+Events: `change` (cancelable, `{ id, previousId, tab, previousTab }`) — fired before the switch is applied, whether triggered by click, keyboard, or `activateTab(id)`. Call `preventDefault()` to keep the current tab (e.g. an unsaved-changes guard). No event for disabled, unknown, or already-active tabs, nor for the tab auto-selected on first render.
 
 Slots:
 

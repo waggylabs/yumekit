@@ -407,6 +407,25 @@ export class YumeTextarea extends HTMLElement {
             this._mentions.refresh();
         });
 
+        // The inner textarea's native `change` is not composed, so it stops at
+        // the shadow boundary. Re-emit it on the host to restore native commit
+        // semantics (blur after an edit) for listeners outside.
+        this.textarea.addEventListener("change", (e) => {
+            this.setAttribute("value", e.target.value);
+            this._internals.setFormValue(
+                e.target.value,
+                this.getAttribute("name"),
+            );
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: e.target.value },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+            this._updateValidationState();
+        });
+
         this.textarea.addEventListener("keydown", (e) => {
             this._mentions.handleKeyDown(e);
         });

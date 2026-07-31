@@ -265,8 +265,7 @@ at the composed level where many placeholders animate at once.
 
 <y-theme theme="blue-light" style="display:block; padding:1rem;">
   <y-tabs
-    options='[{"id":"overview","label":"Overview"},{"id":"activity","label":"Activity"},{"id":"settings","label":"Settings"}]'
-    active="overview"
+    options='[{"id":"overview","label":"Overview","slot":"overview"},{"id":"activity","label":"Activity","slot":"activity"},{"id":"settings","label":"Settings","slot":"settings"}]'
   >
     <div slot="overview" style="display:flex; gap:1rem; flex-wrap:wrap; padding:1rem 0;">
       <y-card style="flex:1; min-width:200px;">

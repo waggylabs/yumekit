@@ -285,6 +285,21 @@ export class YumeInput extends HTMLElement {
             );
             this._updateValidationState();
         });
+
+        // The inner input's native `change` is not composed, so it stops at the
+        // shadow boundary. Re-emit it on the host to restore native commit
+        // semantics (blur after an edit, or Enter) for listeners outside.
+        this.input.addEventListener("change", (e) => {
+            this.setAttribute("value", e.target.value);
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: e.target.value },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+            this._updateValidationState();
+        });
     }
 
     _buildTree(type, value, isLabelTop, isDisabled) {
