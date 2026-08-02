@@ -1,4 +1,4 @@
-import { hideEmptySlotContainers } from "../../modules/helpers.js";
+import { hideEmptySlotContainers, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeCard extends HTMLElement {
     static get observedAttributes() {
@@ -16,6 +16,7 @@ export class YumeCard extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._updateColorStyles();
         this._updateElevationStyles();
     }
@@ -76,6 +77,10 @@ export class YumeCard extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 box-sizing: border-box;

@@ -1,4 +1,4 @@
-import { resolveAnchor } from "../../modules/helpers.js";
+import { resolveAnchor, upgradeProperties } from "../../modules/helpers.js";
 
 class YumeDialog extends HTMLElement {
     static get observedAttributes() {
@@ -12,14 +12,21 @@ class YumeDialog extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._isOpen = false;
         this._onKeyDown = this._onKeyDown.bind(this);
         this._onAnchorClick = this._onAnchorClick.bind(this);
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this._setupAnchor();
-        if (this.visible) this.show();
+        if (this.visible) {
+            // Mounting already open is a starting state, not a transition, so
+            // it opens without firing `open`.
+            this._isOpen = true;
+            this.show();
+        }
     }
 
     disconnectedCallback() {
@@ -80,9 +87,14 @@ class YumeDialog extends HTMLElement {
     // Public
     // -------------------------------------------------------------------------
 
-    /** Closes the dialog. */
+    /** Closes the dialog and fires `close`. */
     hide() {
         document.removeEventListener("keydown", this._onKeyDown);
+        if (!this._isOpen) return;
+
+        this._isOpen = false;
+        this.visible = false;
+        this._emit("close");
     }
 
     /** Rebuilds the shadow DOM. */
@@ -92,11 +104,16 @@ class YumeDialog extends HTMLElement {
         this.shadowRoot.appendChild(this._buildDialog());
     }
 
-    /** Opens the dialog and focuses it. */
+    /** Opens the dialog, focuses it, and fires `open`. */
     show() {
         if (!this.shadowRoot.querySelector(".dialog")) this.render();
         document.addEventListener("keydown", this._onKeyDown);
         this._focusDialog();
+        if (this._isOpen) return;
+
+        this._isOpen = true;
+        this.visible = true;
+        this._emit("open");
     }
 
     // -------------------------------------------------------------------------
@@ -106,7 +123,7 @@ class YumeDialog extends HTMLElement {
     _buildCloseButton() {
         const btn = document.createElement("y-button");
         btn.setAttribute("size", "small");
-        btn.setAttribute("style-type", "flat");
+        btn.setAttribute("variant", "flat");
         btn.setAttribute("aria-label", "Close");
         btn.textContent = "\u2715";
         btn.addEventListener("click", () => { this.visible = false; });
@@ -159,6 +176,10 @@ class YumeDialog extends HTMLElement {
     _buildStyles() {
         const style = document.createElement("style");
         style.textContent = `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
@@ -242,6 +263,12 @@ class YumeDialog extends HTMLElement {
             }
         `;
         return style;
+    }
+
+    _emit(name) {
+        this.dispatchEvent(
+            new CustomEvent(name, { bubbles: true, composed: true }),
+        );
     }
 
     _focusDialog() {

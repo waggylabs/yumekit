@@ -20,7 +20,7 @@ describe("YumeTag", () => {
         expect(removeBtn).to.not.exist;
     });
 
-    it("applies filled style-type by default", async () => {
+    it("applies filled variant by default", async () => {
         const el = await fixture(html`<y-tag>Tag</y-tag>`);
         const style = el.shadowRoot.querySelector("style").textContent;
 
@@ -89,9 +89,9 @@ describe("YumeTag", () => {
     });
 
     // ── Style Types ───────────────────────────────────────────
-    it("applies outlined style-type", async () => {
+    it("applies outlined variant", async () => {
         const el = await fixture(
-            html`<y-tag color="primary" style-type="outlined">Tag</y-tag>`,
+            html`<y-tag color="primary" variant="outlined">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
 
@@ -99,9 +99,9 @@ describe("YumeTag", () => {
         expect(style).to.include("background: transparent");
     });
 
-    it("applies flat style-type", async () => {
+    it("applies flat variant", async () => {
         const el = await fixture(
-            html`<y-tag color="primary" style-type="flat">Tag</y-tag>`,
+            html`<y-tag color="primary" variant="flat">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
 
@@ -109,8 +109,8 @@ describe("YumeTag", () => {
         expect(style).to.include("color: var(--primary-content--)");
     });
 
-    it("falls back to filled for unknown style-type", async () => {
-        const el = await fixture(html`<y-tag style-type="custom">Tag</y-tag>`);
+    it("falls back to filled for unknown variant", async () => {
+        const el = await fixture(html`<y-tag variant="custom">Tag</y-tag>`);
         const style = el.shadowRoot.querySelector("style").textContent;
 
         // Should use filled styles (background with content var)
@@ -220,11 +220,11 @@ describe("YumeTag", () => {
         expect(style).to.include("--component-tag-height-large");
     });
 
-    it("re-renders when style-type attribute changes", async () => {
+    it("re-renders when variant attribute changes", async () => {
         const el = await fixture(
-            html`<y-tag color="primary" style-type="filled">Tag</y-tag>`,
+            html`<y-tag color="primary" variant="filled">Tag</y-tag>`,
         );
-        el.setAttribute("style-type", "outlined");
+        el.setAttribute("variant", "outlined");
         await new Promise((r) => setTimeout(r, 0));
 
         const style = el.shadowRoot.querySelector("style").textContent;
@@ -316,6 +316,30 @@ describe("YumeTag", () => {
         expect(style).to.include("--component-tag-height-large");
     });
 
+    it("variant defaults to filled", async () => {
+        const el = await fixture(html`<y-tag>Tag</y-tag>`);
+        expect(el.variant).to.equal("filled");
+    });
+
+    it("variant setter updates the variant attribute", async () => {
+        const el = await fixture(html`<y-tag color="primary">Tag</y-tag>`);
+        el.variant = "outlined";
+        expect(el.getAttribute("variant")).to.equal("outlined");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("border: 1px solid var(--primary-content--)");
+    });
+
+    // ── Deprecated style-type alias ───────────────────────────
+    it("treats style-type as a deprecated alias for variant", async () => {
+        const el = await fixture(
+            html`<y-tag color="primary" style-type="outlined">Tag</y-tag>`,
+        );
+        expect(el.variant).to.equal("outlined");
+        expect(el.styleType).to.equal("outlined");
+        const style = el.shadowRoot.querySelector("style").textContent;
+        expect(style).to.include("border: 1px solid var(--primary-content--)");
+    });
+
     it("styleType setter updates the style-type attribute", async () => {
         const el = await fixture(html`<y-tag color="primary">Tag</y-tag>`);
         el.styleType = "outlined";
@@ -324,18 +348,25 @@ describe("YumeTag", () => {
         expect(style).to.include("border: 1px solid var(--primary-content--)");
     });
 
-    // ── Custom color variants ─────────────────────────────────
-    it("renders with custom hex color using filled style-type", async () => {
+    it("prefers variant over style-type when both are set", async () => {
         const el = await fixture(
-            html`<y-tag color="#ff0000" style-type="filled">Tag</y-tag>`,
+            html`<y-tag variant="flat" style-type="outlined">Tag</y-tag>`,
+        );
+        expect(el.variant).to.equal("flat");
+    });
+
+    // ── Custom color variants ─────────────────────────────────
+    it("renders with custom hex color using filled variant", async () => {
+        const el = await fixture(
+            html`<y-tag color="#ff0000" variant="filled">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("background: #ff0000");
     });
 
-    it("renders with custom hex color using outlined style-type", async () => {
+    it("renders with custom hex color using outlined variant", async () => {
         const el = await fixture(
-            html`<y-tag color="#00aaff" style-type="outlined">Tag</y-tag>`,
+            html`<y-tag color="#00aaff" variant="outlined">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("border: 1px solid #00aaff");
@@ -343,26 +374,26 @@ describe("YumeTag", () => {
         expect(style).to.include("color: #00aaff");
     });
 
-    it("renders with custom hex color using flat style-type", async () => {
+    it("renders with custom hex color using flat variant", async () => {
         const el = await fixture(
-            html`<y-tag color="#00cc44" style-type="flat">Tag</y-tag>`,
+            html`<y-tag color="#00cc44" variant="flat">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("color-mix(in srgb, #00cc44 20%, transparent)");
         expect(style).to.include("color: #00cc44");
     });
 
-    it("renders with custom rgb color using filled style-type", async () => {
+    it("renders with custom rgb color using filled variant", async () => {
         const el = await fixture(
-            html`<y-tag color="rgb(255,0,0)" style-type="filled">Tag</y-tag>`,
+            html`<y-tag color="rgb(255,0,0)" variant="filled">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("background: rgb(255,0,0)");
     });
 
-    it("falls back to filled for custom color with unknown style-type", async () => {
+    it("falls back to filled for custom color with unknown variant", async () => {
         const el = await fixture(
-            html`<y-tag color="#abcdef" style-type="custom">Tag</y-tag>`,
+            html`<y-tag color="#abcdef" variant="custom">Tag</y-tag>`,
         );
         const style = el.shadowRoot.querySelector("style").textContent;
         expect(style).to.include("background: #abcdef");

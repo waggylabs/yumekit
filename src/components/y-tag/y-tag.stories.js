@@ -10,7 +10,7 @@ export default {
             description: "Color theme for the tag.",
             table: { defaultValue: { summary: "base" } },
         },
-        styleType: {
+        variant: {
             control: "select",
             options: ["filled", "outlined", "flat"],
             description: "Visual style variant.",
@@ -40,16 +40,16 @@ export default {
     },
     args: {
         color: "primary",
-        styleType: "filled",
+        variant: "filled",
         size: "medium",
         shape: "square",
         removable: false,
         label: "Tag",
     },
-    render: ({ color, styleType, size, shape, removable, label }) => `
+    render: ({ color, variant, size, shape, removable, label }) => `
         <y-tag
             color="${color}"
-            style-type="${styleType}"
+            variant="${variant}"
             size="${size}"
             shape="${shape}"
             ${removable ? "removable" : ""}
@@ -77,13 +77,13 @@ export const Colors = {
     `,
 };
 
-export const StyleTypes = {
+export const Variants = {
     render: () => `
         <div style="display:flex;flex-direction:column;gap:12px">
             <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                <y-tag color="primary" style-type="filled">Filled</y-tag>
-                <y-tag color="primary" style-type="outlined">Outlined</y-tag>
-                <y-tag color="primary" style-type="flat">Flat</y-tag>
+                <y-tag color="primary" variant="filled">Filled</y-tag>
+                <y-tag color="primary" variant="outlined">Outlined</y-tag>
+                <y-tag color="primary" variant="flat">Flat</y-tag>
             </div>
         </div>
     `,

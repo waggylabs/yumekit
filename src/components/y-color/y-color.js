@@ -2,8 +2,10 @@ import "../y-colorpicker/y-colorpicker.js";
 import "../y-icon/y-icon.js";
 import "../y-input/y-input.js";
 import {
+    coerceRichData,
     manageLabelVisibility,
     parseColorString,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeColor extends HTMLElement {
@@ -39,9 +41,11 @@ export class YumeColor extends HTMLElement {
             this._clickInsidePopup = true;
         };
         this._clickInsidePopup = false;
+        this._formats = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
@@ -77,6 +81,9 @@ export class YumeColor extends HTMLElement {
             this._updateValidationState();
             return;
         }
+        if (name === "formats") {
+            this._formats = coerceRichData(newVal, null);
+        }
         if (this.shadowRoot.innerHTML) this.render();
     }
 
@@ -109,19 +116,19 @@ export class YumeColor extends HTMLElement {
         this.setAttribute("format", v);
     }
 
+    /**
+     * Enabled color formats. Rich data held as a property; the `formats`
+     * attribute seeds an initial value (JSON string) but is not kept in sync
+     * after an imperative set.
+     */
     get formats() {
-        try {
-            return JSON.parse(
-                this.getAttribute("formats") || '["hex","rgb","hsl","hsv"]',
-            );
-        } catch {
-            return ["hex", "rgb", "hsl", "hsv"];
-        }
+        return Array.isArray(this._formats)
+            ? this._formats
+            : ["hex", "rgb", "hsl", "hsv"];
     }
     set formats(v) {
-        if (v === null || v === undefined) this.removeAttribute("formats");
-        else if (typeof v === "string") this.setAttribute("formats", v);
-        else this.setAttribute("formats", JSON.stringify(v));
+        this._formats = coerceRichData(v, null);
+        if (this.shadowRoot.innerHTML) this.render();
     }
 
     get invalid() {
@@ -362,6 +369,10 @@ export class YumeColor extends HTMLElement {
         const padding = paddingMap[size] || paddingMap.medium;
 
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);
@@ -462,7 +473,7 @@ export class YumeColor extends HTMLElement {
             }
 
             .display.is-placeholder {
-                color: var(--base-content-light);
+                color: var(--component-input-placeholder-color);
             }
 
             /* ── Clear button ── */

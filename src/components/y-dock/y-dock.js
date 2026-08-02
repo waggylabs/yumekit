@@ -1,5 +1,9 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 export class YumeDock extends HTMLElement {
     static get observedAttributes() {
@@ -22,9 +26,11 @@ export class YumeDock extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._mediaQuery = null;
         this._onMediaChange = this._onMediaChange.bind(this);
+        this._items = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("position"))
             this.setAttribute("position", "bottom");
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
@@ -43,6 +49,9 @@ export class YumeDock extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+        if (name === "items") {
+            this._items = coerceRichData(newValue);
+        }
         if (name === "breakpoint") {
             this._teardownBreakpoint();
             this._setupBreakpoint();
@@ -83,18 +92,17 @@ export class YumeDock extends HTMLElement {
         else this.setAttribute("history", val);
     }
 
-    /** Navigation items as a JSON array. */
+    /**
+     * Navigation items. Rich data held as a property (identity preserved, not
+     * serialized); the `items` attribute seeds an initial value but is not kept
+     * in sync after an imperative set.
+     */
     get items() {
-        try {
-            return JSON.parse(this.getAttribute("items") || "[]");
-        } catch {
-            return [];
-        }
+        return Array.isArray(this._items) ? this._items : [];
     }
     set items(val) {
-        if (val === null || val === undefined) this.removeAttribute("items");
-        else if (typeof val === "string") this.setAttribute("items", val);
-        else this.setAttribute("items", JSON.stringify(val));
+        this._items = coerceRichData(val);
+        this.render();
     }
 
     /** Which edge of the viewport the dock anchors to. */

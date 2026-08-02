@@ -109,7 +109,19 @@ export default {
         },
         loading: {
             control: "boolean",
-            description: "Show the loading overlay and set `aria-busy`.",
+            description: "Present a loading state and set `aria-busy`. What is shown depends on `loading-mode`.",
+        },
+        loadingMode: {
+            name: "loading-mode",
+            control: "select",
+            options: ["auto", "overlay", "skeleton"],
+            description: "`auto` (default) shows skeleton on first load and overlay on refetch; `overlay` always dims under a spinner; `skeleton` always renders placeholder rows.",
+            table: { defaultValue: { summary: "auto" } },
+        },
+        skeletonRows: {
+            name: "skeleton-rows",
+            control: "number",
+            description: "Placeholder row count in skeleton mode (defaults to page size, else 10).",
         },
         emptyMessage: {
             name: "empty-message",
@@ -132,6 +144,8 @@ export default {
         enableColumnResize: false,
         enableColumnReorder: false,
         loading: false,
+        loadingMode: "auto",
+        skeletonRows: undefined,
         emptyMessage: "No data available",
     },
     render: (args) => `
@@ -151,6 +165,8 @@ export default {
                 ${args.enableColumnReorder ? "enable-column-reorder" : ""}
                 ${args.filtering ? `filtering="${args.filtering}"` : ""}
                 ${args.loading ? "loading" : ""}
+                loading-mode="${args.loadingMode}"
+                ${args.skeletonRows ? `skeleton-rows="${args.skeletonRows}"` : ""}
                 empty-message="${args.emptyMessage}"
             ></y-data-grid>
         </div>
@@ -169,6 +185,46 @@ export const FilterableAdvanced = {
 
 export const Loading = {
     args: { loading: true, pageSize: 5 },
+    parameters: {
+        docs: {
+            description: {
+                story: "Default `loading-mode=\"auto\"` with data already present resolves to the overlay — the existing rows stay visible and dimmed, which reads well on a refetch.",
+            },
+        },
+    },
+};
+
+export const LoadingFirstLoad = {
+    args: { loading: true, data: "[]", pageSize: 8 },
+    parameters: {
+        docs: {
+            description: {
+                story: "A grid loading with no rows: `auto` renders shape-accurate skeleton rows reusing the real column widths, instead of a spinner over an empty grid. The empty state is suppressed while loading.",
+            },
+        },
+    },
+};
+
+export const LoadingSkeleton = {
+    args: { loading: true, loadingMode: "skeleton", skeletonRows: 6, pageSize: 5 },
+    parameters: {
+        docs: {
+            description: {
+                story: "`loading-mode=\"skeleton\"` always renders placeholder rows, even when data is present.",
+            },
+        },
+    },
+};
+
+export const LoadingOverlay = {
+    args: { loading: true, loadingMode: "overlay", data: "[]", pageSize: 5 },
+    parameters: {
+        docs: {
+            description: {
+                story: "`loading-mode=\"overlay\"` keeps the pre-0.5.4 behavior — a spinner over the (here empty) body — in every case.",
+            },
+        },
+    },
 };
 
 export const Empty = {

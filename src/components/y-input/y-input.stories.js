@@ -24,6 +24,10 @@ export default {
             description: "Native input type.",
             table: { defaultValue: { summary: "text" } },
         },
+        placeholder: {
+            control: "text",
+            description: "Hint text shown when the input is empty.",
+        },
         size: {
             control: "select",
             options: ["small", "medium", "large"],
@@ -50,6 +54,7 @@ export default {
     args: {
         value: "",
         type: "text",
+        placeholder: "",
         size: "medium",
         labelPosition: "top",
         disabled: false,
@@ -58,6 +63,7 @@ export default {
     render: ({
         value,
         type,
+        placeholder,
         size,
         labelPosition,
         disabled,
@@ -69,6 +75,7 @@ export default {
             size="${size}"
             label-position="${labelPosition}"
             ${value ? `value="${value}"` : ""}
+            ${placeholder ? `placeholder="${placeholder}"` : ""}
             ${disabled ? "disabled" : ""}
             ${invalid ? "invalid" : ""}
             style="width:300px"

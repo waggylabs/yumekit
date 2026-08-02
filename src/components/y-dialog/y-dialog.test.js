@@ -50,6 +50,77 @@ describe("YumeDialog", () => {
         expect(el.hasAttribute("visible")).to.be.false;
     });
 
+    it("fires open when it becomes visible and close when it hides", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        const events = [];
+        el.addEventListener("open", (e) => events.push(e.type));
+        el.addEventListener("close", (e) => events.push(e.type));
+
+        el.visible = true;
+        el.visible = false;
+
+        expect(events.join(",")).to.equal("open,close");
+    });
+
+    it("fires close when Escape dismisses the dialog", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        el.visible = true;
+        const events = [];
+        el.addEventListener("close", (e) => events.push(e.type));
+
+        document.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        );
+
+        expect(events.length).to.equal(1);
+    });
+
+    it("fires close when the close button dismisses the dialog", async () => {
+        const el = await fixture(html`<y-dialog closable visible></y-dialog>`);
+        const events = [];
+        el.addEventListener("close", (e) => events.push(e.type));
+
+        el.shadowRoot.querySelector("y-button").click();
+
+        expect(events.length).to.equal(1);
+        expect(el.hasAttribute("visible")).to.be.false;
+    });
+
+    it("does not fire open when it mounts already visible", async () => {
+        const events = [];
+        const onOpen = (e) => events.push(e.type);
+        document.addEventListener("open", onOpen);
+        await fixture(html`<y-dialog visible></y-dialog>`);
+        document.removeEventListener("open", onOpen);
+
+        expect(events.length).to.equal(0);
+    });
+
+    it("does not fire a duplicate open when already open", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        el.visible = true;
+        const events = [];
+        el.addEventListener("open", (e) => events.push(e.type));
+
+        el.show();
+        el.visible = true;
+
+        expect(events.length).to.equal(0);
+    });
+
+    it("open and close bubble and cross the shadow boundary", async () => {
+        const el = await fixture(html`<y-dialog></y-dialog>`);
+        const events = [];
+        const onOpen = (e) => events.push(e);
+        document.addEventListener("open", onOpen);
+
+        el.visible = true;
+        document.removeEventListener("open", onOpen);
+
+        expect(events.length).to.equal(1);
+        expect(events[0].composed).to.be.true;
+    });
+
     it("focuses the dialog element on show", async () => {
         const el = await fixture(html`<y-dialog></y-dialog>`);
         const dialogEl = el.shadowRoot.querySelector(".dialog");

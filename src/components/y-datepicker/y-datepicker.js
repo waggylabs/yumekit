@@ -2,6 +2,7 @@ import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-input/y-input.js";
 import "../y-select/y-select.js";
+import { upgradeProperties } from "../../modules/helpers.js";
 
 const MONTHS = [
     "January",
@@ -65,6 +66,7 @@ export class YumeDatepicker extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._setupMediaQuery();
         this._parseValue();
         this.render();
@@ -376,7 +378,10 @@ export class YumeDatepicker extends HTMLElement {
         root.querySelectorAll(".month-btn").forEach((btn) => {
             btn.addEventListener("click", () => {
                 const vd = this._viewDateForSide(btn.dataset.side);
-                this._selectMonth(vd.getFullYear(), parseInt(btn.dataset.month));
+                this._selectMonth(
+                    vd.getFullYear(),
+                    parseInt(btn.dataset.month),
+                );
             });
         });
 
@@ -452,20 +457,20 @@ export class YumeDatepicker extends HTMLElement {
             const isSelected = this._sameDay(date, this._startDate);
             const inRange = this._inRange(date);
 
-            let styleType = "flat";
+            let variant = "flat";
             let color = "base";
 
             if (isEdge || isSelected) {
-                styleType = "filled";
+                variant = "filled";
                 color = this.color;
             } else if (inRange) {
-                styleType = "flat";
+                variant = "flat";
                 color = this.color;
             }
 
             return `<y-button
                 class="day-btn"
-                style-type="${styleType}"
+                variant="${variant}"
                 color="${color}"
                 size="medium"
                 padding-mode="square"
@@ -519,16 +524,16 @@ export class YumeDatepicker extends HTMLElement {
         return `
             <div class="cal-header">
                 <div class="nav-start">
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
-                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" padding-mode="square"data-side="${side}" style-type="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-year" padding-mode="square" data-side="${side}" variant="flat" size="small" aria-label="Previous year"><y-icon name="expand-left" size="small"></y-icon></y-button>` : ""}
+                    ${showPrev ? `<y-button class="nav-btn" data-action="prev-month" padding-mode="square" data-side="${side}" variant="flat" size="small" aria-label="Previous month"><y-icon name="chevron-left" size="small"></y-icon></y-button>` : ""}
                 </div>
                 <div class="header-selects">
                     ${this.showMonths ? `<y-select class="month-sel" data-side="${side}" size="small" value="${month}" options='${monthOptions}'></y-select>` : ""}
                     ${this.showYears ? `<y-select class="year-sel" data-side="${side}" size="small" value="${year}" options='${yearOptions}'></y-select>` : ""}
                 </div>
                 <div class="nav-end">
-                    ${showNext ? `<y-button class="nav-btn" data-action="next-month" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
-                    ${showNext ? `<y-button class="nav-btn" data-action="next-year" padding-mode="square" data-side="${side}" style-type="flat" size="small" aria-label="Next year"><y-icon name="expand-right" size="small"></y-icon></y-button>` : ""}
+                    ${showNext ? `<y-button class="nav-btn" data-action="next-month" padding-mode="square" data-side="${side}" variant="flat" size="small" aria-label="Next month"><y-icon name="chevron-right" size="small"></y-icon></y-button>` : ""}
+                    ${showNext ? `<y-button class="nav-btn" data-action="next-year" padding-mode="square" data-side="${side}" variant="flat" size="small" aria-label="Next year"><y-icon name="expand-right" size="small"></y-icon></y-button>` : ""}
                 </div>
             </div>
         `;
@@ -546,7 +551,7 @@ export class YumeDatepicker extends HTMLElement {
                         this._startDate.getMonth() === i;
                     return `<y-button
                         class="month-btn"
-                        style-type="${isSelected ? "filled" : "flat"}"
+                        variant="${isSelected ? "filled" : "flat"}"
                         color="${isSelected ? this.color : "base"}"
                         size="small"
                         padding-mode="square"
@@ -598,6 +603,10 @@ export class YumeDatepicker extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body, sans-serif);
@@ -793,7 +802,7 @@ export class YumeDatepicker extends HTMLElement {
             const sel = time.h === h;
             return `<y-button
                 class="time-btn${sel ? " selected" : ""}"
-                style-type="${sel ? "filled" : "flat"}"
+                variant="${sel ? "filled" : "flat"}"
                 color="${sel ? this.color : "base"}"
                 size="small"
                 data-hour="${h}"
@@ -819,7 +828,7 @@ export class YumeDatepicker extends HTMLElement {
                                 m;
                             return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
-                            style-type="${sel ? "filled" : "flat"}"
+                            variant="${sel ? "filled" : "flat"}"
                             color="${sel ? this.color : "base"}"
                             size="small"
                             data-minute="${m}"
@@ -847,7 +856,7 @@ export class YumeDatepicker extends HTMLElement {
                                 s;
                             return `<y-button
                             class="time-btn${sel ? " selected" : ""}"
-                            style-type="${sel ? "filled" : "flat"}"
+                            variant="${sel ? "filled" : "flat"}"
                             color="${sel ? this.color : "base"}"
                             size="small"
                             data-second="${s}"
@@ -895,7 +904,7 @@ export class YumeDatepicker extends HTMLElement {
                         const disabled = this._isYearDisabled(y);
                         return `<y-button
                     class="year-btn"
-                    style-type="${isSelected ? "filled" : "flat"}"
+                    variant="${isSelected ? "filled" : "flat"}"
                     color="${isSelected ? this.color : "base"}"
                     size="small"
                     padding-mode="square"

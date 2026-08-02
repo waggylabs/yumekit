@@ -1,5 +1,5 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeGallery extends HTMLElement {
     static get observedAttributes() {
@@ -28,6 +28,7 @@ export class YumeGallery extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this._bindSlotListener();
     }

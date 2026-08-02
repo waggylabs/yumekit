@@ -1,5 +1,5 @@
 import "../y-tree-item/y-tree-item.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 const ROUTE_MATCH_VALUES = ["exact", "prefix", "off"];
 const SELECTION_VALUES = ["single", "none"];
@@ -31,6 +31,7 @@ export class YumeTree extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "tree");
         if (!this.hasAttribute("aria-label")) {
             this.setAttribute("aria-label", "Tree");
@@ -148,6 +149,10 @@ export class YumeTree extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 background: var(--component-tree-background);

@@ -101,17 +101,17 @@ export const RichItems = {
             <y-card data-id="inbox" raised>
                 <div slot="header"><strong>Inbox</strong></div>
                 <p style="margin:0">12 unread messages</p>
-                <y-tag slot="footer" color="primary" style-type="flat" size="small">Active</y-tag>
+                <y-tag slot="footer" color="primary" variant="flat" size="small">Active</y-tag>
             </y-card>
             <y-card data-id="drafts" raised>
                 <div slot="header"><strong>Drafts</strong></div>
                 <p style="margin:0">3 in progress</p>
-                <y-tag slot="footer" color="warning" style-type="flat" size="small">Pending</y-tag>
+                <y-tag slot="footer" color="warning" variant="flat" size="small">Pending</y-tag>
             </y-card>
             <y-card data-id="archive" raised>
                 <div slot="header"><strong>Archive</strong></div>
                 <p style="margin:0">2,341 messages</p>
-                <y-tag slot="footer" color="base" style-type="flat" size="small">Read-only</y-tag>
+                <y-tag slot="footer" color="base" variant="flat" size="small">Read-only</y-tag>
             </y-card>
         </y-droplist>
     `,

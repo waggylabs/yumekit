@@ -127,10 +127,10 @@ describe("<y-color>", () => {
         expect(picker.getAttribute("value")).to.equal("#abcdef");
     });
 
-    it("formats setter mirrors a JSON string instead of double-encoding it", async () => {
+    it("formats setter parses a JSON string without reflecting to the attribute", async () => {
         const el = await fixture(html`<y-color></y-color>`);
         el.formats = '["hex","rgb"]';
-        expect(el.getAttribute("formats")).to.equal('["hex","rgb"]');
+        expect(el.hasAttribute("formats")).to.be.false;
         expect(el.formats).to.deep.equal(["hex", "rgb"]);
     });
 

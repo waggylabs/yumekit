@@ -46,6 +46,7 @@ declare module "react" {
                 size?: "small" | "medium" | "large";
                 shape?: string;
                 color?: string;
+                loading?: boolean | string;
             }>;
             "y-avatar-group": El<{
                 avatars?:
@@ -71,7 +72,7 @@ declare module "react" {
                 inset?: "none" | "small" | "medium" | "large";
             }>;
             "y-breadcrumbs": El<{
-                items?: string;
+                items?: unknown[] | string;
                 size?: "small" | "medium" | "large";
                 separator?: string;
                 "max-items"?: string | number;
@@ -98,6 +99,8 @@ declare module "react" {
                 "right-icon"?: string;
                 color?: string;
                 size?: "small" | "medium" | "large";
+                variant?: "outlined" | "filled" | "flat";
+                /** @deprecated Use `variant` instead. */
                 "style-type"?: "outlined" | "filled" | "flat";
                 "padding-mode"?: "auto" | "square" | "wide";
                 type?: string;
@@ -127,6 +130,20 @@ declare module "react" {
             "y-card": El<{
                 color?: string;
                 raised?: boolean | string;
+            }>;
+            "y-carousel": El<{
+                index?: string | number;
+                "per-view"?: string | number;
+                gap?: string;
+                orientation?: "horizontal" | "vertical";
+                loop?: boolean | string;
+                autoplay?: boolean | string;
+                interval?: string | number;
+                "pause-on-hover"?: boolean | string;
+                arrows?: "true" | "false" | "hover";
+                pagination?: "dots" | "fraction" | "none";
+                swipe?: boolean | string;
+                snap?: "start" | "center";
             }>;
             "y-code": El<{
                 language?: string;
@@ -253,6 +270,22 @@ declare module "react" {
                 "drag-class"?: string;
                 handle?: string;
             }>;
+            "y-form": El<{
+                fields?: unknown[] | string;
+                "submit-text"?: string;
+                "reset-text"?: string;
+                "no-reset"?: boolean | string;
+                layout?: "vertical" | "horizontal" | "inline";
+                "label-position"?: "top" | "left";
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                loading?: boolean | string;
+                "loading-mode"?: "ring" | "skeleton";
+                novalidate?: boolean | string;
+                action?: string;
+                method?: "get" | "post";
+                name?: string;
+            }>;
             "y-gallery": El<{
                 layout?: "grid" | "row" | "column" | "masonry";
                 columns?: string | number;
@@ -359,6 +392,7 @@ declare module "react" {
                 type?: string;
                 name?: string;
                 value?: string;
+                placeholder?: string;
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
@@ -367,6 +401,9 @@ declare module "react" {
                 max?: string | number;
                 step?: string | number;
                 variant?: "default" | "underline";
+                required?: boolean | string;
+                autocomplete?: string;
+                "error-text"?: string;
             }>;
             "y-masonry": El<{
                 columns?: string | number;
@@ -534,6 +571,7 @@ declare module "react" {
                 "display-mode"?: "tag";
                 "close-on-click-outside"?: string;
                 variant?: "default" | "underline";
+                "error-text"?: string;
             }>;
             "y-shape": El<{
                 type?:
@@ -551,6 +589,13 @@ declare module "react" {
                 fit?: "contain" | "cover" | "fill";
                 "preserve-aspect"?: boolean | string;
                 size?: "small" | "medium" | "large";
+            }>;
+            "y-skeleton": El<{
+                variant?: "text" | "circle" | "rect";
+                width?: string;
+                height?: string;
+                lines?: string | number;
+                animation?: "pulse" | "wave" | "none";
             }>;
             "y-slider": El<{
                 name?: string;
@@ -655,21 +700,50 @@ declare module "react" {
                 "off-color"?: string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-editor": El<{
+                name?: string;
+                value?: string;
+                mode?: "rich";
+                toolbar?: string;
+                placeholder?: string;
+                rows?: string | number;
+                "max-length"?: string | number;
+                "show-count"?: boolean | string;
+                size?: "small" | "medium" | "large";
+                disabled?: boolean | string;
+                readonly?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                "allowed-blocks"?: string;
+                "image-upload"?: boolean | string;
+                triggers?: unknown[] | string;
+                "mention-loading"?: boolean | string;
+                "mention-query-delay"?: string | number;
+            }>;
             "y-textarea": El<{
                 name?: string;
                 value?: string;
+                placeholder?: string;
                 rows?: string | number;
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
                 "label-position"?: "top" | "bottom";
                 variant?: "default" | "underline";
+                required?: boolean | string;
+                autocomplete?: string;
+                "error-text"?: string;
+                triggers?: unknown[] | string;
+                "mention-loading"?: boolean | string;
+                "mention-query-delay"?: string | number;
             }>;
             "y-table": El<{
                 columns?: unknown[] | string;
                 data?: unknown[] | string;
                 striped?: boolean | string;
                 size?: "small" | "medium" | "large";
+                loading?: boolean | string;
+                "skeleton-rows"?: string | number;
             }>;
             "y-data-grid": El<{
                 columns?: unknown[] | string;
@@ -679,6 +753,8 @@ declare module "react" {
                 "current-page"?: string | number;
                 "total-rows"?: string | number;
                 loading?: boolean | string;
+                "loading-mode"?: "auto" | "overlay" | "skeleton";
+                "skeleton-rows"?: string | number;
                 striped?: boolean | string;
                 hover?: boolean | string;
                 "fixed-header"?: boolean | string;
@@ -724,6 +800,8 @@ declare module "react" {
                 color?: string;
                 size?: "small" | "medium" | "large";
                 removable?: boolean | string;
+                variant?: "filled" | "outlined" | "flat";
+                /** @deprecated Use `variant` instead. */
                 "style-type"?: "filled" | "outlined" | "flat";
                 shape?: "square" | "round";
             }>;
@@ -742,6 +820,56 @@ declare module "react" {
                     | "bottom-center";
                 duration?: string | number;
                 max?: string | number;
+            }>;
+            "y-tokens": El<{
+                value?:
+                    | Array<
+                          | string
+                          | {
+                                value: string;
+                                label?: string;
+                                icon?: string;
+                                color?: string;
+                                invalid?: boolean;
+                            }
+                      >
+                    | string;
+                options?:
+                    | Array<
+                          | string
+                          | {
+                                value: string;
+                                label?: string;
+                                icon?: string;
+                                color?: string;
+                                invalid?: boolean;
+                                disabled?: boolean;
+                            }
+                      >
+                    | string;
+                name?: string;
+                async?: boolean | string;
+                loading?: boolean | string;
+                "query-delay"?: string | number;
+                filter?: "contains" | "starts-with" | "none";
+                "allow-custom"?: boolean | string;
+                max?: string | number;
+                duplicates?: "ignore" | "allow" | "error";
+                separators?: string;
+                placeholder?: string;
+                "placeholder-persist"?: boolean | string;
+                "token-variant"?: "filled" | "outlined" | "flat";
+                "token-shape"?: "square" | "round";
+                size?: "small" | "medium" | "large";
+                variant?: "default" | "underline";
+                "label-position"?: "top" | "left" | "hidden";
+                clearable?: boolean | string;
+                portal?: boolean | string;
+                disabled?: boolean | string;
+                readonly?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                "error-text"?: string;
             }>;
             "y-tooltip": El<{
                 text?: string;
@@ -762,6 +890,21 @@ declare module "react" {
                 selected?: boolean | string;
                 disabled?: boolean | string;
                 history?: "push" | "replace" | "false";
+            }>;
+            "y-upload": El<{
+                name?: string;
+                accept?: string;
+                multiple?: boolean | string;
+                disabled?: boolean | string;
+                required?: boolean | string;
+                "max-files"?: string | number;
+                "max-size"?: string | number;
+                "max-total-size"?: string | number;
+                variant?: "dropzone" | "button";
+                size?: "small" | "medium" | "large";
+                "show-list"?: boolean | string;
+                previews?: boolean | string;
+                directory?: boolean | string;
             }>;
         }
     }

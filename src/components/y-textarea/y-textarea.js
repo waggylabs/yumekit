@@ -1,7 +1,17 @@
+import "../y-icon/y-icon.js";
+import "../y-popover/y-popover.js";
 import {
-    manageLabelVisibility,
+    applyControlError,
     createElement as _el,
+    forwardControlAttributes,
+    manageLabelVisibility,
+    upgradeProperties,
 } from "../../modules/helpers.js";
+import {
+    caretRectInTextarea,
+    MENTION_STYLES,
+    MentionController,
+} from "../../modules/mentions.js";
 
 export class YumeTextarea extends HTMLElement {
     static formAssociated = true;
@@ -15,7 +25,16 @@ export class YumeTextarea extends HTMLElement {
             "disabled",
             "invalid",
             "name",
+            "placeholder",
             "variant",
+            "required",
+            "autocomplete",
+            "error-text",
+            "mention-loading",
+            "mention-query-delay",
+            "triggers",
+            "aria-label",
+            "aria-labelledby",
         ];
     }
 
@@ -27,18 +46,39 @@ export class YumeTextarea extends HTMLElement {
         super();
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
+        this._mentions = new MentionController(this, this._mentionAdapter());
         this.render();
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
         this._internals.setFormValue(this.value);
     }
 
+    disconnectedCallback() {
+        this._mentions.close("blur");
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+
+        if (name === "triggers") {
+            this._mentions.triggers = newValue;
+            return;
+        }
+
+        if (name === "mention-loading") {
+            this._mentions.loading = newValue !== null;
+            return;
+        }
+
+        if (name === "mention-query-delay") {
+            this._mentions.queryDelay = newValue;
+            return;
+        }
 
         if (name === "value") {
             if (this.textarea) this.textarea.value = newValue;
@@ -61,6 +101,42 @@ export class YumeTextarea extends HTMLElement {
             return;
         }
 
+        if (name === "error-text") {
+            this._updateErrorText();
+            return;
+        }
+
+        // Re-rendering here would replace the <textarea>, dropping focus, caret
+        // position, and IME composition — exactly what a form does on submit.
+        if (name === "disabled") {
+            if (this.textarea) this.textarea.disabled = this.disabled;
+            if (this.disabled) this._mentions.close("blur");
+            this._updateValidationState();
+            return;
+        }
+
+        if (
+            name === "required" ||
+            name === "autocomplete" ||
+            name === "aria-label" ||
+            name === "aria-labelledby"
+        ) {
+            forwardControlAttributes(this, this.textarea);
+            this._updateValidationState();
+            return;
+        }
+
+        if (name === "placeholder") {
+            if (this.textarea) {
+                if (newValue != null) {
+                    this.textarea.setAttribute("placeholder", newValue);
+                } else {
+                    this.textarea.removeAttribute("placeholder");
+                }
+            }
+            return;
+        }
+
         this.render();
     }
 
@@ -75,6 +151,19 @@ export class YumeTextarea extends HTMLElement {
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
+    }
+
+    /**
+     * @type {string} Validation message shown below the field. A non-empty
+     * value also puts the textarea in the invalid state and becomes its
+     * accessible description.
+     */
+    get errorText() {
+        return this.getAttribute("error-text") || "";
+    }
+    set errorText(val) {
+        if (val == null || val === "") this.removeAttribute("error-text");
+        else this.setAttribute("error-text", val);
     }
 
     /** @type {boolean} Whether the textarea is in an invalid state. */
@@ -94,12 +183,51 @@ export class YumeTextarea extends HTMLElement {
         this.setAttribute("label-position", val);
     }
 
+    /**
+     * @type {Array<Object>} Candidates for the open mention popup. Assigning
+     * opens or refreshes it; prefer `setMentionCandidates` so a stale response
+     * cannot repopulate a popup the caret has already moved past.
+     */
+    get mentionCandidates() {
+        return this._mentions.candidates;
+    }
+    set mentionCandidates(val) {
+        this._mentions.candidates = val;
+    }
+
+    /** @type {boolean} Whether the mention popup shows its busy state. */
+    get mentionLoading() {
+        return this.hasAttribute("mention-loading");
+    }
+    set mentionLoading(val) {
+        if (val) this.setAttribute("mention-loading", "");
+        else this.removeAttribute("mention-loading");
+    }
+
+    /** @type {number} Debounce in ms before `mention-query` fires (default 150). */
+    get mentionQueryDelay() {
+        return this._mentions.queryDelay;
+    }
+    set mentionQueryDelay(val) {
+        if (val == null) this.removeAttribute("mention-query-delay");
+        else this.setAttribute("mention-query-delay", String(val));
+    }
+
     /** @type {string} The form field name. */
     get name() {
         return this.getAttribute("name") || "";
     }
     set name(val) {
         this.setAttribute("name", val);
+    }
+
+    /** @type {string} Hint text shown when the textarea is empty. */
+    get placeholder() {
+        return this.getAttribute("placeholder") || "";
+    }
+    set placeholder(val) {
+        if (val == null || val === "") this.removeAttribute("placeholder");
+        else this.setAttribute("placeholder", val);
     }
 
     /** @type {number} Number of visible text rows (default 3). */
@@ -119,6 +247,19 @@ export class YumeTextarea extends HTMLElement {
     }
 
     /**
+     * @type {Array<Object>} Mention trigger definitions —
+     * `{trigger, type, minChars, maxChars, allowSpaces, insert}`. Rich data:
+     * not reflected to the attribute. An empty list disables the feature.
+     * `atomic` is ignored here — a textarea value is plain text.
+     */
+    get triggers() {
+        return this._mentions.triggers;
+    }
+    set triggers(val) {
+        this._mentions.triggers = val;
+    }
+
+    /**
      * @type {"default"|"underline"} Field style. `"default"` is a full border;
      * `"underline"` shows only a bottom border with square bottom corners.
      */
@@ -128,7 +269,10 @@ export class YumeTextarea extends HTMLElement {
             : "default";
     }
     set variant(val) {
-        this.setAttribute("variant", val === "underline" ? "underline" : "default");
+        this.setAttribute(
+            "variant",
+            val === "underline" ? "underline" : "default",
+        );
     }
 
     /** @type {string} The current textarea value. */
@@ -149,6 +293,21 @@ export class YumeTextarea extends HTMLElement {
         return this.textarea?.checkValidity?.() ?? true;
     }
 
+    /** Dismiss the mention popup, leaving the typed text untouched. */
+    closeMentions() {
+        this._mentions.close("escape");
+    }
+
+    /**
+     * Insert a mention at the caret, replacing the active trigger fragment when
+     * there is one.
+     * @param {{value: string, label?: string}} candidate
+     * @param {string} [trigger] — trigger literal or type; defaults to the active one
+     */
+    insertMention(candidate, trigger) {
+        this._mentions.insert(candidate, trigger);
+    }
+
     render() {
         const size = this.getAttribute("size") || "medium";
         const rows = this.getAttribute("rows") || "3";
@@ -160,7 +319,7 @@ export class YumeTextarea extends HTMLElement {
         const paddingVar = this._getPaddingVar(size);
 
         this.shadowRoot.adoptedStyleSheets = [
-            this._buildStyleSheet(isDisabled, paddingVar),
+            this._buildStyleSheet(paddingVar),
         ];
         this.shadowRoot.replaceChildren(
             this._buildTree(rows, isLabelTop, isDisabled),
@@ -169,22 +328,68 @@ export class YumeTextarea extends HTMLElement {
         this.textarea = this.shadowRoot.querySelector("textarea");
         this.inputContainer = this.shadowRoot.querySelector(".input-container");
         this.labelWrapper = this.shadowRoot.querySelector(".label-wrapper");
+        this.errorElement = this.shadowRoot.querySelector(".error-text");
+
         manageLabelVisibility(this.labelWrapper);
+        forwardControlAttributes(this, this.textarea);
+        this._updateErrorText();
 
         // <textarea> value must be set via property, not HTML attribute
         this.textarea.value = value;
 
-        if (!isDisabled) {
-            this._bindTextareaListeners();
-            this._updateValidationState();
-        }
+        this._bindTextareaListeners();
+        this._updateValidationState();
+
+        // The shadow tree was replaced, taking the popup with it.
+        this._mentions.destroy();
+        this._mentions.mount(this.shadowRoot.querySelector(".input-wrapper"));
+    }
+
+    /**
+     * Supply results for a `mention-query`. A superseded or closed query id is
+     * ignored.
+     * @param {number} id — the `id` carried by the `mention-query` event
+     * @param {Array<Object>} candidates
+     */
+    setMentionCandidates(id, candidates) {
+        this._mentions.setCandidates(id, candidates);
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
+    /**
+     * Replace the trigger fragment with the resolved mention text. Routed
+     * through `execCommand` so the browser's own undo stack records it as one
+     * step; the manual fallback covers engines that refuse the command.
+     */
+    _applyMention({ text, fragment }) {
+        const textarea = this.textarea;
+        if (!textarea) return;
+
+        const start = fragment ? fragment.start : textarea.selectionStart;
+        const end = fragment ? fragment.end : textarea.selectionEnd;
+        const caret = start + text.length;
+
+        textarea.focus();
+        textarea.setSelectionRange(start, end);
+        if (document.execCommand?.("insertText", false, text)) return;
+
+        const value = textarea.value;
+        textarea.value = value.slice(0, start) + text + value.slice(end);
+        textarea.setSelectionRange(caret, caret);
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     _bindTextareaListeners() {
+        this.inputContainer.addEventListener("mousedown", (e) => {
+            if (e.target !== this.textarea) {
+                e.preventDefault();
+                this.textarea.focus();
+            }
+        });
+
         this.textarea.addEventListener("input", (e) => {
             this.setAttribute("value", e.target.value);
             this._internals.setFormValue(
@@ -199,7 +404,42 @@ export class YumeTextarea extends HTMLElement {
                 }),
             );
             this._updateValidationState();
+            this._mentions.refresh();
         });
+
+        // The inner textarea's native `change` is not composed, so it stops at
+        // the shadow boundary. Re-emit it on the host to restore native commit
+        // semantics (blur after an edit) for listeners outside.
+        this.textarea.addEventListener("change", (e) => {
+            this.setAttribute("value", e.target.value);
+            this._internals.setFormValue(
+                e.target.value,
+                this.getAttribute("name"),
+            );
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: e.target.value },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+            this._updateValidationState();
+        });
+
+        this.textarea.addEventListener("keydown", (e) => {
+            this._mentions.handleKeyDown(e);
+        });
+        this.textarea.addEventListener("keyup", () => this._mentions.refresh());
+        this.textarea.addEventListener("click", () => this._mentions.refresh());
+        this.textarea.addEventListener("blur", () =>
+            this._mentions.close("blur"),
+        );
+        this.textarea.addEventListener("compositionstart", () =>
+            this._mentions.handleCompositionStart(),
+        );
+        this.textarea.addEventListener("compositionend", () =>
+            this._mentions.handleCompositionEnd(),
+        );
     }
 
     _buildTree(rows, isLabelTop, isDisabled) {
@@ -211,28 +451,49 @@ export class YumeTextarea extends HTMLElement {
         const textarea = _el("textarea", {
             part: "textarea",
             rows,
+            placeholder: this.getAttribute("placeholder"),
             disabled: isDisabled || null,
         });
 
         const container = _el("div", { class: "input-container" }, [textarea]);
 
+        const error = _el("div", {
+            class: "error-text",
+            part: "error-text",
+            id: "error-text",
+            "aria-live": "polite",
+            hidden: true,
+        });
+
         const children = [];
         if (isLabelTop) children.push(buildLabelSlot());
         children.push(container);
         if (!isLabelTop) children.push(buildLabelSlot());
+        children.push(error);
 
         return _el("div", { class: "input-wrapper" }, children);
     }
 
-    _buildStyleSheet(isDisabled, paddingVar) {
+    _buildStyleSheet(paddingVar) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);
                 color: var(--component-input-color);
-                opacity: ${isDisabled ? "0.75" : "1"};
-                pointer-events: ${isDisabled ? "none" : "auto"};
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* Expressed as a selector, not interpolated, so toggling disabled
+               never has to rebuild the shadow tree. */
+            :host([disabled]) {
+                opacity: 0.75;
+                pointer-events: none;
             }
 
             .input-wrapper {
@@ -249,13 +510,17 @@ export class YumeTextarea extends HTMLElement {
             .input-container {
                 display: flex;
                 align-items: flex-start;
-                background: ${isDisabled ? "var(--component-input-background-disabled)" : "var(--component-input-background)"};
+                background: var(--component-input-background);
                 border: 1px solid var(--component-input-border-color);
                 border-width: var(--component-inputs-border-width, 1px);
                 border-radius: var(--component-inputs-border-radius-outer);
                 padding: var(${paddingVar});
                 box-sizing: border-box;
                 transition: border-color 0.2s ease-in-out;
+            }
+
+            :host([disabled]) .input-container {
+                background: var(--component-input-background-disabled);
             }
 
             /* Underline variant: bottom border only, square bottom corners. */
@@ -299,6 +564,11 @@ export class YumeTextarea extends HTMLElement {
                 box-sizing: border-box;
             }
 
+            textarea::placeholder {
+                color: var(--component-input-placeholder-color);
+                opacity: 1;
+            }
+
             .input-container:hover {
                 border-color: var(--component-input-color);
                 transition: border-color 0.2s ease-in-out;
@@ -312,11 +582,22 @@ export class YumeTextarea extends HTMLElement {
                 color: var(--component-input-error-color);
             }
 
+            .error-text {
+                font-size: 0.8em;
+                color: var(--component-input-error-color);
+            }
+
+            .error-text[hidden] {
+                display: none;
+            }
+
             ::slotted([slot="label"]) {
                 font-weight: 500;
                 font-size: 0.875em;
                 color: var(--component-input-label-color);
             }
+
+            ${MENTION_STYLES}
         `);
         return sheet;
     }
@@ -330,10 +611,53 @@ export class YumeTextarea extends HTMLElement {
         return map[size] || map.medium;
     }
 
+    /** Host hooks the shared mention controller drives the textarea through. */
+    _mentionAdapter() {
+        const host = this;
+        return {
+            get surface() {
+                return host.textarea;
+            },
+            defaultRole: null,
+            isInactive: () => host.disabled || host.hasAttribute("readonly"),
+            getContext: () => {
+                const textarea = host.textarea;
+                if (!textarea) return null;
+                if (textarea.selectionStart !== textarea.selectionEnd) {
+                    return null;
+                }
+                return {
+                    text: textarea.value,
+                    caret: textarea.selectionStart,
+                };
+            },
+
+            getCaretRect: (fragment) => {
+                const textarea = host.textarea;
+                if (!textarea) return null;
+                return caretRectInTextarea(
+                    textarea,
+                    fragment?.end ?? textarea.selectionStart,
+                );
+            },
+            applyInsertion: (payload) => host._applyMention(payload),
+        };
+    }
+
+    _updateErrorText() {
+        applyControlError(this.textarea, this.errorElement, this.errorText);
+        this._updateValidationState();
+    }
+
     _updateValidationState() {
+        // A pristine empty `required` field is not styled as an error — that
+        // only lands once something asks for it (a form submit setting
+        // `error-text`/`invalid`). Format failures still show immediately.
+        const validity = this.textarea?.validity;
         const isInvalid =
             this.hasAttribute("invalid") ||
-            (this.textarea && !this.checkValidity());
+            this.errorText !== "" ||
+            (!!validity && !validity.valid && !validity.valueMissing);
         this.inputContainer?.classList.toggle("is-invalid", isInvalid);
         this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }

@@ -21,7 +21,7 @@ YumeKit is a collection of 51 production-ready components built with native Web 
 
 - **Zero dependencies** — built entirely on web standards
 - **Framework-agnostic** — works with React, Vue, Svelte, or plain HTML
-- **Themeable** — 22 built-in themes plus support for fully custom themes
+- **Themeable** — 60 built-in themes plus support for fully custom themes
 - **Accessible** — ARIA-compliant, keyboard navigable, form-associated inputs
 - **Tree-shakeable** — import only the components you use
 
@@ -86,6 +86,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Button       | `<y-button>`       | Button with icon, size, and style variants             |
 | Button Group | `<y-button-group>` | Groups buttons (or inputs) into a connected toolbar    |
 | Card         | `<y-card>`         | Content card container                                 |
+| Carousel     | `<y-carousel>`     | Slideshow with arrows, pagination, swipe, and autoplay |
 | Checkbox     | `<y-checkbox>`     | Form checkbox input                                    |
 | Code         | `<y-code>`         | Code block with built-in syntax highlighting           |
 | Color        | `<y-color>`        | Color swatch / value display                           |
@@ -97,6 +98,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Dock         | `<y-dock>`         | Fixed navigation dock                                  |
 | Drawer       | `<y-drawer>`       | Side drawer / sidebar                                  |
 | Droplist     | `<y-droplist>`     | Drag-and-drop reorderable list                         |
+| Form         | `<y-form>`         | Form container that renders and manages form controls  |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                            |
 | Grid         | `<y-grid>`         | CSS Grid layout container                              |
 | Help         | `<y-help>`         | Guided product tour / onboarding walkthrough           |
@@ -124,8 +126,10 @@ Then use the `<y-theme>` component to apply a theme:
 | Textarea     | `<y-textarea>`     | Multi-line text input                                  |
 | Theme        | `<y-theme>`        | Theme provider                                         |
 | Toast        | `<y-toast>`        | Notification toast                                     |
+| Tokens       | `<y-tokens>`       | Multi-value token (chip) input with typeahead          |
 | Tooltip      | `<y-tooltip>`      | Tooltip / popover                                      |
 | Tree         | `<y-tree>`         | Hierarchical tree view                                 |
+| Upload       | `<y-upload>`       | File upload with drag-and-drop, validation, and previews |
 
 ---
 

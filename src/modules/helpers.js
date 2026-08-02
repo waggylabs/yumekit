@@ -339,6 +339,69 @@ export function createElement(tag, attrs, children) {
 }
 
 /**
+ * Host attributes mirrored onto a component's inner form control.
+ *
+ * `aria-describedby` is deliberately absent: an IDREF cannot cross a shadow
+ * boundary, so forwarding one from the host would always dangle. Components
+ * describe their own control instead — see `applyControlError`.
+ */
+export const FORWARDED_CONTROL_ATTRIBUTES = [
+    "aria-label",
+    "aria-labelledby",
+    "autocomplete",
+    "required",
+];
+
+/**
+ * Mirror accessibility and native-validation attributes from a component host
+ * onto the focusable control inside its shadow root. Without this the host
+ * carries the attributes but assistive technology reads the inner control,
+ * leaving it unnamed. Safe to call on every render.
+ * @param {HTMLElement} host — the custom element
+ * @param {HTMLElement} control — the inner focusable control
+ * @param {string[]} [attributes] — override the forwarded set; components whose
+ *   control is not a native form field (or that own an attribute themselves)
+ *   narrow this list.
+ */
+export function forwardControlAttributes(
+    host,
+    control,
+    attributes = FORWARDED_CONTROL_ATTRIBUTES,
+) {
+    if (!control) return;
+
+    for (const name of attributes) {
+        const value = host.getAttribute(name);
+        if (value == null) control.removeAttribute(name);
+        else control.setAttribute(name, value);
+    }
+}
+
+/**
+ * Render a validation message into a component's own shadow root and point the
+ * control's accessible description at it. Both elements share a root, so the
+ * `aria-describedby` IDREF resolves.
+ * @param {HTMLElement} control — the inner focusable control
+ * @param {HTMLElement} errorEl — the message element; must carry an `id`
+ * @param {string} message — the message, or empty to clear
+ */
+export function applyControlError(control, errorEl, message) {
+    if (errorEl) {
+        errorEl.textContent = message || "";
+        errorEl.hidden = !message;
+    }
+    if (!control) return;
+
+    if (message) {
+        control.setAttribute("aria-invalid", "true");
+        if (errorEl?.id) control.setAttribute("aria-describedby", errorEl.id);
+    } else {
+        control.removeAttribute("aria-invalid");
+        control.removeAttribute("aria-describedby");
+    }
+}
+
+/**
  * Watch a label slot inside a wrapper element and toggle the wrapper's
  * visibility based on whether the slot has meaningful content.
  * CSS should default the wrapper to `display: none`.
@@ -605,4 +668,61 @@ export function measureCSSLength(container, cssLength) {
     const px = probe.offsetWidth;
     probe.remove();
     return px;
+}
+
+/**
+ * Reapply any accessor-backed properties that were assigned to `el` as plain
+ * own-properties before the custom element definition upgraded it. Without
+ * this, a value set via `el.foo = x` before upgrade shadows the class getter/
+ * setter, so the setter (and its reflection side effects) never runs. Discovers
+ * every property with a setter on the prototype chain up to HTMLElement, then
+ * deletes and re-assigns any that were pre-upgrade shadowed. Call once at the
+ * top of `connectedCallback`.
+ * @param {HTMLElement} el — the custom element instance (pass `this`)
+ */
+export function upgradeProperties(el) {
+    const setters = new Set();
+
+    let proto = Object.getPrototypeOf(el);
+    while (proto && proto !== HTMLElement.prototype) {
+        for (const [name, desc] of Object.entries(
+            Object.getOwnPropertyDescriptors(proto),
+        )) {
+            if (desc.set) setters.add(name);
+        }
+        proto = Object.getPrototypeOf(proto);
+    }
+
+    for (const name of setters) {
+        if (!Object.prototype.hasOwnProperty.call(el, name)) continue;
+        const value = el[name];
+        delete el[name];
+        el[name] = value;
+    }
+}
+
+/**
+ * Coerce a rich-data value (array/object) for a property whose matching
+ * attribute may carry a JSON string. Non-null objects and arrays pass through
+ * with their identity intact; a JSON string is parsed once and kept only if it
+ * yields a non-null object/array. Everything else — nullish, a primitive, an
+ * unparseable string, or a string that parses to a primitive (e.g. `"42"`,
+ * `"null"`) — returns the fallback, so callers can safely assume the result is
+ * a non-null object/array. Use in a property setter and in
+ * `attributeChangedCallback` so both the imperative and declarative paths
+ * converge on the same stored value. Rich data is intentionally not reflected
+ * back to the attribute.
+ * @param {*} val — an array/object, a JSON string, or nullish
+ * @param {*} [fallback=[]] — value returned for anything that isn't a non-null object/array
+ * @returns {*}
+ */
+export function coerceRichData(val, fallback = []) {
+    if (typeof val === "string") {
+        try {
+            val = JSON.parse(val);
+        } catch {
+            return fallback;
+        }
+    }
+    return val !== null && typeof val === "object" ? val : fallback;
 }

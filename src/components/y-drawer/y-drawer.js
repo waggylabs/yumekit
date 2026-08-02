@@ -1,5 +1,5 @@
 import { ellipsisV, ellipsisH } from "../../icons/index.js";
-import { resolveAnchor } from "../../modules/helpers.js";
+import { resolveAnchor, upgradeProperties } from "../../modules/helpers.js";
 
 class YumeDrawer extends HTMLElement {
     static get observedAttributes() {
@@ -13,6 +13,7 @@ class YumeDrawer extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._isOpen = false;
         this._onAnchorClick = this._onAnchorClick.bind(this);
         this._onKeyDown = this._onKeyDown.bind(this);
         this._onResizePointerDown = this._onResizePointerDown.bind(this);
@@ -21,9 +22,15 @@ class YumeDrawer extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this._setupAnchor();
-        if (this.visible) this._show();
+        if (this.visible) {
+            // Mounting already open is a starting state, not a transition, so
+            // it opens without firing `open`.
+            this._isOpen = true;
+            this._show();
+        }
     }
 
     disconnectedCallback() {
@@ -168,6 +175,10 @@ class YumeDrawer extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
@@ -333,6 +344,12 @@ class YumeDrawer extends HTMLElement {
         document.removeEventListener("pointerup", this._onResizePointerUp);
     }
 
+    _emit(name) {
+        this.dispatchEvent(
+            new CustomEvent(name, { bubbles: true, composed: true }),
+        );
+    }
+
     _getTransitionDuration(el) {
         if (!el) return 0;
         const style = getComputedStyle(el);
@@ -353,6 +370,11 @@ class YumeDrawer extends HTMLElement {
         if (panel) panel.classList.remove("open");
 
         document.removeEventListener("keydown", this._onKeyDown);
+
+        if (this._isOpen) {
+            this._isOpen = false;
+            this._emit("close");
+        }
 
         const duration = this._getTransitionDuration(panel);
         if (duration > 0) {
@@ -450,6 +472,11 @@ class YumeDrawer extends HTMLElement {
         }
 
         document.addEventListener("keydown", this._onKeyDown);
+
+        if (!this._isOpen) {
+            this._isOpen = true;
+            this._emit("open");
+        }
     }
 
     _teardownAnchor() {

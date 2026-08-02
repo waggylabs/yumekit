@@ -143,13 +143,13 @@ describe("YumeSidebar", () => {
         expect(buttons.length).to.equal(3);
     });
 
-    it("renders y-button elements with base color and flat style-type", async () => {
+    it("renders y-button elements with base color and flat variant", async () => {
         const el = await fixture(html`
             <y-sidebar .items=${sampleItems}></y-sidebar>
         `);
         const btn = el.shadowRoot.querySelector(".sidebar-body y-button");
         expect(btn.getAttribute("color")).to.equal("base");
-        expect(btn.getAttribute("style-type")).to.equal("flat");
+        expect(btn.getAttribute("variant")).to.equal("flat");
     });
 
     it("renders icon, label, and arrow on items with children", async () => {
@@ -466,11 +466,11 @@ describe("YumeSidebar", () => {
         ).to.equal(3);
     });
 
-    it("mirrors a JSON string assigned to items instead of double-encoding it", async () => {
+    it("parses a JSON string assigned to items without reflecting to the attribute", async () => {
         const el = await fixture(html`<y-sidebar></y-sidebar>`);
         const json = JSON.stringify(namedIconItems);
         el.items = json;
-        expect(el.getAttribute("items")).to.equal(json);
+        expect(el.hasAttribute("items")).to.be.false;
         expect(
             el.shadowRoot.querySelectorAll(".sidebar-body y-button").length,
         ).to.equal(3);

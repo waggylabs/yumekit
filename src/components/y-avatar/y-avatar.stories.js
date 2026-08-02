@@ -31,6 +31,11 @@ export default {
             description: "Border radius shape.",
             table: { defaultValue: { summary: "circle" } },
         },
+        loading: {
+            control: "boolean",
+            description: "Renders a skeleton placeholder (sized to `size`, shaped by `shape`) in place of the image/initials.",
+            table: { defaultValue: { summary: "false" } },
+        },
     },
     args: {
         alt: "Jane Doe",
@@ -38,14 +43,16 @@ export default {
         color: "primary",
         size: "medium",
         shape: "circle",
+        loading: false,
     },
-    render: ({ alt, src, color, size, shape }) => `
+    render: ({ alt, src, color, size, shape, loading }) => `
         <y-avatar
             alt="${alt}"
             ${src ? `src="${src}"` : ""}
             color="${color}"
             size="${size}"
             shape="${shape}"
+            ${loading ? "loading" : ""}
         ></y-avatar>
     `,
 };
@@ -95,6 +102,34 @@ export const Shapes = {
             <y-avatar alt="SQ" shape="square"></y-avatar>
         </div>
     `,
+};
+
+export const Loading = {
+    args: { loading: true, size: "large" },
+    parameters: {
+        docs: {
+            description: {
+                story: "With `loading` set, the avatar renders a `y-skeleton` placeholder sized to `size` and shaped by `shape` (circle here). `loading` takes precedence over `src` and initials.",
+            },
+        },
+    },
+};
+
+export const LoadingShapes = {
+    render: () => `
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+            <y-avatar loading shape="circle" size="large"></y-avatar>
+            <y-avatar loading shape="rounded" size="large"></y-avatar>
+            <y-avatar loading shape="square" size="large"></y-avatar>
+        </div>
+    `,
+    parameters: {
+        docs: {
+            description: {
+                story: "The placeholder takes its radius from the avatar's shape, so rounded and square avatars produce correctly-shaped skeletons.",
+            },
+        },
+    },
 };
 
 export const BrokenImageFallback = {

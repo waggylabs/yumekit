@@ -2,6 +2,7 @@ import {
     contrastTextColor,
     createElement as _el,
     isSafeCssColor,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeBadge extends HTMLElement {
@@ -21,6 +22,7 @@ export class YumeBadge extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -96,6 +98,10 @@ export class YumeBadge extends HTMLElement {
         const { fontSize, padding, minSize } = sizeCfg;
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 align-items: center;

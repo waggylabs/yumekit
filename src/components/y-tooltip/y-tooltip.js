@@ -1,6 +1,7 @@
 import {
-    getColorVarPair,
     createElement as _el,
+    getColorVarPair,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const ALLOWED_POSITIONS = ["top", "bottom", "left", "right"];
@@ -28,6 +29,7 @@ export class YumeTooltip extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this.addEventListener("mouseenter", this._onMouseEnter);
         this.addEventListener("mouseleave", this._onMouseLeave);
@@ -156,6 +158,10 @@ export class YumeTooltip extends HTMLElement {
     _buildStyleSheet(bg, fg) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 position: relative;

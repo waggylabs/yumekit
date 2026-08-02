@@ -1,5 +1,47 @@
 {
     "component": {
+        "editor": {
+            "border": {
+                "radius": {
+                    "$type": "borderRadius",
+                    "$value": "{radii.small}"
+                },
+                "width": {
+                    "$type": "borderWidth",
+                    "$value": "{border.thin}"
+                }
+            },
+            "padding": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "font-size": {
+                "$type": "dimension",
+                "$value": "1em"
+            },
+            "line-height": {
+                "$type": "number",
+                "$value": 1.6
+            },
+            "toolbar": {
+                "gap": {
+                    "$type": "spacing",
+                    "$value": "{spacing.x-small}"
+                }
+            },
+            "mention": {
+                "popup": {
+                    "max-height": {
+                        "$type": "sizing",
+                        "$value": "16rem"
+                    },
+                    "min-width": {
+                        "$type": "sizing",
+                        "$value": "14rem"
+                    }
+                }
+            }
+        },
         "animate": {
             "duration": {
                 "$type": "number",
@@ -602,6 +644,24 @@
                 "$value": 5000
             }
         },
+        "carousel": {
+            "arrow-size": {
+                "$type": "sizing",
+                "$value": "{sizing.medium}"
+            },
+            "dot-size": {
+                "$type": "dimension",
+                "$value": "8px"
+            },
+            "pagination-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "transition-duration": {
+                "$type": "duration",
+                "$value": "300ms"
+            }
+        },
         "gallery": {
             "gap-small": {
                 "$type": "spacing",
@@ -668,6 +728,24 @@
             "size-x-small": {
                 "$type": "sizing",
                 "$value": "10px"
+            }
+        },
+        "form": {
+            "gap": {
+                "$type": "spacing",
+                "$value": "{spacing.x-large}"
+            },
+            "actions-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.large}"
+            },
+            "actions-justify": {
+                "$type": "other",
+                "$value": "flex-start"
+            },
+            "label-width": {
+                "$type": "dimension",
+                "$value": "160px"
             }
         },
         "inputs": {
@@ -804,6 +882,32 @@
                 "$value": "{font-size.label}"
             }
         },
+        "upload": {
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.medium}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.thin}"
+            },
+            "file-border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.2x-large}"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.4x-large}"
+            }
+        },
         "radio": {
             "dot-offset": {
                 "$type": "dimension",
@@ -930,6 +1034,20 @@
             "size-large": {
                 "$type": "sizing",
                 "$value": "192px"
+            }
+        },
+        "skeleton": {
+            "radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.x-small}"
+            },
+            "animation-duration": {
+                "$type": "duration",
+                "$value": "1500ms"
+            },
+            "text-gap": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
             }
         },
         "sidebar": {
@@ -1388,6 +1506,48 @@
             "z-index": {
                 "$type": "number",
                 "$value": 7500
+            }
+        },
+        "tokens": {
+            "gap": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{component.inputs.padding-small}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{component.inputs.padding-medium}"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{component.inputs.padding-large}"
+            },
+            "min-height-small": {
+                "$type": "sizing",
+                "$value": "{component.control.height-small}"
+            },
+            "min-height-medium": {
+                "$type": "sizing",
+                "$value": "{component.control.height-medium}"
+            },
+            "min-height-large": {
+                "$type": "sizing",
+                "$value": "{component.control.height-large}"
+            },
+            "max-height": {
+                "$type": "sizing",
+                "$value": "120px"
+            },
+            "input-min-width": {
+                "$type": "sizing",
+                "$value": "60px"
+            },
+            "popup-max-height": {
+                "$type": "sizing",
+                "$value": "240px"
             }
         }
     }

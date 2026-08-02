@@ -1,4 +1,4 @@
-import { resolveGapToken } from "../../modules/helpers.js";
+import { resolveGapToken, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeMasonry extends HTMLElement {
     static get observedAttributes() {
@@ -20,6 +20,7 @@ export class YumeMasonry extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._applyStyles();
         this._initObserver();
     }
@@ -118,6 +119,10 @@ export class YumeMasonry extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 box-sizing: border-box;

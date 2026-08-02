@@ -72,18 +72,18 @@ describe("KeplerButton", () => {
         expect(event).to.exist;
     });
 
-    it("applies custom hex color CSS variables for filled style-type", async () => {
+    it("applies custom hex color CSS variables for filled variant", async () => {
         const el = await fixture(
-            html`<y-button color="#ff0000" style-type="filled">Test</y-button>`
+            html`<y-button color="#ff0000" variant="filled">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         const bgColor = shadowButton.style.getPropertyValue("--background-color");
         expect(bgColor).to.equal("#ff0000");
     });
 
-    it("applies custom hex color CSS variables for outlined style-type", async () => {
+    it("applies custom hex color CSS variables for outlined variant", async () => {
         const el = await fixture(
-            html`<y-button color="#00aaff" style-type="outlined">Test</y-button>`
+            html`<y-button color="#00aaff" variant="outlined">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         const textColor = shadowButton.style.getPropertyValue("--text-color");
@@ -96,7 +96,7 @@ describe("KeplerButton", () => {
 
     it("drives the outlined border from the semantic border token", async () => {
         const el = await fixture(
-            html`<y-button color="error" style-type="outlined">Test</y-button>`
+            html`<y-button color="error" variant="outlined">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         const outlineBorder =
@@ -107,7 +107,7 @@ describe("KeplerButton", () => {
 
     it("applies --component-button-border-width as a longhand, supporting per-side (multi-value) widths", async () => {
         const el = await fixture(
-            html`<y-button style-type="outlined">Test</y-button>`
+            html`<y-button variant="outlined">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         shadowButton.style.setProperty(
@@ -123,9 +123,9 @@ describe("KeplerButton", () => {
         expect(cs.borderTopStyle).to.equal("solid");
     });
 
-    it("applies custom hex color CSS variables for flat style-type", async () => {
+    it("applies custom hex color CSS variables for flat variant", async () => {
         const el = await fixture(
-            html`<y-button color="#00ff88" style-type="flat">Test</y-button>`
+            html`<y-button color="#00ff88" variant="flat">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         const bgColor = shadowButton.style.getPropertyValue("--background-color");
@@ -140,6 +140,30 @@ describe("KeplerButton", () => {
             "--hover-background-color"
         );
         expect(hoverBg).to.equal("color-mix(in srgb, #00ff88 15%, transparent)");
+    });
+
+    it("variant defaults to outlined", async () => {
+        const el = await fixture(html`<y-button>Test</y-button>`);
+        expect(el.variant).to.equal("outlined");
+    });
+
+    it("treats style-type as a deprecated alias for variant", async () => {
+        const el = await fixture(
+            html`<y-button style-type="filled">Test</y-button>`
+        );
+        expect(el.variant).to.equal("filled");
+        expect(el.styleType).to.equal("filled");
+        const bgColor = el.shadowRoot
+            .querySelector("button")
+            .style.getPropertyValue("--background-color");
+        expect(bgColor).to.contain("--base-content--");
+    });
+
+    it("prefers variant over style-type when both are set", async () => {
+        const el = await fixture(
+            html`<y-button variant="flat" style-type="filled">Test</y-button>`
+        );
+        expect(el.variant).to.equal("flat");
     });
 
     it("value getter returns empty string when no value is set", async () => {
@@ -307,7 +331,7 @@ describe("KeplerButton", () => {
 
     it("applies filled style background color from theme color vars", async () => {
         const el = await fixture(
-            html`<y-button color="primary" style-type="filled">Test</y-button>`
+            html`<y-button color="primary" variant="filled">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         const bgColor = shadowButton.style.getPropertyValue("--background-color");
@@ -316,7 +340,7 @@ describe("KeplerButton", () => {
 
     it("applies flat style background color from theme color vars", async () => {
         const el = await fixture(
-            html`<y-button color="error" style-type="flat">Test</y-button>`
+            html`<y-button color="error" variant="flat">Test</y-button>`
         );
         const shadowButton = el.shadowRoot.querySelector("button");
         const bgColor = shadowButton.style.getPropertyValue("--background-color");

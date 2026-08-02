@@ -1,10 +1,14 @@
 import "../y-icon/y-icon.js";
 import {
+    applyControlError,
+    coerceRichData,
     contrastTextColor,
     createElement as _el,
+    forwardControlAttributes,
     isSafeCssColor,
     manageLabelVisibility,
     resolveThemeMountPoint,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const SEMANTIC_COLOR_VARS = {
@@ -18,6 +22,13 @@ const SEMANTIC_COLOR_VARS = {
     error: ["var(--error-content--)", "var(--error-content-inverse)"],
     help: ["var(--help-content--)", "var(--help-content-inverse)"],
 };
+
+/**
+ * Host attributes forwarded to the combobox. `required` and `autocomplete` are
+ * excluded: the focusable is either a plain element (which takes `aria-required`
+ * instead) or the search filter input, which is not a value-holding field.
+ */
+const SELECT_FORWARDED_ATTRIBUTES = ["aria-label", "aria-labelledby"];
 
 export class YumeSelect extends HTMLElement {
     static formAssociated = true;
@@ -39,6 +50,9 @@ export class YumeSelect extends HTMLElement {
             "clearable",
             "portal",
             "variant",
+            "error-text",
+            "aria-label",
+            "aria-labelledby",
         ];
     }
 
@@ -52,12 +66,14 @@ export class YumeSelect extends HTMLElement {
         this.selectedValues = new Set();
         this._onDocumentClick = this._onDocumentClick.bind(this);
         this._portalContainer = null;
+        this._options = null;
 
         this.attachShadow({ mode: "open" });
         this.render();
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("label-position")) {
             this.setAttribute("label-position", "top");
         }
@@ -104,7 +120,16 @@ export class YumeSelect extends HTMLElement {
                 "clearable",
             ].includes(name)
         ) {
+            if (name === "options") this._options = coerceRichData(newValue);
             this.render();
+        }
+
+        if (name === "error-text") {
+            this._updateErrorText();
+        }
+
+        if (name === "aria-label" || name === "aria-labelledby") {
+            forwardControlAttributes(this, this._focusableControl(), SELECT_FORWARDED_ATTRIBUTES);
         }
 
         if (name === "name") {
@@ -142,6 +167,19 @@ export class YumeSelect extends HTMLElement {
         this.setAttribute("display-mode", val);
     }
 
+    /**
+     * @type {string} Validation message shown below the field. A non-empty
+     * value also puts the select in the invalid state and becomes the
+     * combobox's accessible description.
+     */
+    get errorText() {
+        return this.getAttribute("error-text") || "";
+    }
+    set errorText(val) {
+        if (val == null || val === "") this.removeAttribute("error-text");
+        else this.setAttribute("error-text", val);
+    }
+
     /** @type {boolean} Whether the select is in an invalid state. */
     get invalid() {
         return this.hasAttribute("invalid");
@@ -176,19 +214,13 @@ export class YumeSelect extends HTMLElement {
         this.setAttribute("name", val);
     }
 
-    /** @type {Array<{value: string, label: string}>} The options array for the select. */
+    /** @type {Array<{value: string, label: string}>} The options for the select. Rich data held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
-        try {
-            return JSON.parse(this.getAttribute("options") || "[]");
-        } catch {
-            return [];
-        }
+        return Array.isArray(this._options) ? this._options : [];
     }
     set options(val) {
-        this.setAttribute(
-            "options",
-            Array.isArray(val) ? JSON.stringify(val) : (val ?? "[]"),
-        );
+        this._options = coerceRichData(val);
+        this.render();
     }
 
     /** @type {string} Placeholder text when no value is selected. */
@@ -290,6 +322,7 @@ export class YumeSelect extends HTMLElement {
     closeDropdown() {
         this.dropdown?.classList.remove("open");
         this.selectContainer?.classList.remove("open");
+        this._focusableControl()?.setAttribute("aria-expanded", "false");
         document.removeEventListener("click", this._onDocumentClick, true);
 
         if (this.searchable) {
@@ -320,8 +353,9 @@ export class YumeSelect extends HTMLElement {
         this.shadowRoot.replaceChildren(this._generateTree());
         this._queryRefs();
         manageLabelVisibility(this.labelWrapper);
+        forwardControlAttributes(this, this._focusableControl(), SELECT_FORWARDED_ATTRIBUTES);
         this._attachEventListeners();
-        this._updateValidationState();
+        this._updateErrorText();
         this._updateDisplay();
         this._updateSelectedStyles();
     }
@@ -377,6 +411,10 @@ export class YumeSelect extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: flex;
                 flex-direction: column;
@@ -445,6 +483,16 @@ export class YumeSelect extends HTMLElement {
 
             .label-wrapper.is-invalid ::slotted([slot="label"]) {
                 color: var(--component-select-error-color);
+            }
+
+            .error-text {
+                margin-top: var(--spacing-2x-small, 4px);
+                font-size: 0.8em;
+                color: var(--component-select-error-color);
+            }
+
+            .error-text[hidden] {
+                display: none;
             }
 
             ::slotted([slot="label"]) {
@@ -701,6 +749,15 @@ export class YumeSelect extends HTMLElement {
             noResults.style.display = visibleCount === 0 ? "" : "none";
     }
 
+    /**
+     * The element carrying the combobox role — the search filter input when
+     * searchable, otherwise the select container itself.
+     * @returns {HTMLElement|null}
+     */
+    _focusableControl() {
+        return this.searchInput || this.selectContainer || null;
+    }
+
     _generateTree() {
         const labelPosition = this.getAttribute("label-position") || "top";
         const isLabelTop = labelPosition === "top";
@@ -733,6 +790,10 @@ export class YumeSelect extends HTMLElement {
                 type: "text",
                 placeholder,
                 autocomplete: "off",
+                role: "combobox",
+                "aria-haspopup": "listbox",
+                "aria-expanded": "false",
+                "aria-required": this.hasAttribute("required") ? "true" : null,
             });
 
         const buildLabelSlot = () =>
@@ -775,11 +836,15 @@ export class YumeSelect extends HTMLElement {
                     ? "select-container is-invalid"
                     : "select-container",
                 tabindex: isSearchable ? "-1" : "0",
+                role: isSearchable ? null : "combobox",
+                "aria-haspopup": isSearchable ? null : "listbox",
+                "aria-expanded": isSearchable ? null : "false",
+                "aria-required": this.hasAttribute("required") ? "true" : null,
             },
             containerChildren,
         );
 
-        const dropdown = _el("div", { class: "dropdown", part: "dropdown" }, [
+        const dropdown = _el("div", { class: "dropdown", part: "dropdown", role: "listbox" }, [
             ...this.options.map((opt) =>
                 this._buildDropdownItem(opt, valueSet.has(opt.value)),
             ),
@@ -791,11 +856,19 @@ export class YumeSelect extends HTMLElement {
             })(),
         ]);
 
+        const error = _el("div", {
+            class: "error-text",
+            part: "error-text",
+            id: "error-text",
+            "aria-live": "polite",
+            hidden: true,
+        });
+
         const wrapperChildren = [];
         if (isLabelTop) wrapperChildren.push(buildLabelSlot());
         wrapperChildren.push(selectContainer);
         if (!isLabelTop) wrapperChildren.push(buildLabelSlot());
-        wrapperChildren.push(dropdown);
+        wrapperChildren.push(dropdown, error);
 
         return _el("div", { class: "select-wrapper" }, wrapperChildren);
     }
@@ -805,6 +878,8 @@ export class YumeSelect extends HTMLElement {
             class: isSelected ? "dropdown-item selected" : "dropdown-item",
             "data-value": opt.value,
             "data-color": opt.color || "",
+            role: "option",
+            "aria-selected": isSelected ? "true" : "false",
         });
         item.textContent = opt.label;
 
@@ -918,6 +993,7 @@ export class YumeSelect extends HTMLElement {
         if (this.portal) this._activatePortal();
         this.dropdown.classList.add("open");
         this.selectContainer.classList.add("open");
+        this._focusableControl()?.setAttribute("aria-expanded", "true");
         this._positionDropdown();
         this._onScrollOrResize = this._positionDropdown.bind(this);
 
@@ -980,6 +1056,7 @@ export class YumeSelect extends HTMLElement {
         this.displayElement = this.shadowRoot.querySelector(".value-display");
         this.searchInput = this.shadowRoot.querySelector(".search-input");
         this.clearButton = this.shadowRoot.querySelector(".clear-button");
+        this.errorElement = this.shadowRoot.querySelector(".error-text");
     }
 
     _renderTags() {
@@ -1006,7 +1083,7 @@ export class YumeSelect extends HTMLElement {
             tag.setAttribute("removable", "");
             tag.setAttribute("size", "small");
             tag.setAttribute("color", opt.color || "primary");
-            tag.setAttribute("style-type", "filled");
+            tag.setAttribute("variant", "filled");
             tag.textContent = opt.label;
             tag.dataset.value = opt.value;
 
@@ -1082,6 +1159,7 @@ export class YumeSelect extends HTMLElement {
             const val = item.getAttribute("data-value");
             const isSelected = valueSet.has(val);
             item.classList.toggle("selected", isSelected);
+            item.setAttribute("aria-selected", isSelected ? "true" : "false");
             const color = item.getAttribute("data-color");
             if (isSelected && color) {
                 const semantic = SEMANTIC_COLOR_VARS[color];
@@ -1102,8 +1180,17 @@ export class YumeSelect extends HTMLElement {
         });
     }
 
+    _updateErrorText() {
+        applyControlError(
+            this._focusableControl(),
+            this.errorElement,
+            this.errorText,
+        );
+        this._updateValidationState();
+    }
+
     _updateValidationState() {
-        const isInvalid = this.hasAttribute("invalid");
+        const isInvalid = this.hasAttribute("invalid") || this.errorText !== "";
         this.selectContainer?.classList.toggle("is-invalid", isInvalid);
         this.labelWrapper?.classList.toggle("is-invalid", isInvalid);
     }

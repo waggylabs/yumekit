@@ -17,6 +17,10 @@ export class YumePanelBar extends HTMLElement {
     render() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
             }

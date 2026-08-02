@@ -1,9 +1,11 @@
 import {
+    GAP_TOKEN_MAP,
+    clamp,
+    coerceRichData,
     createElement as _el,
     getColorVarPair,
-    GAP_TOKEN_MAP,
     measureCSSLength,
-    clamp,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -88,9 +90,11 @@ export class YumeProgress extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._values = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("min")) this.setAttribute("min", "0");
         if (!this.hasAttribute("max")) this.setAttribute("max", "100");
@@ -98,7 +102,9 @@ export class YumeProgress extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue) this.render();
+        if (oldValue === newValue) return;
+        if (name === "values") this._values = coerceRichData(newValue, null);
+        this.render();
     }
 
     // -------------------------------------------------------------------------
@@ -234,7 +240,8 @@ export class YumeProgress extends HTMLElement {
         return this.getAttribute("segment-gap") || null;
     }
     set segmentGap(val) {
-        if (val === null || val === undefined) this.removeAttribute("segment-gap");
+        if (val === null || val === undefined)
+            this.removeAttribute("segment-gap");
         else this.setAttribute("segment-gap", val);
     }
 
@@ -304,23 +311,17 @@ export class YumeProgress extends HTMLElement {
      * Returns `null` when the attribute is absent (back-compat: `value` wins).
      */
     get values() {
-        const raw = this.getAttribute("values");
-        if (raw == null) return null;
-        try {
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) return null;
-            return parsed
-                .map((e) => (typeof e === "number" ? { value: e } : e))
-                .filter((e) => e && Number.isFinite(parseFloat(e.value)))
-                .map((e) => ({ ...e, value: parseFloat(e.value) }));
-        } catch {
-            return null;
-        }
+        const parsed = this._values;
+        if (parsed == null || !Array.isArray(parsed)) return null;
+
+        return parsed
+            .map((e) => (typeof e === "number" ? { value: e } : e))
+            .filter((e) => e && Number.isFinite(parseFloat(e.value)))
+            .map((e) => ({ ...e, value: parseFloat(e.value) }));
     }
     set values(val) {
-        if (val === null || val === undefined) this.removeAttribute("values");
-        else if (typeof val === "string") this.setAttribute("values", val);
-        else this.setAttribute("values", JSON.stringify(val));
+        this._values = coerceRichData(val, null);
+        this.render();
     }
 
     // -------------------------------------------------------------------------
@@ -742,6 +743,10 @@ export class YumeProgress extends HTMLElement {
         if (ctor._sheet) return ctor._sheet;
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body);

@@ -1,6 +1,6 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeBanner extends HTMLElement {
     static get observedAttributes() {
@@ -25,6 +25,7 @@ export class YumeBanner extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
         this._bindSlotListeners();
     }
@@ -199,7 +200,7 @@ export class YumeBanner extends HTMLElement {
                     part: "close-btn",
                     "aria-label": "Dismiss banner",
                     color,
-                    "style-type": "filled",
+                    "variant": "filled",
                     size,
                 },
                 [_el("y-icon", { name: "x", size: iconSize })],

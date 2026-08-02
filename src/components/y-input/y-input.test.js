@@ -28,6 +28,36 @@ describe("<y-input>", () => {
         expect(cs.borderBottomLeftRadius).to.equal("0px");
     });
 
+    it("focuses the input when the container padding is clicked", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const container = el.shadowRoot.querySelector(".input-container");
+
+        container.dispatchEvent(
+            new MouseEvent("mousedown", { bubbles: true, cancelable: true })
+        );
+
+        expect(el.shadowRoot.activeElement).to.equal(input);
+    });
+
+    it("focuses the input when an icon slot area is clicked", async () => {
+        const el = await fixture(
+            html`<y-input><span slot="left-icon">x</span></y-input>`
+        );
+        const input = el.shadowRoot.querySelector("input");
+        const icon = el.querySelector('[slot="left-icon"]');
+
+        icon.dispatchEvent(
+            new MouseEvent("mousedown", {
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            })
+        );
+
+        expect(el.shadowRoot.activeElement).to.equal(input);
+    });
+
     it("renders correctly with default props", async () => {
         const el = await fixture(
             html`<y-input><span slot="label">Name</span></y-input>`
@@ -77,6 +107,50 @@ describe("<y-input>", () => {
         const e = await oneEvent(el, "input");
         expect(e).to.exist;
         expect(e.detail.value).to.equal("hello");
+    });
+
+    it("re-emits the inner input's native 'change' on the host", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        // The browser fires this on commit (blur after an edit, or Enter);
+        // native `change` is not composed, so it stops at the shadow boundary.
+        input.value = "committed";
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.value).to.equal("committed");
+        expect(events[0].composed).to.be.true;
+        expect(el.getAttribute("value")).to.equal("committed");
+    });
+
+    it("the host 'change' event escapes the shadow root", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const events = [];
+        const onChange = (e) => events.push(e);
+        document.addEventListener("change", onChange);
+
+        input.value = "escaped";
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        document.removeEventListener("change", onChange);
+
+        expect(events.length).to.equal(1);
+        expect(events[0].detail.value).to.equal("escaped");
+    });
+
+    it("does not fire 'change' while typing", async () => {
+        const el = await fixture(html`<y-input></y-input>`);
+        const input = el.shadowRoot.querySelector("input");
+        const events = [];
+        el.addEventListener("change", (e) => events.push(e));
+
+        input.value = "typ";
+        input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+        expect(events.length).to.equal(0);
     });
 
     it("reflects 'disabled' attribute correctly", async () => {
@@ -152,6 +226,48 @@ describe("<y-input>", () => {
         document.body.removeChild(el);
     });
 
+    describe("placeholder", () => {
+        it("has no placeholder by default", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("");
+            expect(el.placeholder).to.equal("");
+        });
+
+        it("applies the placeholder attribute to the inner input", async () => {
+            const el = await fixture(
+                html`<y-input placeholder="you@example.com"></y-input>`
+            );
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal(
+                "you@example.com"
+            );
+        });
+
+        it("updates the inner input when the attribute changes", async () => {
+            const el = await fixture(html`<y-input placeholder="First"></y-input>`);
+            el.setAttribute("placeholder", "Second");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("Second");
+
+            el.removeAttribute("placeholder");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("");
+        });
+
+        it("reflects the placeholder property to the attribute", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.placeholder = "Type here";
+            expect(el.getAttribute("placeholder")).to.equal("Type here");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("Type here");
+
+            el.placeholder = "";
+            expect(el.hasAttribute("placeholder")).to.be.false;
+        });
+
+        it("survives a re-render triggered by another attribute", async () => {
+            const el = await fixture(html`<y-input placeholder="Keep me"></y-input>`);
+            el.setAttribute("size", "large");
+            expect(el.shadowRoot.querySelector("input").placeholder).to.equal("Keep me");
+        });
+    });
+
     describe("XSS hardening", () => {
         const cases = [
             { name: "value", payload: `" onfocus="window.__xssInputValue=true" autofocus x="`, flag: "__xssInputValue" },
@@ -159,6 +275,7 @@ describe("<y-input>", () => {
             { name: "min",   payload: `0" onfocus="window.__xssInputMin=true" autofocus x="`,   flag: "__xssInputMin" },
             { name: "max",   payload: `9" onfocus="window.__xssInputMax=true" autofocus x="`,   flag: "__xssInputMax" },
             { name: "step",  payload: `1" onfocus="window.__xssInputStep=true" autofocus x="`,  flag: "__xssInputStep" },
+            { name: "placeholder", payload: `Hi" onfocus="window.__xssInputPlaceholder=true" autofocus x="`, flag: "__xssInputPlaceholder" },
         ];
 
         for (const { name, payload, flag } of cases) {
@@ -174,5 +291,100 @@ describe("<y-input>", () => {
                 document.body.removeChild(el);
             });
         }
+    });
+    describe("accessibility forwarding", () => {
+        it("forwards aria-label, required, and autocomplete to the inner input", async () => {
+            const el = await fixture(
+                html`<y-input
+                    aria-label="Email"
+                    required
+                    autocomplete="email"
+                ></y-input>`,
+            );
+            const input = el.shadowRoot.querySelector("input");
+
+            expect(input.getAttribute("aria-label")).to.equal("Email");
+            expect(input.hasAttribute("required")).to.be.true;
+            expect(input.getAttribute("autocomplete")).to.equal("email");
+        });
+
+        it("re-forwards when the host attribute changes", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.setAttribute("aria-label", "First");
+            expect(
+                el.shadowRoot.querySelector("input").getAttribute("aria-label"),
+            ).to.equal("First");
+
+            el.removeAttribute("aria-label");
+            expect(
+                el.shadowRoot.querySelector("input").hasAttribute("aria-label"),
+            ).to.be.false;
+        });
+
+        it("describes the inner input from error-text within its own root", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.errorText = "Enter a valid email address";
+
+            const input = el.shadowRoot.querySelector("input");
+            const message = el.shadowRoot.getElementById(
+                input.getAttribute("aria-describedby"),
+            );
+
+            expect(input.getAttribute("aria-invalid")).to.equal("true");
+            expect(message).to.exist;
+            expect(message.textContent).to.equal("Enter a valid email address");
+            expect(message.hidden).to.be.false;
+            expect(
+                el.shadowRoot
+                    .querySelector(".input-container")
+                    .classList.contains("is-invalid"),
+            ).to.be.true;
+        });
+
+        it("clears the description when error-text is removed", async () => {
+            const el = await fixture(html`<y-input error-text="Bad"></y-input>`);
+            el.errorText = "";
+
+            const input = el.shadowRoot.querySelector("input");
+            expect(input.hasAttribute("aria-invalid")).to.be.false;
+            expect(input.hasAttribute("aria-describedby")).to.be.false;
+            expect(el.shadowRoot.querySelector(".error-text").hidden).to.be
+                .true;
+        });
+
+        it("does not style a pristine empty required field as an error", async () => {
+            const el = await fixture(html`<y-input required></y-input>`);
+
+            expect(el.checkValidity()).to.be.false;
+            expect(
+                el.shadowRoot
+                    .querySelector(".input-container")
+                    .classList.contains("is-invalid"),
+            ).to.be.false;
+        });
+
+        it("still styles a format failure immediately", async () => {
+            const el = await fixture(
+                html`<y-input type="email" value="nope"></y-input>`,
+            );
+
+            expect(
+                el.shadowRoot
+                    .querySelector(".input-container")
+                    .classList.contains("is-invalid"),
+            ).to.be.true;
+        });
+
+        it("toggles disabled without replacing the input", async () => {
+            const el = await fixture(html`<y-input value="abc"></y-input>`);
+            const input = el.shadowRoot.querySelector("input");
+
+            el.disabled = true;
+            expect(input.disabled).to.be.true;
+            el.disabled = false;
+
+            expect(el.shadowRoot.querySelector("input") === input).to.be.true;
+            expect(input.disabled).to.be.false;
+        });
     });
 });

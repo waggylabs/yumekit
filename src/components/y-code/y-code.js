@@ -1,5 +1,5 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 import { isSupportedLanguage, tokenize } from "./tokenizer.js";
 
 // Allowlist of class names we permit on slotted highlighted spans. Matches
@@ -64,6 +64,7 @@ export class YumeCode extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "figure");
         this._render();
         this._observeContent();

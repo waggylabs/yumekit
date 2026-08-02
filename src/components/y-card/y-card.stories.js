@@ -1,4 +1,5 @@
 ﻿import "./y-card.js";
+import "../y-skeleton/y-skeleton.js";
 
 export default {
     title: "Layout/Card",
@@ -82,4 +83,41 @@ export const Colors = {
             </y-card>
         </div>
     `,
+};
+
+export const LoadingRecipe = {
+    render: () => `
+        <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+            <!-- Loading card: media block + title line + two body lines -->
+            <y-card style="width:300px">
+                <y-skeleton slot="image" variant="rect" height="160px"></y-skeleton>
+                <y-skeleton variant="text" width="60%"></y-skeleton>
+                <y-skeleton variant="text" lines="2"></y-skeleton>
+            </y-card>
+
+            <!-- Loading list rows: circle beside stacked text lines -->
+            <y-card style="width:300px">
+                ${[0, 1, 2]
+                    .map(
+                        () => `
+                    <div style="display:flex;gap:12px;align-items:center;padding:8px 0">
+                        <y-skeleton variant="circle" width="40px" height="40px"></y-skeleton>
+                        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+                            <y-skeleton variant="text" width="40%"></y-skeleton>
+                            <y-skeleton variant="text" width="70%"></y-skeleton>
+                        </div>
+                    </div>
+                `,
+                    )
+                    .join("")}
+            </y-card>
+        </div>
+    `,
+    parameters: {
+        docs: {
+            description: {
+                story: "`y-card` has no built-in `loading` attribute — it's a slot-based container with no fixed content shape. Compose the `y-skeleton` primitive instead: a media block, a title line, and two body lines for a card; a circle beside stacked text lines for a list row.",
+            },
+        },
+    },
 };

@@ -2,10 +2,12 @@ import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-menu/y-menu.js";
 import {
-    createElement as _el,
     buildNavItemIcon,
+    coerceRichData,
+    createElement as _el,
     isNavItemActive,
     navigateFrom,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 const SIZE_CONFIG = {
@@ -54,9 +56,11 @@ export class YumeAppbar extends HTMLElement {
         this._isMobile = false;
         this._mobileOutsideClick = null;
         this._mobileNavigateClose = null;
+        this._items = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._setupMediaQuery();
         this.render();
     }
@@ -69,6 +73,9 @@ export class YumeAppbar extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+        if (name === "items") {
+            this._items = coerceRichData(newVal);
+        }
         if (name === "mobile-breakpoint") {
             this._setupMediaQuery();
         }
@@ -91,18 +98,17 @@ export class YumeAppbar extends HTMLElement {
         else this.removeAttribute("history");
     }
 
-    /** Nav items array parsed from the "items" attribute. */
+    /**
+     * Nav items. Rich data held as a property (identity preserved, not
+     * serialized); the `items` attribute seeds an initial value but is not kept
+     * in sync after an imperative set.
+     */
     get items() {
-        try {
-            return JSON.parse(this.getAttribute("items")) || [];
-        } catch {
-            return [];
-        }
+        return Array.isArray(this._items) ? this._items : [];
     }
     set items(val) {
-        if (val === null || val === undefined) this.removeAttribute("items");
-        else if (typeof val === "string") this.setAttribute("items", val);
-        else this.setAttribute("items", JSON.stringify(val));
+        this._items = coerceRichData(val);
+        this.render();
     }
 
     /**
@@ -197,6 +203,10 @@ export class YumeAppbar extends HTMLElement {
 
     _buildDesktopStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body, sans-serif);
@@ -374,7 +384,7 @@ export class YumeAppbar extends HTMLElement {
             {
                 id,
                 color: "base",
-                "style-type": "flat",
+                "variant": "flat",
                 size: cfg.buttonSize,
                 "aria-label": "Open menu",
                 "aria-controls": panelId,
@@ -526,7 +536,7 @@ export class YumeAppbar extends HTMLElement {
         const btn = _el("y-button", {
             id: btnId,
             color: isActive ? "primary" : "base",
-            "style-type": "flat",
+            "variant": "flat",
             size: cfg.buttonSize,
             "aria-current": isActive ? "page" : false,
         });

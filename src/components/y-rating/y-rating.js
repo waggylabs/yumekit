@@ -1,4 +1,4 @@
-import { isSafeCssColor } from "../../modules/helpers.js";
+import { isSafeCssColor, upgradeProperties } from "../../modules/helpers.js";
 import { getSanitizedIcon } from "../../modules/svg-sanitizer.js";
 
 export class YumeRating extends HTMLElement {
@@ -21,6 +21,7 @@ export class YumeRating extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._internals.setFormValue(this.value);
     }
 
@@ -162,6 +163,10 @@ export class YumeRating extends HTMLElement {
     _buildStyleSheet(isInteractive, filledColor, iconSizePx, gapPx, hasFilledVariant) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body);

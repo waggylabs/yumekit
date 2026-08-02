@@ -90,13 +90,13 @@ describe("YumeAppbar", () => {
         expect(navSlot.assignedElements().length).to.equal(1);
     });
 
-    it("renders y-button elements with color and style-type", async () => {
+    it("renders y-button elements with color and variant", async () => {
         const el = await fixture(html`
             <y-appbar .items=${sampleItems}></y-appbar>
         `);
         const btn = el.shadowRoot.querySelector(".appbar-body y-button");
         expect(btn.getAttribute("color")).to.equal("base");
-        expect(btn.getAttribute("style-type")).to.equal("flat");
+        expect(btn.getAttribute("variant")).to.equal("flat");
     });
 
     it("renders icon, label, and arrow on items with children", async () => {
@@ -172,11 +172,11 @@ describe("YumeAppbar", () => {
         expect(buttons.length).to.equal(3);
     });
 
-    it("mirrors a JSON string assigned to items instead of double-encoding it", async () => {
+    it("parses a JSON string assigned to items without reflecting to the attribute", async () => {
         const el = await fixture(html`<y-appbar></y-appbar>`);
         const json = JSON.stringify(sampleItems);
         el.items = json;
-        expect(el.getAttribute("items")).to.equal(json);
+        expect(el.hasAttribute("items")).to.be.false;
         expect(el.items.length).to.equal(3);
         const buttons = el.shadowRoot.querySelectorAll(".appbar-body y-button");
         expect(buttons.length).to.equal(3);

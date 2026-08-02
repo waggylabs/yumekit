@@ -18,7 +18,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   <y-appbar
     orientation="horizontal"
     sticky="start"
-    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+    items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"diagram","href":"/reports"},{"text":"Settings","icon":"gear","href":"/settings"}]'
   >
     <y-icon slot="logo" name="bolt" size="medium"></y-icon>
     <span slot="title">MyApp</span>
@@ -48,7 +48,7 @@ Common multi-component patterns. Adapt these for specific use cases.
     <y-appbar
       orientation="vertical"
       sticky="start"
-      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"chart","href":"/reports"},{"text":"Settings","icon":"settings","href":"/settings"}]'
+      items='[{"text":"Dashboard","icon":"home","href":"/"},{"text":"Reports","icon":"diagram","href":"/reports"},{"text":"Settings","icon":"gear","href":"/settings"}]'
     >
       <y-icon slot="logo" name="bolt" size="medium"></y-icon>
       <span slot="title">MyApp</span>
@@ -85,7 +85,7 @@ Common multi-component patterns. Adapt these for specific use cases.
         <y-button type="submit" color="primary">Sign In</y-button>
       </form>
 
-      <y-button slot="footer" style-type="flat">Forgot password?</y-button>
+      <y-button slot="footer" variant="flat">Forgot password?</y-button>
     </y-card>
   </div>
 
@@ -128,7 +128,7 @@ Common multi-component patterns. Adapt these for specific use cases.
   <y-dialog id="delete-dialog" persistent>
     <span slot="header">Confirm Delete</span>
     <p>This action cannot be undone. Are you sure?</p>
-    <y-button slot="footer" id="cancel-btn" style-type="outlined">Cancel</y-button>
+    <y-button slot="footer" id="cancel-btn" variant="outlined">Cancel</y-button>
     <y-button slot="footer" id="confirm-btn" color="error">Delete</y-button>
   </y-dialog>
 
@@ -146,6 +146,55 @@ Common multi-component patterns. Adapt these for specific use cases.
   });
 </script>
 ```
+
+---
+
+## Loading & Skeleton States
+
+Data-driven components (`y-data-grid`, `y-table`, `y-avatar`) render shape-accurate
+placeholders on first load — no spinner over an empty region. Set `loading` and,
+for the grid, let `loading-mode="auto"` show a skeleton on first load and dim the
+existing data on a refetch.
+
+```html
+<!-- Grid: skeleton on first load, overlay-on-refetch, automatically -->
+<y-data-grid id="grid" columns="..." loading></y-data-grid>
+<!-- Table: skeleton is the only loading presentation -->
+<y-table columns="..." loading skeleton-rows="6"></y-table>
+<!-- Avatar: circle/rounded/square placeholder matching size + shape -->
+<y-avatar loading size="large"></y-avatar>
+
+<script type="module">
+  const grid = document.getElementById("grid");
+  const rows = await fetchRows();        // grid shows placeholder rows meanwhile
+  grid.data = rows;
+  grid.removeAttribute("loading");       // placeholders swap to real rows, no layout shift
+</script>
+```
+
+Containers without a fixed content shape (`y-card`, list rows) compose the Phase 1
+`<y-skeleton>` primitive directly rather than exposing a `loading` attribute:
+
+```html
+<!-- Loading card: media block + title line + two body lines -->
+<y-card>
+  <y-skeleton variant="rect" height="160px" slot="image"></y-skeleton>
+  <y-skeleton variant="text" width="60%"></y-skeleton>
+  <y-skeleton variant="text" lines="2"></y-skeleton>
+</y-card>
+
+<!-- Loading list row: avatar beside stacked text lines -->
+<y-stack direction="row" gap="medium" align="center">
+  <y-skeleton variant="circle" width="40px" height="40px"></y-skeleton>
+  <y-stack direction="column" gap="x-small" style="flex:1">
+    <y-skeleton variant="text" width="40%"></y-skeleton>
+    <y-skeleton variant="text" width="70%"></y-skeleton>
+  </y-stack>
+</y-stack>
+```
+
+`prefers-reduced-motion: reduce` renders every skeleton as a static block — verified
+at the composed level where many placeholders animate at once.
 
 ---
 
@@ -186,13 +235,13 @@ Common multi-component patterns. Adapt these for specific use cases.
 
       <y-panel label="Danger Zone">
         <div style="padding:1rem 0;">
-          <y-button color="error" style-type="outlined">Delete Account</y-button>
+          <y-button color="error" variant="outlined">Delete Account</y-button>
         </div>
       </y-panel>
     </y-panelbar>
 
     <div style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
-      <y-button style-type="outlined">Cancel</y-button>
+      <y-button variant="outlined">Cancel</y-button>
       <y-button type="submit" color="primary">Save Changes</y-button>
     </div>
   </form>
@@ -216,8 +265,7 @@ Common multi-component patterns. Adapt these for specific use cases.
 
 <y-theme theme="blue-light" style="display:block; padding:1rem;">
   <y-tabs
-    options='[{"id":"overview","label":"Overview"},{"id":"activity","label":"Activity"},{"id":"settings","label":"Settings"}]'
-    active="overview"
+    options='[{"id":"overview","label":"Overview","slot":"overview"},{"id":"activity","label":"Activity","slot":"activity"},{"id":"settings","label":"Settings","slot":"settings"}]'
   >
     <div slot="overview" style="display:flex; gap:1rem; flex-wrap:wrap; padding:1rem 0;">
       <y-card style="flex:1; min-width:200px;">
@@ -256,7 +304,7 @@ function confirmAction(message) {
     dialog.innerHTML = `
       <span slot="header">Confirm</span>
       <p>${message}</p>
-      <y-button slot="footer" id="cancel" style-type="outlined">Cancel</y-button>
+      <y-button slot="footer" id="cancel" variant="outlined">Cancel</y-button>
       <y-button slot="footer" id="confirm" color="primary">Confirm</y-button>
     `;
     document.body.appendChild(dialog);

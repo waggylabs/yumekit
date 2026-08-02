@@ -6,6 +6,9 @@ import pluginJs from "@eslint/js";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [{
+    // Generated build output — never lint.
+    ignores: ["dist/**", "storybook-static/**"],
+}, {
     languageOptions: { globals: globals.browser },
     rules: {
         // Style
@@ -22,4 +25,8 @@ export default [{
     files: ["scripts/**/*.js"],
     languageOptions: { globals: globals.node },
     rules: { "no-console": "off" },
+}, {
+    // Tests run in the browser under web-test-runner's mocha.
+    files: ["src/**/*.test.js", "test/**/*.test.js"],
+    languageOptions: { globals: { ...globals.browser, ...globals.mocha } },
 }];
