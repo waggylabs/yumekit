@@ -26,6 +26,9 @@ jobs:
 
             - run: npm ci
 
+            - name: Install Playwright browsers
+              run: npx playwright install --with-deps chromium
+
             - name: Read package version
               id: pkg
               run: echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
