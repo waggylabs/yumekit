@@ -493,20 +493,16 @@ describe("YumeProgress", () => {
         expect(el.startAngle).to.equal(90);
     });
 
-    it("values setter serializes JSON onto the attribute", async () => {
+    it("values setter stores rich data on the property without reflecting to the attribute", async () => {
         const el = await fixture(html`<y-progress></y-progress>`);
         el.values = [{ value: 10 }, { value: 20 }];
-        expect(el.getAttribute("values")).to.equal(
-            '[{"value":10},{"value":20}]',
-        );
+        expect(el.hasAttribute("values")).to.be.false;
         expect(el.values.length).to.equal(2);
     });
 
-    it("values setter passes pre-serialized JSON strings through unchanged", async () => {
+    it("values setter parses a pre-serialized JSON string", async () => {
         const el = await fixture(html`<y-progress></y-progress>`);
-        const raw = '[{"value":10},{"value":20}]';
-        el.values = raw;
-        expect(el.getAttribute("values")).to.equal(raw);
+        el.values = '[{"value":10},{"value":20}]';
         expect(el.values.length).to.equal(2);
     });
 });

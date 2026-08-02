@@ -26,6 +26,8 @@ import {
     GAP_TOKEN_MAP,
     measureCSSLength,
     resolveGapToken,
+    upgradeProperties,
+    coerceRichData,
 } from "./helpers.js";
 
 describe("helpers", () => {
@@ -797,6 +799,92 @@ describe("helpers", () => {
             } finally {
                 history.replaceState(initialState, "", initialPath);
             }
+        });
+    });
+
+    describe("upgradeProperties", () => {
+        class UpgradeProbe extends HTMLElement {
+            get foo() {
+                return this._foo;
+            }
+            set foo(v) {
+                this._foo = v;
+                this.setAttribute("foo", v);
+            }
+        }
+        if (!customElements.get("upgrade-probe")) {
+            customElements.define("upgrade-probe", UpgradeProbe);
+        }
+
+        it("reapplies a property set before upgrade so the setter runs", () => {
+            const el = document.createElement("upgrade-probe");
+            // Simulate a pre-upgrade own-property shadowing the accessor.
+            Object.defineProperty(el, "foo", {
+                value: "bar",
+                configurable: true,
+                writable: true,
+                enumerable: true,
+            });
+            expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.true;
+
+            upgradeProperties(el);
+
+            expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.false;
+            expect(el.foo).to.equal("bar");
+            expect(el.getAttribute("foo")).to.equal("bar");
+        });
+
+        it("leaves accessors alone when no pre-upgrade value was set", () => {
+            const el = document.createElement("upgrade-probe");
+            upgradeProperties(el);
+            expect(Object.prototype.hasOwnProperty.call(el, "foo")).to.be.false;
+            expect(el.hasAttribute("foo")).to.be.false;
+        });
+    });
+
+    describe("coerceRichData", () => {
+        it("passes arrays and objects through with identity intact", () => {
+            const arr = [{ a: 1 }];
+            const obj = { a: 1 };
+            expect(coerceRichData(arr)).to.equal(arr);
+            expect(coerceRichData(obj, {})).to.equal(obj);
+        });
+
+        it("parses a JSON string once", () => {
+            expect(coerceRichData('[{"a":1}]')).to.deep.equal([{ a: 1 }]);
+            expect(coerceRichData('{"a":1}', {})).to.deep.equal({ a: 1 });
+        });
+
+        it("returns the fallback for nullish input", () => {
+            expect(coerceRichData(null)).to.deep.equal([]);
+            expect(coerceRichData(undefined)).to.deep.equal([]);
+            const fallback = {};
+            expect(coerceRichData(null, fallback)).to.equal(fallback);
+        });
+
+        it("returns the fallback for an unparseable string", () => {
+            expect(coerceRichData("not json")).to.deep.equal([]);
+            expect(coerceRichData("{bad", { x: 1 })).to.deep.equal({ x: 1 });
+        });
+
+        it("returns the fallback for primitive input", () => {
+            expect(coerceRichData(42)).to.deep.equal([]);
+            expect(coerceRichData(true)).to.deep.equal([]);
+            const fallback = { x: 1 };
+            expect(coerceRichData(7, fallback)).to.equal(fallback);
+        });
+
+        it("returns the fallback for a string that parses to a primitive", () => {
+            // "42" and "null" are valid JSON but not rich data; callers assume
+            // a non-null object/array, so these must not pass through.
+            expect(coerceRichData("42")).to.deep.equal([]);
+            expect(coerceRichData('"hello"')).to.deep.equal([]);
+            expect(coerceRichData("null", { x: 1 })).to.deep.equal({ x: 1 });
+        });
+
+        it("preserves non-serializable fields on a passed-through value", () => {
+            const fn = () => {};
+            expect(coerceRichData([{ onClick: fn }])[0].onClick).to.equal(fn);
         });
     });
 });

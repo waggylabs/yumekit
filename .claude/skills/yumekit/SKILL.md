@@ -4,7 +4,7 @@ description: Generate and scaffold UI using YumeKit (@waggylabs/yumekit) web com
 argument-hint: "component or task description"
 ---
 
-You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 51 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
+You are a YumeKit expert. YumeKit is a Web Components UI kit (`@waggylabs/yumekit`) with 57 custom `y-*` elements, zero runtime dependencies, and full TypeScript support.
 
 The user's request is: $ARGUMENTS
 
@@ -27,7 +27,7 @@ When writing or modifying component source code, follow the authoring standards 
     ```
 4. **Boolean attributes** are presence-based: use `disabled`, not `disabled="true"`.
 5. **Slots** — content goes into named slots with `slot="name"`. Check reference.md for each component's available slots.
-6. **Form components** (`y-input`, `y-select`, `y-checkbox`, `y-radio`, `y-switch`, `y-slider`) are form-associated — always give them a `name` attribute when inside a `<form>`.
+6. **Form components** (`y-input`, `y-select`, `y-tokens`, `y-checkbox`, `y-radio`, `y-switch`, `y-slider`, `y-upload`) are form-associated — always give them a `name` attribute when inside a `<form>`. For a whole form, prefer `<y-form fields='[...]'>` — it lays out the controls, renders submit/reset buttons, validates, and emits one `y-submit` payload.
 7. **Icons** — use `<y-icon name="...">` only with names from the pre-built registry or names the user has registered. Do not invent icon names.
 8. **Colors** — valid color scheme values: `base`, `primary`, `secondary`, `success`, `warning`, `error`, `help`.
 9. **Sizes** — valid size values: `small`, `medium`, `large`.

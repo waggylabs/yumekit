@@ -120,19 +120,17 @@ describe("<y-colorpicker>", () => {
         expect(el.hasAttribute("show-alpha")).to.be.false;
     });
 
-    it("formats setter updates attribute as JSON", async () => {
+    it("formats setter stores rich data on the property without reflecting to the attribute", async () => {
         const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
-        el.formats = ["hex", "rgb"];
-        expect(JSON.parse(el.getAttribute("formats"))).to.deep.equal([
-            "hex",
-            "rgb",
-        ]);
+        const value = ["hex", "rgb"];
+        el.formats = value;
+        expect(el.formats).to.equal(value);
+        expect(el.hasAttribute("formats")).to.be.false;
     });
 
-    it("formats setter mirrors a JSON string instead of double-encoding it", async () => {
+    it("formats setter parses a JSON string into an array", async () => {
         const el = await fixture(html`<y-colorpicker></y-colorpicker>`);
         el.formats = '["hex","rgb"]';
-        expect(el.getAttribute("formats")).to.equal('["hex","rgb"]');
         expect(el.formats).to.deep.equal(["hex", "rgb"]);
     });
 

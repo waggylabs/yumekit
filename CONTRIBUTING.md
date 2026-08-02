@@ -101,6 +101,7 @@ Every new component requires changes to the following: `README.md`, `CHANGELOG.m
 - Use `sinon.createSandbox()` at the `describe` level with `afterEach(() => sandbox.restore())`. Never call `stub.restore()` manually — it leaks on assertion failure.
 - Use `sandbox.stub(...)` rather than `sinon.stub(...)` directly.
 - Run the suite with `npm test` (Web Test Runner with coverage).
+- After a build, `npm run test:dist` validates the published output: it checks that every relative import emitted into `dist/` resolves on disk (`scripts/check-dist-imports.js`) and smoke-tests deep-imported component bundles in a real browser (`test/dist-smoke.test.js`). It also runs automatically on `prepublishOnly`.
 
 ## Design Tokens
 

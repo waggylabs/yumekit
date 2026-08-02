@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 
 const DEFAULT_DURATION = 300;
 const DEFAULT_DELAY = 0;
@@ -53,6 +53,7 @@ export class YumeAnimate extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._setupTrigger();
     }
 

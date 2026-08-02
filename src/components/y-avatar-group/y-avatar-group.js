@@ -1,4 +1,8 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 import "../y-avatar/y-avatar.js";
 
 const AVATAR_ATTRS = ["alt", "src", "color", "shape"];
@@ -22,32 +26,37 @@ export class YumeAvatarGroup extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._avatars = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "group");
         this.render();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue !== newValue && this.isConnected) this.render();
+        if (oldValue === newValue) return;
+        if (name === "avatars") this._avatars = coerceRichData(newValue, null);
+        if (this.isConnected) this.render();
     }
 
     // -------------------------------------------------------------------------
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** JSON array of avatar objects: `[{ alt, src, color, shape }]`. */
+    /**
+     * Array of avatar objects: `[{ alt, src, color, shape }]`. Rich data held
+     * as a property (identity preserved, not serialized); the `avatars`
+     * attribute seeds an initial value (JSON string) but is not kept in sync
+     * after an imperative set.
+     */
     get avatars() {
-        return this.getAttribute("avatars");
+        return Array.isArray(this._avatars) ? this._avatars : null;
     }
     set avatars(val) {
-        if (val == null) this.removeAttribute("avatars");
-        else
-            this.setAttribute(
-                "avatars",
-                typeof val === "string" ? val : JSON.stringify(val),
-            );
+        this._avatars = coerceRichData(val, null);
+        this.render();
     }
 
     /** Maximum visible avatars. `0` means unlimited. */
@@ -168,6 +177,10 @@ export class YumeAvatarGroup extends HTMLElement {
         const sheet = new CSSStyleSheet();
         const isVertical = this.orientation === "vertical";
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 flex-direction: ${isVertical ? "column" : "row"};
@@ -246,14 +259,8 @@ export class YumeAvatarGroup extends HTMLElement {
     }
 
     _parseAvatars() {
-        const raw = this.avatars;
-        if (!raw) return null;
-        try {
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : null;
-        } catch {
-            return null;
-        }
+        const parsed = this.avatars;
+        return Array.isArray(parsed) ? parsed : null;
     }
 
     _renderFromJson(items) {

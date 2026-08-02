@@ -7,7 +7,13 @@ import "../y-paginator/y-paginator.js";
 import "../y-popover/y-popover.js";
 import "../y-button/y-button.js";
 import "../y-progress/y-progress.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import "../y-skeleton/y-skeleton.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
+import { buildSkeletonBody } from "../../modules/skeleton-rows.js";
 
 const SORT_CYCLE = { none: "asc", asc: "desc", desc: "none" };
 const EDIT_STATUS_RESET_MS = 1200;
@@ -120,6 +126,8 @@ export class YumeDataGrid extends HTMLElement {
             "current-page",
             "total-rows",
             "loading",
+            "loading-mode",
+            "skeleton-rows",
             "striped",
             "hover",
             "fixed-header",
@@ -154,6 +162,9 @@ export class YumeDataGrid extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        this._columnsInput = [];
+        this._dataInput = [];
+        this._aggregates = {};
         this._parsedColumns = [];
         this._parsedColumnTree = [];
         this._workingTree = [];
@@ -185,6 +196,7 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._parseAttributes();
         this._render();
     }
@@ -195,6 +207,11 @@ export class YumeDataGrid extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+
+        if (name === "columns") this._columnsInput = coerceRichData(newVal);
+        if (name === "data") this._dataInput = coerceRichData(newVal);
+        if (name === "aggregates")
+            this._aggregates = coerceRichData(newVal, {});
 
         if (name === "current-page") {
             const next = Number(newVal);
@@ -226,17 +243,13 @@ export class YumeDataGrid extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** Per-column aggregate config — `{ columnKey: "sum" | "avg" | "min" | "max" | "count" }`. */
+    /** Per-column aggregate config — `{ columnKey: "sum" | "avg" | "min" | "max" | "count" }`. Rich data held as a property (identity preserved, not serialized); the `aggregates` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get aggregates() {
-        try {
-            const parsed = JSON.parse(this.getAttribute("aggregates") || "{}");
-            return parsed && typeof parsed === "object" ? parsed : {};
-        } catch {
-            return {};
-        }
+        return this._aggregates ?? {};
     }
     set aggregates(obj) {
-        this.setAttribute("aggregates", JSON.stringify(obj || {}));
+        this._aggregates = coerceRichData(obj, {});
+        if (this.isConnected) this._render();
     }
 
     /** Extra rows rendered above and below the viewport when virtualizing. */
@@ -248,15 +261,14 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("buffer-size", String(val));
     }
 
-    /** Column schema as JSON string or array of column definition objects. */
+    /** Column schema as an array of column definition objects. Rich data held as a property (identity preserved, not serialized); the `columns` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get columns() {
-        return this.getAttribute("columns");
+        return Array.isArray(this._columnsInput) ? this._columnsInput : [];
     }
     set columns(val) {
-        this.setAttribute(
-            "columns",
-            typeof val === "string" ? val : JSON.stringify(val),
-        );
+        this._columnsInput = coerceRichData(val);
+        this._parseAttributes();
+        if (this.isConnected) this._render();
     }
 
     /** Current 1-based page index. */
@@ -267,15 +279,14 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("current-page", String(val));
     }
 
-    /** Row data as JSON string or array of objects keyed by column key. */
+    /** Row data as an array of objects keyed by column key. Rich data held as a property (identity preserved, not serialized); the `data` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
     get data() {
-        return this.getAttribute("data");
+        return Array.isArray(this._dataInput) ? this._dataInput : [];
     }
     set data(val) {
-        this.setAttribute(
-            "data",
-            typeof val === "string" ? val : JSON.stringify(val),
-        );
+        this._dataInput = coerceRichData(val);
+        this._parseAttributes();
+        if (this.isConnected) this._render();
     }
 
     /** Edit trigger: "click" (single click on cell) or "focus" (default "click"). */
@@ -427,13 +438,28 @@ export class YumeDataGrid extends HTMLElement {
         this.setAttribute("hover", String(Boolean(val)));
     }
 
-    /** When true, a loading overlay is shown. */
+    /** When true, the grid renders a loading state (overlay or skeleton, per `loadingMode`). */
     get loading() {
         return this.hasAttribute("loading");
     }
     set loading(val) {
         if (val) this.setAttribute("loading", "");
         else this.removeAttribute("loading");
+    }
+
+    /**
+     * How `loading` is presented: `"overlay"` dims the body under a spinner,
+     * `"skeleton"` always renders placeholder rows, `"auto"` (default) picks
+     * skeleton when there are no rows to show and overlay when rows are visible.
+     */
+    get loadingMode() {
+        const v = this.getAttribute("loading-mode");
+        return v === "overlay" || v === "skeleton" ? v : "auto";
+    }
+    set loadingMode(val) {
+        if (val === "overlay" || val === "skeleton" || val === "auto")
+            this.setAttribute("loading-mode", val);
+        else this.removeAttribute("loading-mode");
     }
 
     /** Operating mode: "client" performs sort/filter/page locally, "server" emits events. */
@@ -501,6 +527,17 @@ export class YumeDataGrid extends HTMLElement {
     set showItemCount(val) {
         if (val) this.setAttribute("show-item-count", "");
         else this.removeAttribute("show-item-count");
+    }
+
+    /** Number of placeholder rows rendered in skeleton mode. Defaults to `pageSize`, else 10; clamped to a sane maximum. */
+    get skeletonRows() {
+        const raw = this.getAttribute("skeleton-rows");
+        const n = Number(raw);
+        if (raw != null && Number.isFinite(n) && n > 0) return Math.floor(n);
+        return this.enablePagination ? this._pageSize : 10;
+    }
+    set skeletonRows(val) {
+        this.setAttribute("skeleton-rows", String(val));
     }
 
     /** Current sort stack as an array of `{ column, direction }`. */
@@ -785,7 +822,9 @@ export class YumeDataGrid extends HTMLElement {
         const tbody = _el("tbody", { part: "body" });
 
         if (entries.length === 0) {
-            tbody.appendChild(this._buildEmptyRow(columns));
+            // Never show the empty state while loading — the overlay (or, in
+            // skeleton mode, the placeholder rows) stands in for the body.
+            if (!this.loading) tbody.appendChild(this._buildEmptyRow(columns));
             return tbody;
         }
 
@@ -1235,6 +1274,7 @@ export class YumeDataGrid extends HTMLElement {
                       : "text";
             const input = _el("y-input", {
                 part: "filter-input",
+                "data-col-key": col.key,
                 type: inputType,
                 size: "small",
                 "aria-label": `Filter ${col.label || col.key}`,
@@ -1244,7 +1284,12 @@ export class YumeDataGrid extends HTMLElement {
             if (existing != null) input.setAttribute("value", String(existing));
 
             input.addEventListener("input", (e) => {
-                this._setColumnFilter(col.key, e.detail?.value ?? "");
+                // Each keystroke produces two events here: y-input's
+                // CustomEvent (with `detail`) and the native composed event
+                // re-targeted to the host (without). Only the former carries
+                // the value — acting on the latter would reset the filter.
+                if (!e.detail) return;
+                this._setColumnFilter(col.key, e.detail.value ?? "");
             });
             cell.appendChild(input);
             tr.appendChild(cell);
@@ -1267,6 +1312,8 @@ export class YumeDataGrid extends HTMLElement {
                 "total-pages": String(totalPages),
                 variant: "default",
                 size: "small",
+                // Pagination is inert while data loads.
+                disabled: this.loading ? "" : null,
             });
             paginator.addEventListener("page-change", this._onPaginatorChange);
             paginator.addEventListener(
@@ -1749,10 +1796,12 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _buildLoadingOverlay() {
+        // The overlay is decorative — the single `_buildLoadingStatus` live
+        // region carries the announcement, so hide the spinner from AT.
         const overlay = _el("div", {
             part: "loading-overlay",
             class: "loading-overlay",
-            role: "status",
+            "aria-hidden": "true",
         });
         const slot = _el("slot", { name: "loading" });
         slot.appendChild(
@@ -1762,11 +1811,19 @@ export class YumeDataGrid extends HTMLElement {
                 size: "large",
                 color: "primary",
                 "label-display": "false",
-                "aria-label": "Loading",
             }),
         );
         overlay.appendChild(slot);
         return overlay;
+    }
+
+    _buildLoadingStatus() {
+        const status = _el("div", {
+            class: "sr-only",
+            role: "status",
+        });
+        status.textContent = "Loading data";
+        return status;
     }
 
     _buildMenuItem({ icon, label, onSelect, disabled = false }) {
@@ -1906,6 +1963,18 @@ export class YumeDataGrid extends HTMLElement {
         return td;
     }
 
+    _buildSkeletonBody(columns) {
+        // Reuse the shared generator so the grid and y-table stay visually in
+        // sync. Widths come from the real <colgroup>, so cells only need to
+        // exist; row height mirrors the resolved `rowHeight`.
+        return buildSkeletonBody({
+            columnCount: columns.length,
+            rows: this.skeletonRows,
+            leadingCell: this.enableSelection,
+            rowHeightCss: `var(--component-data-grid-skeleton-row-height, ${this.rowHeight}px)`,
+        });
+    }
+
     _buildSpacerRow(colspan, height) {
         const tr = _el("tr", { class: "spacer-row", "aria-hidden": "true" });
         const td = _el("td", { colspan: String(Math.max(1, colspan)) });
@@ -1934,12 +2003,16 @@ export class YumeDataGrid extends HTMLElement {
     _buildStyles() {
         const fixed = this.fixedHeader ? "sticky" : "static";
         const stripedRule = this.striped
-            ? `tbody tr:nth-child(even):not([data-empty]) { background: var(--component-data-grid-row-stripe-bg, var(--component-table-hover-background, #292a2b)); }`
+            ? `tbody:not(.skeleton-body) tr:nth-child(even):not([data-empty]) { background: var(--component-data-grid-row-stripe-bg, var(--component-table-hover-background, #292a2b)); }`
             : "";
         const hoverRule = this.hover
-            ? `tbody tr:not([data-empty]):hover { background: var(--component-data-grid-row-hover-bg, var(--component-table-active-background, #46474a)); cursor: default; }`
+            ? `tbody:not(.skeleton-body) tr:not([data-empty]):hover { background: var(--component-data-grid-row-hover-bg, var(--component-table-active-background, #46474a)); cursor: default; }`
             : "";
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: flex;
                 flex-direction: column;
@@ -1949,6 +2022,20 @@ export class YumeDataGrid extends HTMLElement {
                 position: relative;
             }
             :host([loading]) .grid-body { opacity: 0.6; pointer-events: none; }
+            /* Skeleton mode paints its own placeholder — don't dim it. */
+            .grid-container.is-skeleton .grid-body { opacity: 1; pointer-events: auto; }
+
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
 
             .grid-container {
                 display: flex;
@@ -2321,6 +2408,19 @@ export class YumeDataGrid extends HTMLElement {
             }),
         );
         this._render();
+    }
+
+    _captureFilterFocus() {
+        const active = this.shadowRoot.activeElement;
+        if (!active || active.getAttribute("part") !== "filter-input") {
+            return null;
+        }
+        const inner = active.input;
+        return {
+            key: active.getAttribute("data-col-key"),
+            start: inner?.selectionStart ?? null,
+            end: inner?.selectionEnd ?? null,
+        };
     }
 
     _clearSortFor(key) {
@@ -3104,13 +3204,9 @@ export class YumeDataGrid extends HTMLElement {
     }
 
     _parseAttributes() {
-        let tree;
-        try {
-            tree = JSON.parse(this.columns || "[]");
-            if (!Array.isArray(tree)) tree = [];
-        } catch {
-            tree = [];
-        }
+        const tree = Array.isArray(this._columnsInput)
+            ? this._columnsInput
+            : [];
         this._parsedColumnTree = tree;
         // Working tree preserves user-applied reorders + hides across re-renders;
         // rebuild it when the structural shape of `columns` changes.
@@ -3122,12 +3218,9 @@ export class YumeDataGrid extends HTMLElement {
         }
         this._parsedColumns = this._flattenColumnTree(this._workingTree);
 
-        try {
-            this._parsedData = JSON.parse(this.data || "[]");
-            if (!Array.isArray(this._parsedData)) this._parsedData = [];
-        } catch {
-            this._parsedData = [];
-        }
+        this._parsedData = Array.isArray(this._dataInput)
+            ? this._dataInput
+            : [];
     }
 
     /**
@@ -3161,19 +3254,34 @@ export class YumeDataGrid extends HTMLElement {
         const columns = this._parsedColumns;
         const filteredCount = this._getFilteredCount();
         const allEntries = this._buildRowEntries();
-        const useVirtual = this._shouldVirtualize(allEntries);
+        const resolvedLoadingMode = this._resolveLoadingMode(allEntries);
+        const showSkeleton = resolvedLoadingMode === "skeleton";
+        // Skeleton rows stand in for an unknown dataset — virtualization can't
+        // window them and their count is already bounded.
+        const useVirtual = !showSkeleton && this._shouldVirtualize(allEntries);
         const { entries, leadingPx, trailingPx } = useVirtual
             ? this._windowEntries(allEntries)
             : { entries: allEntries, leadingPx: 0, trailingPx: 0 };
 
         this.setAttribute("role", "grid");
-        this.setAttribute("aria-rowcount", String(filteredCount));
+        // While skeleton rows stand in for unknown data, report 0 rows so the
+        // placeholder is never counted as table content.
+        this.setAttribute(
+            "aria-rowcount",
+            String(showSkeleton ? 0 : filteredCount),
+        );
         this.setAttribute(
             "aria-colcount",
             String(columns.length + (this.enableSelection ? 1 : 0)),
         );
         if (this.loading) this.setAttribute("aria-busy", "true");
         else this.removeAttribute("aria-busy");
+
+        // A full re-render wipes the shadow DOM, so a focused inline filter
+        // input would lose focus (and its caret) on every keystroke. Capture
+        // its column and selection now and restore them once the new tree is
+        // in place.
+        const filterFocus = this._captureFilterFocus();
 
         this._teardownVirtualScroll();
         this.shadowRoot.innerHTML = "";
@@ -3184,7 +3292,9 @@ export class YumeDataGrid extends HTMLElement {
 
         const container = _el("div", {
             part: "grid-container",
-            class: "grid-container",
+            class: showSkeleton
+                ? "grid-container is-skeleton"
+                : "grid-container",
         });
 
         const toolbarWrap = _el("div", {
@@ -3220,7 +3330,9 @@ export class YumeDataGrid extends HTMLElement {
         table.appendChild(this._buildColgroup(columns));
         table.appendChild(this._buildHeader(columns));
         table.appendChild(
-            this._buildBody(columns, entries, leadingPx, trailingPx),
+            showSkeleton
+                ? this._buildSkeletonBody(columns)
+                : this._buildBody(columns, entries, leadingPx, trailingPx),
         );
 
         scroll.appendChild(table);
@@ -3237,7 +3349,11 @@ export class YumeDataGrid extends HTMLElement {
         const footerAfter = _el("slot", { name: "footer-after" });
         container.appendChild(footerAfter);
 
-        if (this.loading) container.appendChild(this._buildLoadingOverlay());
+        // One visually-hidden live region announces the load once, in every
+        // mode; the overlay itself is hidden from assistive tech.
+        if (this.loading) container.appendChild(this._buildLoadingStatus());
+        if (this.loading && resolvedLoadingMode === "overlay")
+            container.appendChild(this._buildLoadingOverlay());
 
         if (this.enableHeaderMenu) {
             this._headerMenuPopover = this._buildHeaderMenuPopover();
@@ -3265,6 +3381,8 @@ export class YumeDataGrid extends HTMLElement {
         this.shadowRoot.appendChild(container);
 
         if (useVirtual) this._setupVirtualScroll(scroll);
+
+        this._restoreFilterFocus(filterFocus);
     }
 
     _renderCellValue(col, value) {
@@ -3311,6 +3429,33 @@ export class YumeDataGrid extends HTMLElement {
             };
         }
         return null;
+    }
+
+    _resolveLoadingMode(allEntries) {
+        if (!this.loading) return null;
+        const mode = this.loadingMode;
+        if (mode !== "auto") return mode;
+        // `auto` resolves per render against the rows that would otherwise be
+        // visible, so a grid that empties mid-load falls back to skeleton.
+        const hasVisibleRows = allEntries.some((e) => e.kind === "data");
+        return hasVisibleRows ? "overlay" : "skeleton";
+    }
+
+    _restoreFilterFocus(state) {
+        if (!state || state.key == null) return;
+        const next = this.shadowRoot.querySelector(
+            `[part="filter-input"][data-col-key="${CSS.escape(state.key)}"]`,
+        );
+        if (!next) return;
+        const inner = next.input;
+        (inner || next).focus?.();
+        if (inner && state.start != null && "setSelectionRange" in inner) {
+            try {
+                inner.setSelectionRange(state.start, state.end ?? state.start);
+            } catch {
+                /* selection unsupported for this input type — ignore */
+            }
+        }
     }
 
     _rowKeyFor(row, idx) {

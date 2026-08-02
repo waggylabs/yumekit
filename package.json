@@ -1,6 +1,6 @@
 {
     "name": "@waggylabs/yumekit",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "description": "Modern Web Component UI Kit",
     "type": "module",
     "main": "dist/yumekit.min.js",
@@ -17,6 +17,7 @@
             "types": "./dist/react.d.ts"
         },
         "./components/*": "./dist/components/*",
+        "./modules/*": "./dist/modules/*",
         "./icons/all.js": "./dist/icons/all.js",
         "./icons/all-filled.js": "./dist/icons/all-filled.js",
         "./icons/registry.js": "./dist/icons/registry.js",
@@ -46,9 +47,10 @@
         "bundle:ai": "node scripts/bundle-ai-docs.js",
         "sync:docs": "node scripts/sync-llm-docs.js",
         "check:docs": "node scripts/check-docs.js",
-        "prepublishOnly": "npm run build && npm run check:docs -- --check",
+        "prepublishOnly": "npm run build && npm run check:docs -- --check && npm run test:dist",
         "pretest": "npm run build:tokens && npm run sync:docs -- --check && npm run check:docs -- --check",
         "test": "npx web-test-runner --config web-test-runner.config.js --coverage",
+        "test:dist": "node scripts/check-dist-imports.js && npx web-test-runner --config web-test-runner.config.js --files test/dist-smoke.test.js",
         "prestorybook": "npm run build:tokens",
         "storybook": "storybook dev -p 6006",
         "prebuild-storybook": "npm run build:tokens",

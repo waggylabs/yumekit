@@ -101,7 +101,7 @@ Navigation breadcrumb trail with collapse/expand support and SPA-friendly naviga
 
 | Attribute   | Values / Notes                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------------- |
-| `items`     | JSON array of `{ text, href?, icon? }` objects                                                              |
+| `items`     | Array of `{ text, href?, icon? }` objects. Assign the `.items` property directly (rich data — keeps identity, accepts non-serializable fields); the `items` attribute accepts a JSON string as an initial value but is not kept in sync after a property set |
 | `size`      | `small` \| `medium` (default) \| `large`                                                                    |
 | `separator` | Separator character (default: chevron-right icon). Can also use `separator` slot for custom icon separators |
 | `max-items` | Number — collapses middle items when count exceeds this value                                               |
@@ -239,8 +239,12 @@ Form-associated. Always set `name` inside a `<form>`.
 | `min-length`     | number string                                                             |
 | `min`, `max`, `step` | numeric constraints applied when `type="number"`                      |
 | `pattern`        | regex string                                                              |
+| `autocomplete`   | forwarded to the inner `<input>` (e.g. `email`, `current-password`)       |
+| `error-text`     | validation message below the field; applies the error state and describes the input |
 
-Events: `change`, `input`
+Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
+
+Events: `input` (`{value}`) on every keystroke, `change` (`{value}`) on commit — native semantics, so blur after an edit, or Enter. Setting `value` programmatically fires neither. Both bubble and are composed; the inner `<input>`'s own native `change` is not composed and never escapes the shadow root, so listen on the host.
 
 ```html
 <y-input
@@ -272,8 +276,17 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 | `disabled`       | boolean                                          |
 | `required`       | boolean                                          |
 | `invalid`        | boolean — applies error state                    |
+| `autocomplete`   | forwarded to the inner `<textarea>`              |
+| `error-text`     | validation message below the field; applies the error state and describes the textarea |
+| `triggers`       | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?}`; empty (default) disables mentions |
+| `mention-loading` | boolean — shows the mention popup's busy state  |
+| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`) |
 
-Events: `change`, `input`
+Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
+
+Events: `input` (`{value}`) on every keystroke, `change` (`{value}`) on commit — native semantics, so blur after an edit. Setting `value` programmatically fires neither. Both bubble and are composed. Plus the mention events documented under `y-editor`.
+
+**Mentions:** identical API to `y-editor` — same attributes, slots (`mention-empty`, `mention-loading`), methods (`setMentionCandidates`, `closeMentions`, `insertMention`), and events. The one difference is that `atomic` is ignored: a textarea value is an unstructured string, so a mention is always inserted as plain text.
 
 ```html
 <y-textarea
@@ -291,6 +304,84 @@ Events: `change`, `input`
 ```
 
 ---
+
+## y-editor
+
+Form-associated. Rich text (WYSIWYG) editor built on `contenteditable`; its value is sanitized HTML. Use `y-textarea` for plain multi-line text and `y-code` for read-only code display.
+
+| Attribute        | Values / Notes                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| `name`           | form field name                                                                                     |
+| `value`          | content as sanitized HTML; reflected on `change`, not on every keystroke                             |
+| `mode`           | `rich` — default and only supported value in v1; reserved for a future markdown mode                 |
+| `toolbar`        | space-separated tool ids, `\|` for a group separator; `false` hides the toolbar                      |
+| `placeholder`    | shown when the editor is empty                                                                       |
+| `rows`           | visible rows at the default font size (default: `6`)                                                 |
+| `max-length`     | max character count of the plain text; blocks further input and marks invalid                        |
+| `show-count`     | boolean — renders a character counter (`n / max-length` when `max-length` is set)                    |
+| `size`           | `small` \| `medium` \| `large`                                                                       |
+| `disabled`       | boolean — non-editable, non-focusable, excluded from submission                                      |
+| `readonly`       | boolean — non-editable but focusable; toolbar hidden; still submits                                  |
+| `required`       | boolean — invalid when the plain-text content is empty                                               |
+| `invalid`        | boolean — applies error state                                                                        |
+| `allowed-blocks` | space-separated block types (default: `p h1 h2 h3 blockquote ul ol code`); anything else becomes `p` |
+| `image-upload`   | boolean — routes image insertion through the `image-upload` event instead of inlining the source     |
+| `triggers`       | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?, atomic?}`; empty (default) disables mentions |
+| `mention-loading` | boolean — shows the mention popup's busy state                                                     |
+| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`)                                   |
+
+Tool ids for `toolbar`: `bold`, `italic`, `underline`, `strike`, `inline-code`, `heading`, `blockquote`, `code`, `ordered-list`, `unordered-list`, `link`, `image`, `undo`, `redo`. Default: `bold italic underline strike | heading blockquote code | ordered-list unordered-list | link image | undo redo`. Block tools are dropped automatically when `allowed-blocks` does not permit what they produce, so `allowed-blocks` is the single source of truth.
+
+Properties (not attributes): `selection` (readonly) — `{blockType, bold, italic, underline, strike, code, link}` at the caret; `textContent` (readonly) — plain text of the document; `mentionCandidates` — candidate list for the open mention popup; `triggers` — the trigger array (rich data, not reflected to the attribute).
+
+Slots: default (initial content — parsed, sanitized, adopted as the starting value when no `value` attribute is present), `label`, `toolbar-start`, `toolbar-end`, `footer` (replaces the character counter), `mention-empty` (shown when a query returns nothing; default "No matches"), `mention-loading` (shown while `mention-loading` is set).
+
+Events: `input` `{value}`, `change` `{value}` (on blur when changed), `selection-change` `{selection}`, `image-upload` `{file, insert(url), reject(reason)}`, `link-click` `{href, text}` (cancelable — canceling suppresses the link popover), `mention-query` `{trigger, type, query, id}`, `mention-insert` `{trigger, type, candidate, text, range}` (cancelable), `mention-close` `{trigger, type, reason}` — reason is `escape` | `blur` | `no-match` | `insert` | `caret-moved`.
+
+Methods: `undo()`, `redo()`, `focus()`, `checkValidity()`, `reportValidity()`, `setMentionCandidates(id, candidates)`, `closeMentions()`, `insertMention(candidate, trigger?)`.
+
+**Mentions:** caret-triggered autocomplete for `@name` mentions, `#topic` tags, or any literal prefix. The component never fetches. It detects the trigger at the caret, debounces by `mention-query-delay`, emits `mention-query`, and renders whatever the app hands back through `setMentionCandidates(id, list)`. A candidate is `{value, label?, description?, icon?, avatar?, disabled?}` — `avatar` (an image URL) takes precedence over `icon` (a `y-icon` name).
+
+- A trigger activates only at a word boundary (start of text, start of a block, or right after whitespace or an opening bracket), so `a@b` inside an email address stays inert. The fragment ends at whitespace unless `allowSpaces` lets it span one space; passing `maxChars` (default 32) abandons it.
+- The default insertion replaces the fragment — trigger character included — with the `insert` template (`"{trigger}{label} "`, substituting `{trigger}`, `{value}`, `{label}`), as one undo step. The result always ends in whitespace, so the mention reads as a finished word: a single space is appended only when the template does not already end in whitespace, and whitespace the template specifies is kept as written.
+- An insertion never reopens the popup on the text it just wrote, even when that text would match the trigger again — `@ada ` under an `allowSpaces` trigger still holds the one space that trigger permits. The trigger goes live again as soon as the query text moves on. `Escape` suppresses the current fragment the same way.
+- `atomic: true` (y-editor only) inserts one `contenteditable="false"` inline element carrying `data-mention-type` / `data-mention-value`. It deletes with a single Backspace, survives the sanitize/serialize round trip in `value`, and counts toward `max-length` as its rendered template.
+- Each query carries a monotonic `id`; candidates supplied for a superseded or closed query are discarded, so an out-of-order response never flashes stale results.
+- The popup is anchored to the caret, not to the trigger character, so it stays beside what is being typed however long the query grows and follows the text down when the line wraps. It flips above the caret when it would overflow the viewport.
+- Accessibility: while open, the editing surface takes `role="combobox"` plus `aria-expanded` / `aria-controls` / `aria-autocomplete="list"` / `aria-haspopup="listbox"`, and `aria-activedescendant` tracks the highlight — focus and the caret never leave the text, which is what makes typing-through work. Down/Up move the highlight (wrapping), Enter/Tab insert, Escape closes and leaves the typed text including the trigger. Every added attribute is removed on close. No trigger fires while `disabled` or `readonly`, and detection is suspended between `compositionstart` and `compositionend`.
+
+```html
+<y-editor
+    triggers='[{"trigger":"@","type":"user"},{"trigger":"#","type":"topic"}]'
+    mention-query-delay="200"
+>
+    <span slot="label">Comment</span>
+    <span slot="mention-empty">Nobody by that name</span>
+</y-editor>
+```
+
+Shortcuts: Ctrl/Cmd+B bold, +I italic, +U underline, +K link, +Shift+X strike, +E inline code, +Alt+1..3 headings, +Shift+7/8 ordered/unordered list, +Shift+. blockquote, +Z / +Shift+Z undo/redo, +Shift+V paste as plain text. `Tab` moves focus out of the surface (it indents inside a list), so the editor is never a keyboard trap.
+
+**Security:** every path that introduces HTML (`value`, the default slot, paste) runs through `src/modules/html-sanitizer.js`. Only the tags implied by `allowed-blocks` plus inline formatting, `<a>` and `<img>` survive; `on*`, `<script>`, `<style>`, `<iframe>` are stripped; only `http`, `https`, `mailto` and `data:` raster images are permitted on `href` / `src`.
+
+**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`, `--component-editor-mention-popup-max-height`, `--component-editor-mention-popup-min-width`, `--component-editor-mention-chip-background`, `--component-editor-mention-chip-color` (the four mention properties are also read by `y-textarea`'s popup)
+
+**CSS Parts:** `wrapper`, `label`, `toolbar`, `toolbar-group`, `toolbar-button`, `editor`, `content`, `footer`, `counter`, `link-popover`, `mention-popup`, `mention-option`, `mention-option-avatar`, `mention-option-label`, `mention-option-description`, `mention-empty`, `mention-loading`, `mention-chip`
+
+```html
+<y-editor
+    name="body"
+    placeholder="Write something..."
+    rows="8"
+    show-count
+    max-length="500"
+>
+    <span slot="label">Description</span>
+</y-editor>
+<y-editor name="comment" toolbar="bold italic | link" allowed-blocks="p ul ol">
+    <span slot="label">Comment</span>
+</y-editor>
+```
 
 ## y-select
 
@@ -314,6 +405,11 @@ Form-associated.
 | `label-position` | `top` (default) \| `bottom`                   |
 | `close-on-click-outside` | `"false"` keeps the dropdown open on outside click |
 | `portal`       | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors |
+| `error-text`   | validation message below the field; applies the error state and describes the combobox |
+
+The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
+
+Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
 Events: `change`
 
@@ -324,6 +420,71 @@ Events: `change`
     options='[{"value":"admin","label":"Admin"},{"value":"user","label":"User"}]'
     placeholder="Select a role"
 ></y-select>
+```
+
+---
+
+## y-tokens
+
+Form-associated. Multi-value token (chip) input with typeahead — the user types into a single-line field and commits entries as removable tokens. Sits between `y-select multiple` (dropdown over a fixed list) and `y-tag` (display only): facet chips with `allow-custom` off, free-form topic/recipient entry with it on.
+
+| Attribute              | Values / Notes                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| `value`                | committed tokens — JSON array or separator-delimited string (`value="a, b, c"`); property takes objects or strings. Rich data, not reflected |
+| `options`              | suggestion list, same shape as a token. JSON array or property. Rich data, not reflected              |
+| `name`                 | form field name — **one entry per token** is submitted under it                                       |
+| `async`                | boolean — typing emits `query` instead of filtering locally; the component never fetches              |
+| `loading`              | boolean — busy state in the popup; set automatically between `query` and the next `options` assignment |
+| `query-delay`          | ms to debounce before `query` (default `200`; `0` disables)                                           |
+| `filter`               | `contains` (default) \| `starts-with` \| `none` (app has already filtered)                            |
+| `allow-custom`         | boolean — whether unmatched text may become a token                                                   |
+| `max`                  | number — token cap; commits are blocked at the limit and `rangeOverflow` is reported                   |
+| `duplicates`           | `ignore` (default; repeat dropped, existing token pulses) \| `allow` \| `error` (dropped + invalid). Case-insensitive on `value`. Governs **text** commits only — activating a committed option in the popup toggles it off, like `y-select multiple` |
+| `separators`           | characters that commit the pending text, in addition to Enter (default `","`; e.g. `",;"`)            |
+| `placeholder`          | hidden once a token exists                                                                            |
+| `placeholder-persist`  | boolean — keep the placeholder while tokens are present                                               |
+| `token-variant`        | `filled` (default) \| `outlined` \| `flat` — forwarded to each `y-tag`; tokens with no `color` use `primary`, matching `y-select` tag mode |
+| `token-shape`          | `square` (default) \| `round` — forwarded to each `y-tag`                                             |
+| `size`                 | `small` \| `medium` \| `large`; tokens render one step down                                           |
+| `variant`              | `default` \| `underline` (bottom border only, square bottom corners)                                  |
+| `label-position`       | `top` (default) \| `left` \| `hidden`                                                                 |
+| `clearable`            | boolean — control that removes every token at once                                                    |
+| `portal`               | boolean — render the popup into the nearest `<y-theme>` (or `<body>`). Custom properties set inline on the host are forwarded onto the portal, so e.g. an inline `--component-select-z-index` still lifts the popup above another portaled surface |
+| `disabled`             | boolean — non-interactive, not submitted                                                              |
+| `readonly`             | boolean — tokens visible and focusable but not removable; no input, no popup                          |
+| `required`             | boolean — at least one token (`valueMissing`)                                                         |
+| `invalid`              | boolean — forces the error state                                                                      |
+| `error-text`           | validation message below the control; applies the error state and describes the combobox              |
+
+Token / Option shape: `{value, label?, icon?, color?, invalid?, disabled?}`. `value` is required and is the dedupe + submission identity; `label` falls back to it; `icon` is a `y-icon` name; `color` is a semantic name or a CSS color gated by `isSafeCssColor`; `invalid` renders the chip in the error state and keeps it removable (never silently dropped); `disabled` is options-only.
+
+Slots: `label`, `left-icon`, `empty` (fallback "No matches"), `loading` (fallback spinner + "Searching…").
+
+Events: `change` (`{value}`), `token-add` (cancelable, `{token, source}` — `enter`\|`separator`\|`paste`\|`select`\|`api`; preventing it keeps the text in the input), `token-remove` (cancelable, `{token, index, source}` — `click` (chip control) \| `deselect` (toggled off in the popup) \| `backspace` \| `clear` \| `api`), `query` (async only, `{query, id}`), `input` (`{text}`, not on commit).
+
+Methods: `addToken(token)`, `removeToken(index, source?)`, `clear()`, `openPopup()`, `closePopup()`, `focus()`, `checkValidity()`, `reportValidity()`, `setOptions(options, queryId?)` — pass the `id` from a `query` event and the assignment is ignored once a newer query has gone out, discarding stale async responses.
+
+Keyboard: one tab stop. `Down`/`Up` move the suggestion highlight (opening the popup, wrapping); `Enter` commits the highlight or the typed text — swallowed only when the popup is open or text is pending, so an empty field still submits the form; a `separators` character commits; `Escape` closes the popup without clearing the text, a second `Escape` clears it; `Left`/`Right` move through the token strip from an empty input; `Backspace` in an empty input highlights the last token and a **second, separate** press deletes it (auto-repeat ignored); `Delete` removes a highlighted token; `Home`/`End` jump to first/last. Blur commits pending text when `allow-custom` is set, otherwise discards and announces it.
+
+Accessibility: ARIA 1.2 combobox with `aria-activedescendant` so focus never leaves the input; `role="listbox"` popup, `role="list"` token strip, and each remove control named after its own token (`aria-label="Remove Design"`). A polite live region reports the suggestion count and every add and remove.
+
+A committed option stays in the list, rendered with the `y-select` accent fill (or its own `color`) and `aria-selected="true"`; the keyboard highlight is an inset ring on those rows so it stays visible over the fill.
+
+CSS Parts: `wrapper label control token-list token token-remove input clear-button popup option option-icon option-label empty loading error-text`.
+CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{small|medium|large}`, `--component-tokens-min-height-{small|medium|large}`, `--component-tokens-max-height`, `--component-tokens-input-min-width`, `--component-tokens-popup-max-height`. Chips reuse `--component-tag-*` and field chrome reuses `--component-input-*`.
+
+```html
+<y-tokens
+    name="team"
+    clearable
+    placeholder="Filter by team…"
+    options='[{"value":"design","label":"Design","color":"primary"},{"value":"eng","label":"Engineering","color":"success"}]'
+    value='["design"]'
+>
+    <span slot="label">Team</span>
+</y-tokens>
+
+<y-tokens name="topics" allow-custom separators=",;" max="5" placeholder="Add a topic…"></y-tokens>
 ```
 
 ---
@@ -414,6 +575,99 @@ Form-associated.
 | `aria-label-min`, `aria-label-max`    | accessible labels for the lower / upper thumbs |
 
 Events: `change`, `input`
+
+---
+
+## y-form
+
+Form container — renders a group of YumeKit form controls from a JSON `fields` array, plus submit/reset buttons, and collects all values into one payload on submit.
+
+| Attribute        | Values / Notes                                                       |
+| ---------------- | -------------------------------------------------------------------- |
+| `fields`         | JSON array of field descriptors (see below); order defines layout    |
+| `submit-text`    | submit button label (default `Submit`)                               |
+| `reset-text`     | reset button label (default `Reset`)                                 |
+| `no-reset`       | boolean — hide the reset button                                      |
+| `layout`         | `vertical` (default) \| `horizontal` \| `inline`                     |
+| `label-position` | `top` (default) \| `left` (label column via `--component-form-label-width`) |
+| `size`           | `small` \| `medium` \| `large` — propagated to controls and buttons  |
+| `disabled`       | boolean — disables all controls and buttons                          |
+| `loading`        | boolean — blocks re-submission, shows a busy indicator, keeps values |
+| `loading-mode`   | `ring` (default — progress ring in the action row) \| `skeleton` (skeleton placeholders over the fields and labels) |
+| `novalidate`     | boolean — skip built-in validation on submit                         |
+| `action`         | optional native form action URL (progressive enhancement)            |
+| `method`         | `get` \| `post` (default `post`), used when `action` is set          |
+| `name`           | form name                                                            |
+
+Field descriptor keys: `type` (`input` \| `textarea` \| `select` \| `checkbox` \| `radio` \| `switch` \| `slider` \| `date` \| `color` \| `rating`; `input` also takes `inputType`), `name`, `label`, `value`, `placeholder`, `required`, `disabled`, `options` (select/radio), `min`/`max`/`step`, `help`, `autocomplete`, `errorText` (message used in place of the generic "X is required" / "X is invalid" copy), `validate(value, values)` (returns a message or `null`; runs after the built-in checks pass, for cross-field and domain rules). A `type` that is not a component type but names a native input type (`text`, `email`, `url`, `tel`, `number`, `password`, `search`, `time`, `datetime-local`, `month`, `week`) is sugar for `{type: "input", inputType: <that>}`. An entry with a `slot` key renders a named `<slot>` outlet at that position instead — project a child with the matching `slot="…"` attribute, and slotted named controls join value collection and validation.
+
+Property (not attribute): `values` — get/set `{name: value}` (booleans for checkbox/switch); setting merges by name, unknown keys ignored. The getter reports the form's full state **including disabled fields**, so disabling controls during an async save does not blank out `values`; native submission semantics (omitting disabled fields) apply to `formData` on `y-submit`.
+
+Validation messages for `input` / `textarea` / `select` fields are handed to the control's own `error-text` so the message shares a shadow root with the input and `aria-describedby` resolves. Other field types keep their message in the form's `field-error` live region and get `aria-invalid` shimmed onto their inner control.
+
+Changing any attribute other than `fields` updates the existing tree in place — focus, caret, IME composition, and open dropdowns survive a `loading` / `disabled` toggle mid-submit. Only `fields` rebuilds.
+
+Slots: `header`, `actions` (replaces the default button row), `footer`, plus one named outlet per `slot` field entry
+Events: `y-submit` `{values, formData}` (cancelable — prevent for async submission), `y-reset` (cancelable), `y-change` `{name, value, values}`, `y-invalid` `{invalid: [{name, message}]}`
+Methods: `submit()`, `reset()`, `checkValidity()`
+CSS Parts: `form`, `fields`, `header`, `actions`, `footer`, `submit-button`, `reset-button`
+CSS Custom Properties: `--component-form-gap`, `--component-form-actions-gap`, `--component-form-actions-justify`, `--component-form-label-width`
+
+```html
+<y-form
+    submit-text="Save"
+    fields='[
+        {"type":"input","name":"username","label":"Username","required":true},
+        {"type":"select","name":"role","label":"Role","options":[{"value":"admin","label":"Admin"},{"value":"user","label":"User"}]},
+        {"slot":"extra"},
+        {"type":"switch","name":"newsletter","label":"Newsletter"}
+    ]'
+>
+    <y-input slot="extra" name="attachment" placeholder="Attachment URL"></y-input>
+</y-form>
+```
+
+---
+
+## y-upload
+
+Form-associated. Drag-and-drop file upload with client-side validation, a managed file list (previews + per-file progress), and `FormData` submission. Does not perform network uploads — the app handles transport and reports back via `setProgress` / `setStatus`.
+
+| Attribute        | Values / Notes                                                                 |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `name`           | form field name; each file is appended to `FormData` under this name           |
+| `accept`         | native `accept` syntax (extensions and/or MIME types); enforced on pick + drop |
+| `multiple`       | boolean; when absent a new pick/drop replaces the current file                  |
+| `disabled`       | boolean                                                                         |
+| `required`       | boolean — `:invalid` while no files are selected                               |
+| `max-files`      | number — max count (only meaningful with `multiple`); excess rejected          |
+| `max-size`       | number — max bytes per file                                                    |
+| `max-total-size` | number — max combined bytes                                                    |
+| `variant`        | `dropzone` (default) \| `button` (compact; drop still accepted)                |
+| `size`           | `small` \| `medium` \| `large`                                                 |
+| `show-list`      | `"false"` hides the file list (default shown)                                  |
+| `previews`       | boolean — image thumbnails in the list                                         |
+| `directory`      | boolean — allow folder selection (`webkitdirectory`)                           |
+
+Property (not attribute): `files` — get/set `File[]`. Read-only reflected attribute `dragover` for styling.
+
+Validation order per file: `accept` → `max-size` → `max-files` → `max-total-size`; rejections batch into one `reject` event, valid files from the same batch are still added; duplicates (name + size + lastModified) are ignored silently.
+
+Slots: default (dropzone prompt), `icon` (prompt icon).
+
+Events: `change` (`{files}`), `reject` (`{rejections: {file, reason}[]}`), `remove` (cancelable, `{file}`).
+
+Methods: `browse()`, `clear()`, `setProgress(file, percent)`, `setStatus(file, status, message?)` — status `pending` \| `uploading` \| `done` \| `error`.
+
+```html
+<y-upload
+    name="docs"
+    accept=".pdf,image/*"
+    multiple
+    max-size="5242880"
+    previews
+></y-upload>
+```
 
 ---
 
@@ -664,6 +918,9 @@ Slots: default (the element the badge overlays)
 | `shape`   | `circle` (default) \| `square` \| `rounded`        |
 | `size`    | `small` \| `medium` \| `large`                     |
 | `color`   | color scheme for initials background               |
+| `loading` | boolean — renders a `y-skeleton` placeholder sized to `size` and shaped by `shape`; takes precedence over `src`/initials and sets `aria-busy` |
+
+CSS parts: `avatar`, `skeleton` (loading placeholder)
 
 ```html
 <y-avatar
@@ -674,6 +931,8 @@ Slots: default (the element the badge overlays)
 ></y-avatar>
 <y-avatar alt="JD" color="primary" size="medium"></y-avatar>
 <!-- initials fallback -->
+<y-avatar loading size="large"></y-avatar>
+<!-- loading placeholder -->
 ```
 
 ---
@@ -967,7 +1226,7 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
 | `position`  | `left` (default) \| `right` \| `top` \| `bottom`                                     |
 | `resizable` | boolean — adds a drag handle for resizing                                            |
 
-Events: `open`, `close`
+Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, the anchor click, the overlay click, or Escape. Mounting already `visible` does not fire `open`; that is a starting state, not a transition.
 
 Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
@@ -1146,6 +1405,46 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 
 ---
 
+## y-carousel
+
+Slideshow container. Each direct child becomes one slide. For image galleries with a lightbox use `y-gallery` instead.
+
+| Attribute        | Values / Notes                                                              |
+| ---------------- | -------------------------------------------------------------------------- |
+| `index`          | number (default `0`) — leftmost visible slide; reflects as the user navigates |
+| `per-view`       | number (default `1`) — slides visible at once; fractional values peek the next |
+| `gap`            | CSS length between slides (default `0`)                                    |
+| `orientation`    | `horizontal` (default) \| `vertical` — vertical requires an explicit host height |
+| `loop`           | boolean — wrap from last slide back to first                               |
+| `autoplay`       | boolean — advance automatically                                            |
+| `interval`       | number (default `5000`) — autoplay delay in ms                            |
+| `pause-on-hover` | boolean (default `true`) — pause autoplay while hovered or focused         |
+| `arrows`         | `true` (default) \| `false` \| `hover`                                     |
+| `pagination`     | `dots` (default) \| `fraction` \| `none`                                   |
+| `swipe`          | boolean (default `true`) — pointer/touch drag navigation                   |
+| `snap`           | `start` (default) \| `center` — slide alignment within the viewport        |
+
+Children: any elements — each direct child is one slide.
+
+Events: `change` (`{ index, previousIndex }`, fired after the snap settles)
+Methods: `.next()`, `.previous()`, `.goTo(index)`, `.play()`, `.pause()`
+
+Slots: default, `prev-icon`, `next-icon`
+
+CSS Custom Properties: `--component-carousel-arrow-background`, `--component-carousel-arrow-color`, `--component-carousel-arrow-size`, `--component-carousel-dot-color`, `--component-carousel-dot-color-active`, `--component-carousel-dot-size`, `--component-carousel-pagination-gap`, `--component-carousel-transition-duration`
+
+CSS Parts: `viewport`, `track`, `prev-button`, `next-button`, `pagination`, `dot`, `fraction`
+
+```html
+<y-carousel per-view="1" loop autoplay interval="4000">
+    <img src="slide1.jpg" alt="First" />
+    <img src="slide2.jpg" alt="Second" />
+    <img src="slide3.jpg" alt="Third" />
+</y-carousel>
+```
+
+---
+
 ## y-dialog
 
 | Attribute       | Values / Notes                                                                        |
@@ -1157,7 +1456,7 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 | `animate`       | open/close animation                                                                  |
 | `position`      | dialog placement                                                                      |
 
-Events: `open`, `close`
+Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, `show()` / `hide()`, the anchor click, the close button, or Escape. Mounting already `visible` does not fire `open`; that is a starting state, not a transition.
 
 Slots: `header`, `body`, `footer` — **named slots only**; content without a `slot` attribute is not rendered
 
@@ -1373,6 +1672,8 @@ Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":fal
 
 Methods: `activateTab(id)`
 
+Events: `change` (cancelable, `{ id, previousId, tab, previousTab }`) — fired before the switch is applied, whether triggered by click, keyboard, or `activateTab(id)`. Call `preventDefault()` to keep the current tab (e.g. an unsaved-changes guard). No event for disabled, unknown, or already-active tabs, nor for the tab auto-selected on first render.
+
 Slots:
 
 - `{slot}` — tab panel content (one per tab, named by the `slot` field in options)
@@ -1512,10 +1813,14 @@ Methods: `expand()`, `collapse()`, `toggle()`
 
 | Attribute | Values / Notes                                    |
 | --------- | ------------------------------------------------- |
-| `columns` | JSON: `[{"key":"name","label":"Name"}, ...]`      |
-| `data`    | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
-| `striped` | boolean                                           |
-| `size`    | `small` \| `medium` \| `large`                    |
+| `columns`       | JSON: `[{"key":"name","label":"Name"}, ...]`      |
+| `data`          | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
+| `striped`       | boolean                                           |
+| `size`          | `small` \| `medium` \| `large`                    |
+| `loading`       | boolean — renders skeleton rows (from `y-skeleton`) in place of the body, disables sort, sets `aria-busy`. No overlay mode — use `y-data-grid` for spinner-on-refetch |
+| `skeleton-rows` | number of placeholder rows while `loading` (default `5`) |
+
+Slot: `skeleton` overrides the generated placeholder body. CSS parts: `skeleton-body`, `skeleton-row`, `skeleton-cell`.
 
 ```html
 <y-table
@@ -1523,6 +1828,7 @@ Methods: `expand()`, `collapse()`, `toggle()`
     data='[{"name":"Alice","email":"alice@example.com","role":"Admin"},{"name":"Bob","email":"bob@example.com","role":"User"}]'
     striped
 ></y-table>
+<y-table columns="..." loading skeleton-rows="6"></y-table>
 ```
 
 ---
@@ -1774,7 +2080,9 @@ Interactive data grid for large datasets — client- or server-side sorting, fil
 | `page-size`           | rows per page (default `20`)                                                                            |
 | `current-page`        | 1-indexed (default `1`)                                                                                 |
 | `total-rows`          | required in `server` mode for pagination math                                                          |
-| `loading`             | boolean — loading overlay + `aria-busy`                                                                 |
+| `loading`             | boolean — presents a loading state + `aria-busy` (see `loading-mode`)                                   |
+| `loading-mode`        | `auto` (default) \| `overlay` \| `skeleton`. `overlay` dims the body under a spinner; `skeleton` renders placeholder rows; `auto` picks skeleton when no rows are visible (first load) and overlay when rows are present (refetch). Empty state is suppressed while loading in every mode. Slot `skeleton` overrides the placeholder body; parts `skeleton-body`/`skeleton-row`/`skeleton-cell`; `--component-data-grid-skeleton-row-height` overrides row height |
+| `skeleton-rows`       | placeholder row count in skeleton mode (default `page-size`, else `10`; clamped)                         |
 | `striped`             | boolean (default false)                                                                                 |
 | `hover`               | boolean (default true; `hover="false"` to disable)                                                     |
 | `fixed-header`        | boolean (default true) — sticky header                                                                  |
@@ -1887,6 +2195,39 @@ CSS Custom Properties: `--component-shape-clip-path` (computed), `--component-sh
 <y-shape type="circle"><img src="avatar.jpg" alt="" /></y-shape>
 <y-shape type="rectangle" radius="16px" size="large" style="background: var(--primary-content--);"></y-shape>
 <y-shape type="polygon" polygon-points="50% 0%, 100% 50%, 50% 100%, 0% 50%"></y-shape>
+```
+
+---
+
+## y-skeleton
+
+Presentational placeholder that mimics content while it loads, reducing perceived latency and layout shift. Purely decorative — internals are `aria-hidden`. Compose several skeletons to approximate the final layout.
+
+| Attribute   | Values / Notes                                                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `variant`   | `text` (default) \| `circle` \| `rect` — `text` renders line bars, `circle` a circle, `rect` a rounded rectangle     |
+| `width`     | explicit width, any CSS length (e.g. `120px`, `60%`, `8rem`); applied via a validated inline custom property         |
+| `height`    | explicit height, any CSS length; `text` defaults to `1em`/line, `circle` matches width, `rect` needs a height/content |
+| `lines`     | `text` only — number of line bars (default `1`); the last bar is ~60% width when `> 1`                               |
+| `animation` | `pulse` (default) \| `wave` \| `none` — CSS-only; both animated styles fall back to static under reduced motion       |
+
+Slot: default — optional sizing content, rendered `visibility: hidden` so the skeleton inherits its dimensions. Explicit `width`/`height` take precedence over slotted content.
+
+**Accessibility:** the element exposes no ARIA of its own; its internals are `aria-hidden="true"`. Put `aria-busy="true"` (ideally with `aria-live="polite"`) on the container region being loaded and remove it when real content arrives. Under `prefers-reduced-motion: reduce`, `pulse`/`wave` render as a static block.
+
+CSS Parts: `skeleton` (each rendered shape; every line bar carries the part)
+CSS Custom Properties: `--component-skeleton-bg`, `--component-skeleton-highlight` (wave sweep), `--component-skeleton-radius`, `--component-skeleton-animation-duration`, `--component-skeleton-text-gap`
+
+```html
+<y-skeleton variant="text" lines="3"></y-skeleton>
+<div aria-busy="true" style="display:flex;gap:16px;align-items:center">
+    <y-skeleton variant="circle" width="48px"></y-skeleton>
+    <div style="flex:1">
+        <y-skeleton variant="text" width="60%"></y-skeleton>
+        <y-skeleton variant="text" width="90%"></y-skeleton>
+    </div>
+</div>
+<y-skeleton variant="rect"><img width="210" height="118" alt="" /></y-skeleton>
 ```
 
 ---

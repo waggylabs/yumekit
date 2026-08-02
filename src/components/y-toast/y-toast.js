@@ -1,5 +1,5 @@
 import "../y-icon/y-icon.js";
-import { getColorVarPair } from "../../modules/helpers.js";
+import { getColorVarPair, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeToast extends HTMLElement {
     static get observedAttributes() {
@@ -17,6 +17,7 @@ export class YumeToast extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -145,6 +146,10 @@ export class YumeToast extends HTMLElement {
 
     _buildStyles() {
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 font-family: var(--font-family-body, sans-serif);
             }

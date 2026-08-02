@@ -1,4 +1,5 @@
 import { chevronDown } from "../../icons/index.js";
+import { upgradeProperties } from "../../modules/helpers.js";
 
 export class YumePanel extends HTMLElement {
     static get observedAttributes() {
@@ -18,6 +19,7 @@ export class YumePanel extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._addHeaderListeners();
         this._checkForChildren();
         this._updateChildState();
@@ -169,6 +171,10 @@ export class YumePanel extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 box-sizing: border-box;

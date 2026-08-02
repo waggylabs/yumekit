@@ -1,7 +1,11 @@
 import "../y-button/y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-select/y-select.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 const VARIANT_VALUES = ["default", "compact", "detailed"];
 const SIZE_VALUES = ["small", "medium", "large"];
@@ -62,9 +66,11 @@ export class YumePaginator extends HTMLElement {
         this._lastObservedWidth = 0;
         this._fitPending = false;
         this._fitIterations = 0;
+        this._pageSizeOptions = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "navigation");
         if (!this.hasAttribute("aria-label")) {
             this.setAttribute("aria-label", "Pagination");
@@ -81,6 +87,10 @@ export class YumePaginator extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+
+        if (name === "page-size-options") {
+            this._pageSizeOptions = coerceRichData(newValue);
+        }
 
         // Declared maximum / variant changed — discard fit state so we
         // re-evaluate from the declared pageCount.
@@ -189,19 +199,15 @@ export class YumePaginator extends HTMLElement {
      * least one option is available.
      */
     get pageSizeOptions() {
-        const raw = this.getAttribute("page-size-options");
-        if (!raw) return [];
-        try {
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch {
-            return [];
-        }
+        return Array.isArray(this._pageSizeOptions)
+            ? this._pageSizeOptions
+            : [];
     }
     set pageSizeOptions(v) {
-        if (v == null) this.removeAttribute("page-size-options");
-        else if (typeof v === "string") this.setAttribute("page-size-options", v);
-        else this.setAttribute("page-size-options", JSON.stringify(v));
+        this._pageSizeOptions = coerceRichData(v);
+        this._effectivePageCount = null;
+        this._fitIterations = 0;
+        if (this.isConnected) this._render();
     }
 
     /** Controls button size, font size, and spacing. */

@@ -474,6 +474,12 @@ describe("<y-select>", () => {
             expect(el.options).to.deep.equal([]);
         });
 
+        it("options getter returns empty array for a non-array JSON value", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.setAttribute("options", '{"value":"x"}');
+            expect(el.options).to.deep.equal([]);
+        });
+
         it("required setter adds and removes the required attribute", async () => {
             const el = await fixture(html`<y-select></y-select>`);
             el.required = true;
@@ -881,6 +887,75 @@ describe("<y-select>", () => {
             const dropdown = el.shadowRoot.querySelector(".dropdown");
             // The base CSS uses position: absolute; we shouldn't have overridden it.
             expect(dropdown.style.position).to.not.equal("fixed");
+        });
+    });
+    describe("accessibility", () => {
+        it("exposes the trigger as a combobox and the dropdown as a listbox", async () => {
+            const el = await fixture(
+                html`<y-select aria-label="Role" required></y-select>`,
+            );
+            el.options = [{ value: "a", label: "A" }];
+
+            const trigger = el.shadowRoot.querySelector(".select-container");
+            expect(trigger.getAttribute("role")).to.equal("combobox");
+            expect(trigger.getAttribute("aria-label")).to.equal("Role");
+            expect(trigger.getAttribute("aria-required")).to.equal("true");
+            expect(trigger.getAttribute("aria-expanded")).to.equal("false");
+            expect(
+                el.shadowRoot.querySelector(".dropdown").getAttribute("role"),
+            ).to.equal("listbox");
+            expect(
+                el.shadowRoot
+                    .querySelector(".dropdown-item")
+                    .getAttribute("role"),
+            ).to.equal("option");
+        });
+
+        it("reflects the open state on the combobox", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.options = [{ value: "a", label: "A" }];
+
+            el.toggleDropdown();
+            expect(
+                el.shadowRoot
+                    .querySelector(".select-container")
+                    .getAttribute("aria-expanded"),
+            ).to.equal("true");
+
+            el.closeDropdown();
+            expect(
+                el.shadowRoot
+                    .querySelector(".select-container")
+                    .getAttribute("aria-expanded"),
+            ).to.equal("false");
+        });
+
+        it("tracks selection with aria-selected", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.options = [
+                { value: "a", label: "A" },
+                { value: "b", label: "B" },
+            ];
+            el.value = "b";
+
+            const items = el.shadowRoot.querySelectorAll(".dropdown-item");
+            expect(items[0].getAttribute("aria-selected")).to.equal("false");
+            expect(items[1].getAttribute("aria-selected")).to.equal("true");
+        });
+
+        it("describes the combobox from error-text within its own root", async () => {
+            const el = await fixture(html`<y-select></y-select>`);
+            el.errorText = "Pick a role";
+
+            const trigger = el.shadowRoot.querySelector(".select-container");
+            const message = el.shadowRoot.getElementById(
+                trigger.getAttribute("aria-describedby"),
+            );
+
+            expect(trigger.getAttribute("aria-invalid")).to.equal("true");
+            expect(message).to.exist;
+            expect(message.textContent).to.equal("Pick a role");
+            expect(trigger.classList.contains("is-invalid")).to.be.true;
         });
     });
 });

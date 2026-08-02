@@ -1,6 +1,7 @@
 import {
     isSafeCssColor,
     manageLabelVisibility,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 class YumeSwitch extends HTMLElement {
@@ -31,6 +32,7 @@ class YumeSwitch extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("size")) this.setAttribute("size", "medium");
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
@@ -181,6 +183,10 @@ class YumeSwitch extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 flex-direction: var(--switch-dir, column);

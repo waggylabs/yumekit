@@ -35,6 +35,32 @@ const componentNames = readdirSync(componentDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name);
 
+// Individual component builds keep shared modules and sibling components
+// external so each dist/components/*.js bundle contains only its own code.
+// Everything else (CSS strings, inline SVG icon exports) stays inlined.
+// Matching runs on the raw import specifiers (see
+// `makeAbsoluteExternalsRelative: false` below), so the patterns mirror how
+// the source files are written.
+const crossComponentImport = /^\.\.\/(y-[\w-]+)\/\1\.js$/;
+
+function componentExternal(id) {
+    return (
+        /^\.\.\/\.\.\/modules\/[\w.-]+\.js$/.test(id) ||
+        id === "../../icons/registry.js" ||
+        crossComponentImport.test(id)
+    );
+}
+
+// Map source-tree specifiers onto the flatter dist/ layout:
+//   ../../modules/helpers.js  → ../modules/helpers.js
+//   ../../icons/registry.js   → ../icons/registry.js
+//   ../y-icon/y-icon.js       → ./y-icon.js
+function componentPaths(id) {
+    const sibling = id.match(crossComponentImport);
+    if (sibling) return `./${sibling[1]}.js`;
+    return id.replace(/^\.\.\/\.\.\//, "../");
+}
+
 // Copy non-JS assets (styles/, modules/) into dist/
 function copyAssets() {
     return {
@@ -47,11 +73,12 @@ function copyAssets() {
             for (const f of readdirSync("styles")) {
                 copyFileSync(join("styles", f), join(stylesOut, f));
             }
-            // modules/
+            // modules/ (tests stay out of the published package)
             const modulesOut = "dist/modules";
             if (!existsSync(modulesOut))
                 mkdirSync(modulesOut, { recursive: true });
             for (const f of readdirSync("src/modules")) {
+                if (f.endsWith(".test.js")) continue;
                 copyFileSync(join("src/modules", f), join(modulesOut, f));
             }
             // root-level .d.ts type declaration files (e.g. react.d.ts)
@@ -120,12 +147,14 @@ export default [
         output: {
             file: `dist/components/${name}.js`,
             format: "esm",
-            paths: {
-                "../../icons/registry.js": "../icons/registry.js",
-                "../../modules/helpers.js": "../modules/helpers.js",
-            },
+            paths: componentPaths,
         },
-        external: ["../../icons/registry.js", "../../modules/helpers.js"],
+        external: componentExternal,
+        // Keep external ids as the authored relative specifiers so
+        // componentExternal / componentPaths can match them; the default
+        // resolves them to absolute paths first, which silently skips the
+        // `paths` rewrite and emits specifiers that don't exist in dist/.
+        makeAbsoluteExternalsRelative: false,
         plugins: [cssString(), svgString()],
     })),
 ];

@@ -486,21 +486,45 @@ describe("YumeBreadcrumbs", () => {
 
     // ── Property setters ──────────────────────────────────────
 
-    it("items setter updates the attribute", async () => {
+    it("items setter stores rich data on the property without reflecting to the attribute", async () => {
         const el = await fixture(
             html`<y-breadcrumbs items="${ITEMS_3}"></y-breadcrumbs>`,
         );
         const newItems = [{ text: "One", href: "/" }];
         el.items = newItems;
-        expect(JSON.parse(el.getAttribute("items"))).to.deep.equal(newItems);
+        expect(el.items).to.deep.equal(newItems);
+        // Rich data is not serialized back to the attribute (best practice).
+        expect(el.getAttribute("items")).to.equal(ITEMS_3);
     });
 
-    it("items setter mirrors a JSON string instead of double-encoding it", async () => {
+    it("items property preserves object identity (no re-serialization per read)", async () => {
         const el = await fixture(html`<y-breadcrumbs></y-breadcrumbs>`);
-        const json = '[{"text":"One","href":"/"}]';
-        el.items = json;
-        expect(el.getAttribute("items")).to.equal(json);
+        const value = [{ text: "One", href: "/" }];
+        el.items = value;
+        expect(el.items).to.equal(value);
+        expect(el.items).to.equal(el.items);
+    });
+
+    it("items property accepts non-serializable values (e.g. a callback)", async () => {
+        const el = await fixture(html`<y-breadcrumbs></y-breadcrumbs>`);
+        const onClick = () => {};
+        el.items = [{ text: "One", href: "/", onClick }];
+        expect(el.items[0].onClick).to.equal(onClick);
+    });
+
+    it("items setter parses a JSON string into an array", async () => {
+        const el = await fixture(html`<y-breadcrumbs></y-breadcrumbs>`);
+        el.items = '[{"text":"One","href":"/"}]';
         expect(el.items).to.deep.equal([{ text: "One", href: "/" }]);
+    });
+
+    it("items attribute hydrates the property and reacts to later attribute changes", async () => {
+        const el = await fixture(html`<y-breadcrumbs></y-breadcrumbs>`);
+        expect(el.items).to.deep.equal([]);
+        el.setAttribute("items", ITEMS_3);
+        expect(el.items).to.deep.equal(JSON.parse(ITEMS_3));
+        el.removeAttribute("items");
+        expect(el.items).to.deep.equal([]);
     });
 
     it("size setter updates the attribute", async () => {

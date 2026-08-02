@@ -1,5 +1,5 @@
 import { x as xSvg } from "../../icons/index.js";
-import { contrastTextColor, isSafeCssColor } from "../../modules/helpers.js";
+import { contrastTextColor, isSafeCssColor, upgradeProperties } from "../../modules/helpers.js";
 
 export class YumeTag extends HTMLElement {
     static get observedAttributes() {
@@ -17,6 +17,7 @@ export class YumeTag extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -213,6 +214,10 @@ export class YumeTag extends HTMLElement {
         const cfg = sizeConfig[size] || sizeConfig.medium;
 
         const baseStyle = `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 font-family: var(--font-family-body, sans-serif);

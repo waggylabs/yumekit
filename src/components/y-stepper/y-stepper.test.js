@@ -688,7 +688,7 @@ describe("YumeStepper", () => {
         expect(el.hasAttribute("editable")).to.be.false;
     });
 
-    it("items setter updates the attribute", async () => {
+    it("items setter stores rich data on the property without reflecting to the attribute", async () => {
         const el = await fixture(
             html`<y-stepper items="${ITEMS_3}">
                 <div slot="account">Account</div>
@@ -697,14 +697,14 @@ describe("YumeStepper", () => {
 
         const newItems = [{ label: "One", slot: "one" }];
         el.items = newItems;
-        expect(JSON.parse(el.getAttribute("items"))).to.deep.equal(newItems);
+        expect(el.items).to.equal(newItems);
+        // Rich data is not serialized back to the attribute; the seed remains.
+        expect(el.getAttribute("items")).to.equal(ITEMS_3);
     });
 
-    it("items setter mirrors a JSON string instead of double-encoding it", async () => {
+    it("items setter parses a JSON string into an array", async () => {
         const el = await fixture(html`<y-stepper></y-stepper>`);
-        const json = '[{"label":"One","slot":"one"}]';
-        el.items = json;
-        expect(el.getAttribute("items")).to.equal(json);
+        el.items = '[{"label":"One","slot":"one"}]';
         expect(el.items).to.deep.equal([{ label: "One", slot: "one" }]);
     });
 

@@ -1,4 +1,4 @@
-import { createElement as _el, isSafeCssColor } from "../../modules/helpers.js";
+import { createElement as _el, isSafeCssColor, upgradeProperties } from "../../modules/helpers.js";
 import { getSanitizedIcon } from "../../modules/svg-sanitizer.js";
 
 export class YumeIcon extends HTMLElement {
@@ -16,6 +16,7 @@ export class YumeIcon extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this.render();
     }
 
@@ -104,6 +105,10 @@ export class YumeIcon extends HTMLElement {
     _buildStyleSheet(sizeVal, colorVal, weightVal, isFilled = false) {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-flex;
                 align-items: center;

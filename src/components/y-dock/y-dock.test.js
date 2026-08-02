@@ -63,20 +63,21 @@ describe("YumeDock", () => {
         expect(el.items).to.deep.equal([]);
     });
 
-    it("items setter updates the attribute and re-renders", async () => {
+    it("items setter stores rich data on the property and re-renders", async () => {
         const el = await fixture(html`<y-dock></y-dock>`);
 
         el.items = items;
+        expect(el.items).to.equal(items);
+        // Rich data is not reflected back to the attribute.
+        expect(el.hasAttribute("items")).to.be.false;
         const buttons = el.shadowRoot.querySelectorAll(".item");
         expect(buttons.length).to.equal(3);
     });
 
-    it("items setter mirrors a JSON string instead of double-encoding it", async () => {
+    it("items setter parses a JSON string into an array", async () => {
         const el = await fixture(html`<y-dock></y-dock>`);
 
-        const json = JSON.stringify(items);
-        el.items = json;
-        expect(el.getAttribute("items")).to.equal(json);
+        el.items = JSON.stringify(items);
         expect(el.items).to.deep.equal(items);
         expect(el.shadowRoot.querySelectorAll(".item").length).to.equal(3);
     });

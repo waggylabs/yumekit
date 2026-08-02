@@ -1,4 +1,4 @@
-import { createElement as _el } from "../../modules/helpers.js";
+import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
 import "../y-icon/y-icon.js";
 
 const VALID_ORIENTATIONS = new Set(["horizontal", "vertical"]);
@@ -29,6 +29,7 @@ export class YumeBreak extends HTMLElement {
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (!this.hasAttribute("role")) this.setAttribute("role", "separator");
         this._syncAriaOrientation();
         this._updateContentVisibility();
@@ -162,6 +163,10 @@ export class YumeBreak extends HTMLElement {
 
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 --_line-style: var(--component-break-line-style, ${variant});
                 --_inset: var(--component-break-inset, ${inset});

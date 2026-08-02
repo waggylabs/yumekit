@@ -2,14 +2,16 @@ import "../y-input/y-input.js";
 import "../y-select/y-select.js";
 import {
     clamp,
-    hsvToRgb,
-    rgbToHsv,
-    hsvToHsl,
-    hslToHsv,
-    rgbToHex,
-    rgbaToHex,
-    parseColorString,
+    coerceRichData,
     createElement as _el,
+    hslToHsv,
+    hsvToHsl,
+    hsvToRgb,
+    parseColorString,
+    rgbToHex,
+    rgbToHsv,
+    rgbaToHex,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeColorpicker extends HTMLElement {
@@ -36,9 +38,11 @@ export class YumeColorpicker extends HTMLElement {
         // Stable bound handlers for global pointer events
         this._onPointerMove = (e) => this._onGlobalMove(e);
         this._onPointerUp = () => this._onGlobalUp();
+        this._formats = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         if (this.getAttribute("value")) {
             this._parseAndApply(this.getAttribute("value"));
         }
@@ -52,6 +56,7 @@ export class YumeColorpicker extends HTMLElement {
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
+        if (name === "formats") this._formats = coerceRichData(newVal, null);
         if (name === "value" && this._rendered) {
             if (this._updatingValue) return;
             this._parseAndApply(newVal);
@@ -79,19 +84,19 @@ export class YumeColorpicker extends HTMLElement {
         this.setAttribute("format", val);
     }
 
+    /**
+     * Enabled color formats. Rich data held as a property; the `formats`
+     * attribute seeds an initial value (JSON string) but is not kept in sync
+     * after an imperative set.
+     */
     get formats() {
-        try {
-            return JSON.parse(
-                this.getAttribute("formats") || '["hex","rgb","hsl","hsv"]',
-            );
-        } catch {
-            return ["hex", "rgb", "hsl", "hsv"];
-        }
+        return Array.isArray(this._formats)
+            ? this._formats
+            : ["hex", "rgb", "hsl", "hsv"];
     }
     set formats(val) {
-        if (val === null || val === undefined) this.removeAttribute("formats");
-        else if (typeof val === "string") this.setAttribute("formats", val);
-        else this.setAttribute("formats", JSON.stringify(val));
+        this._formats = coerceRichData(val, null);
+        if (this._rendered) this.render();
     }
 
     get showAlpha() {
@@ -761,6 +766,10 @@ export class YumeColorpicker extends HTMLElement {
     _buildStyleSheet() {
         const sheet = new CSSStyleSheet();
         sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: inline-block;
                 font-family: var(--font-family-body, sans-serif);

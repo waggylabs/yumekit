@@ -1,8 +1,11 @@
+import "../y-skeleton/y-skeleton.js";
 import { arrowUp, arrowDown } from "../../icons/index.js";
+import { coerceRichData, upgradeProperties } from "../../modules/helpers.js";
+import { buildSkeletonBody } from "../../modules/skeleton-rows.js";
 
 export class YumeTable extends HTMLElement {
     static get observedAttributes() {
-        return ["columns", "data", "striped", "size"];
+        return ["columns", "data", "striped", "size", "loading", "skeleton-rows"];
     }
 
     // -------------------------------------------------------------------------
@@ -19,13 +22,14 @@ export class YumeTable extends HTMLElement {
     }
 
     connectedCallback() {
-        this._parseAttributes();
+        upgradeProperties(this);
         this.render();
     }
 
     attributeChangedCallback(name, oldVal, newVal) {
         if (oldVal === newVal) return;
-        this._parseAttributes();
+        if (name === "columns") this._parsedColumns = coerceRichData(newVal);
+        if (name === "data") this._parsedData = coerceRichData(newVal);
         this.render();
     }
 
@@ -33,21 +37,37 @@ export class YumeTable extends HTMLElement {
     // Getters / Setters
     // -------------------------------------------------------------------------
 
-    /** Column definitions as a JSON string or array of { field, header?, sortable? } objects. */
-    get columns() { return this.getAttribute("columns"); }
+    /** Column definitions as an array of { field, header?, sortable? } objects. Rich data held as a property (identity preserved, not serialized); the `columns` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
+    get columns() { return Array.isArray(this._parsedColumns) ? this._parsedColumns : []; }
     set columns(val) {
-        this.setAttribute("columns", typeof val === "string" ? val : JSON.stringify(val));
+        this._parsedColumns = coerceRichData(val);
+        this.render();
     }
 
-    /** Row data as a JSON string or array of objects keyed by column field names. */
-    get data() { return this.getAttribute("data"); }
+    /** Row data as an array of objects keyed by column field names. Rich data held as a property (identity preserved, not serialized); the `data` attribute seeds an initial value (JSON string) but is not kept in sync after an imperative set. */
+    get data() { return Array.isArray(this._parsedData) ? this._parsedData : []; }
     set data(val) {
-        this.setAttribute("data", typeof val === "string" ? val : JSON.stringify(val));
+        this._parsedData = coerceRichData(val);
+        this.render();
+    }
+
+    /** When present, renders skeleton rows in place of the table body. */
+    get loading() { return this.hasAttribute("loading"); }
+    set loading(val) {
+        if (val) this.setAttribute("loading", "");
+        else this.removeAttribute("loading");
     }
 
     /** Cell padding size: "small" | "medium" | "large" (default "medium"). */
     get size() { return this.getAttribute("size") || "medium"; }
     set size(val) { this.setAttribute("size", val); }
+
+    /** Number of placeholder rows rendered while `loading` (default 5). */
+    get skeletonRows() {
+        const n = parseInt(this.getAttribute("skeleton-rows"), 10);
+        return Number.isFinite(n) && n > 0 ? n : 5;
+    }
+    set skeletonRows(val) { this.setAttribute("skeleton-rows", val); }
 
     /** Whether to show alternating row backgrounds. */
     get striped() { return this.hasAttribute("striped"); }
@@ -61,8 +81,9 @@ export class YumeTable extends HTMLElement {
     // -------------------------------------------------------------------------
 
     render() {
-        const columns = this._parsedColumns;
-        const rows = this._getSortedData();
+        const columns = this.columns;
+        const loading = this.loading;
+        const rows = loading ? [] : this._getSortedData();
 
         this.shadowRoot.innerHTML = "";
 
@@ -77,11 +98,29 @@ export class YumeTable extends HTMLElement {
         table.setAttribute("role", "grid");
         table.setAttribute("part", "table");
 
-        table.appendChild(this._buildHeader(columns));
-        table.appendChild(this._buildBody(columns, rows));
+        table.appendChild(this._buildHeader(columns, loading));
+        table.appendChild(
+            loading
+                ? buildSkeletonBody({
+                      columnCount: columns.length,
+                      rows: this.skeletonRows,
+                  })
+                : this._buildBody(columns, rows),
+        );
 
         wrapper.appendChild(table);
         this.shadowRoot.appendChild(wrapper);
+
+        if (loading) {
+            this.setAttribute("aria-busy", "true");
+            const status = document.createElement("div");
+            status.className = "sr-only";
+            status.setAttribute("role", "status");
+            status.textContent = "Loading data";
+            this.shadowRoot.appendChild(status);
+        } else {
+            this.removeAttribute("aria-busy");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -109,7 +148,7 @@ export class YumeTable extends HTMLElement {
         return tbody;
     }
 
-    _buildHeader(columns) {
+    _buildHeader(columns, loading = false) {
         const thead = document.createElement("thead");
         thead.setAttribute("part", "header");
         const headerRow = document.createElement("tr");
@@ -118,7 +157,8 @@ export class YumeTable extends HTMLElement {
             const th = document.createElement("th");
             th.setAttribute("scope", "col");
 
-            const sortable = col.sortable !== false;
+            // Sort controls are inert while loading — the body is placeholder.
+            const sortable = col.sortable !== false && !loading;
             if (sortable) {
                 th.classList.add("sortable");
                 th.setAttribute(
@@ -161,6 +201,10 @@ export class YumeTable extends HTMLElement {
     _buildStyles() {
         const paddingVar = `var(--component-table-padding-${this.size}, 8px)`;
         return `
+            :host([hidden]) {
+                display: none;
+            }
+
             :host {
                 display: block;
                 font-family: var(--font-family-body, sans-serif);
@@ -235,19 +279,31 @@ export class YumeTable extends HTMLElement {
             }
 
             ${this.striped
-                ? `tbody tr:nth-child(even) {
+                ? `tbody:not(.skeleton-body) tr:nth-child(even) {
                 background: var(--component-table-hover-background, #292a2b);
             }`
                 : ""}
 
-            tbody tr:hover {
+            tbody:not(.skeleton-body) tr:hover {
                 background: var(--component-table-active-background, #46474a);
+            }
+
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
             }
         `;
     }
 
     _getSortedData() {
-        const data = [...this._parsedData];
+        const data = [...this.data];
         if (!this._sortField || this._sortDir === "none") return data;
 
         const dir = this._sortDir === "asc" ? 1 : -1;
@@ -290,19 +346,6 @@ export class YumeTable extends HTMLElement {
         }));
 
         this.render();
-    }
-
-    _parseAttributes() {
-        try {
-            this._parsedColumns = JSON.parse(this.columns || "[]");
-        } catch {
-            this._parsedColumns = [];
-        }
-        try {
-            this._parsedData = JSON.parse(this.data || "[]");
-        } catch {
-            this._parsedData = [];
-        }
     }
 
     _sortIcon(field) {

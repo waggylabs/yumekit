@@ -75,6 +75,63 @@ describe("YumeDrawer", () => {
         expect(el.hasAttribute("visible")).to.be.false;
     });
 
+    it("fires open when it becomes visible and close when it hides", async () => {
+        const el = await fixture(html`<y-drawer></y-drawer>`);
+        const events = [];
+        el.addEventListener("open", (e) => events.push(e.type));
+        el.addEventListener("close", (e) => events.push(e.type));
+
+        el.visible = true;
+        el.visible = false;
+
+        expect(events.join(",")).to.equal("open,close");
+    });
+
+    it("fires close when the overlay dismisses the drawer", async () => {
+        const el = await fixture(html`<y-drawer visible></y-drawer>`);
+        const events = [];
+        el.addEventListener("close", (e) => events.push(e.type));
+
+        el.shadowRoot.querySelector(".overlay").click();
+
+        expect(events.length).to.equal(1);
+    });
+
+    it("fires close when Escape dismisses the drawer", async () => {
+        const el = await fixture(html`<y-drawer visible></y-drawer>`);
+        const events = [];
+        el.addEventListener("close", (e) => events.push(e.type));
+
+        document.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+        );
+
+        expect(events.length).to.equal(1);
+    });
+
+    it("does not fire open when it mounts already visible", async () => {
+        const events = [];
+        const onOpen = (e) => events.push(e.type);
+        document.addEventListener("open", onOpen);
+        await fixture(html`<y-drawer visible></y-drawer>`);
+        document.removeEventListener("open", onOpen);
+
+        expect(events.length).to.equal(0);
+    });
+
+    it("open bubbles and crosses the shadow boundary", async () => {
+        const el = await fixture(html`<y-drawer></y-drawer>`);
+        const events = [];
+        const onOpen = (e) => events.push(e);
+        document.addEventListener("open", onOpen);
+
+        el.visible = true;
+        document.removeEventListener("open", onOpen);
+
+        expect(events.length).to.equal(1);
+        expect(events[0].composed).to.be.true;
+    });
+
     it("focuses the drawer panel on show", async () => {
         const el = await fixture(html`<y-drawer></y-drawer>`);
         const panel = el.shadowRoot.querySelector(".drawer-panel");

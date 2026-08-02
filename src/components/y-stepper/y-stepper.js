@@ -1,5 +1,9 @@
 import "../y-icon/y-icon.js";
-import { createElement as _el } from "../../modules/helpers.js";
+import {
+    coerceRichData,
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 export class YumeStepper extends HTMLElement {
     static get observedAttributes() {
@@ -25,9 +29,11 @@ export class YumeStepper extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._stepStates = [];
         this._lastObservedWidth = 0;
+        this._items = null;
     }
 
     connectedCallback() {
+        upgradeProperties(this);
         this._syncStepStates();
         if (this.responsive) this._setupResizeObserver();
         this.render();
@@ -41,6 +47,7 @@ export class YumeStepper extends HTMLElement {
         if (oldValue === newValue) return;
 
         if (name === "items") {
+            this._items = coerceRichData(newValue);
             this._syncStepStates();
         }
 
@@ -76,18 +83,18 @@ export class YumeStepper extends HTMLElement {
         else this.removeAttribute("editable");
     }
 
-    /** Array of step definitions. */
+    /**
+     * Array of step definitions. Rich data held as a property (identity
+     * preserved, not serialized); the `items` attribute seeds an initial value
+     * but is not kept in sync after an imperative set.
+     */
     get items() {
-        try {
-            return JSON.parse(this.getAttribute("items") || "[]");
-        } catch {
-            return [];
-        }
+        return Array.isArray(this._items) ? this._items : [];
     }
     set items(val) {
-        if (val === null || val === undefined) this.removeAttribute("items");
-        else if (typeof val === "string") this.setAttribute("items", val);
-        else this.setAttribute("items", JSON.stringify(val));
+        this._items = coerceRichData(val);
+        this._syncStepStates();
+        this.render();
     }
 
     /** When set, users can only advance via next() or complete(). */

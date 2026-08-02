@@ -1,11 +1,13 @@
+import "../y-skeleton/y-skeleton.js";
 import {
     getColorVarPair,
     createElement as _el,
+    upgradeProperties,
 } from "../../modules/helpers.js";
 
 export class YumeAvatar extends HTMLElement {
     static get observedAttributes() {
-        return ["src", "alt", "size", "shape", "color"];
+        return ["src", "alt", "size", "shape", "color", "loading"];
     }
 
     // -------------------------------------------------------------------------
@@ -17,6 +19,10 @@ export class YumeAvatar extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this._imgFailed = false;
         this.render();
+    }
+
+    connectedCallback() {
+        upgradeProperties(this);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -36,6 +42,13 @@ export class YumeAvatar extends HTMLElement {
     /** Color theme for the initials avatar background. */
     get color() { return this.getAttribute("color") || "primary"; }
     set color(val) { this.setAttribute("color", val); }
+
+    /** When set, renders a skeleton placeholder in place of the image/initials. */
+    get loading() { return this.hasAttribute("loading"); }
+    set loading(val) {
+        if (val) this.setAttribute("loading", "");
+        else this.removeAttribute("loading");
+    }
 
     /** Shape of the avatar: "circle" | "square" | "rounded" (default "circle"). */
     get shape() { return this.getAttribute("shape") || "circle"; }
@@ -59,6 +72,17 @@ export class YumeAvatar extends HTMLElement {
     render() {
         const dimensions = this._getDimensions(this.size);
         const borderRadius = `var(--component-avatar-border-radius-${this.shape}, 9999px)`;
+
+        // `loading` takes precedence over src / color / initials — a failed
+        // image (`_imgFailed`) is a resolved state, not a loading one.
+        if (this.loading) {
+            this.setAttribute("aria-busy", "true");
+            this.shadowRoot.adoptedStyleSheets = [this._buildSkeletonStyleSheet(dimensions, borderRadius)];
+            this.shadowRoot.replaceChildren(this._buildSkeleton(dimensions));
+            return;
+        }
+        this.removeAttribute("aria-busy");
+
         const [bgColor, textColor] = getColorVarPair(this.color);
         const showImg = !!this.src && !this._imgFailed;
 
@@ -88,10 +112,49 @@ export class YumeAvatar extends HTMLElement {
         ]);
     }
 
+    _buildSkeleton(dimensions) {
+        return _el("y-skeleton", {
+            variant: "circle",
+            width: dimensions,
+            height: dimensions,
+            part: "skeleton",
+            "aria-hidden": "true",
+        });
+    }
+
+    _buildSkeletonStyleSheet(dimensions, borderRadius) {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(`
+            :host([hidden]) {
+                display: none;
+            }
+
+            :host {
+                display: inline-block;
+                width: ${dimensions};
+                height: ${dimensions};
+                min-width: ${dimensions};
+            }
+            y-skeleton {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+            y-skeleton::part(skeleton) {
+                border-radius: ${borderRadius};
+            }
+        `);
+        return sheet;
+    }
+
     _buildStyleSheet(showImg, dimensions, borderRadius, bgColor, textColor) {
         const sheet = new CSSStyleSheet();
         const css = showImg
             ? `
+              :host([hidden]) {
+                  display: none;
+              }
+
               :host {
                 display: inline-block;
                 height: ${dimensions};

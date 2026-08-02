@@ -213,6 +213,44 @@ export const ManyTabs = {
     },
 };
 
+export const ChangeEvent = {
+    name: "Change event (with guard)",
+    render: () => {
+        const container = document.createElement("div");
+
+        container.innerHTML = `
+            <p style="margin:0 0 8px; font-size:0.85em; color:#666">
+                Every switch fires a cancelable <code>change</code> event. Tick the guard to
+                call <code>e.preventDefault()</code> and block the switch — an unsaved-changes flow.
+            </p>
+            <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.85em;margin-bottom:12px">
+                <input type="checkbox" id="tabs-guard"> Block tab changes
+            </label>
+            <y-tabs id="tabs-change" options='${defaultOptions}' style="width:400px">
+                <div slot="tab1"><p>Overview content goes here.</p></div>
+                <div slot="tab2"><p>Details content goes here.</p></div>
+                <div slot="tab3"><p>Settings content goes here.</p></div>
+            </y-tabs>
+            <pre id="tabs-change-log" style="margin-top:12px; padding:12px; background:var(--base-background-component, #f5f5f5); border-radius:4px; font-size:0.85em; min-height:40px"></pre>
+        `;
+
+        const guard = container.querySelector("#tabs-guard");
+        const log = container.querySelector("#tabs-change-log");
+
+        container.querySelector("#tabs-change").addEventListener("change", (e) => {
+            const { previousId, id } = e.detail;
+            if (guard.checked) {
+                e.preventDefault();
+                log.textContent = `change ${previousId} → ${id} (canceled)`;
+                return;
+            }
+            log.textContent = `change ${previousId} → ${id}`;
+        });
+
+        return container;
+    },
+};
+
 export const WithTabContentSlot = {
     render: () => `
         <y-tabs

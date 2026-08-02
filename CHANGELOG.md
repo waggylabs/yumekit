@@ -31,7 +31,69 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.5.3]
+## [0.5.4]
+
+### Added
+
+- `y-tabs` now fires a cancelable `change` event whenever the active tab switches by click, keyboard, or `activateTab(id)`. The detail carries `{ id, previousId, tab, previousTab }`, and calling `preventDefault()` leaves the current tab in place so apps can guard a switch behind unsaved changes.
+
+- Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-colour glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
+
+- `y-editor` and `y-textarea` gain caret-triggered mention autocomplete. A `triggers` array defines any number of literal prefixes (`@` people, `#` topics, anything else); the component detects the trigger at a word boundary, debounces by `mention-query-delay`, emits `mention-query`, and renders the candidates the app supplies through `setMentionCandidates(id, …)`. It never fetches, and stale responses are discarded. Insertion is one undo step, and `y-editor` can insert `atomic` mentions as a single non-editable unit that survives the sanitize round trip.
+
+- `y-tokens` — a form-associated multi-value token (chip) input with typeahead, filling the gap between `y-select multiple` and the display-only `y-tag`. Typed, pasted, or picked entries become removable tokens, governed by `allow-custom`, `max`, and `duplicates`, with suggestions filtered locally or supplied by the app in `async` mode. Submits one form entry per token.
+
+- `y-input`, `y-textarea`, and `y-select` gain an `error-text` attribute that renders a validation message below the field, applies the error state, and becomes the control's accessible description. All three also forward `aria-label` / `aria-labelledby` to their inner control, and `y-select` now carries proper `combobox` / `listbox` / `option` roles.
+
+- `y-carousel` — a slideshow container that presents its slotted children as slides, one or more per view (`per-view`), with arrow/dot/fraction navigation, pointer and touch swipe, `loop`, and optional `autoplay`.
+
+- `y-upload` — a form-associated file upload with a drag-and-drop dropzone, client-side validation (`accept`, `max-size`, `max-files`, `max-total-size`), and a managed file list with optional image previews and per-file progress. The app handles transport and reports status back.
+
+- `y-skeleton` — a presentational placeholder primitive that mimics the shape of loading content to cut perceived latency and layout shift. Supports `text`, `circle`, and `rect` variants with `pulse`, `wave`, or `none` animation.
+
+- `y-editor` — a form-associated rich text (WYSIWYG) editor built on native `contenteditable`. A new shared HTML sanitizer gates every path that can introduce markup, and seven formatting icons ship alongside it.
+
+- `y-input` and `y-textarea` support a `placeholder` attribute, bringing them in line with `y-select`, `y-date`, and `y-color`.
+
+- `y-form` — a form container that renders and manages a group of YumeKit form controls from a JSON `fields` array, with configurable submit/reset buttons, built-in required/validity checking, per-field custom validation, and a single `{values, formData}` payload on submit.
+
+- Skeleton loading states for data-heavy components, built on `y-skeleton`. `y-data-grid` gains `loading-mode` and `skeleton-rows`; `y-table` and `y-avatar` gain `loading`. Placeholder rows reuse the real column widths so there is no layout shift when data arrives.
+
+### Changed
+
+- Placeholder text in `y-date` and `y-color` now uses the new `--component-input-placeholder-color` token instead of `--base-content-light`, so it reads as clearly muted against the field's value text and is consistent with `y-input` and `y-textarea`.
+
+- `y-data-grid`'s new default `loading-mode="auto"` changes what an existing `<y-data-grid loading>` shows on a **first load**: a grid loading with no rows now renders shape-accurate placeholder rows instead of a spinner over an empty grid. This is a presentation change only — the `loading` attribute, the `loading` slot, and the overlay behave exactly as before once rows are present. Set `loading-mode="overlay"` to keep the spinner in every case.
+
+- Rich-data properties (`items`, `options`, `columns`, `data`, `steps`, `avatars`, `aggregates`, `formats`, `page-size-options`, `values`, and similar) are now held on the element as properties and are no longer serialized back to their attribute. The attribute is still read as an initial value for declarative markup, so `<y-select options='[...]'>` and `el.options = [...]` both work, but after an imperative set the property keeps object identity, accepts non-serializable values, and the matching attribute is not updated. Polymorphic scalar-or-array attributes (`y-slider`'s `ticks`, `y-data-grid`'s `group-by`) are unchanged.
+
+### Fixed
+
+- `y-input` and `y-textarea` now fire the `change` event they have always documented. A native `change` is not composed, so the one raised by the inner `<input>` / `<textarea>` stopped at the shadow boundary and never reached a listener on the host — only `input` ever arrived. The host now re-emits it with native commit semantics (blur after an edit, or Enter), carrying `detail: { value }`.
+
+- `y-dialog` and `y-drawer` now fire the documented `open` and `close` events. Neither dispatched anything before, so an app had no way to observe a dialog or drawer that closed itself via Escape, the overlay, or the close button. Both fire on every transition regardless of what caused it; mounting already `visible` is a starting state and fires nothing.
+
+- `y-popover` now positions correctly when it lives inside another component's shadow root and the page has a transformed ancestor. Its `position: fixed` surface resolves against the nearest ancestor that establishes a containing block (any `transform`, `filter`, `perspective`, or paint/layout `contain` — even an identity transform), but the search used `parentElement`, which returns null at a shadow boundary and so never found a wrapper out in the light DOM. The surface landed offset by that wrapper's position, or off screen entirely. This affected `y-editor`'s link and mention popups; the shared walk now crosses shadow roots and is exported from `src/modules/floating.js` as `containingBlockOffset`.
+
+- `y-input` and `y-textarea` no longer replace their inner `<input>` / `<textarea>` when `disabled` toggles, so focus, caret position, and IME composition survive a form disabling its controls mid-submit. Their disabled styling is now driven by `:host([disabled])` selectors rather than a rebuilt stylesheet.
+
+- Deep imports (`@waggylabs/yumekit/components/*.js`) are fixed and substantially slimmer. The per-component bundles emitted import paths that pointed outside the package, and each bundle inlined its own copy of every dependency, including a private icon registry, so `registerIcon()` had no effect on deep-imported components. Shared modules and sibling components are now resolved from `dist/modules/` and `dist/components/`, every bundle contains only its own code, and all bundles share the single icon registry.
+
+- `y-data-grid`'s inline filter row (`filtering="inline"`) was effectively unusable: each keystroke lost focus and reset the typed value. The per-keystroke re-render discarded the focused filter input, and the native composed `input` event double-fired the grid's filter handler with an empty value. The grid now ignores the redundant native event and restores focus, caret position, and value across renders.
+
+- `y-button-group` now collapses the shared border between adjacent items by each item's actual border width instead of a fixed 1px, so thick-bordered themes (e.g. the Waggy themes' 2px outlines) no longer render doubled-up borders along the inner seams.
+
+- Properties assigned before a component upgrades (common in frameworks and with lazy-loaded bundles) are now reapplied through their accessors, so reflection and side effects run as expected. Components that set an explicit `:host` display also honor the `hidden` attribute again.
+
+### Migration
+
+- `y-avatar-group`'s `avatars`, and `y-data-grid`'s and `y-table`'s `columns` and `data`, previously returned the raw JSON **string** from their getters; they now return the parsed **array/object**. Drop any `JSON.parse(el.data)` (and similar) — read the value directly. (Object-array properties such as `items`, `options`, `steps`, and `formats` already returned parsed arrays and are unaffected.)
+
+- Rich-data properties are no longer reflected to their attribute after an imperative set, so anything that reads the attribute rather than the property is affected: cloning a JS-configured element (`el.cloneNode(true)` copies attributes, not properties), serializing `outerHTML`, attribute CSS selectors like `y-select[options]`, and `MutationObserver`s watching these attributes. If you rely on any of these, set the attribute instead of the property, or re-hydrate the property on the target.
+
+- Mutating a returned rich-data array in place (`el.items.push(...)`) now aliases the component's internal array but does not trigger a re-render. Reassign the property to apply changes: `el.items = [...el.items, next]`.
+
+## [0.5.3] - 2026-07-07
 
 ### Changed
 
