@@ -353,6 +353,9 @@
     }
   },
   "component": {
+    "money": {
+      "negative": { "color": { "$type": "color", "$value": "{error.content.DEFAULT}" } }
+    },
     "carousel": {
       "arrow": {
         "background": {

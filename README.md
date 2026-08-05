@@ -106,6 +106,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Input        | `<y-input>`        | Text input field                                       |
 | Masonry      | `<y-masonry>`      | JS-positioned masonry layout                           |
 | Menu         | `<y-menu>`         | Dropdown navigation menu                               |
+| Money        | `<y-money>`        | Currency input with locale-aware formatting            |
 | Paginator    | `<y-paginator>`    | Pagination controls                                    |
 | Panel Bar    | `<y-panelbar>`     | Accordion panel group                                  |
 | Popover      | `<y-popover>`      | Anchored floating popover                              |

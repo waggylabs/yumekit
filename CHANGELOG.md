@@ -31,7 +31,13 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.5.4]
+## [1.0.0]
+
+### Added
+
+- `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
+
+## [0.5.4] - 2026-08-02
 
 ### Added
 

@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 57 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 58 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.4
@@ -2043,6 +2043,57 @@ Deprecated slots (use `leftIcon`/`rightIcon` option properties instead):
   <span slot="tab-content-a"><y-icon name="star"></y-icon> A</span>
   <div slot="a">Content A</div>
 </y-tabs>
+```
+
+---
+
+### y-money
+Currency input. Form-associated. Shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused (`1234.56`), and submits a canonical decimal string. Prefer this over `<y-input type="number">` for any monetary amount.
+
+Tag: `<y-money>`
+Attributes:
+- `value` — canonical decimal string, e.g. `"1234.56"`. Always `.` as the decimal separator and no grouping, whatever the locale. `""` means no value, which is distinct from `"0"`.
+- `currency` — ISO 4217 code (default `"USD"`). Drives the symbol and the default precision. An unknown code falls back to `USD` with a console warning.
+- `locale` — BCP 47 tag; omitted means the browser locale. Controls separators, grouping, and symbol placement.
+- `precision` — decimal places. Defaults to the currency's exponent (USD 2, JPY 0, KWD 3).
+- `display` — `"symbol"` (default, `$1,234.56`) | `"code"` (`USD 1,234.56`) | `"name"` (`1,234.56 US dollars`) | `"none"` (bare `1,234.56`)
+- `allow-negative` — boolean. Without it a typed `-` is rejected and a negative assigned in code clamps to zero.
+- `negative-style` — `"minus"` (default, `-$5.00`) | `"parentheses"` (`($5.00)`). Editing always uses a minus.
+- `step` — arrow-key increment as a decimal string (default `"1"`, one whole currency unit)
+- `min`, `max` — decimal-string bounds. A violation flags the field invalid; the entry is left as typed rather than silently clamped.
+- `name` — form field name
+- `placeholder`
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
+- `label-position` — `"top"` (default) | `"bottom"`
+- `disabled` — boolean
+- `required` — boolean, empty value fails validation
+- `invalid` — boolean, applies error state
+- `error-text` — validation message rendered below the field; also applies the error state and becomes the accessible description
+- `autocomplete` — forwarded to the inner control
+
+Properties (JS only, read-only): `valueAsNumber` (float, `NaN` when empty), `valueAsMinorUnits` (integer minor units — `1234.56` → `123456`, derived with integer math, `NaN` when empty), `formattedValue` (the idle display string), `validity`, `validationMessage`.
+
+Methods: `stepUp(n = 1)` / `stepDown(n = 1)` increment by `step` clamped to `min`/`max`; `checkValidity()`; `reportValidity()`.
+
+Slots: `label`, `left-icon`, `right-icon`.
+
+Events: `input` (detail `{ value, valueAsNumber }`) on each accepted keystroke — `value` may be a partial entry such as `"12."`; `change` (same detail) on commit, meaning blur after an edit, Enter, or a step. Setting `value` in code fires neither. Both bubble and are composed.
+
+Accessibility: the inner control is `<input type="text" inputmode="decimal">` — not `type="number"`, which forbids grouping separators and reports `""` for a partially-typed value. `aria-label` / `aria-labelledby` on the host are forwarded to it. Up/Down arrows step the value.
+
+CSS Custom Properties: inherits the shared field tokens (`--component-input-background`, `--component-input-border-color`, `--component-input-accent`, `--component-input-error-color`, `--component-inputs-border-width`, `--component-inputs-border-radius-outer`, …) so it sits flush with `y-input`. Adds `--component-money-negative-color` for the idle color of negative amounts (defaults to `--error-content`).
+
+CSS Parts: `input`, `error-text`.
+
+Behavior notes: values round half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01` rather than the float result. Formatting hands the decimal string to `Intl.NumberFormat` directly, so amounts past float safety keep every digit. Pasting scrubs currency symbols and grouping separators, so `"$1,234.56"` yields `1234.56`. Grouping-as-you-type is deliberately not done — the field reformats on blur so the caret is never moved mid-edit.
+
+```html
+<y-money name="price" currency="USD" value="1234.56" required>
+  <span slot="label">Price</span>
+</y-money>
+
+<y-money name="balance" currency="EUR" locale="de-DE" allow-negative negative-style="parentheses"></y-money>
 ```
 
 ---

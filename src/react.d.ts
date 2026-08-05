@@ -405,6 +405,28 @@ declare module "react" {
                 autocomplete?: string;
                 "error-text"?: string;
             }>;
+            "y-money": El<{
+                value?: string | number;
+                currency?: string;
+                locale?: string;
+                precision?: string | number;
+                display?: "symbol" | "code" | "name" | "none";
+                "allow-negative"?: boolean | string;
+                "negative-style"?: "minus" | "parentheses";
+                step?: string | number;
+                min?: string | number;
+                max?: string | number;
+                name?: string;
+                placeholder?: string;
+                size?: "small" | "medium" | "large";
+                variant?: "default" | "underline";
+                "label-position"?: "top" | "bottom";
+                disabled?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                "error-text"?: string;
+                autocomplete?: string;
+            }>;
             "y-masonry": El<{
                 columns?: string | number;
                 gap?:

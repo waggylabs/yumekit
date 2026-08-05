@@ -1983,6 +1983,63 @@ CSS Parts: `colorpicker`, `canvas`, `canvas-handle`, `hue-slider`, `hue-thumb`, 
 
 ---
 
+## y-money
+
+Form-associated currency input. Always set `name` inside a `<form>`. Use this rather than `<y-input type="number">` for monetary amounts.
+
+Idle it shows a locale-formatted amount (`$1,234.56`); on focus it swaps to a plain editable number (`1234.56`) and reformats on blur. The submitted value is always a canonical decimal string.
+
+| Attribute        | Values / Notes                                                            |
+| ---------------- | ------------------------------------------------------------------------- |
+| `value`          | canonical decimal string, e.g. `1234.56` — always `.` and no grouping. `""` means no value, distinct from `"0"` |
+| `currency`       | ISO 4217 code (default `USD`); drives symbol and default precision        |
+| `locale`         | BCP 47 tag; omitted uses the browser locale                               |
+| `precision`      | decimal places; defaults to the currency exponent (USD 2, JPY 0, KWD 3)   |
+| `display`        | `symbol` (default) \| `code` \| `name` \| `none`                          |
+| `allow-negative` | boolean — without it a typed `-` is rejected and a negative set in code clamps to zero |
+| `negative-style` | `minus` (default, `-$5.00`) \| `parentheses` (`($5.00)`)                  |
+| `step`           | arrow-key increment as a decimal string (default `1`)                     |
+| `min`, `max`     | decimal-string bounds; a violation flags invalid without rewriting the entry |
+| `name`           | form field name                                                           |
+| `placeholder`    |                                                                           |
+| `size`           | `small` \| `medium` (default) \| `large`                                  |
+| `variant`        | `default` (full border) \| `underline` (bottom border only, square bottom corners) |
+| `label-position` | `top` (default) \| `bottom`                                               |
+| `disabled`       | boolean                                                                   |
+| `required`       | boolean — empty value fails validation                                    |
+| `invalid`        | boolean — applies error state                                             |
+| `error-text`     | validation message below the field; applies the error state and describes the input |
+| `autocomplete`   | forwarded to the inner control                                            |
+
+Properties (read-only): `valueAsNumber`, `valueAsMinorUnits` (integer minor units via integer math — `1234.56` → `123456`), `formattedValue`, `validity`, `validationMessage`. Both numeric properties are `NaN` when the field is empty.
+
+Methods: `stepUp(n = 1)`, `stepDown(n = 1)`, `checkValidity()`, `reportValidity()`.
+
+Slots: `label`, `left-icon`, `right-icon`.
+
+Events: `input` (`{value, valueAsNumber}`) on each accepted keystroke — `value` may be partial, e.g. `"12."`; `change` (same detail) on commit, so blur after an edit, Enter, or a step. Setting `value` in code fires neither. Both bubble and are composed.
+
+Accessibility: the inner control is `<input type="text" inputmode="decimal">` — `type="number"` forbids grouping separators and reports `""` for partially-typed values. `aria-label` / `aria-labelledby` on the host are forwarded to it. Up/Down arrows step the value by `step`.
+
+CSS: inherits the shared field tokens so it lines up with `y-input`, plus `--component-money-negative-color` for negative amounts at rest (defaults to `--error-content`). Parts: `input`, `error-text`.
+
+Behavior: rounding is half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01`, not the float result. Pasting scrubs currency symbols and grouping separators. Grouping-as-you-type is deliberately not done — reformatting happens on blur so the caret never jumps mid-edit.
+
+```html
+<y-money name="price" currency="USD" value="1234.56" required>
+    <span slot="label">Price</span>
+</y-money>
+<y-money
+    name="balance"
+    currency="EUR"
+    locale="de-DE"
+    allow-negative
+    negative-style="parentheses"
+></y-money>
+```
+
+---
+
 ## y-paginator
 
 Page navigation with a configurable button window, ellipsis collapsing, prev/next, an optional items-per-page select, and SPA-friendly cancelable events. Page buttons render as `y-button` (flat when inactive, filled primary for the active page).
