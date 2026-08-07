@@ -66,6 +66,7 @@ export * from "./components/y-table/y-table.js";
 export * from "./components/y-tag/y-tag.js";
 export * from "./components/y-tabs/y-tabs.js";
 export * from "./components/y-toast/y-toast.js";
+export * from "./components/y-toggle/y-toggle.js";
 export * from "./components/y-tooltip/y-tooltip.js";
 export * from "./components/y-theme/y-theme.js";
 export * from "./components/y-tokens/y-tokens.js";

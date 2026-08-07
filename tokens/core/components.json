@@ -1292,6 +1292,52 @@
                 "$value": "2px"
             }
         },
+        "toggle": {
+            "border-radius-inner": {
+                "$type": "borderRadius",
+                "$value": "{radii.x-small}"
+            },
+            "border-radius-outer": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "gap-large": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "gap-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.small}"
+            },
+            "gap-small": {
+                "$type": "spacing",
+                "$value": "{spacing.2x-small}"
+            },
+            "padding": {
+                "$type": "spacing",
+                "$value": "{spacing.4x-small}"
+            },
+            "segment-padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.large}"
+            },
+            "segment-padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "segment-padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            },
+            "transition-duration": {
+                "$type": "duration",
+                "$value": "200ms"
+            }
+        },
         "table": {
             "border-radius": {
                 "$type": "borderRadius",

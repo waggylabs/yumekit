@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 58 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 59 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.4
@@ -721,6 +721,51 @@ Attributes:
 
 Events: `change`
 Slots: `label`, `on-label`, `off-label`
+
+---
+
+### y-toggle
+Segmented single-select control — a button group visually, a radio group semantically. Exactly one option is selected at a time and a thumb slides between segments as the value changes. Form-associated. Use it for mutually exclusive view or mode switches (list/grid, monthly/yearly, alignment) where every choice stays visible; use `<y-switch>` for binary on/off, `<y-tabs>` when the choice swaps a content panel, and `<y-button-group>` for a cluster of independent actions.
+
+Tag: `<y-toggle>`
+Attributes:
+- `options` — array of `{ value, label?, icon?, color?, disabled?, ariaLabel? }`. `icon` is a `y-icon` name; `color` overrides the group's `color` while that option is selected, so the thumb recolors as it slides; supply `ariaLabel` for icon-only segments. Rich data: set the property for live data; the attribute accepts a JSON string as a seed and is not kept in sync after an imperative set.
+- `value` — selected option value; reflected. Defaults to the first enabled option. A value naming an unknown or disabled option leaves nothing selected and hides the thumb.
+- `name` — form field name
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `variant` — `"solid"` (default, filled track) | `"outline"` (bordered track) | `"flat"` (no track). Each matches the `y-button` variant of the same name: `solid` and `flat` fill the selected segment with the color role and invert its text, `outline` tints it behind a border in the color role with matching text.
+- `color` — the role marking the selected segment: `base`, `primary` (default), `secondary`, `success`, `warning`, `error`, `help`, or a CSS color literal. An unrecognised value falls back to `primary`. Set per-option via `options[].color` for status-style toggles where each choice carries its own meaning.
+- `orientation` — `"horizontal"` (default) | `"vertical"`. The thumb slides along the matching axis.
+- `full-width` — boolean; fills the container with equal-width segments
+- `animate` — set to `"false"` to move the thumb instantly (default on). `prefers-reduced-motion: reduce` disables the slide either way.
+- `disabled` — boolean; disables the whole group. Individual options disable via `options[].disabled`.
+
+Methods: `select(value)` — the eventful path; fires `y-toggle-select` then `change`. Setting the `value` property or attribute moves the selection silently.
+
+Slots: `option-{value}` — replaces a segment's label/icon with custom content.
+
+Events: `y-toggle-select` (cancelable, detail `{ value, previousValue }`) before the change is applied; `change` (detail `{ value, previousValue }`) after. Both bubble and are composed.
+
+Accessibility: the track is `role="radiogroup"` and each segment a `role="radio"` button. `aria-label` / `aria-labelledby` on the host are forwarded to the track. Roving tabindex — only the selected segment is tabbable; arrows move and select in one step (both axis pairs work in either orientation), `Home`/`End` jump to the ends, `Space`/`Enter` select the focused segment. Disabled segments are skipped.
+
+Parts: `base` `track` `thumb` `segment` `label` `icon`
+
+```html
+<y-toggle
+  name="view"
+  aria-label="View mode"
+  options='[{"value":"list","label":"List","icon":"list-bullet"},{"value":"grid","label":"Grid","icon":"grid"}]'
+></y-toggle>
+
+<y-toggle full-width color="primary" value="yearly"
+  options='[{"value":"monthly","label":"Monthly"},{"value":"yearly","label":"Yearly"}]'></y-toggle>
+
+<!-- Per-option color: each choice carries its own meaning -->
+<y-toggle
+  aria-label="Status"
+  options='[{"value":"todo","label":"To do","color":"base"},{"value":"active","label":"Active","color":"warning"},{"value":"done","label":"Done","color":"success"}]'
+></y-toggle>
+```
 
 ---
 

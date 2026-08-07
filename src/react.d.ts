@@ -843,6 +843,27 @@ declare module "react" {
                 duration?: string | number;
                 max?: string | number;
             }>;
+            "y-toggle": El<{
+                options?:
+                    | Array<{
+                          value: string;
+                          label?: string;
+                          icon?: string;
+                          color?: string;
+                          disabled?: boolean;
+                          ariaLabel?: string;
+                      }>
+                    | string;
+                value?: string;
+                name?: string;
+                size?: "small" | "medium" | "large";
+                variant?: "solid" | "outline" | "flat";
+                color?: string;
+                orientation?: "horizontal" | "vertical";
+                "full-width"?: boolean | string;
+                animate?: boolean | string;
+                disabled?: boolean | string;
+            }>;
             "y-tokens": El<{
                 value?:
                     | Array<

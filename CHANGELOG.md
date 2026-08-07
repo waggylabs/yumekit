@@ -39,11 +39,13 @@ Delete any empty sections before publishing.
 
 - `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
 
+- `y-toggle`, a form-associated segmented control: a button group visually, a radio group semantically, with a thumb that slides from one segment to the next as the value changes. Options come from an `options` array.
+
 - The syntax tokenizer behind `y-code` is now a public module, importable as `@waggylabs/yumekit/modules/tokenizer.js`. It exports `tokenize(language, source)` — returning `{ type, text }` tokens whose `type` values are Prism-compatible class names — and `isSupportedLanguage(language)`. Anything that renders code a line at a time can now colour it the same way `y-code` does, without re-implementing a highlighter or embedding a whole `y-code` per line.
 
 ### Changed
 
-- **Breaking.** The `undo` and `redo` icons were circular arrows, which is what a rotation control looks like, not an undo control. Those two glyphs are now named `rotate-left` and `rotate-right`, and `undo` / `redo` are new return-arrow glyphs. Any `<y-icon name="undo">` or `name="redo"` that meant *rotate* must switch to the new names; anything that meant *undo* keeps working and simply gets the better glyph. `y-editor`'s toolbar is unaffected.
+- **Breaking.** The `undo` and `redo` icons were circular arrows, which is what a rotation control looks like, not an undo control. Those two glyphs are now named `rotate-left` and `rotate-right`, and `undo` / `redo` are new return-arrow glyphs. Any `<y-icon name="undo">` or `name="redo"` that meant _rotate_ must switch to the new names; anything that meant _undo_ keeps working and simply gets the better glyph. `y-editor`'s toolbar is unaffected.
 
 - `tokenizer.js` moved from `src/components/y-code/` to `src/modules/`. `y-code`'s own behaviour is unchanged; the file was private to a component folder and is now published with the rest of `modules/`.
 

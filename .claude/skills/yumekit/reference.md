@@ -552,6 +552,39 @@ Slots: `label`, `on-label`, `off-label`
 
 ---
 
+## y-toggle
+
+Segmented single-select control — a button group visually, a radio group semantically. The thumb slides between segments as the value changes. Form-associated. Use `y-switch` for binary on/off, `y-tabs` when the choice swaps a content panel, and `y-button-group` for independent actions.
+
+| Attribute     | Values / Notes                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| `options`     | `[{ value, label?, icon?, color?, disabled?, ariaLabel? }]` — rich data; attribute takes JSON as a seed only. `color` overrides the group color while that option is selected |
+| `value`       | selected value; reflected. Defaults to the first enabled option                                              |
+| `name`        | form field name                                                                                              |
+| `size`        | `small` \| `medium` (default) \| `large`                                                                     |
+| `variant`     | `solid` (default) \| `outline` \| `flat` — matches the `y-button` variant of the same name; `solid`/`flat` fill the selection, `outline` tints it behind a matching border |
+| `color`       | role marking the selection: `base` \| `primary` (default) \| `secondary` \| `success` \| `warning` \| `error` \| `help`, or a CSS color literal. Per-option via `options[].color` |
+| `orientation` | `horizontal` (default) \| `vertical`                                                                         |
+| `full-width`  | boolean — equal-width segments filling the container                                                         |
+| `animate`     | `"false"` moves the thumb instantly; reduced motion disables the slide either way                            |
+| `disabled`    | boolean — disables the group; per-option via `options[].disabled`                                            |
+
+Methods: `select(value)` fires the events; setting `value` moves the selection silently.
+Events: `y-toggle-select` (cancelable, `{ value, previousValue }`), `change` (`{ value, previousValue }`)
+Slots: `option-{value}` — custom content for one segment
+Parts: `base`, `track`, `thumb`, `segment`, `label`, `icon`
+A11y: `role="radiogroup"` + `role="radio"` segments, roving tabindex, arrows select as they move, `Home`/`End`, `Space`/`Enter`. `aria-label` on the host is forwarded to the track; icon-only options need `ariaLabel`.
+
+```html
+<y-toggle
+  name="view"
+  aria-label="View mode"
+  options='[{"value":"list","label":"List","icon":"list-bullet"},{"value":"grid","label":"Grid","icon":"grid"}]'
+></y-toggle>
+```
+
+---
+
 ## y-slider
 
 Form-associated.
