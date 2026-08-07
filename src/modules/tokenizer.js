@@ -1,4 +1,9 @@
-// Lightweight, dependency-free tokenizers for y-code.
+// Lightweight, dependency-free syntax tokenizers.
+//
+// Published as `@waggylabs/yumekit/modules/tokenizer.js` so anything rendering
+// code can reuse it — y-code is the first consumer, not the only one. It lives
+// in modules/ rather than inside y-code/ for exactly that reason: a component
+// folder is private to its component, and copy-assets publishes modules/.
 //
 // Each language exports a function `(source: string) => Token[]` where
 // `Token` is `{ type: string | null, text: string }`. A `null` type means

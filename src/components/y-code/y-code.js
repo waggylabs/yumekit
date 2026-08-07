@@ -1,6 +1,6 @@
 import "../y-icon/y-icon.js";
 import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
-import { isSupportedLanguage, tokenize } from "./tokenizer.js";
+import { isSupportedLanguage, tokenize } from "../../modules/tokenizer.js";
 
 // Allowlist of class names we permit on slotted highlighted spans. Matches
 // the common Prism / shiki / chroma token names so consumers can pipe their

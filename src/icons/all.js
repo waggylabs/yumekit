@@ -94,6 +94,11 @@ import funnel from "./funnel.svg";
 import flask from "./flask.svg";
 import gasoline from "./gasoline.svg";
 import folder from "./folder.svg";
+import file from "./file.svg";
+import filePlus from "./file-plus.svg";
+import fileText from "./file-text.svg";
+import wallet from "./wallet.svg";
+import currency from "./currency.svg";
 import github from "./github.svg";
 import heading from "./heading.svg";
 import heart from "./heart.svg";
@@ -126,6 +131,11 @@ import plug from "./plug.svg";
 import plus from "./plus.svg";
 import puzzle from "./puzzle.svg";
 import redo from "./redo.svg";
+import rotateLeft from "./rotate-left.svg";
+import rotateRight from "./rotate-right.svg";
+import flipHorizontal from "./flip-horizontal.svg";
+import flipVertical from "./flip-vertical.svg";
+import crop from "./crop.svg";
 import rightFromBracket from "./right-from-bracket.svg";
 import rightToBracket from "./right-to-bracket.svg";
 import floppyDisk from "./floppy-disk.svg";
@@ -267,6 +277,11 @@ registerIcons({
     funnel,
     flask,
     folder,
+    file,
+    "file-plus": filePlus,
+    "file-text": fileText,
+    wallet,
+    currency,
     gasoline,
 
     github,
@@ -301,6 +316,11 @@ registerIcons({
     plus,
     puzzle,
     redo,
+    "rotate-left": rotateLeft,
+    "rotate-right": rotateRight,
+    "flip-horizontal": flipHorizontal,
+    "flip-vertical": flipVertical,
+    crop,
     "right-from-bracket": rightFromBracket,
     "right-to-bracket": rightToBracket,
     "floppy-disk": floppyDisk,

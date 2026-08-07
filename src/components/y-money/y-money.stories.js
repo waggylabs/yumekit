@@ -236,7 +236,7 @@ export const WithIcon = {
     render: () => `
         <y-money value="1234.56" locale="en-US" style="width:300px">
             <span slot="label">Budget</span>
-            <y-icon slot="right-icon" name="tag" size="small"></y-icon>
+            <y-icon slot="right-icon" name="wallet" size="small"></y-icon>
         </y-money>
     `,
 };

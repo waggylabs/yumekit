@@ -35,7 +35,17 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- Ten icons: `currency` and `wallet` for monetary UI; `file`, `file-plus`, and `file-text` for documents (distinct from the existing `folder`); `crop`, `flip-horizontal`, and `flip-vertical` for image editing; and `rotate-left` / `rotate-right` for rotation controls. All ship with filled variants.
+
 - `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
+
+- The syntax tokenizer behind `y-code` is now a public module, importable as `@waggylabs/yumekit/modules/tokenizer.js`. It exports `tokenize(language, source)` — returning `{ type, text }` tokens whose `type` values are Prism-compatible class names — and `isSupportedLanguage(language)`. Anything that renders code a line at a time can now colour it the same way `y-code` does, without re-implementing a highlighter or embedding a whole `y-code` per line.
+
+### Changed
+
+- **Breaking.** The `undo` and `redo` icons were circular arrows, which is what a rotation control looks like, not an undo control. Those two glyphs are now named `rotate-left` and `rotate-right`, and `undo` / `redo` are new return-arrow glyphs. Any `<y-icon name="undo">` or `name="redo"` that meant *rotate* must switch to the new names; anything that meant *undo* keeps working and simply gets the better glyph. `y-editor`'s toolbar is unaffected.
+
+- `tokenizer.js` moved from `src/components/y-code/` to `src/modules/`. `y-code`'s own behaviour is unchanged; the file was private to a component folder and is now published with the rest of `modules/`.
 
 ## [0.5.4] - 2026-08-02
 
