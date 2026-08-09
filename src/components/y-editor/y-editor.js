@@ -1042,6 +1042,25 @@ export class YumeEditor extends HTMLElement {
         this._mentions.mount(wrapper);
     }
 
+    /**
+     * Snapshot the caret as both live node references and a positional path,
+     * so `_restoreCaret` can put it back after the document is reshaped.
+     * Returns null when the selection is not inside the editor, which is what
+     * keeps normalization from stealing it.
+     */
+    _captureCaret() {
+        const range = this._currentRange();
+        if (!range) return null;
+
+        return {
+            startContainer: range.startContainer,
+            startOffset: range.startOffset,
+            endContainer: range.endContainer,
+            endOffset: range.endOffset,
+            path: this._selectionPath(),
+        };
+    }
+
     _closeLinkPopover() {
         this._linkPopover.open = false;
         this._linkTarget = null;
@@ -1163,6 +1182,14 @@ export class YumeEditor extends HTMLElement {
 
             .toolbar[hidden] {
                 display: none;
+            }
+
+            /* An active tool is marked with aria-pressed, which on its own is
+               invisible. The icon is slotted, so it sits in this tree and takes
+               the colour directly; y-button writes its inner control's colour
+               as an inline custom property, which nothing inherited can beat. */
+            .toolbar y-button[aria-pressed="true"] y-icon {
+                color: var(--component-editor-toolbar-active-color);
             }
 
             .content {
@@ -1355,6 +1382,29 @@ export class YumeEditor extends HTMLElement {
         const index = levels.indexOf(current);
         const next = index === -1 ? levels[0] : (levels[index + 1] ?? "p");
         this._setBlockType(next);
+    }
+
+    /**
+     * Move a caret position that landed on a `ul`/`ol` into the item it points
+     * at. A list cannot hold a caret: the browser renders that position in the
+     * gutter before the marker, and typing there drops the text outside the
+     * item entirely. Positions elsewhere are returned untouched.
+     * @returns {{node: Node, offset: number}}
+     */
+    _descendIntoList(node, offset) {
+        const isList =
+            node?.nodeType === Node.ELEMENT_NODE &&
+            (node.tagName === "UL" || node.tagName === "OL");
+        const items = isList ? node.children : null;
+        if (!items || items.length === 0) return { node, offset };
+
+        // Past the last item means the end of the list, which reads as the end
+        // of its final item.
+        if (offset >= items.length) {
+            const last = items[items.length - 1];
+            return { node: last, offset: this._maxOffset(last) };
+        }
+        return { node: items[offset], offset: 0 };
     }
 
     _emit(type, detail) {
@@ -1686,9 +1736,11 @@ export class YumeEditor extends HTMLElement {
         return node;
     }
 
+    /** @returns {boolean} Whether the list needed restructuring. */
     _normalizeBlock(el, tag) {
-        if (tag !== "ul" && tag !== "ol") return;
+        if (tag !== "ul" && tag !== "ol") return false;
 
+        let changed = false;
         let item = null;
         for (const child of [...el.childNodes]) {
             if (
@@ -1703,56 +1755,29 @@ export class YumeEditor extends HTMLElement {
                 el.insertBefore(item, child);
             }
             item.appendChild(child);
+            changed = true;
         }
-        if (!el.firstChild) el.appendChild(_el("li", null, [_el("br")]));
+        if (!el.firstChild) {
+            el.appendChild(_el("li", null, [_el("br")]));
+            changed = true;
+        }
+        return changed;
     }
 
     /**
-     * Reshape the document into a flat run of permitted blocks. Every path that
-     * can introduce content (paste, `value`, the default slot) ends here, so the
-     * caret always has a valid block to sit in.
+     * Reshape the document into a flat run of permitted blocks, putting the
+     * caret back where it was.
+     *
+     * Reshaping detaches whatever the caret happens to be sitting in, which
+     * collapses the selection up to the content root. Browsers that leave a
+     * bare `<div>` behind when Enter exits a list (Firefox) hit that on the way
+     * out of every list, and from then on each keystroke lands as loose text at
+     * the top level and gets wrapped into a paragraph of its own.
      */
     _normalizeDocument() {
-        const content = this._content;
-        const allowed = new Set(
-            this.allowedBlocks.map((b) => BLOCK_TAG[b]).filter(Boolean),
-        );
-        let run = null;
-
-        for (const node of [...content.childNodes]) {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-                const tag = node.tagName.toLowerCase();
-
-                if (allowed.has(tag)) {
-                    run = null;
-                    this._normalizeBlock(node, tag);
-                    continue;
-                }
-
-                if (BLOCK_LIKE.has(tag)) {
-                    const p = _el("p");
-                    while (node.firstChild) p.appendChild(node.firstChild);
-                    node.replaceWith(p);
-                    run = null;
-                    continue;
-                }
-            }
-
-            if (node.nodeType === Node.TEXT_NODE && !node.textContent.trim()) {
-                node.remove();
-                continue;
-            }
-
-            if (!run) {
-                run = _el("p");
-                content.insertBefore(run, node);
-            }
-            run.appendChild(node);
-        }
-
-        if (!content.firstChild) content.appendChild(this._emptyBlock());
-        for (const block of content.children) this._ensureFiller(block);
-        this._normalizeMentions();
+        const caret = this._captureCaret();
+        const changed = this._reshapeDocument();
+        if (changed && caret) this._restoreCaret(caret);
     }
 
     /**
@@ -2125,6 +2150,97 @@ export class YumeEditor extends HTMLElement {
         this._historyIndex = 0;
     }
 
+    /**
+     * The reshaping half of `_normalizeDocument`.
+     * @returns {boolean} Whether anything in the document actually moved. The
+     *   caret is only worth restoring when it did, and a plain keystroke
+     *   normally changes nothing.
+     */
+    _reshapeDocument() {
+        const content = this._content;
+        const allowed = new Set(
+            this.allowedBlocks.map((b) => BLOCK_TAG[b]).filter(Boolean),
+        );
+        let changed = false;
+        let run = null;
+
+        for (const node of [...content.childNodes]) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const tag = node.tagName.toLowerCase();
+
+                if (allowed.has(tag)) {
+                    run = null;
+                    if (this._normalizeBlock(node, tag)) changed = true;
+                    continue;
+                }
+
+                if (BLOCK_LIKE.has(tag)) {
+                    const p = _el("p");
+                    while (node.firstChild) p.appendChild(node.firstChild);
+                    node.replaceWith(p);
+                    run = null;
+                    changed = true;
+                    continue;
+                }
+            }
+
+            if (node.nodeType === Node.TEXT_NODE && !node.textContent.trim()) {
+                node.remove();
+                changed = true;
+                continue;
+            }
+
+            if (!run) {
+                run = _el("p");
+                content.insertBefore(run, node);
+            }
+            run.appendChild(node);
+            changed = true;
+        }
+
+        if (!content.firstChild) {
+            content.appendChild(this._emptyBlock());
+            changed = true;
+        }
+        for (const block of content.children) this._ensureFiller(block);
+        this._normalizeMentions();
+        return changed;
+    }
+
+    /**
+     * Put the caret back after reshaping. Nodes are moved rather than cloned,
+     * so the saved references are usually still good; a container that was
+     * replaced outright is gone, and the positional path covers that case.
+     */
+    _restoreCaret(saved) {
+        const live =
+            this._contentContains(saved.startContainer) &&
+            this._contentContains(saved.endContainer);
+
+        if (live) {
+            const start = this._descendIntoList(
+                saved.startContainer,
+                Math.min(saved.startOffset, this._maxOffset(saved.startContainer)),
+            );
+            const end = this._descendIntoList(
+                saved.endContainer,
+                Math.min(saved.endOffset, this._maxOffset(saved.endContainer)),
+            );
+
+            const range = document.createRange();
+            try {
+                range.setStart(start.node, start.offset);
+                range.setEnd(end.node, end.offset);
+                this._selectRange(range);
+                return;
+            } catch {
+                // Offsets went stale — fall through to the path.
+            }
+        }
+
+        if (saved.path) this._restoreSelectionPath(saved.path);
+    }
+
     _restoreHistory() {
         const snapshot = this._history[this._historyIndex];
         if (!snapshot) return;
@@ -2136,17 +2252,25 @@ export class YumeEditor extends HTMLElement {
     }
 
     _restoreSelectionPath(saved) {
-        const start = this._nodeFromPath(saved.start);
-        const end = this._nodeFromPath(saved.end);
-        if (!start || !end) return;
+        const startNode = this._nodeFromPath(saved.start);
+        const endNode = this._nodeFromPath(saved.end);
+        if (!startNode || !endNode) return;
+
+        // Wrapping blocks into a list adds an `li` level the saved path knows
+        // nothing about, so the path lands on the list itself.
+        const start = this._descendIntoList(
+            startNode,
+            Math.min(saved.start.offset, this._maxOffset(startNode)),
+        );
+        const end = this._descendIntoList(
+            endNode,
+            Math.min(saved.end.offset, this._maxOffset(endNode)),
+        );
 
         const range = document.createRange();
         try {
-            range.setStart(
-                start,
-                Math.min(saved.start.offset, this._maxOffset(start)),
-            );
-            range.setEnd(end, Math.min(saved.end.offset, this._maxOffset(end)));
+            range.setStart(start.node, start.offset);
+            range.setEnd(end.node, end.offset);
         } catch {
             return;
         }
@@ -2272,12 +2396,15 @@ export class YumeEditor extends HTMLElement {
         const blocks = this._blocksInRange(range);
         if (blocks.length === 0) return;
 
-        const saved = this._selectionPath();
+        // Wrapping moves the block's children rather than copying them, so the
+        // node references survive and the caret keeps its exact offset; the
+        // path is the fallback for an empty block, which is discarded whole.
+        const saved = this._captureCaret();
         if (type === "ul" || type === "ol") this._wrapInList(blocks, type);
         else this._replaceBlocks(blocks, BLOCK_TAG[type]);
 
         this._normalizeDocument();
-        if (saved) this._restoreSelectionPath(saved);
+        if (saved) this._restoreCaret(saved);
         this._emitInput();
         this._recordHistory(true);
         this._refreshSelection();

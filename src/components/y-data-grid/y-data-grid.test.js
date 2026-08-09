@@ -1,4 +1,5 @@
 import { fixture, html, expect, oneEvent } from "@open-wc/testing";
+import { sendKeys } from "@web/test-runner-commands";
 import sinon from "sinon";
 import "./y-data-grid.js";
 
@@ -223,8 +224,8 @@ describe("YumeDataGrid", () => {
             new InputEvent("input", { bubbles: true, composed: true }),
         );
 
-        // The re-render replaces the input; focus, caret, and the typed value
-        // must all survive it, and the rows must be filtered.
+        // Focus, caret, and the typed value must all survive the refresh, and
+        // the rows must be filtered.
         const after = el.shadowRoot.querySelector(
             '[part="filter-input"][data-col-key="name"]',
         );
@@ -234,6 +235,162 @@ describe("YumeDataGrid", () => {
         const trs = el.shadowRoot.querySelectorAll("tbody tr");
         expect(trs.length).to.equal(1);
         expect(trs[0].querySelector("td").textContent).to.equal("Bob");
+    });
+
+    it("keeps typed digits in order in a number filter input", async () => {
+        const el = await fixture(html`
+            <y-data-grid columns="${columns}" data="${data}" filtering="inline"></y-data-grid>
+        `);
+        const ageInput = () =>
+            el.shadowRoot.querySelector(
+                '[part="filter-input"][data-col-key="age"]',
+            );
+        expect(ageInput().input.type).to.equal("number");
+
+        // Real keystrokes are the only way to cover this: a number input has
+        // no selection API, so the caret can be neither read back nor
+        // simulated. Rebuilding the input mid-entry left the caret at 0 and
+        // every keystroke prepended, so "2" then "5" came out as "52".
+        ageInput().input.focus();
+        await sendKeys({ type: "2" });
+        await sendKeys({ type: "5" });
+
+        expect(ageInput().input.value).to.equal("25");
+        expect(el.shadowRoot.activeElement).to.equal(ageInput());
+
+        const trs = el.shadowRoot.querySelectorAll("tbody tr");
+        expect(trs.length).to.equal(1);
+        expect(trs[0].querySelector("td").textContent).to.equal("Bob");
+    });
+
+    it("honours a mid-string caret in a text filter input", async () => {
+        const el = await fixture(html`
+            <y-data-grid columns="${columns}" data="${data}" filtering="inline"></y-data-grid>
+        `);
+        const nameInput = () =>
+            el.shadowRoot.querySelector(
+                '[part="filter-input"][data-col-key="name"]',
+            );
+
+        nameInput().input.focus();
+        await sendKeys({ type: "ob" });
+        nameInput().input.setSelectionRange(0, 0);
+        await sendKeys({ type: "B" });
+
+        // Text inputs report a real caret, so it must be preserved as-is
+        // rather than forced to the end like the selection-less types.
+        expect(nameInput().input.value).to.equal("Bob");
+        expect(nameInput().input.selectionStart).to.equal(1);
+    });
+
+    it("accepts a fully typed date in a date filter input", async () => {
+        const dateColumns = JSON.stringify([
+            { key: "name", label: "Name" },
+            { key: "joined", label: "Joined", type: "date" },
+        ]);
+        const dateData = JSON.stringify([
+            { name: "Ada", joined: "2021-03-04" },
+            { name: "Alan", joined: "2022-06-15" },
+        ]);
+        const el = await fixture(html`
+            <y-data-grid columns="${dateColumns}" data="${dateData}" filtering="inline"></y-data-grid>
+        `);
+        const joinedInput = () =>
+            el.shadowRoot.querySelector(
+                '[part="filter-input"][data-col-key="joined"]',
+            );
+
+        // A date input is segmented, so rebuilding it mid-entry sent the next
+        // keystroke back to the month segment and no complete date could ever
+        // be typed. The in-place refresh leaves the input alone.
+        joinedInput().input.focus();
+        await sendKeys({ type: "06/15/2022" });
+
+        expect(joinedInput().input.value).to.equal("2022-06-15");
+        const trs = el.shadowRoot.querySelectorAll("tbody tr");
+        expect(trs.length).to.equal(1);
+        expect(trs[0].querySelector("td").textContent).to.equal("Alan");
+    });
+
+    it("updates aria-rowcount and the empty state from an in-place refresh", async () => {
+        const el = await fixture(html`
+            <y-data-grid columns="${columns}" data="${data}" filtering="inline"></y-data-grid>
+        `);
+        const nameInput = el.shadowRoot.querySelector(
+            '[part="filter-input"][data-col-key="name"]',
+        );
+
+        nameInput.input.focus();
+        await sendKeys({ type: "zzz" });
+        expect(el.getAttribute("aria-rowcount")).to.equal("0");
+        expect(el.shadowRoot.querySelectorAll('[part="empty-state"]').length).to.equal(1);
+
+        await sendKeys({ press: "Backspace" });
+        await sendKeys({ press: "Backspace" });
+        await sendKeys({ press: "Backspace" });
+        expect(el.getAttribute("aria-rowcount")).to.equal("4");
+        expect(el.shadowRoot.querySelectorAll('[part="empty-state"]').length).to.equal(0);
+    });
+
+    it("select-all toggles the filtered rows after an in-place refresh", async () => {
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${data}"
+                filtering="inline"
+                enable-selection
+                row-key="name"
+            ></y-data-grid>
+        `);
+        const selectAll = () =>
+            el.shadowRoot.querySelector(
+                '[part="header-row"] .select-cell y-checkbox',
+            );
+        const nameInput = el.shadowRoot.querySelector(
+            '[part="filter-input"][data-col-key="name"]',
+        );
+
+        nameInput.input.focus();
+        await sendKeys({ type: "Bob" });
+
+        // The select-all cell is rebuilt by the refresh because its handler
+        // closes over the visible rows — a stale one would select all four.
+        selectAll().toggle();
+        expect(el.selectedKeys).to.eql(["Bob"]);
+    });
+
+    it("keeps digit order in a number filter while virtualized", async () => {
+        const manyRows = JSON.stringify(
+            Array.from({ length: 200 }, (_, i) => ({
+                name: `Person ${i}`,
+                age: 20 + (i % 50),
+                city: "Portland",
+            })),
+        );
+        const el = await fixture(html`
+            <y-data-grid
+                columns="${columns}"
+                data="${manyRows}"
+                filtering="inline"
+                virtual
+                viewport-height="200"
+                row-height="40"
+            ></y-data-grid>
+        `);
+        const ageInput = () =>
+            el.shadowRoot.querySelector(
+                '[part="filter-input"][data-col-key="age"]',
+            );
+
+        // Virtual scrolling restructures more than the body, so filtering
+        // falls back to a full render — the caret restore still has to hold
+        // the number input together across it.
+        ageInput().input.focus();
+        await sendKeys({ type: "4" });
+        await sendKeys({ type: "5" });
+
+        expect(ageInput().input.value).to.equal("45");
+        expect(el.shadowRoot.activeElement).to.equal(ageInput());
     });
 
     it("clearFilters resets state and re-renders all rows", async () => {

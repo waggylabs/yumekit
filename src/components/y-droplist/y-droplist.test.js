@@ -595,6 +595,67 @@ describe("YumeDroplist", () => {
         expect(el.getAttribute("put")).to.equal("true");
     });
 
+    // ── Empty drop target ─────────────────────────────────────
+
+    it("reserves a drop area on an empty list that can receive items", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a" style="height:40px;display:block">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0"></y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+
+        // With no height there is nothing under the cursor to drag onto, so
+        // an emptied kanban column could never be refilled.
+        const rect = dest.getBoundingClientRect();
+        expect(rect.height).to.be.greaterThan(0);
+        expect(src._touchHitList(rect.left + 5, rect.top + 5)).to.equal(dest);
+    });
+
+    it("reserves the drop area once a list is emptied by a move", async () => {
+        const container = await fixture(html`
+            <div>
+                <y-droplist id="src" group="kanban" animation="0">
+                    <div data-id="a" style="height:40px;display:block">A</div>
+                </y-droplist>
+                <y-droplist id="dest" group="kanban" animation="0"></y-droplist>
+            </div>
+        `);
+        const src = container.querySelector("#src");
+        const dest = container.querySelector("#dest");
+
+        dest.appendChild(src.children[0]);
+        await aTimeout(0);
+        expect(src.getBoundingClientRect().height).to.be.greaterThan(0);
+
+        // Refilling it releases the reserved space again.
+        src.appendChild(dest.children[0]);
+        await aTimeout(0);
+        expect(
+            src.shadowRoot.querySelector(".list").classList.contains("is-empty"),
+        ).to.be.false;
+    });
+
+    it("leaves an empty list that cannot receive items collapsed", async () => {
+        const solo = await fixture(html`<y-droplist></y-droplist>`);
+        const blocked = await fixture(
+            html`<y-droplist group="kanban" put="false"></y-droplist>`,
+        );
+        expect(solo.getBoundingClientRect().height).to.equal(0);
+        expect(blocked.getBoundingClientRect().height).to.equal(0);
+    });
+
+    it("reserves the drop area when an empty list joins a group", async () => {
+        const el = await fixture(html`<y-droplist></y-droplist>`);
+        expect(el.getBoundingClientRect().height).to.equal(0);
+        el.setAttribute("group", "kanban");
+        expect(el.getBoundingClientRect().height).to.be.greaterThan(0);
+    });
+
     it("cross-list drop moves item to destination and fires events source-then-dest", async () => {
         const container = await fixture(html`
             <div>

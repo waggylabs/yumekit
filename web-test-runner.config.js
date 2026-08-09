@@ -1,4 +1,5 @@
 import { playwrightLauncher } from "@web/test-runner-playwright";
+import { sendKeysPlugin } from "@web/test-runner-commands/plugins";
 
 function cssStringPlugin() {
     return {
@@ -34,5 +35,5 @@ export default {
     rootDir: ".",
     browserStartTimeout: 20000,
     browsers: [playwrightLauncher({ product: "chromium" })],
-    plugins: [cssStringPlugin(), svgStringPlugin()],
+    plugins: [cssStringPlugin(), svgStringPlugin(), sendKeysPlugin()],
 };

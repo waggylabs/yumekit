@@ -589,6 +589,10 @@
                 "$type": "number",
                 "$value": 9999
             },
+            "empty-min-height": {
+                "$type": "sizing",
+                "$value": "{sizing.medium}"
+            },
             "ghost-opacity": {
                 "$type": "number",
                 "$value": 0.5

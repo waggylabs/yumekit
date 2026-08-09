@@ -480,6 +480,12 @@
         }
       },
       "toolbar": {
+        "active": {
+          "color": {
+            "$type": "color",
+            "$value": "{primary.content.DEFAULT}"
+          }
+        },
         "background": {
           "$type": "color",
           "$value": "{base.background.app}"

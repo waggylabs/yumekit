@@ -1542,7 +1542,7 @@ Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attri
 
 Styling the drag preview: target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), the `[part="drag-preview"]` attribute selector, or the `--component-droplist-drag-preview-*` custom properties. Note: `::part(drag-preview)` does **not** work because the preview is rendered in `document.body`, not inside the shadow root — use the class or attribute selector instead.
 
-CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`, `--component-droplist-swap-indicator-background` (background applied to the active swap target), `--component-droplist-handle-color` and `--component-droplist-handle-size` (convenience tokens consumers can use to style their own handle elements; not used internally), `--component-droplist-drag-preview-opacity` (default `0.85`), `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`), `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a tilt), `--component-droplist-drag-preview-cursor-offset-x` / `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the cursor anchor), `--component-droplist-drag-preview-z-index` (default `9999`).
+CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-empty-min-height` (default `40px`; drop area reserved when the list is empty and can receive items from its group, so an emptied column remains a drop target — empty lists with no `group` or with `put="false"` stay collapsed), `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`, `--component-droplist-swap-indicator-background` (background applied to the active swap target), `--component-droplist-handle-color` and `--component-droplist-handle-size` (convenience tokens consumers can use to style their own handle elements; not used internally), `--component-droplist-drag-preview-opacity` (default `0.85`), `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`), `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a tilt), `--component-droplist-drag-preview-cursor-offset-x` / `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the cursor anchor), `--component-droplist-drag-preview-z-index` (default `9999`).
 
 ```html
 <!-- Within-list reorder -->
@@ -1655,7 +1655,7 @@ Slideshow container. Each direct child becomes one slide. For image galleries wi
 
 Tag: `<y-carousel>`
 Attributes:
-- `index` — number (default `0`), leftmost visible slide; reflects as the user navigates
+- `index` — number (default `0`), leftmost visible slide; reflects as the user navigates. Clamped to the last index that still fills the viewport, so with `per-view="2"` and 5 slides the highest index is 3
 - `per-view` — number (default `1`), slides visible at once; fractional values peek the next slide
 - `gap` — CSS length between slides (default `"0"`)
 - `orientation` — `"horizontal"` (default) | `"vertical"`; vertical requires an explicit host height
@@ -1664,7 +1664,7 @@ Attributes:
 - `interval` — number (default `5000`), autoplay delay in ms
 - `pause-on-hover` — boolean (default `true`), pause autoplay while hovered or focused
 - `arrows` — `"true"` (default) | `"false"` | `"hover"`
-- `pagination` — `"dots"` (default) | `"fraction"` | `"none"`
+- `pagination` — `"dots"` (default) | `"fraction"` | `"none"`. Dots render one per slide, and every slide currently in view is marked `aria-current` — `per-view="2"` highlights two dots
 - `swipe` — boolean (default `true`), pointer/touch drag navigation
 - `snap` — `"start"` (default) | `"center"`, slide alignment within the viewport
 

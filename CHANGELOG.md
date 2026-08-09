@@ -49,6 +49,20 @@ Delete any empty sections before publishing.
 
 - `tokenizer.js` moved from `src/components/y-code/` to `src/modules/`. `y-code`'s own behaviour is unchanged; the file was private to a component folder and is now published with the rest of `modules/`.
 
+### Fixed
+
+- `y-editor` toolbar tools whose formatting is active at the caret now show it: the button already carried `aria-pressed`, which nothing painted, so bold, lists, and the rest looked identical whether on or off. Active tools take the primary colour, overridable per theme with the new `--component-editor-toolbar-active-color` token.
+
+- Typing after leaving a list in `y-editor` produced a new paragraph for every letter, and the second Enter appeared to put the caret back at the end of the previous list item. Normalizing the document after each keystroke reshapes stray markup into permitted blocks, which detached whatever the caret sat in and dropped it to the top of the document; from there each keystroke landed as loose text and was wrapped into a paragraph of its own. The caret is now preserved across normalization. Firefox, which leaves a bare `<div>` behind when Enter exits a list, was affected on every list; Chrome and Safari were not.
+
+- Starting a second list in `y-editor` put the caret on the list itself rather than in its first item, so the text landed in the gutter before the marker instead of inside the item. Converting blocks to a list adds an `li` level that the saved caret position knew nothing about; the caret now follows its own nodes through the wrap, and any position left on a list descends into the item it points at. This also fixes a caret that jumped to the end of the line when a list was applied mid-word.
+
+- A `y-droplist` that ran out of items could not be dropped into — a kanban column emptied of its last card was stuck that way. An empty list collapsed to zero height, leaving nothing under the cursor to hit-test, so neither native drag nor touch drag could reach it. Empty lists that can receive items from their group now reserve a drop area sized by the new `--component-droplist-empty-min-height` token (default `40px`); lists with no `group`, or with `put="false"`, still take up no space.
+
+- `y-carousel` pagination dots now mark every slide in view rather than only the leftmost one, so `per-view="2"` highlights two dots. The final slide's dot previously could never be reached: with 5 slides two at a time the carousel stops at index 3, leaving the fifth dot unlit even though that slide was on screen. `goTo()` (and the `End` key) also clamp to the last index that still fills the viewport instead of overshooting and settling back.
+
+- Digits typed into a numeric column filter in `y-data-grid`'s inline filter row (`filtering="inline"`) came out reversed — typing `2` then `5` produced `52` — and a `date` filter could not be typed into at all. Each keystroke rebuilt the whole grid, and the caret restore that carried focus across it relies on the selection API, which `number` and `date` inputs do not support. Typing in the filter row now refreshes only the rows and footer, leaving the header and the focused input untouched; the caret restore additionally falls back to the end of the value for those types on the paths that still re-render in full.
+
 ## [0.5.4] - 2026-08-02
 
 ### Added

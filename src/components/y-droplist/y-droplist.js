@@ -174,6 +174,9 @@ export class YumeDroplist extends HTMLElement {
                 if (members && members.size === 0) _groups.delete(oldValue);
             }
             _registerInGroup(this);
+            // Gaining or losing a group changes whether an empty list is a
+            // drop target, and so whether it reserves a drop area.
+            this._syncEmptyState();
         } else if (name === "handle") {
             this._handleSelectorInvalid = false;
             if (newValue) {
@@ -746,6 +749,16 @@ export class YumeDroplist extends HTMLElement {
                 box-sizing: border-box;
             }
 
+            /* An empty list collapses to zero height, leaving nothing to drag
+               onto — a kanban column emptied of its last card could never be
+               refilled. Only lists that can actually receive a drop reserve
+               the space, so a plain empty list still takes no room. */
+            .list.is-empty {
+                /* Falls back rather than relying on the token stylesheet:
+                   without a height here the list cannot be dropped into. */
+                min-height: var(--component-droplist-empty-min-height, 40px);
+            }
+
             :host([vertical="false"]) .list {
                 flex-direction: row;
             }
@@ -1279,6 +1292,8 @@ export class YumeDroplist extends HTMLElement {
     }
 
     _initializeChildren() {
+        this._syncEmptyState();
+
         const handle = this.handle;
         for (const child of Array.from(this.children)) {
             if (this._isInternal(child)) continue;
@@ -2020,6 +2035,23 @@ export class YumeDroplist extends HTMLElement {
     _syncDisabledAria() {
         if (this.disabled) this.setAttribute("aria-disabled", "true");
         else this.removeAttribute("aria-disabled");
+    }
+
+    /**
+     * Reserves a drop area on a list that has run out of items, so it still
+     * has a box to hit-test against. Limited to lists that can receive a drop
+     * from another list — a standalone empty list has nothing to catch and
+     * keeps collapsing to nothing.
+     */
+    _syncEmptyState() {
+        const list = this.shadowRoot?.querySelector(".list");
+        if (!list) return;
+
+        const droppable = Boolean(this.group) && this.put !== "false";
+        list.classList.toggle(
+            "is-empty",
+            droppable && this._items().length === 0,
+        );
     }
 
     _teardown() {

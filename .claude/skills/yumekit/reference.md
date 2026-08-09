@@ -364,7 +364,7 @@ Shortcuts: Ctrl/Cmd+B bold, +I italic, +U underline, +K link, +Shift+X strike, +
 
 **Security:** every path that introduces HTML (`value`, the default slot, paste) runs through `src/modules/html-sanitizer.js`. Only the tags implied by `allowed-blocks` plus inline formatting, `<a>` and `<img>` survive; `on*`, `<script>`, `<style>`, `<iframe>` are stripped; only `http`, `https`, `mailto` and `data:` raster images are permitted on `href` / `src`.
 
-**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`, `--component-editor-mention-popup-max-height`, `--component-editor-mention-popup-min-width`, `--component-editor-mention-chip-background`, `--component-editor-mention-chip-color` (the four mention properties are also read by `y-textarea`'s popup)
+**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-toolbar-active-color` (colour of a tool whose formatting is active at the caret; defaults to the primary content colour), `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`, `--component-editor-mention-popup-max-height`, `--component-editor-mention-popup-min-width`, `--component-editor-mention-chip-background`, `--component-editor-mention-chip-color` (the four mention properties are also read by `y-textarea`'s popup)
 
 **CSS Parts:** `wrapper`, `label`, `toolbar`, `toolbar-group`, `toolbar-button`, `editor`, `content`, `footer`, `counter`, `link-popover`, `mention-popup`, `mention-option`, `mention-option-avatar`, `mention-option-label`, `mention-option-description`, `mention-empty`, `mention-loading`, `mention-chip`
 
@@ -1337,6 +1337,7 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 - `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`
 - `--component-droplist-swap-indicator-background`
 - `--component-droplist-item-padding`, `--component-droplist-item-margin`
+- `--component-droplist-empty-min-height` (default `40px`) — drop area reserved when the list is empty and can receive items from its group, so an emptied column stays a drop target. Empty lists with no `group`, or with `put="false"`, ignore it and stay collapsed
 - `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
 - `--component-droplist-drag-preview-opacity` (default `0.85`)
 - `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`)
@@ -1444,7 +1445,7 @@ Slideshow container. Each direct child becomes one slide. For image galleries wi
 
 | Attribute        | Values / Notes                                                              |
 | ---------------- | -------------------------------------------------------------------------- |
-| `index`          | number (default `0`) — leftmost visible slide; reflects as the user navigates |
+| `index`          | number (default `0`) — leftmost visible slide; reflects as the user navigates. Clamped to the last index that still fills the viewport (`per-view="2"` with 5 slides tops out at 3) |
 | `per-view`       | number (default `1`) — slides visible at once; fractional values peek the next |
 | `gap`            | CSS length between slides (default `0`)                                    |
 | `orientation`    | `horizontal` (default) \| `vertical` — vertical requires an explicit host height |
@@ -1453,7 +1454,7 @@ Slideshow container. Each direct child becomes one slide. For image galleries wi
 | `interval`       | number (default `5000`) — autoplay delay in ms                            |
 | `pause-on-hover` | boolean (default `true`) — pause autoplay while hovered or focused         |
 | `arrows`         | `true` (default) \| `false` \| `hover`                                     |
-| `pagination`     | `dots` (default) \| `fraction` \| `none`                                   |
+| `pagination`     | `dots` (default) \| `fraction` \| `none` — one dot per slide, with every slide in view marked `aria-current` (`per-view="2"` highlights two) |
 | `swipe`          | boolean (default `true`) — pointer/touch drag navigation                   |
 | `snap`           | `start` (default) \| `center` — slide alignment within the viewport        |
 

@@ -191,6 +191,37 @@ describe("y-editor", () => {
             const el = await fixture(html`<y-editor readonly></y-editor>`);
             expect(el.shadowRoot.querySelector(".toolbar").hidden).to.be.true;
         });
+
+        it("paints the active tool with the toolbar active colour", async () => {
+            const el = await fixture(
+                html`<y-editor value="<p>hello</p>"></y-editor>`,
+            );
+            // The real value comes from the theme; a literal keeps the test
+            // independent of the generated stylesheet.
+            el.style.setProperty(
+                "--component-editor-toolbar-active-color",
+                "rgb(1, 2, 3)",
+            );
+            const iconColour = (id) =>
+                getComputedStyle(tool(el, id).querySelector("y-icon")).color;
+
+            selectAll(el);
+            const inactive = iconColour("bold");
+            expect(inactive).to.not.equal("rgb(1, 2, 3)");
+
+            el._runTool("bold");
+            await aTimeout(0);
+            expect(tool(el, "bold").getAttribute("aria-pressed")).to.equal(
+                "true",
+            );
+            expect(iconColour("bold")).to.equal("rgb(1, 2, 3)");
+            // A tool that is not active keeps the ordinary colour.
+            expect(iconColour("italic")).to.equal(inactive);
+
+            el._runTool("bold");
+            await aTimeout(0);
+            expect(iconColour("bold")).to.equal(inactive);
+        });
     });
 
     describe("value", () => {
@@ -310,6 +341,208 @@ describe("y-editor", () => {
             }).to.not.throw();
             expect(el.textContent).to.equal("Hello");
             expect(el.value).to.equal("<p>Hello</p>");
+        });
+    });
+
+    describe("normalization keeps the caret", () => {
+        /** Where the caret sits now, as "<tag-or-#text>@<offset>". */
+        function caretAt(editor) {
+            const range = editor._currentRange();
+            if (!range) return "no-range";
+            const node = range.startContainer;
+            const name =
+                node.nodeType === Node.TEXT_NODE
+                    ? `#text(${node.textContent})`
+                    : node.tagName.toLowerCase();
+            return `${name}@${range.startOffset}`;
+        }
+
+        it("keeps the caret in a block rewritten from div to p", async () => {
+            const el = await fixture(
+                html`<y-editor value="<ul><li>one</li></ul>"></y-editor>`,
+            );
+            // Exactly what Firefox leaves behind when Enter exits a list: a
+            // bare div holding the caret. Rewriting it to <p> used to detach
+            // the node the caret was in, dropping the caret to the root.
+            const div = document.createElement("div");
+            div.appendChild(document.createElement("br"));
+            content(el).appendChild(div);
+            setCaret(el, div, 0);
+
+            el._normalizeDocument();
+
+            expect(content(el).innerHTML).to.equal(
+                "<ul><li>one</li></ul><p><br></p>",
+            );
+            expect(caretAt(el)).to.equal("p@0");
+        });
+
+        it("keeps the caret in loose text gathered into a paragraph", async () => {
+            const el = await fixture(
+                html`<y-editor value="<ul><li>one</li></ul>"></y-editor>`,
+            );
+            // The follow-on failure: with the caret at the root, a keystroke
+            // lands as a bare text node, and wrapping it started a new
+            // paragraph per letter.
+            const text = document.createTextNode("ab");
+            content(el).appendChild(text);
+            setCaret(el, text, 2);
+
+            el._normalizeDocument();
+
+            expect(content(el).innerHTML).to.equal(
+                "<ul><li>one</li></ul><p>ab</p>",
+            );
+            expect(caretAt(el)).to.equal("#text(ab)@2");
+        });
+
+        it("leaves the caret alone when nothing needs reshaping", async () => {
+            const el = await fixture(
+                html`<y-editor value="<p>hello</p>"></y-editor>`,
+            );
+            const text = content(el).querySelector("p").firstChild;
+            setCaret(el, text, 3);
+
+            el._normalizeDocument();
+
+            expect(caretAt(el)).to.equal("#text(hello)@3");
+        });
+
+        it("restores the caret explicitly, and only when reshaping", async () => {
+            const el = await fixture(
+                html`<y-editor value="<p>hello</p>"></y-editor>`,
+            );
+            const restore = sandbox.spy(el, "_restoreCaret");
+
+            // Chromium repairs the caret on its own after a node is replaced,
+            // so the assertions above pass there either way. The restore has to
+            // be explicit for the browsers that do not — hence the spy.
+            setCaret(el, content(el).querySelector("p").firstChild, 2);
+            el._normalizeDocument();
+            expect(restore.called, "no reshaping").to.be.false;
+
+            const div = document.createElement("div");
+            div.appendChild(document.createTextNode("x"));
+            content(el).appendChild(div);
+            setCaret(el, div.firstChild, 1);
+            el._normalizeDocument();
+            expect(restore.calledOnce, "after reshaping").to.be.true;
+        });
+
+        it("does not take a selection that is outside the editor", async () => {
+            const el = await fixture(
+                html`<y-editor value="<p>hello</p>"></y-editor>`,
+            );
+            const outside = document.createElement("p");
+            outside.textContent = "elsewhere";
+            document.body.appendChild(outside);
+
+            const range = document.createRange();
+            range.setStart(outside.firstChild, 4);
+            range.collapse(true);
+            const selection = document.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            const div = document.createElement("div");
+            div.appendChild(document.createTextNode("x"));
+            content(el).appendChild(div);
+            el._normalizeDocument();
+
+            const after = document.getSelection().getRangeAt(0);
+            expect(after.startContainer).to.equal(outside.firstChild);
+            expect(after.startOffset).to.equal(4);
+            outside.remove();
+        });
+    });
+
+    describe("list conversion keeps the caret", () => {
+        function caretAt(editor) {
+            const range = editor._currentRange();
+            if (!range) return "no-range";
+            const node = range.startContainer;
+            const name =
+                node.nodeType === Node.TEXT_NODE
+                    ? `#text(${node.textContent})`
+                    : node.tagName.toLowerCase();
+            return `${name}@${range.startOffset}`;
+        }
+
+        it("moves a position on a list into the item it points at", async () => {
+            const el = await fixture(
+                html`<y-editor value="<ul><li>one</li><li>two</li></ul>"></y-editor>`,
+            );
+            const list = content(el).querySelector("ul");
+
+            // A caret on the list itself renders in the gutter before the
+            // marker, and typing there lands outside the item.
+            const first = el._descendIntoList(list, 0);
+            expect(first.node.tagName).to.equal("LI");
+            expect(first.node.textContent).to.equal("one");
+            expect(first.offset).to.equal(0);
+
+            const second = el._descendIntoList(list, 1);
+            expect(second.node.textContent).to.equal("two");
+
+            // Past the last item reads as the end of the final item.
+            const past = el._descendIntoList(list, 5);
+            expect(past.node.textContent).to.equal("two");
+            expect(past.offset).to.equal(el._maxOffset(past.node));
+
+            // Anything that is not a list is handed back untouched.
+            const p = document.createElement("p");
+            const other = el._descendIntoList(p, 3);
+            expect(other.node.tagName).to.equal("P");
+            expect(other.offset).to.equal(3);
+        });
+
+        it("puts the caret in the new item when converting an empty block", async () => {
+            const el = await fixture(
+                html`<y-editor
+                    value="<ul><li>one</li></ul><p><br></p>"
+                ></y-editor>`,
+            );
+            // Starting a second list after leaving the first: the empty block
+            // is discarded by the wrap, so the caret has only the saved path to
+            // fall back on — which points at the list, not into its item.
+            setCaret(el, content(el).querySelector("p"), 0);
+
+            el._runTool("ordered-list");
+            await aTimeout(0);
+
+            expect(content(el).innerHTML).to.equal(
+                "<ul><li>one</li></ul><ol><li><br></li></ol>",
+            );
+            expect(caretAt(el)).to.equal("li@0");
+        });
+
+        it("keeps a mid-text caret when converting to a list", async () => {
+            const el = await fixture(
+                html`<y-editor value="<p>hello</p>"></y-editor>`,
+            );
+            setCaret(el, content(el).querySelector("p").firstChild, 3);
+
+            el._runTool("unordered-list");
+            await aTimeout(0);
+
+            expect(content(el).innerHTML).to.equal("<ul><li>hello</li></ul>");
+            expect(caretAt(el)).to.equal("#text(hello)@3");
+        });
+
+        it("keeps the caret when unwrapping a list", async () => {
+            const el = await fixture(
+                html`<y-editor value="<ul><li>one</li></ul>"></y-editor>`,
+            );
+            setCaret(el, content(el).querySelector("li").firstChild, 2);
+            // Toggling off reads the cached block type, which selectionchange
+            // would have refreshed by now in a real interaction.
+            el._refreshSelection();
+
+            el._runTool("unordered-list");
+            await aTimeout(0);
+
+            expect(content(el).innerHTML).to.equal("<p>one</p>");
+            expect(caretAt(el)).to.equal("#text(one)@2");
         });
     });
 
