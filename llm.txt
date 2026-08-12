@@ -438,7 +438,7 @@ Dropdown/multi-select. Form-associated.
 
 Tag: `<y-select>`
 Attributes:
-- `options` — JSON string: `[{"value": "1", "label": "Option 1"}, ...]`
+- `options` — JSON string: `[{"value": "1", "label": "Option 1"}, ...]`. Each option also takes an optional `color` — a semantic name (`primary`, `success`, …) or a CSS color literal gated by `isSafeCssColor`
 - `value` — selected value string (comma-separated for multiple)
 - `name` — form field name
 - `placeholder`
@@ -455,6 +455,8 @@ Attributes:
 - `close-on-click-outside` — set to `"false"` to keep the dropdown open when clicking outside
 - `portal` — boolean; renders the dropdown into the nearest `<y-theme>` (falling back to `<body>`) so it escapes scrollable, clipped, or low-stacking ancestors (e.g. inside a data-grid cell editor or dialog)
 - `error-text` — validation message rendered below the field; also applies the error state and becomes the combobox's accessible description
+
+A selected option with a `color` is filled solidly with it. Hovering an unselected one instead tints the row — the color as the text over a light wash of it — so the assignment reads before the option is committed, without looking selected. Options without a `color` keep the neutral hover.
 
 The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
 Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
@@ -524,7 +526,7 @@ Accessibility: ARIA 1.2 combobox — `role="combobox"` on the input with `aria-e
 
 Validation: `valueMissing` when `required` and empty, `rangeOverflow` past `max`, `customError` when a token carries `invalid: true` or `duplicates="error"` is triggered. `formResetCallback` restores the initial `value`; `formStateRestoreCallback` restores from session state.
 
-A committed option stays in the list rather than disappearing, rendered with the `y-select` accent fill (or its own `color`, gated by `isSafeCssColor`) and `aria-selected="true"`; the keyboard highlight shows as an inset ring on those rows so it stays visible over the fill.
+A committed option stays in the list rather than disappearing, rendered with the `y-select` accent fill (or its own `color`, gated by `isSafeCssColor`) and `aria-selected="true"`; the keyboard highlight shows as an inset ring on those rows so it stays visible over the fill. An uncommitted option carrying a `color` hovers and highlights in that color — colored text over a light wash of it — as `y-select` does.
 
 CSS Parts: `wrapper label control token-list token token-remove input clear-button popup option option-icon option-label empty loading error-text`
 CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{small|medium|large}`, `--component-tokens-min-height-{small|medium|large}`, `--component-tokens-max-height`, `--component-tokens-input-min-width`, `--component-tokens-popup-max-height`. Chip appearance reuses the existing `--component-tag-*` tokens and field chrome reuses `--component-input-*` / `--component-inputs-*` — no parallel token set is introduced for the chips.

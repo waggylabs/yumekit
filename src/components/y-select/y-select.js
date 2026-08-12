@@ -5,6 +5,7 @@ import {
     contrastTextColor,
     createElement as _el,
     forwardControlAttributes,
+    getColorSoftPair,
     isSafeCssColor,
     manageLabelVisibility,
     resolveThemeMountPoint,
@@ -129,7 +130,11 @@ export class YumeSelect extends HTMLElement {
         }
 
         if (name === "aria-label" || name === "aria-labelledby") {
-            forwardControlAttributes(this, this._focusableControl(), SELECT_FORWARDED_ATTRIBUTES);
+            forwardControlAttributes(
+                this,
+                this._focusableControl(),
+                SELECT_FORWARDED_ATTRIBUTES,
+            );
         }
 
         if (name === "name") {
@@ -353,7 +358,11 @@ export class YumeSelect extends HTMLElement {
         this.shadowRoot.replaceChildren(this._generateTree());
         this._queryRefs();
         manageLabelVisibility(this.labelWrapper);
-        forwardControlAttributes(this, this._focusableControl(), SELECT_FORWARDED_ATTRIBUTES);
+        forwardControlAttributes(
+            this,
+            this._focusableControl(),
+            SELECT_FORWARDED_ATTRIBUTES,
+        );
         this._attachEventListeners();
         this._updateErrorText();
         this._updateDisplay();
@@ -533,7 +542,8 @@ export class YumeSelect extends HTMLElement {
             }
 
             .dropdown-item:hover {
-                background: var(--component-select-hover-background);
+                background: var(--option-soft-background, var(--component-select-hover-background));
+                color: var(--option-soft-color, inherit);
             }
 
             .dropdown-item.selected {
@@ -844,17 +854,21 @@ export class YumeSelect extends HTMLElement {
             containerChildren,
         );
 
-        const dropdown = _el("div", { class: "dropdown", part: "dropdown", role: "listbox" }, [
-            ...this.options.map((opt) =>
-                this._buildDropdownItem(opt, valueSet.has(opt.value)),
-            ),
-            (() => {
-                const noResults = _el("div", { class: "no-results" });
-                noResults.style.display = "none";
-                noResults.textContent = "No results";
-                return noResults;
-            })(),
-        ]);
+        const dropdown = _el(
+            "div",
+            { class: "dropdown", part: "dropdown", role: "listbox" },
+            [
+                ...this.options.map((opt) =>
+                    this._buildDropdownItem(opt, valueSet.has(opt.value)),
+                ),
+                (() => {
+                    const noResults = _el("div", { class: "no-results" });
+                    noResults.style.display = "none";
+                    noResults.textContent = "No results";
+                    return noResults;
+                })(),
+            ],
+        );
 
         const error = _el("div", {
             class: "error-text",
@@ -882,6 +896,12 @@ export class YumeSelect extends HTMLElement {
             "aria-selected": isSelected ? "true" : "false",
         });
         item.textContent = opt.label;
+
+        const soft = opt.color ? getColorSoftPair(opt.color) : null;
+        if (soft) {
+            item.style.setProperty("--option-soft-background", soft[0]);
+            item.style.setProperty("--option-soft-color", soft[1]);
+        }
 
         if (isSelected && opt.color) {
             const semantic = SEMANTIC_COLOR_VARS[opt.color];

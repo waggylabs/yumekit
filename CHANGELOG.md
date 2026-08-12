@@ -49,6 +49,8 @@ Delete any empty sections before publishing.
 
 - `tokenizer.js` moved from `src/components/y-code/` to `src/modules/`. `y-code`'s own behaviour is unchanged; the file was private to a component folder and is now published with the rest of `modules/`.
 
+- Options carrying a `color` now hover in that colour in `y-select` and `y-tokens` — the colour as the text over a light wash of it — instead of the neutral grey hover that gave no hint of the assignment until the option was committed. A selected option keeps its solid fill, so the two states stay distinct. Options without a colour are unchanged.
+
 ### Fixed
 
 - `y-colorpicker`'s channel values were hidden behind the number inputs' spin buttons. A channel box is a fraction of the picker's width, and between the field padding and the space a spin button reserves there was room for barely one digit. The spinners are gone (arrow keys still step a channel), the fields are tighter, and the channel row drops onto a line of its own when it would otherwise be squeezed — always with four channels across, and at `size="small"` with three. A single hex field is left where it is, so the small picker keeps its one-line layout. The format select also sizes with the picker now instead of clipping its chevron at `size="large"`. Firefox, which draws spin buttons permanently, was worst affected.

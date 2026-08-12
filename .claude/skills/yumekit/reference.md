@@ -389,7 +389,7 @@ Form-associated.
 
 | Attribute      | Values / Notes                                  |
 | -------------- | ----------------------------------------------- |
-| `options`      | JSON: `[{"value":"a","label":"Option A"}, ...]` |
+| `options`      | JSON: `[{"value":"a","label":"Option A","color":"success"}, ...]` — `color` is optional, a semantic name or a gated CSS color literal |
 | `value`        | selected value (or JSON array if `multiple`)    |
 | `name`         | form field name                                 |
 | `placeholder`  |                                                 |
@@ -406,6 +406,8 @@ Form-associated.
 | `close-on-click-outside` | `"false"` keeps the dropdown open on outside click |
 | `portal`       | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors |
 | `error-text`   | validation message below the field; applies the error state and describes the combobox |
+
+A selected option with a `color` is filled solidly with it. Hovering an unselected one instead tints the row — the color as the text over a light wash of it — so the assignment reads before the option is committed, without looking selected. Options without a `color` keep the neutral hover.
 
 The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
 
@@ -468,7 +470,7 @@ Keyboard: one tab stop. `Down`/`Up` move the suggestion highlight (opening the p
 
 Accessibility: ARIA 1.2 combobox with `aria-activedescendant` so focus never leaves the input; `role="listbox"` popup, `role="list"` token strip, and each remove control named after its own token (`aria-label="Remove Design"`). A polite live region reports the suggestion count and every add and remove.
 
-A committed option stays in the list, rendered with the `y-select` accent fill (or its own `color`) and `aria-selected="true"`; the keyboard highlight is an inset ring on those rows so it stays visible over the fill.
+A committed option stays in the list, rendered with the `y-select` accent fill (or its own `color`) and `aria-selected="true"`; the keyboard highlight is an inset ring on those rows so it stays visible over the fill. An uncommitted option carrying a `color` hovers and highlights in that color — colored text over a light wash of it — as `y-select` does.
 
 CSS Parts: `wrapper label control token-list token token-remove input clear-button popup option option-icon option-label empty loading error-text`.
 CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{small|medium|large}`, `--component-tokens-min-height-{small|medium|large}`, `--component-tokens-max-height`, `--component-tokens-input-min-width`, `--component-tokens-popup-max-height`. Chips reuse `--component-tag-*` and field chrome reuses `--component-input-*`.

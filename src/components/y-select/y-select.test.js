@@ -714,6 +714,80 @@ describe("<y-select>", () => {
         });
     });
 
+    describe("colored option hover", () => {
+        it("exposes a semantic option's hover tint as custom properties", async () => {
+            const options = JSON.stringify([
+                { label: "Success", value: "ok", color: "success" },
+                { label: "Plain", value: "plain" },
+            ]);
+            const el = await fixture(
+                html`<y-select options=${options}></y-select>`,
+            );
+            const [colored, plain] = el.shadowRoot.querySelectorAll(
+                ".dropdown-item",
+            );
+
+            expect(
+                colored.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("var(--success-background-hover)");
+            expect(
+                colored.style.getPropertyValue("--option-soft-color"),
+            ).to.equal("var(--success-content)");
+            expect(
+                plain.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("");
+        });
+
+        it("washes a custom color literal for the hover tint", async () => {
+            const options = JSON.stringify([
+                { label: "A", value: "a", color: "#ff00ff" },
+            ]);
+            const el = await fixture(
+                html`<y-select options=${options}></y-select>`,
+            );
+            const item = el.shadowRoot.querySelector(".dropdown-item");
+
+            expect(
+                item.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("color-mix(in srgb, #ff00ff 18%, transparent)");
+            expect(item.style.getPropertyValue("--option-soft-color")).to.equal(
+                "#ff00ff",
+            );
+        });
+
+        it("sets no hover tint for an unsafe color", async () => {
+            const options = JSON.stringify([
+                {
+                    label: "A",
+                    value: "a",
+                    color: "red; }</style><script>window.__xssHover=true</script>",
+                },
+            ]);
+            const el = await fixture(
+                html`<y-select options=${options}></y-select>`,
+            );
+            const item = el.shadowRoot.querySelector(".dropdown-item");
+
+            expect(
+                item.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("");
+            expect(window.__xssHover).to.be.undefined;
+        });
+
+        it("keeps the selected fill on a colored option that is also hovered", async () => {
+            const options = JSON.stringify([
+                { label: "Success", value: "ok", color: "success" },
+            ]);
+            const el = await fixture(
+                html`<y-select value="ok" options=${options}></y-select>`,
+            );
+            const item = el.shadowRoot.querySelector(".dropdown-item.selected");
+
+            // The selected fill is inline, so it outranks the :hover rule.
+            expect(item.style.background).to.equal("var(--success-content--)");
+        });
+    });
+
     describe("XSS hardening", () => {
         it("does not allow attribute breakout via placeholder", async () => {
             const hostile = `Pick" onfocus="window.__xssSelectPlaceholder=true" autofocus x="`;

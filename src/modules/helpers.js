@@ -122,6 +122,36 @@ export function getColorVarPair(color, fallbackColor = "base") {
     return map[fallbackColor] || map.base;
 }
 
+/**
+ * Return a [background, foreground] pair for the soft treatment a colored item
+ * uses while hovered or keyboard-highlighted: the color itself as the text over
+ * a light wash of the same color. Deliberately weaker than the solid fill
+ * `getColorVarPair` produces, so a hovered row never reads as a selected one.
+ * @param {string} color — a semantic role name or a safe CSS color literal
+ * @param {number} [amount=18] — wash strength, in percent, for color literals
+ * @returns {[string, string] | null} — [bg, fg], or null when `color` is unusable
+ */
+export function getColorSoftPair(color, amount = 18) {
+    const roles = [
+        "base",
+        "primary",
+        "secondary",
+        "success",
+        "warning",
+        "error",
+        "help",
+    ];
+
+    if (roles.includes(color)) {
+        return [`var(--${color}-background-hover)`, `var(--${color}-content)`];
+    }
+    if (isSafeCssColor(color)) {
+        return [`color-mix(in srgb, ${color} ${amount}%, transparent)`, color];
+    }
+
+    return null;
+}
+
 // =============================================================================
 // Clamping
 // =============================================================================

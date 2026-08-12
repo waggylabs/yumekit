@@ -5,6 +5,7 @@ import {
     contrastTextColor,
     isSafeCssColor,
     getColorVarPair,
+    getColorSoftPair,
     clamp,
     hsvToRgb,
     rgbToHsv,
@@ -180,7 +181,7 @@ describe("helpers", () => {
         });
 
         it("returns base vars for an unknown color name with default fallback", () => {
-            const [bg, fg] = getColorVarPair("unknown");
+            const [bg] = getColorVarPair("unknown");
             expect(bg).to.include("--base-content--");
         });
 
@@ -191,8 +192,34 @@ describe("helpers", () => {
         });
 
         it("falls back to base when fallbackColor is also an unknown color name", () => {
-            const [bg, fg] = getColorVarPair("unknown", "also-unknown");
+            const [bg] = getColorVarPair("unknown", "also-unknown");
             expect(bg).to.include("--base-content--");
+        });
+    });
+
+    // ── getColorSoftPair ──────────────────────────────────────
+    describe("getColorSoftPair", () => {
+        it("returns the hover background and content vars for a role name", () => {
+            const [bg, fg] = getColorSoftPair("warning");
+            expect(bg).to.equal("var(--warning-background-hover)");
+            expect(fg).to.equal("var(--warning-content)");
+        });
+
+        it("washes a custom color literal and uses it as the text color", () => {
+            const [bg, fg] = getColorSoftPair("#ff0000");
+            expect(bg).to.equal("color-mix(in srgb, #ff0000 18%, transparent)");
+            expect(fg).to.equal("#ff0000");
+        });
+
+        it("honours a custom wash strength", () => {
+            const [bg] = getColorSoftPair("#ff0000", 40);
+            expect(bg).to.equal("color-mix(in srgb, #ff0000 40%, transparent)");
+        });
+
+        it("returns null for an unusable color", () => {
+            expect(getColorSoftPair("rebeccapurple")).to.equal(null);
+            expect(getColorSoftPair("red; background: url(x)")).to.equal(null);
+            expect(getColorSoftPair("")).to.equal(null);
         });
     });
 

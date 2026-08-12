@@ -6,6 +6,7 @@ import {
     coerceRichData,
     createElement as _el,
     forwardControlAttributes,
+    getColorSoftPair,
     getColorVarPair,
     isSafeCssColor,
     manageLabelVisibility,
@@ -827,6 +828,12 @@ export class YumeTokens extends HTMLElement {
             children,
         );
 
+        const soft = option.color ? getColorSoftPair(option.color) : null;
+        if (soft) {
+            node.style.setProperty("--option-soft-background", soft[0]);
+            node.style.setProperty("--option-soft-color", soft[1]);
+        }
+
         const pair = selected ? this._optionColorPair(option) : null;
         if (pair) {
             node.style.background = pair[0];
@@ -1111,7 +1118,8 @@ export class YumeTokens extends HTMLElement {
 
             .option:hover,
             .option.is-highlighted {
-                background: var(--component-select-hover-background);
+                background: var(--option-soft-background, var(--component-select-hover-background));
+                color: var(--option-soft-color, inherit);
             }
 
             /* Declared after the hover/highlight rules so a committed option

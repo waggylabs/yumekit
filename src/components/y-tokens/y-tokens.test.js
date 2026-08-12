@@ -665,6 +665,30 @@ describe("<y-tokens>", () => {
             expect(plain.style.background).to.equal("");
         });
 
+        it("exposes each colored option's hover tint as custom properties", async () => {
+            const el = await fixture(html`<y-tokens></y-tokens>`);
+            el.options = [
+                { value: "a", color: "success" },
+                { value: "b", color: "#ff0000" },
+                { value: "c" },
+                { value: "d", color: "red; background: url(x)" },
+            ];
+            const [semantic, custom, plain, unsafe] = options(el);
+
+            expect(
+                semantic.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("var(--success-background-hover)");
+            expect(
+                custom.style.getPropertyValue("--option-soft-color"),
+            ).to.equal("#ff0000");
+            expect(
+                plain.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("");
+            expect(
+                unsafe.style.getPropertyValue("--option-soft-background"),
+            ).to.equal("");
+        });
+
         it("keeps the keyboard highlight visible on a selected option", async () => {
             const el = await fixture(
                 html`<y-tokens value='["design"]'></y-tokens>`,
