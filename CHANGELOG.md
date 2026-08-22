@@ -41,6 +41,8 @@ Delete any empty sections before publishing.
 
 - `y-toggle`, a form-associated segmented control: a button group visually, a radio group semantically, with a thumb that slides from one segment to the next as the value changes. Options come from an `options` array.
 
+- The currency rules behind `y-money` are now a public module, importable as `@waggylabs/yumekit/modules/money.js`. It exports `formatMoney`, `currencyPrecision`, `toMinorUnits`, `minorUnitsToDecimal`, `decimalToMinorUnits`, `minorUnitsSign`, `multiplyMinorUnits` and `roundDecimal`, all pure and all working in integer minor units rather than floats. Anything that displays an amount without collecting one can now round and format it exactly the way `y-money` does, without an input on screen or a second rounding rule in the codebase. `y-money` is now its first consumer; its behaviour is unchanged.
+
 - The syntax tokenizer behind `y-code` is now a public module, importable as `@waggylabs/yumekit/modules/tokenizer.js`. It exports `tokenize(language, source)` — returning `{ type, text }` tokens whose `type` values are Prism-compatible class names — and `isSupportedLanguage(language)`. Anything that renders code a line at a time can now colour it the same way `y-code` does, without re-implementing a highlighter or embedding a whole `y-code` per line.
 
 ### Changed
@@ -52,6 +54,10 @@ Delete any empty sections before publishing.
 - Options carrying a `color` now hover in that colour in `y-select` and `y-tokens` — the colour as the text over a light wash of it — instead of the neutral grey hover that gave no hint of the assignment until the option was committed. A selected option keeps its solid fill, so the two states stay distinct. Options without a colour are unchanged.
 
 ### Fixed
+
+- `y-editor` lost the caret in Safari after every rewrite of its content — normalization, list conversion, mention insertion — leaving the next keystroke to land wherever the browser felt like. Safari discards a range added to the document selection when it points inside a shadow tree, so the caret the editor carefully saved was never actually put back. It now restores the position with `setBaseAndExtent`, which every engine honours.
+
+- A mention inserted into `y-textarea` in Safari left a non-breaking space behind it rather than a plain one, so the submitted value differed by engine and searching it for the mention plus a space failed. Safari substitutes U+00A0 for the space that ends an inserted run, which is right for editable HTML and wrong for a textarea, whose value reads exactly as it submits; the substitution is now reverted in place, without reopening the popup on the mention just committed.
 
 - `y-colorpicker`'s channel values were hidden behind the number inputs' spin buttons. A channel box is a fraction of the picker's width, and between the field padding and the space a spin button reserves there was room for barely one digit. The spinners are gone (arrow keys still step a channel), the fields are tighter, and the channel row drops onto a line of its own when it would otherwise be squeezed — always with four channels across, and at `size="small"` with three. A single hex field is left where it is, so the small picker keeps its one-line layout. The format select also sizes with the picker now instead of clipping its chevron at `size="large"`. Firefox, which draws spin buttons permanently, was worst affected.
 

@@ -666,6 +666,18 @@ export class MentionController {
         this.candidates = candidates;
     }
 
+    /**
+     * Re-arm the suppression an insertion sets up, for a host that had to
+     * rewrite the text the engine actually wrote — WebKit substitutes a
+     * non-breaking space for the space ending an inserted run, and a textarea's
+     * value is submitted as it reads. The rewrite changes the fragment the
+     * insertion pinned, which would otherwise read as a new one and reopen the
+     * popup on the mention just committed.
+     */
+    suppressInsertedFragment() {
+        this._dismissed = JUST_INSERTED;
+    }
+
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------

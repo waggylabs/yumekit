@@ -1,18 +1,24 @@
 import { html, fixture, expect, oneEvent, aTimeout } from "@open-wc/testing";
 import sinon from "sinon";
+import { pasteEvent, selectRange } from "../../../test/browser.js";
 import "./y-editor.js";
+
+/**
+ * Install `range` as the editor's selection. The editing surface is focused
+ * first because a real user selection always implies focus, and the component
+ * only tracks a selection it can see.
+ */
+function installRange(editor, range) {
+    editor.shadowRoot.querySelector(".content").focus();
+    return selectRange(range, editor.shadowRoot);
+}
 
 /** Place the caret across the whole of the editor's first block. */
 function selectAll(editor) {
     const content = editor.shadowRoot.querySelector(".content");
     const range = document.createRange();
     range.selectNodeContents(content.firstElementChild);
-    const selection = editor.shadowRoot.getSelection
-        ? editor.shadowRoot.getSelection()
-        : document.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    return range;
+    return installRange(editor, range);
 }
 
 function content(editor) {
@@ -27,11 +33,7 @@ function setCaret(editor, node, offset) {
     const range = document.createRange();
     range.setStart(node, offset);
     range.collapse(true);
-    const selection = editor.shadowRoot.getSelection
-        ? editor.shadowRoot.getSelection()
-        : document.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
+    installRange(editor, range);
 }
 
 /** Replace the first block's text and drop the caret at the end of it. */
@@ -843,17 +845,6 @@ describe("y-editor", () => {
     });
 
     describe("paste", () => {
-        function pasteEvent(data) {
-            const dt = new DataTransfer();
-            for (const [type, value] of Object.entries(data))
-                dt.setData(type, value);
-            return new ClipboardEvent("paste", {
-                clipboardData: dt,
-                bubbles: true,
-                cancelable: true,
-            });
-        }
-
         it("sanitizes pasted HTML", async () => {
             const el = await fixture(html`<y-editor></y-editor>`);
             el.focus();

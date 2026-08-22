@@ -1092,7 +1092,7 @@ export class YumeEditor extends HTMLElement {
         const range = this._currentRange();
         if (!range) return this._emptySelection();
 
-        const node = range.startContainer;
+        const node = this._selectionAnchor(range);
         const state = this._emptySelection();
 
         for (const [key, tag] of Object.entries(SELECTION_TAGS)) {
@@ -1352,12 +1352,15 @@ export class YumeEditor extends HTMLElement {
 
         if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
-            return this._contentContains(range.commonAncestorContainer)
-                ? range
-                : null;
+            if (this._contentContains(range.commonAncestorContainer)) {
+                return range;
+            }
         }
 
-        // Safari exposes shadow-DOM selections only through composed ranges.
+        // Safari exposes shadow-DOM selections only through composed ranges,
+        // and reports a range retargeted to the host alongside them — so this
+        // runs whenever the direct range missed the editing surface, not only
+        // when there was no range at all.
         if (typeof selection.getComposedRanges === "function") {
             const [staticRange] = selection.getComposedRanges({
                 shadowRoots: [root],
@@ -2220,7 +2223,10 @@ export class YumeEditor extends HTMLElement {
         if (live) {
             const start = this._descendIntoList(
                 saved.startContainer,
-                Math.min(saved.startOffset, this._maxOffset(saved.startContainer)),
+                Math.min(
+                    saved.startOffset,
+                    this._maxOffset(saved.startContainer),
+                ),
             );
             const end = this._descendIntoList(
                 saved.endContainer,
@@ -2336,6 +2342,15 @@ export class YumeEditor extends HTMLElement {
         return true;
     }
 
+    _selectionAnchor(range) {
+        const { startContainer: node, startOffset: offset } = range;
+        if (range.collapsed || node.nodeType !== Node.ELEMENT_NODE) return node;
+
+        let child = node.childNodes[offset];
+        while (child?.firstChild) child = child.firstChild;
+        return child || node;
+    }
+
     _selectionPath() {
         const range = this._currentRange();
         if (!range) return null;
@@ -2354,14 +2369,28 @@ export class YumeEditor extends HTMLElement {
         this._selectRange(range);
     }
 
+    /**
+     * Put the caret back after a rewrite of the editing surface.
+     *
+     * `setBaseAndExtent` rather than `addRange`: Safari silently discards a
+     * range added to the document selection when it points inside a shadow
+     * tree, which loses the caret after every normalization, list conversion
+     * and mention insertion. The two positions are the same either way.
+     */
     _selectRange(range) {
         const root = this.shadowRoot;
         const selection = root.getSelection
             ? root.getSelection()
             : document.getSelection();
         if (!selection) return;
+
         selection.removeAllRanges();
-        selection.addRange(range);
+        selection.setBaseAndExtent(
+            range.startContainer,
+            range.startOffset,
+            range.endContainer,
+            range.endOffset,
+        );
     }
 
     _serialize() {

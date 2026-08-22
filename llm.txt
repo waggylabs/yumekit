@@ -2133,7 +2133,7 @@ CSS Custom Properties: inherits the shared field tokens (`--component-input-back
 
 CSS Parts: `input`, `error-text`.
 
-Behavior notes: values round half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01` rather than the float result. Formatting hands the decimal string to `Intl.NumberFormat` directly, so amounts past float safety keep every digit. Pasting scrubs currency symbols and grouping separators, so `"$1,234.56"` yields `1234.56`. Grouping-as-you-type is deliberately not done — the field reformats on blur so the caret is never moved mid-edit.
+Behavior notes: values round half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01` rather than the float result. Formatting hands the decimal string to `Intl.NumberFormat` directly, so amounts past float safety keep every digit. Pasting scrubs currency symbols and grouping separators, so `"$1,234.56"` yields `1234.56`. Grouping-as-you-type is deliberately not done — the field reformats on blur so the caret is never moved mid-edit. All of this lives in `@waggylabs/yumekit/modules/money.js` (see _Public Modules_), so a component that displays an amount without collecting one shares the rounding and formatting rather than re-deriving them.
 
 ```html
 <y-money name="price" currency="USD" value="1234.56" required>
@@ -2603,6 +2603,35 @@ For non-React TypeScript projects, augment `HTMLElementTagNameMap`:
 // Just import the library and use elements with full type safety.
 import "@waggylabs/yumekit";
 ```
+
+---
+
+## Public Modules
+
+Published alongside the components and importable on their own. A component is not required to use them.
+
+### Money (`@waggylabs/yumekit/modules/money.js`)
+
+The currency rules behind `y-money`, as pure functions, for anything that **displays** an amount without collecting one — a ledger row, a running balance, a day total. An input is the wrong shape for those, and a second rounding rule is worse than an extra import.
+
+The contract: an amount is an **integer number of minor units** plus a currency code, never a float. `12.34` has already lost the cent a balance is meant to reconcile, so a non-integer is rejected rather than rounded into a plausible-looking wrong number. Amounts reach `Intl` as decimal strings, so a balance past 2^53 stays exact; pass wide amounts as a string or `BigInt`.
+
+- `formatMoney(value, options)` — integer minor units to a localized string. `formatMoney(-1234, { currency: "USD" })` → `"-$12.34"`. Returns `""` for anything that isn't integer minor units. Options: `currency` (default `USD`), `locale`, `display` (`symbol` | `narrowSymbol` | `code` | `name` | `none`), `sign` (`auto` | `always` | `never` | `accounting` | `parentheses`), `precision` (overrides the currency exponent). An unusable currency code drops the affix rather than the figure
+- `currencyPrecision(currency, locale)` — the currency's minor-unit exponent (USD 2, JPY 0, KWD 3), read off `Intl` and cached; `2` for a code it can't resolve
+- `toMinorUnits(value)` — canonical signed integer string, or `null` when the value isn't integer minor units. `"-0"` and `"0"` both canonicalize to `"0"`
+- `minorUnitsToDecimal(minor, precision)` — `("-1234", 2)` → `"-12.34"`
+- `decimalToMinorUnits(decimal, precision)` — the other direction, `("1234.56", 2)` → `"123456"`, rounding first
+- `minorUnitsSign(value)` — `-1` debit, `1` credit, `0` zero, `null` when not an amount. Zero is its own answer; painting it as a credit asserts something
+- `multiplyMinorUnits(value, quantity)` — an amount times a whole count, exact at any width, `null` when either side isn't whole. There is no rounding rule in it to get wrong
+- `roundDecimal(decimal, precision)` — half-away-from-zero over digits, so `1.005` → `1.01`, not the float result. Scrubs grouping separators and symbols out of raw author strings
+- `DEFAULT_CURRENCY` — `"USD"`
+
+### Tokenizer (`@waggylabs/yumekit/modules/tokenizer.js`)
+
+The syntax highlighter behind `y-code`, for anything that renders code a line at a time without embedding a whole `y-code` per line.
+
+- `tokenize(language, source)` — `{ type, text }` tokens whose `type` values are Prism-compatible class names
+- `isSupportedLanguage(language)` — whether a language (or alias) has a built-in tokenizer
 
 ---
 

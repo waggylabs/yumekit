@@ -2,6 +2,21 @@ import { html, fixture, expect, oneEvent, nextFrame } from "@open-wc/testing";
 import sinon from "sinon";
 import "./y-code.js";
 
+/**
+ * The copied line fades in over `transition: background 0.4s`. WebKit reports
+ * the interpolated colour from the first frame, so a read taken the moment the
+ * class lands still sees the transparent start; Chromium reports the target
+ * straight away. Wait for the colour to arrive rather than racing it.
+ */
+async function paintedBackground(el, frames = 40) {
+    let color = getComputedStyle(el).backgroundColor;
+    for (let i = 0; i < frames && /, 0\)$|^transparent$/.test(color); i++) {
+        await nextFrame();
+        color = getComputedStyle(el).backgroundColor;
+    }
+    return color;
+}
+
 describe("YumeCode", () => {
     let sandbox;
     beforeEach(() => {
@@ -179,7 +194,7 @@ describe("YumeCode", () => {
             const line = el.shadowRoot.querySelector('.line[data-line="1"]');
             expect(line.classList.contains("is-copied")).to.be.true;
 
-            const bg = getComputedStyle(line).backgroundColor;
+            const bg = await paintedBackground(line);
             expect(bg).to.not.equal("rgba(0, 0, 0, 0)");
             expect(bg).to.not.equal("transparent");
         } finally {

@@ -1,7 +1,13 @@
 import { fixture, html, expect, oneEvent } from "@open-wc/testing";
 import { sendKeys } from "@web/test-runner-commands";
 import sinon from "sinon";
+import { supportsInputType } from "../../../test/browser.js";
 import "./y-data-grid.js";
+
+// The segmented-entry regression this guards against only exists where the
+// engine has a native date input; Playwright's WebKit build renders one as a
+// plain text field, where typing `06/15/2022` neither segments nor parses.
+const itWithDateInput = supportsInputType("date") ? it : it.skip;
 
 // y-popover renders its surface + slotted content into a `.y-popover-portal`
 // element appended to document.body when `portal` is on. Tests that need to
@@ -283,7 +289,7 @@ describe("YumeDataGrid", () => {
         expect(nameInput().input.selectionStart).to.equal(1);
     });
 
-    it("accepts a fully typed date in a date filter input", async () => {
+    itWithDateInput("accepts a fully typed date in a date filter input", async () => {
         const dateColumns = JSON.stringify([
             { key: "name", label: "Name" },
             { key: "joined", label: "Joined", type: "date" },

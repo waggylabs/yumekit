@@ -150,12 +150,24 @@ describe("YumeSkeleton", () => {
         const el = await fixture(
             html`<y-skeleton animation="wave"></y-skeleton>`,
         );
-        const style = getStyleText(el);
-        expect(style).to.include("prefers-reduced-motion: reduce");
-        // The browser normalizes `animation: none` to its longhand form; the
-        // animation-name resets to `none` (serialized as `... running none`).
-        expect(style).to.include("running none");
-        expect(style).to.include("content: none");
+        expect(getStyleText(el)).to.include("prefers-reduced-motion: reduce");
+
+        // Read the parsed declaration rather than the serialized text: all
+        // three engines print the `animation` shorthand differently (Chromium
+        // expands it to longhands, WebKit prints `auto`, Firefox keeps `none`),
+        // and only the `animation-name` longhand says the same thing in each.
+        const reduced = el.shadowRoot.adoptedStyleSheets
+            .flatMap((sheet) => [...sheet.cssRules])
+            .find((rule) =>
+                rule.conditionText?.includes("prefers-reduced-motion"),
+            );
+        const names = [...reduced.cssRules].map((rule) =>
+            rule.style.getPropertyValue("animation-name"),
+        );
+
+        expect(names.length).to.be.greaterThan(0);
+        expect(names.every((name) => name === "none")).to.be.true;
+        expect(getStyleText(el)).to.include("content: none");
     });
 
     it("renders the slot unconditionally for sizing content", async () => {

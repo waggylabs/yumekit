@@ -489,7 +489,10 @@ describe("<y-date>", () => {
         expect(el.mobile).to.be.true;
         const nativeInput = el.shadowRoot.querySelector(".native-date");
         expect(nativeInput).to.exist;
-        expect(nativeInput.type).to.equal("date");
+        // The attribute, not `input.type`: the IDL property reports what the
+        // engine supports rather than what the component asked for, and
+        // Playwright's WebKit build has no native date input.
+        expect(nativeInput.getAttribute("type")).to.equal("date");
         expect(el.shadowRoot.querySelector(".popup")).to.be.null;
         expect(el.shadowRoot.querySelector(".display")).to.be.null;
     });
@@ -511,7 +514,7 @@ describe("<y-date>", () => {
         );
         const nativeInput = el.shadowRoot.querySelector(".native-date");
         expect(nativeInput).to.exist;
-        expect(nativeInput.type).to.equal("datetime-local");
+        expect(nativeInput.getAttribute("type")).to.equal("datetime-local");
     });
 
     it("renders two native inputs in range mode on mobile with native-mobile", async () => {

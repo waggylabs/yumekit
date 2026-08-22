@@ -1,5 +1,6 @@
 import { html, fixture, expect, oneEvent } from "@open-wc/testing";
 import sinon from "sinon";
+import { pasteEvent } from "../../../test/browser.js";
 import "./y-tokens.js";
 import "../y-input/y-input.js";
 import "../y-theme/y-theme.js";
@@ -301,15 +302,7 @@ describe("<y-tokens>", () => {
             const onChange = sandbox.spy();
             el.addEventListener("change", onChange);
 
-            const data = new DataTransfer();
-            data.setData("text", "a, b, c");
-            input(el).dispatchEvent(
-                new ClipboardEvent("paste", {
-                    clipboardData: data,
-                    bubbles: true,
-                    cancelable: true,
-                }),
-            );
+            input(el).dispatchEvent(pasteEvent({ text: "a, b, c" }));
 
             expect(values(el)).to.eql(["a", "b", "c"]);
             expect(onChange).to.have.been.calledOnce;
@@ -319,15 +312,7 @@ describe("<y-tokens>", () => {
             const el = await fixture(html`<y-tokens></y-tokens>`);
             el.options = OPTIONS;
 
-            const data = new DataTransfer();
-            data.setData("text", "design, nope, eng");
-            input(el).dispatchEvent(
-                new ClipboardEvent("paste", {
-                    clipboardData: data,
-                    bubbles: true,
-                    cancelable: true,
-                }),
-            );
+            input(el).dispatchEvent(pasteEvent({ text: "design, nope, eng" }));
 
             expect(values(el)).to.eql(["design", "eng"]);
             expect(live(el).textContent).to.contain("nope is not an option");

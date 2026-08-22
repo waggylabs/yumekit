@@ -5,9 +5,17 @@ import {
     manageLabelVisibility,
     upgradeProperties,
 } from "../../modules/helpers.js";
+import {
+    DEFAULT_CURRENCY,
+    currencyPrecision,
+    decimalToMinorUnits,
+    formatMoney,
+    minorUnitsToDecimal,
+    roundDecimal,
+} from "../../modules/money.js";
 
-const DEFAULT_CURRENCY = "USD";
 const CURRENCY_DISPLAYS = ["symbol", "code", "name", "none"];
+const MAX_PRECISION = 20;
 
 export class YumeMoney extends HTMLElement {
     static formAssociated = true;
@@ -339,7 +347,9 @@ export class YumeMoney extends HTMLElement {
      */
     get valueAsMinorUnits() {
         if (this._value === "") return NaN;
-        return Number(this._toMinorUnits(this._value, this._resolvedPrecision()));
+        return Number(
+            decimalToMinorUnits(this._value, this._resolvedPrecision()),
+        );
     }
 
     /** @type {number} The value as a float, or `NaN` when the field is empty. */
@@ -694,7 +704,7 @@ export class YumeMoney extends HTMLElement {
         const rounded =
             this._value === ""
                 ? ""
-                : this._roundDecimal(this._value, this._resolvedPrecision());
+                : roundDecimal(this._value, this._resolvedPrecision());
         if (rounded !== this._value) this._setValue(rounded);
 
         this._updateDisplay();
@@ -712,8 +722,8 @@ export class YumeMoney extends HTMLElement {
      */
     _compare(a, b) {
         const precision = this._resolvedPrecision();
-        const av = BigInt(this._toMinorUnits(a, precision));
-        const bv = BigInt(this._toMinorUnits(b, precision));
+        const av = BigInt(decimalToMinorUnits(a, precision));
+        const bv = BigInt(decimalToMinorUnits(b, precision));
         return av < bv ? -1 : av > bv ? 1 : 0;
     }
 
@@ -822,44 +832,13 @@ export class YumeMoney extends HTMLElement {
      */
     _format(dec) {
         const precision = this._resolvedPrecision();
-        const currency = this._resolvedCurrency();
-        const negative = dec.startsWith("-");
-        const magnitude = negative ? dec.slice(1) : dec;
-
-        const options = {
-            minimumFractionDigits: precision,
-            maximumFractionDigits: precision,
-        };
-        if (this.display === "none") {
-            options.style = "decimal";
-        } else {
-            options.style = "currency";
-            options.currency = currency;
-            options.currencyDisplay = this.display;
-        }
-
-        let out;
-        try {
-            out = new Intl.NumberFormat(this.locale, options).format(magnitude);
-        } catch {
-            out = magnitude;
-        }
-
-        if (!negative) return out;
-        return this.negativeStyle === "parentheses" ? `(${out})` : `-${out}`;
-    }
-
-    _fromMinorUnits(minor, precision) {
-        const negative = minor.startsWith("-");
-        const digits = (negative ? minor.slice(1) : minor).padStart(
-            precision + 1,
-            "0",
-        );
-        if (precision === 0) return (negative ? "-" : "") + digits;
-
-        const int = digits.slice(0, digits.length - precision);
-        const frac = digits.slice(digits.length - precision);
-        return `${negative ? "-" : ""}${int}.${frac}`;
+        return formatMoney(decimalToMinorUnits(dec, precision), {
+            currency: this._resolvedCurrency(),
+            locale: this.locale,
+            display: this.display,
+            sign: this.negativeStyle === "parentheses" ? "parentheses" : "auto",
+            precision,
+        });
     }
 
     _getMinHeightVar(size) {
@@ -888,12 +867,12 @@ export class YumeMoney extends HTMLElement {
         if (canonical === "") return "";
 
         const precision = this._resolvedPrecision();
-        const rounded = this._roundDecimal(canonical, precision);
+        const rounded = roundDecimal(canonical, precision);
 
         // A negative assigned to a field that does not take them clamps to
         // zero rather than silently flipping sign.
         if (!this.allowNegative && rounded.startsWith("-"))
-            return this._roundDecimal("0", precision);
+            return roundDecimal("0", precision);
         return rounded;
     }
 
@@ -923,55 +902,10 @@ export class YumeMoney extends HTMLElement {
         if (attr != null && attr !== "") {
             const parsed = Number.parseInt(attr, 10);
             if (Number.isFinite(parsed) && parsed >= 0)
-                return Math.min(parsed, 20);
+                return Math.min(parsed, MAX_PRECISION);
         }
 
-        try {
-            return new Intl.NumberFormat(this.locale, {
-                style: "currency",
-                currency: this.currency,
-            }).resolvedOptions().maximumFractionDigits;
-        } catch {
-            return 2;
-        }
-    }
-
-    /**
-     * Round a decimal string half-away-from-zero using digit arithmetic. Going
-     * through a float here is what turns 1.005 into 1.00.
-     */
-    _roundDecimal(dec, precision) {
-        // Total by construction: min/max/step arrive as raw author strings and
-        // must never reach BigInt with a stray separator still in them.
-        const raw = String(dec ?? "").trim();
-        const negative = raw.startsWith("-");
-        const magnitude = raw.replace(/^[+-]/, "").replace(/[^0-9.]/g, "");
-        const dot = magnitude.indexOf(".");
-        const rawInt = (dot === -1 ? magnitude : magnitude.slice(0, dot)) || "0";
-        const rawFrac =
-            dot === -1 ? "" : magnitude.slice(dot + 1).replace(/\./g, "");
-        const int = rawInt.replace(/^0+(?=\d)/, "") || "0";
-
-        let digits;
-        if (rawFrac.length <= precision) {
-            digits = int + rawFrac.padEnd(precision, "0");
-        } else {
-            digits = (int + rawFrac.slice(0, precision)).split("");
-            if (Number(rawFrac[precision]) >= 5) {
-                let i = digits.length - 1;
-                while (i >= 0 && digits[i] === "9") {
-                    digits[i] = "0";
-                    i--;
-                }
-                if (i < 0) digits.unshift("1");
-                else digits[i] = String(Number(digits[i]) + 1);
-            }
-            digits = digits.join("");
-        }
-
-        const out = this._fromMinorUnits(digits, precision);
-        // -0.00 is not a number anyone wants to see in a form.
-        return negative && /[1-9]/.test(out) ? `-${out}` : out;
+        return currencyPrecision(this.currency, this.locale);
     }
 
     _separators() {
@@ -1011,44 +945,33 @@ export class YumeMoney extends HTMLElement {
 
         const precision = this._resolvedPrecision();
         const stepMinor = BigInt(
-            this._toMinorUnits(this._normalize(this.step) || "0", precision),
+            decimalToMinorUnits(this._normalize(this.step) || "0", precision),
         );
         if (stepMinor === 0n) return;
 
         const base = this._value === "" ? "0" : this._value;
         let next =
-            BigInt(this._toMinorUnits(base, precision)) +
+            BigInt(decimalToMinorUnits(base, precision)) +
             stepMinor * BigInt(Math.trunc(multiplier));
 
         if (!this.allowNegative && next < 0n) next = 0n;
         if (this.min !== "") {
-            const floor = BigInt(this._toMinorUnits(this.min, precision));
+            const floor = BigInt(decimalToMinorUnits(this.min, precision));
             if (next < floor) next = floor;
         }
         if (this.max !== "") {
-            const ceiling = BigInt(this._toMinorUnits(this.max, precision));
+            const ceiling = BigInt(decimalToMinorUnits(this.max, precision));
             if (next > ceiling) next = ceiling;
         }
 
         const before = this._value;
-        this._setValue(this._fromMinorUnits(next.toString(), precision));
+        this._setValue(minorUnitsToDecimal(next.toString(), precision));
         if (this._value === before) return;
 
         this._updateDisplay();
         this._updateValidationState();
         this._emit("input");
         this._emit("change");
-    }
-
-    /** Exact integer minor units as a string, e.g. "1234.56" → "123456". */
-    _toMinorUnits(dec, precision) {
-        const rounded = this._roundDecimal(dec || "0", precision);
-        const negative = rounded.startsWith("-");
-        const magnitude = negative ? rounded.slice(1) : rounded;
-        const [int = "0", frac = ""] = magnitude.split(".");
-        const digits =
-            (int + frac.padEnd(precision, "0")).replace(/^0+(?=\d)/, "") || "0";
-        return (negative ? "-" : "") + digits;
     }
 
     _updateDisplay() {

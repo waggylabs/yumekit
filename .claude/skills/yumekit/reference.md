@@ -2059,7 +2059,7 @@ Accessibility: the inner control is `<input type="text" inputmode="decimal">` �
 
 CSS: inherits the shared field tokens so it lines up with `y-input`, plus `--component-money-negative-color` for negative amounts at rest (defaults to `--error-content`). Parts: `input`, `error-text`.
 
-Behavior: rounding is half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01`, not the float result. Pasting scrubs currency symbols and grouping separators. Grouping-as-you-type is deliberately not done — reformatting happens on blur so the caret never jumps mid-edit.
+Behavior: rounding is half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01`, not the float result. Pasting scrubs currency symbols and grouping separators. Grouping-as-you-type is deliberately not done — reformatting happens on blur so the caret never jumps mid-edit. The rounding and formatting come from `@waggylabs/yumekit/modules/money.js` (below), which display-only components should use rather than re-deriving them.
 
 ```html
 <y-money name="price" currency="USD" value="1234.56" required>
@@ -2072,6 +2072,37 @@ Behavior: rounding is half-away-from-zero at `precision` using digit arithmetic,
     allow-negative
     negative-style="parentheses"
 ></y-money>
+```
+
+---
+
+## Money utilities (`@waggylabs/yumekit/modules/money.js`)
+
+The currency rules behind `y-money`, as pure functions. Reach for these when a component **displays** an amount without collecting one — a ledger row, a running balance, a day total. Do not re-implement currency formatting locally; a second rounding rule is worse than an extra import.
+
+The contract: an amount is an integer number of minor units plus a currency code, never a float. `12.34` is rejected rather than rounded into a plausible-looking wrong number. Amounts reach `Intl` as decimal strings, so pass anything past 2^53 as a string or `BigInt` and it stays exact.
+
+| Export | Notes |
+| ------ | ----- |
+| `formatMoney(value, options)` | integer minor units → localized string; `""` when `value` isn't integer minor units. Options: `currency` (default `USD`), `locale`, `display` (`symbol` \| `narrowSymbol` \| `code` \| `name` \| `none`), `sign` (`auto` \| `always` \| `never` \| `accounting` \| `parentheses`), `precision` |
+| `currencyPrecision(currency, locale)` | minor-unit exponent — USD 2, JPY 0, KWD 3 — cached; `2` for a code `Intl` can't resolve |
+| `toMinorUnits(value)` | canonical signed integer string, or `null`. `"-0"` → `"0"` |
+| `minorUnitsToDecimal(minor, precision)` | `("-1234", 2)` → `"-12.34"` |
+| `decimalToMinorUnits(decimal, precision)` | `("1234.56", 2)` → `"123456"`, rounding first |
+| `minorUnitsSign(value)` | `-1` debit, `1` credit, `0` zero, `null` when not an amount |
+| `multiplyMinorUnits(value, quantity)` | amount × whole count, exact at any width, `null` when either side isn't whole |
+| `roundDecimal(decimal, precision)` | half-away-from-zero over digits (`1.005` → `1.01`); scrubs separators out of raw author strings |
+| `DEFAULT_CURRENCY` | `"USD"` |
+
+```js
+import {
+    formatMoney,
+    minorUnitsSign,
+} from "@waggylabs/yumekit/modules/money.js";
+
+formatMoney(-1234, { currency: "USD", locale: "en-US" }); // "-$12.34"
+formatMoney(-1234, { sign: "accounting" }); // "($12.34)"
+minorUnitsSign(-1234); // -1
 ```
 
 ---
