@@ -291,17 +291,46 @@ function visibleArea(placement, size, vw, vh) {
  * @returns {{x: number, y: number}} — viewport top-left, or (0, 0) if none
  */
 export function containingBlockOffset(el) {
+    const { left, top } = containingBlockRect(el);
+    return { x: left, y: top };
+}
+
+/**
+ * The full box a `position: fixed` descendant of `el` resolves against — the
+ * nearest ancestor that establishes a containing block, or the viewport when
+ * no ancestor does.
+ *
+ * `containingBlockOffset` covers callers that only write `top` / `left`, which
+ * need the corner. A caller that anchors an edge instead — `bottom`, so a
+ * surface opening upward stays glued to its trigger as its content shrinks —
+ * needs the far edge as well, and reading it off `window.innerHeight` is the
+ * bug this exists to prevent.
+ *
+ * @param {Element} el — the element whose ancestry to search (exclusive)
+ * @returns {{left: number, top: number, right: number, bottom: number}}
+ */
+export function containingBlockRect(el) {
     let node = flatParent(el);
 
     while (node) {
         if (node.nodeType === Node.ELEMENT_NODE && establishesContainingBlock(node)) {
             const rect = node.getBoundingClientRect();
-            return { x: rect.left, y: rect.top };
+            return {
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+            };
         }
         node = flatParent(node);
     }
 
-    return { x: 0, y: 0 };
+    return {
+        left: 0,
+        top: 0,
+        right: window.innerWidth,
+        bottom: window.innerHeight,
+    };
 }
 
 /** Next node up the flattened tree, stepping out of shadow roots at their host. */

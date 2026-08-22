@@ -2576,7 +2576,7 @@ Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`
 - Actions (`check`, `x`, `trash`, `floppy-disk`, `pencil`, `funnel`, `swap`, `share`, `magnifying-glass`, `plus`, `minus`, `copy`, `clipboard`, `scissors`, `undo`, `redo`, `refresh`) — `undo` / `redo` are return arrows. For the circular arrows that used to carry those names, use `rotate-left` / `rotate-right`. `refresh` is the two-arrow cycle: it is the retry / reload glyph, and the one to reach for instead of a rotation arrow.
 - Editing & transform (`crop`, `flip-horizontal`, `flip-vertical`, `rotate-left`, `rotate-right`)
 - Brackets (`up-from-bracket`, `down-from-bracket`, `left-from-bracket`, `right-from-bracket`, `up-to-bracket`, `down-to-bracket`, `left-to-bracket`, `right-to-bracket`)
-- Communication (`bell`, `mail`, `speech-bubble`, `paper-airplane`)
+- Communication (`bell`, `bell-slash`, `mail`, `speech-bubble`, `paper-airplane`) — `bell-slash` is the same bell muted, for a silenced or shelved notification; it is the glyph for that state, not `circle-slash`, which reads as forbidden rather than silenced
 - Faces (`face-smile`, `face-neutral`, `face-frown`)
 - Files & data (`archive`, `file`, `file-plus`, `file-text`, `folder`, `floppy-disk`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `waveform`, `grid`, `layout`, `tag`)
 - Money & spending (`currency`, `wallet`, `bank`, `cart-shopping`, `utensils`) — `bank` is the institution (a bank account, a direct debit, an ACH mandate); `currency` is a note and `wallet` a wallet. Card brand marks (Visa, Mastercard, …) are trademarks and are deliberately not bundled — supply your own artwork.

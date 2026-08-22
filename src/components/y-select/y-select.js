@@ -1,4 +1,5 @@
 import "../y-icon/y-icon.js";
+import { containingBlockRect } from "../../modules/floating.js";
 import {
     applyControlError,
     coerceRichData,
@@ -1040,26 +1041,36 @@ export class YumeSelect extends HTMLElement {
         const gap = 4;
         const maxH = 200;
         const spaceBelow = window.innerHeight - rect.bottom - gap;
+        const opensDown = spaceBelow >= maxH || spaceBelow >= rect.top;
 
         if (this.portal) {
             // Viewport-relative positioning so the dropdown escapes any ancestor
             // with `overflow: auto/hidden/scroll`.
+            //
+            // A `position: fixed` element resolves against the nearest ancestor
+            // that establishes a containing block — a transform, filter,
+            // perspective, backdrop-filter, will-change or contain — rather than
+            // against the viewport, so the field coordinates read above land
+            // offset by that ancestor unless they are rebased onto its box.
+            // With no such ancestor the box is the viewport and nothing changes.
+            const cb = containingBlockRect(this.dropdown);
+
             this.dropdown.style.position = "fixed";
-            this.dropdown.style.left = `${rect.left}px`;
+            this.dropdown.style.left = `${rect.left - cb.left}px`;
             this.dropdown.style.right = "auto";
             this.dropdown.style.width = `${rect.width}px`;
-            if (spaceBelow >= maxH || spaceBelow >= rect.top) {
-                this.dropdown.style.top = `${rect.bottom + gap}px`;
+            if (opensDown) {
+                this.dropdown.style.top = `${rect.bottom + gap - cb.top}px`;
                 this.dropdown.style.bottom = "auto";
             } else {
                 this.dropdown.style.top = "auto";
-                this.dropdown.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+                this.dropdown.style.bottom = `${cb.bottom - rect.top + gap}px`;
             }
             return;
         }
 
         const wrapper = this.selectContainer.parentElement;
-        if (spaceBelow >= maxH || spaceBelow >= rect.top) {
+        if (opensDown) {
             this.dropdown.style.top = `${this.selectContainer.offsetTop + this.selectContainer.offsetHeight + gap}px`;
             this.dropdown.style.bottom = "auto";
         } else {

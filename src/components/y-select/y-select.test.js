@@ -950,6 +950,66 @@ describe("<y-select>", () => {
             expect(el.shadowRoot.querySelector(".dropdown")).to.exist;
         });
 
+        // A transformed ancestor becomes the containing block for the
+        // `position: fixed` dropdown, so viewport coordinates written straight
+        // to top/left land offset by that ancestor's own position.
+        function mountInTransformedTheme(top) {
+            const theme = document.createElement("y-theme");
+            theme.style.cssText = `display:block;position:absolute;left:60px;top:${top}px;width:300px;transform:translateZ(0)`;
+            const el = document.createElement("y-select");
+            el.setAttribute("portal", "");
+            el.setAttribute(
+                "options",
+                '[{"value":"a","label":"A"},{"value":"b","label":"B"}]',
+            );
+            theme.appendChild(el);
+            document.body.appendChild(theme);
+            return { theme, el };
+        }
+
+        it("opens under the field inside a transformed ancestor", async () => {
+            const { theme, el } = mountInTransformedTheme(120);
+            el.toggleDropdown();
+
+            const field = el.shadowRoot
+                .querySelector(".select-container")
+                .getBoundingClientRect();
+            const dropdown = theme
+                .querySelector(".y-select-portal")
+                .shadowRoot.querySelector(".dropdown")
+                .getBoundingClientRect();
+
+            expect(dropdown.left).to.be.closeTo(field.left, 1);
+            expect(dropdown.top).to.be.closeTo(field.bottom + 4, 1);
+
+            el.closeDropdown();
+            theme.remove();
+        });
+
+        it("opens above the field inside a transformed ancestor when space runs out", async () => {
+            const { theme, el } = mountInTransformedTheme(
+                window.innerHeight - 60,
+            );
+            el.toggleDropdown();
+
+            const field = el.shadowRoot
+                .querySelector(".select-container")
+                .getBoundingClientRect();
+            const dropdown = theme
+                .querySelector(".y-select-portal")
+                .shadowRoot.querySelector(".dropdown");
+
+            // The upward branch anchors `bottom`, which resolves against the
+            // containing block's far edge rather than the viewport's.
+            expect(dropdown.style.top).to.equal("auto");
+            expect(
+                dropdown.getBoundingClientRect().bottom,
+            ).to.be.closeTo(field.top - 4, 1);
+
+            el.closeDropdown();
+            theme.remove();
+        });
+
         it("falls back to absolute positioning when portal is not set", async () => {
             const el = await fixture(html`
                 <y-select

@@ -39,6 +39,8 @@ Delete any empty sections before publishing.
 
 - Five more icons, all with filled variants: `bank` for the institution behind an account, a direct debit or an ACH mandate, which previously had only a coin to draw with; `utensils`, `cart-shopping`, and `car` for the three spend categories that carry most of a statement and were all falling back to `tag`; and `refresh`, the two-arrow cycle, for retry and reload — the circular arrow that `rotate-left` / `rotate-right` now own and should not be borrowed for.
 
+- `bell-slash`, with a filled variant: the same bell as `bell`, silenced, for a muted or shelved notification. `circle-slash` was the only near-miss in the registry and it reads as forbidden rather than silenced, so a state an operator has to recognise across a room had nothing to draw with.
+
 - `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
 
 - `y-toggle`, a form-associated segmented control: a button group visually, a radio group semantically, with a thumb that slides from one segment to the next as the value changes. Options come from an `options` array.
@@ -58,6 +60,8 @@ Delete any empty sections before publishing.
 ### Fixed
 
 - `y-menu` opened offset from its anchor whenever any ancestor carried a `transform`, `filter`, `perspective`, `backdrop-filter`, `will-change` or `contain` — that ancestor becomes the containing block for the menu's `position: fixed` surface, so the viewport coordinates it computed landed relative to the ancestor's corner instead. The menu now rebases them with `containingBlockOffset`, the same correction `y-popover` uses, and the walk crosses shadow boundaries so a menu inside another component's shadow tree sees a light-DOM ancestor too. With no such ancestor nothing changes.
+
+- `y-select`'s portaled listbox opened offset from its field under the same conditions, for the same reason, and is now rebased the same way. The upward-opening case anchors `bottom` rather than `top`, which resolves against the containing block's far edge, so `floating.js` gained `containingBlockRect` alongside `containingBlockOffset` to report that edge instead of leaving callers to read `window.innerHeight`. With no such ancestor the box is the viewport and nothing changes.
 
 - `y-editor` lost the caret in Safari after every rewrite of its content — normalization, list conversion, mention insertion — leaving the next keystroke to land wherever the browser felt like. Safari discards a range added to the document selection when it points inside a shadow tree, so the caret the editor carefully saved was never actually put back. It now restores the position with `setBaseAndExtent`, which every engine honours.
 

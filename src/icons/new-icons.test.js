@@ -247,3 +247,56 @@ describe("payment, category and retry icons", () => {
         expect(wheels.getAttribute("d").match(/[Mm]/g).length).to.equal(4);
     });
 });
+
+describe("bell-slash", () => {
+    it("registers bell-slash in both weights", async () => {
+        expect(getIcon("bell-slash")).to.be.a("string");
+        expect(getIcon("bell-slash-fill")).to.be.a("string");
+    });
+
+    it("renders through y-icon in the shared 24x24 viewBox", async () => {
+        const el = await fixture(html`<y-icon name="bell-slash"></y-icon>`);
+        expect(el.shadowRoot.querySelectorAll("svg").length).to.equal(1);
+        expect(getIcon("bell-slash")).to.contain('viewBox="0 0 24 24"');
+        expect(getIcon("bell-slash-fill")).to.contain('viewBox="0 0 24 24"');
+    });
+
+    it("inherits currentColor in the line weight", async () => {
+        expect(getIcon("bell-slash")).to.contain('stroke="currentColor"');
+    });
+
+    // The silenced state has to read as the same bell, muted — not as a second
+    // bell drawing. Anything else and the two states stop being comparable at a
+    // glance, which is the only thing this icon is for.
+    it("keeps the bell body and dinger from the ringing glyph", async () => {
+        const el = await fixture(html`<y-icon name="bell-slash"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg.querySelectorAll("path").length).to.equal(2);
+        expect(getIcon("bell-slash")).to.contain('d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"');
+    });
+
+    it("adds a slash the ringing bell does not carry", async () => {
+        const el = await fixture(html`<y-icon name="bell-slash"></y-icon>`);
+        expect(el.shadowRoot.querySelectorAll("svg line").length).to.equal(1);
+        expect(getIcon("bell-slash")).to.not.equal(getIcon("bell"));
+        expect(getIcon("bell")).to.not.contain("<line");
+    });
+
+    // circle-slash is the near-miss to stay away from: on its own it says
+    // forbidden, not silenced, so the slash has to sit on the bell itself.
+    it("is not a restatement of circle-slash", async () => {
+        expect(getIcon("bell-slash")).to.not.equal(getIcon("circle-slash"));
+        expect(getIcon("bell-slash")).to.not.contain("<circle");
+    });
+
+    it("filled weight cuts the slash through the silhouette as one shape", async () => {
+        const el = await fixture(
+            html`<y-icon name="bell-slash" weight="filled"></y-icon>`,
+        );
+        const paths = el.shadowRoot.querySelectorAll("svg path");
+        expect(paths.length).to.equal(1);
+        expect(paths[0].getAttribute("fill-rule")).to.equal("evenodd");
+        // Bell body, dinger, and the slash band knocked through both.
+        expect(paths[0].getAttribute("d").match(/[Mm]/g).length).to.equal(3);
+    });
+});

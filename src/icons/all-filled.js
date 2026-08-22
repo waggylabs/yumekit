@@ -17,6 +17,7 @@ import arrowRightFill from "./filled/arrow-right.svg";
 import arrowUpFill from "./filled/arrow-up.svg";
 import bankFill from "./filled/bank.svg";
 import bellFill from "./filled/bell.svg";
+import bellSlashFill from "./filled/bell-slash.svg";
 import bluetoothFill from "./filled/bluetooth.svg";
 import boltFill from "./filled/bolt.svg";
 import bookmarkFill from "./filled/bookmark.svg";
@@ -150,6 +151,7 @@ registerIcons({
     "arrow-up-fill": arrowUpFill,
     "bank-fill": bankFill,
     "bell-fill": bellFill,
+    "bell-slash-fill": bellSlashFill,
     "bluetooth-fill": bluetoothFill,
     "bolt-fill": boltFill,
     "bookmark-fill": bookmarkFill,

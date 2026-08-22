@@ -22,6 +22,7 @@ import arrowUp from "./arrow-up.svg";
 import bug from "./bug.svg";
 import circleSlash from "./circle-slash.svg";
 import bell from "./bell.svg";
+import bellSlash from "./bell-slash.svg";
 import bluetooth from "./bluetooth.svg";
 import briefcase from "./briefcase.svg";
 import bolt from "./bolt.svg";
@@ -211,6 +212,7 @@ registerIcons({
     bug,
     "circle-slash": circleSlash,
     bell,
+    "bell-slash": bellSlash,
     bluetooth,
     bolt,
     briefcase,
