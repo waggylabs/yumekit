@@ -37,6 +37,8 @@ Delete any empty sections before publishing.
 
 - Ten icons: `currency` and `wallet` for monetary UI; `file`, `file-plus`, and `file-text` for documents (distinct from the existing `folder`); `crop`, `flip-horizontal`, and `flip-vertical` for image editing; and `rotate-left` / `rotate-right` for rotation controls. All ship with filled variants.
 
+- Five more icons, all with filled variants: `bank` for the institution behind an account, a direct debit or an ACH mandate, which previously had only a coin to draw with; `utensils`, `cart-shopping`, and `car` for the three spend categories that carry most of a statement and were all falling back to `tag`; and `refresh`, the two-arrow cycle, for retry and reload — the circular arrow that `rotate-left` / `rotate-right` now own and should not be borrowed for.
+
 - `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
 
 - `y-toggle`, a form-associated segmented control: a button group visually, a radio group semantically, with a thumb that slides from one segment to the next as the value changes. Options come from an `options` array.

@@ -163,3 +163,87 @@ describe("undo / redo rename", () => {
         }
     });
 });
+
+describe("payment, category and retry icons", () => {
+    const names = ["bank", "utensils", "cart-shopping", "car", "refresh"];
+
+    for (const name of names) {
+        it(`registers ${name} in both weights`, async () => {
+            expect(getIcon(name)).to.be.a("string");
+            expect(getIcon(`${name}-fill`)).to.be.a("string");
+        });
+
+        it(`${name} renders through y-icon`, async () => {
+            const el = await fixture(html`<y-icon name="${name}"></y-icon>`);
+            expect(el.shadowRoot.querySelectorAll("svg").length).to.equal(1);
+        });
+
+        it(`${name} inherits currentColor in the line weight`, async () => {
+            expect(getIcon(name)).to.contain('stroke="currentColor"');
+        });
+
+        it(`${name} uses the shared 24x24 viewBox`, async () => {
+            expect(getIcon(name)).to.contain('viewBox="0 0 24 24"');
+            expect(getIcon(`${name}-fill`)).to.contain('viewBox="0 0 24 24"');
+        });
+    }
+
+    // The whole point of `refresh` is to be a retry glyph that nobody reaches
+    // for `rotate-right` to draw, so the two must not converge.
+    it("refresh is a two-arrow cycle, distinct from the rotation glyphs", async () => {
+        const refresh = getIcon("refresh");
+        expect(refresh).to.not.equal(getIcon("rotate-right"));
+        expect(refresh).to.not.equal(getIcon("rotate-left"));
+        // Both halves of the cycle, each with its own arrowhead.
+        expect(refresh.match(/a9 9 0 0 1/g).length).to.equal(2);
+        expect(
+            (await fixture(html`<y-icon name="refresh"></y-icon>`)).shadowRoot
+                .querySelectorAll("svg polyline").length,
+        ).to.equal(2);
+    });
+
+    it("bank draws an institution, not another coin", async () => {
+        const el = await fixture(html`<y-icon name="bank"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        // Pediment, three columns, plinth and ground line.
+        expect(svg.querySelectorAll("path").length).to.equal(1);
+        expect(svg.querySelectorAll("line").length).to.equal(5);
+        expect(getIcon("bank")).to.not.equal(getIcon("currency"));
+    });
+
+    it("keeps the cart basket and both wheels", async () => {
+        const el = await fixture(html`<y-icon name="cart-shopping"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg.querySelectorAll("circle").length).to.equal(2);
+        expect(svg.querySelectorAll("path").length).to.equal(1);
+    });
+
+    it("keeps the car body, both wheels and the axle between them", async () => {
+        const el = await fixture(html`<y-icon name="car"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        expect(svg.querySelectorAll("circle").length).to.equal(2);
+        expect(svg.querySelectorAll("line").length).to.equal(1);
+    });
+
+    it("utensils carries a fork and a knife rather than one of each half", async () => {
+        const el = await fixture(html`<y-icon name="utensils"></y-icon>`);
+        const svg = el.shadowRoot.querySelector("svg");
+        // Fork head and knife blade.
+        expect(svg.querySelectorAll("path").length).to.equal(2);
+        // Middle tine, fork handle, knife handle.
+        expect(svg.querySelectorAll("line").length).to.equal(3);
+    });
+
+    it("filled car carries a hub cut out of each wheel", async () => {
+        const el = await fixture(
+            html`<y-icon name="car" weight="filled"></y-icon>`,
+        );
+        const [body, wheels] = el.shadowRoot.querySelectorAll("svg path");
+
+        // The silhouette is solid; only the wheels carry holes.
+        expect(body.getAttribute("fill-rule")).to.equal(null);
+        expect(wheels.getAttribute("fill-rule")).to.equal("evenodd");
+        // Two wheels, each with its hub.
+        expect(wheels.getAttribute("d").match(/[Mm]/g).length).to.equal(4);
+    });
+});

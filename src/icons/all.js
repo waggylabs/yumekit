@@ -99,6 +99,10 @@ import filePlus from "./file-plus.svg";
 import fileText from "./file-text.svg";
 import wallet from "./wallet.svg";
 import currency from "./currency.svg";
+import bank from "./bank.svg";
+import cartShopping from "./cart-shopping.svg";
+import utensils from "./utensils.svg";
+import car from "./car.svg";
 import github from "./github.svg";
 import heading from "./heading.svg";
 import heart from "./heart.svg";
@@ -131,6 +135,7 @@ import plug from "./plug.svg";
 import plus from "./plus.svg";
 import puzzle from "./puzzle.svg";
 import redo from "./redo.svg";
+import refresh from "./refresh.svg";
 import rotateLeft from "./rotate-left.svg";
 import rotateRight from "./rotate-right.svg";
 import flipHorizontal from "./flip-horizontal.svg";
@@ -282,7 +287,11 @@ registerIcons({
     "file-text": fileText,
     wallet,
     currency,
+    bank,
     gasoline,
+    "cart-shopping": cartShopping,
+    utensils,
+    car,
 
     github,
     globe,
@@ -316,6 +325,7 @@ registerIcons({
     plus,
     puzzle,
     redo,
+    refresh,
     "rotate-left": rotateLeft,
     "rotate-right": rotateRight,
     "flip-horizontal": flipHorizontal,

@@ -15,6 +15,7 @@ import arrowDownFill from "./filled/arrow-down.svg";
 import arrowLeftFill from "./filled/arrow-left.svg";
 import arrowRightFill from "./filled/arrow-right.svg";
 import arrowUpFill from "./filled/arrow-up.svg";
+import bankFill from "./filled/bank.svg";
 import bellFill from "./filled/bell.svg";
 import bluetoothFill from "./filled/bluetooth.svg";
 import boltFill from "./filled/bolt.svg";
@@ -23,6 +24,8 @@ import briefcaseFill from "./filled/briefcase.svg";
 import bugFill from "./filled/bug.svg";
 import calendarFill from "./filled/calendar.svg";
 import campfireFill from "./filled/campfire.svg";
+import carFill from "./filled/car.svg";
+import cartShoppingFill from "./filled/cart-shopping.svg";
 import checkFill from "./filled/check.svg";
 import chevronDownFill from "./filled/chevron-down.svg";
 import chevronLeftFill from "./filled/chevron-left.svg";
@@ -98,6 +101,7 @@ import plugFill from "./filled/plug.svg";
 import plusFill from "./filled/plus.svg";
 import puzzleFill from "./filled/puzzle.svg";
 import redoFill from "./filled/redo.svg";
+import refreshFill from "./filled/refresh.svg";
 import rotateLeftFill from "./filled/rotate-left.svg";
 import rotateRightFill from "./filled/rotate-right.svg";
 import rightFromBracketFill from "./filled/right-from-bracket.svg";
@@ -131,6 +135,7 @@ import upFromBracketFill from "./filled/up-from-bracket.svg";
 import upToBracketFill from "./filled/up-to-bracket.svg";
 import userFill from "./filled/user.svg";
 import usersFill from "./filled/users.svg";
+import utensilsFill from "./filled/utensils.svg";
 import walletFill from "./filled/wallet.svg";
 import waveformFill from "./filled/waveform.svg";
 import wrenchFill from "./filled/wrench.svg";
@@ -143,6 +148,7 @@ registerIcons({
     "arrow-left-fill": arrowLeftFill,
     "arrow-right-fill": arrowRightFill,
     "arrow-up-fill": arrowUpFill,
+    "bank-fill": bankFill,
     "bell-fill": bellFill,
     "bluetooth-fill": bluetoothFill,
     "bolt-fill": boltFill,
@@ -151,6 +157,8 @@ registerIcons({
     "bug-fill": bugFill,
     "calendar-fill": calendarFill,
     "campfire-fill": campfireFill,
+    "car-fill": carFill,
+    "cart-shopping-fill": cartShoppingFill,
     "check-fill": checkFill,
     "chevron-down-fill": chevronDownFill,
     "chevron-left-fill": chevronLeftFill,
@@ -226,6 +234,7 @@ registerIcons({
     "plus-fill": plusFill,
     "puzzle-fill": puzzleFill,
     "redo-fill": redoFill,
+    "refresh-fill": refreshFill,
     "rotate-left-fill": rotateLeftFill,
     "rotate-right-fill": rotateRightFill,
     "right-from-bracket-fill": rightFromBracketFill,
@@ -259,6 +268,7 @@ registerIcons({
     "up-to-bracket-fill": upToBracketFill,
     "user-fill": userFill,
     "users-fill": usersFill,
+    "utensils-fill": utensilsFill,
     "wallet-fill": walletFill,
     "waveform-fill": waveformFill,
     "wrench-fill": wrenchFill,
