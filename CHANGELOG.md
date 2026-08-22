@@ -57,6 +57,8 @@ Delete any empty sections before publishing.
 
 ### Fixed
 
+- `y-menu` opened offset from its anchor whenever any ancestor carried a `transform`, `filter`, `perspective`, `backdrop-filter`, `will-change` or `contain` — that ancestor becomes the containing block for the menu's `position: fixed` surface, so the viewport coordinates it computed landed relative to the ancestor's corner instead. The menu now rebases them with `containingBlockOffset`, the same correction `y-popover` uses, and the walk crosses shadow boundaries so a menu inside another component's shadow tree sees a light-DOM ancestor too. With no such ancestor nothing changes.
+
 - `y-editor` lost the caret in Safari after every rewrite of its content — normalization, list conversion, mention insertion — leaving the next keystroke to land wherever the browser felt like. Safari discards a range added to the document selection when it points inside a shadow tree, so the caret the editor carefully saved was never actually put back. It now restores the position with `setBaseAndExtent`, which every engine honours.
 
 - A mention inserted into `y-textarea` in Safari left a non-breaking space behind it rather than a plain one, so the submitted value differed by engine and searching it for the mention plus a space failed. Safari substitutes U+00A0 for the space that ends an inserted run, which is right for editable HTML and wrong for a textarea, whose value reads exactly as it submits; the substitution is now reverted in place, without reopening the popup on the mention just committed.

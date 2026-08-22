@@ -9,13 +9,14 @@ const defaultItems = JSON.stringify([
     { text: "Delete" },
 ]);
 
-// Force iframe rendering so position:fixed anchors to the story viewport, not the docs page.
-const docsParams = { docs: { story: { inline: false, height: "200px" } } };
+let anchorSeq = 0;
 
 export default {
     title: "Navigation/Menu",
     tags: ["autodocs"],
-    parameters: docsParams,
+    // Reserve the room an open menu needs, so the docs preview grows to hold
+    // one instead of cropping it at the fold.
+    decorators: [(story) => `<div style="min-height:260px">${story()}</div>`],
     argTypes: {
         items: {
             control: "text",
@@ -47,12 +48,19 @@ export default {
         size: "medium",
         visible: false,
     },
-    render: ({ items, direction, size, visible }) => `
+    render: ({ items, direction, size, visible }) => {
+        // A fresh id per render: autodocs renders the first story twice — once
+        // as the page's primary example and again under Stories — and a menu
+        // anchors by id, so a fixed id would point both copies at the first
+        // button.
+        const anchorId = `menu-anchor-${++anchorSeq}`;
+        return `
         <div style="padding:16px">
-            <y-button id="menu-anchor" color="primary">Open Menu</y-button>
-            <y-menu anchor="menu-anchor" items='${items}' direction="${direction}" size="${size}" ${visible ? "visible" : ""}></y-menu>
+            <y-button id="${anchorId}" color="primary">Open Menu</y-button>
+            <y-menu anchor="${anchorId}" items='${items}' direction="${direction}" size="${size}" ${visible ? "visible" : ""}></y-menu>
         </div>
-    `,
+    `;
+    },
 };
 
 export const Default = {};
@@ -95,7 +103,6 @@ export const WithSubmenus = {
             ></y-menu>
         </div>
     `,
-    parameters: { docs: { story: { inline: false, height: "220px" } } },
 };
 
 export const Sizes = {
@@ -162,6 +169,10 @@ export const LongMenu = {
             ></y-menu>
         </div>
     `,
+    // The one story that still wants its own frame: a menu taller than the
+    // viewport caps to it and scrolls internally, and demonstrating that needs
+    // a viewport small enough to overflow. Rendered inline it would cap to the
+    // docs page instead and cover it.
     parameters: { docs: { story: { inline: false, height: "360px" } } },
 };
 

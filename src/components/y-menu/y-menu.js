@@ -4,6 +4,7 @@ import {
     resolveAnchor,
     upgradeProperties,
 } from "../../modules/helpers.js";
+import { containingBlockOffset } from "../../modules/floating.js";
 import "../y-icon/y-icon.js";
 
 export class YumeMenu extends HTMLElement {
@@ -580,11 +581,21 @@ export class YumeMenu extends HTMLElement {
             vh,
         );
 
+        // Clamp in viewport coordinates, where the anchor rect and the viewport
+        // bounds both live, and rebase afterwards.
         const clampedTop = Math.max(0, Math.min(top, vh - menuRect.height));
         const clampedLeft = Math.max(0, Math.min(left, vw - menuRect.width));
 
-        this.style.top = `${clampedTop}px`;
-        this.style.left = `${clampedLeft}px`;
+        // A `position: fixed` element resolves against the nearest ancestor
+        // that establishes a containing block — a transform, filter,
+        // perspective, backdrop-filter, will-change or contain — rather than
+        // against the viewport, so the coordinates above land offset by that
+        // ancestor's own position unless they are rebased onto its corner.
+        // With no such ancestor the offset is (0, 0) and nothing changes.
+        const origin = containingBlockOffset(this);
+
+        this.style.top = `${clampedTop - origin.y}px`;
+        this.style.left = `${clampedLeft - origin.x}px`;
         this.style.display = "block";
     }
 
