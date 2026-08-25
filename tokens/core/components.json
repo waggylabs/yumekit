@@ -712,6 +712,20 @@
                 "$value": "rgba(255, 255, 255, 0.2)"
             }
         },
+        "gauge": {
+            "value-size": {
+                "$type": "dimension",
+                "$value": "30px"
+            },
+            "label-size": {
+                "$type": "dimension",
+                "$value": "11px"
+            },
+            "tick-label-size": {
+                "$type": "dimension",
+                "$value": "9px"
+            }
+        },
         "icon": {
             "size-x-large": {
                 "$type": "sizing",

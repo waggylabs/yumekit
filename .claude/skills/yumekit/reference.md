@@ -1051,6 +1051,43 @@ Events: `change` — `event.detail.value`
 
 ---
 
+## y-gauge
+
+| Attribute                   | Values / Notes                                                     |
+| --------------------------- | ------------------------------------------------------------------ |
+| `value`                     | number, clamped into `min`–`max` (defaults to `min`)               |
+| `min`, `max`                | numeric bounds (default `0` / `100`)                                |
+| `start-angle`, `end-angle`  | degrees, clock convention (default `225` / `495` — a 270° sweep)    |
+| `thickness`                 | ring width as a fraction of the radius, `0.04`–`0.4` (default `0.16`) |
+| `progress`                  | `"false"` hides the arc fill (default shown)                        |
+| `needle`                    | boolean — instrument pointer; moves the readout below its sweep     |
+| `target`                    | number — caret marker on the arc                                    |
+| `ranges`                    | property or JSON — `[{ from, to, color }]` zones on the track       |
+| `ticks`                     | number of major tick intervals (default `0`)                        |
+| `minor-ticks`               | subdivisions between major ticks (default `0`)                      |
+| `tick-labels`               | boolean — label each major tick with its value                      |
+| `show-value`                | `"false"` hides the center number (default shown)                   |
+| `label`                     | caption under the value                                             |
+| `unit`                      | appended to the value (`%`, ` mph`, ` rpm`)                         |
+| `decimals`                  | fractional digits, `0`–`6` (default `0`)                            |
+| `color`                     | CSS color or `var(--token)` accent; overrides any range color       |
+| `loading`                   | boolean — circular skeleton placeholder                             |
+| `loading-text`              | announced while `loading` (default `"Loading gauge…"`)              |
+
+Size it with a CSS width on the host. `role="meter"`; `label` becomes the `aria-label`, so supply one when there is no visible caption.
+
+```html
+<y-gauge value="68" unit="%" label="Utilization" style="width: 220px"></y-gauge>
+<y-gauge value="72" target="90" unit="%" label="Quota" style="width: 220px"></y-gauge>
+<y-gauge
+    value="55" min="0" max="120" unit=" mph"
+    needle progress="false" ticks="12" minor-ticks="1" tick-labels
+    style="width: 300px"
+></y-gauge>
+```
+
+---
+
 ## y-tooltip
 
 | Attribute  | Values / Notes                                   |

@@ -92,6 +92,31 @@ export function isSafeCssColor(value) {
     );
 }
 
+// A bare `var(--token)` reference, optionally with a fallback. Kept strict — no
+// `;{}` — so a value bound for an inline style can never smuggle in a second
+// declaration or close the rule.
+const VAR_REFERENCE = /^var\(\s*--[\w-]+\s*(?:,[^;{}]*)?\)$/;
+
+/**
+ * A color string safe to paint from author input: a literal `isSafeCssColor`
+ * accepts (`#hex`, `rgb()`/`hsl()`/`oklch()`/…) OR a `var(--token)` theme
+ * reference, optionally with a fallback. Returns the trimmed color, or null.
+ *
+ * The looser sibling of `isSafeCssColor`, for the cases where naming a theme
+ * token is the ordinary way to color something — a gauge zone, a chart series.
+ * Only a bare custom-property reference is allowed through, never arbitrary CSS.
+ *
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+export function safeColor(value) {
+    if (isSafeCssColor(value)) return value;
+    if (typeof value === "string" && VAR_REFERENCE.test(value.trim())) {
+        return value.trim();
+    }
+    return null;
+}
+
 /**
  * Return a [background, foreground] CSS variable pair for a color scheme.
  * Background is `--{color}-content--`, foreground is `--{color}-content-inverse`.

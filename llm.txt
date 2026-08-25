@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 59 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 60 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.4
@@ -1252,6 +1252,76 @@ Accessibility: each shape carries `role="progressbar"` with `aria-valuemin`/`ari
 
 <!-- Segmented bar (5 chunks) -->
 <y-progress value="40" segmented="5" size="large" label-display="false"></y-progress>
+```
+
+---
+
+### y-gauge
+Radial gauge / dial. Draws a value on a circular arc — a KPI dial by default (neutral track, accent fill, big center number), an instrument dial with `needle`, colored zones, and a labeled scale. Everything is drawn in a fixed 200-unit viewBox scaled by the SVG, so marks and text stay crisp at any size; give the host a CSS width to size it.
+
+Tag: `<y-gauge>`
+Attributes:
+- `value` — numeric. Defaults to `min`. Clamped into `[min, max]` for the arc; the center number shows the raw value.
+- `min` — numeric (default `0`)
+- `max` — numeric (default `100`)
+- `start-angle` — arc start in degrees, clock convention (`0` = 12 o'clock, increasing clockwise). Default `225`.
+- `end-angle` — arc end in degrees. Default `495` — a 270° sweep with the gap at the bottom. `start-angle="0" end-angle="360"` closes the dial into a full circle (the tick at `max` is dropped so it doesn't stack on the one at `min`).
+- `thickness` — ring width as a fraction of the radius, clamped to `0.04`–`0.4` (default `0.16`)
+- `progress` — `"true"` (default) | `"false"`. Fills the arc from `min` to `value`. With `ranges` set, the fill insets inside the zones so both stay legible.
+- `needle` — boolean. Draws a pointer at `value`. Moves the value/label readout below the needle's sweep so the pointer never crosses the number.
+- `target` — numeric. Renders a caret marker on the outside of the arc.
+- `ranges` — array of `{ from, to, color }` zones painted onto the track (redlines, thresholds, bands). Set as a property or a JSON attribute. `color` accepts a CSS color literal or a `var(--token)` reference; the zone containing `value` also tints the fill and the center number unless `color` is set.
+- `ticks` — number of major tick intervals around the arc (default `0` — none)
+- `minor-ticks` — subdivisions between each pair of major ticks (default `0`)
+- `tick-labels` — boolean. Labels each major tick with its value.
+- `show-value` — `"true"` (default) | `"false"`. Toggles the center number.
+- `label` — caption under the value (e.g. `"Speed"`)
+- `unit` — appended to the value (e.g. `"%"`, `" mph"`, `" rpm"`)
+- `decimals` — fractional digits in the center value, `0`–`6` (default `0`). Thousands are grouped by locale.
+- `color` — accent for the fill and the center number, as a CSS color literal or a `var(--token)` reference. Overrides any range color.
+- `loading` — boolean. Swaps the dial for a circular skeleton placeholder.
+- `loading-text` — accessible label announced while `loading` (default `"Loading gauge…"`)
+
+CSS Parts: `gauge`, `track`, `zone`, `progress`, `needle`, `needle-pointer`, `needle-hub`, `tick`, `tick-minor`, `tick-label`, `target`, `value`, `unit`, `label`, `skeleton`.
+
+CSS Custom Properties: `--component-gauge-track-color`, `--component-gauge-value-color`, `--component-gauge-needle-color`, `--component-gauge-target-color`, `--component-gauge-tick-color`, `--component-gauge-tick-minor-color`, `--component-gauge-label-color`, `--component-gauge-skeleton-color`, `--component-gauge-value-size`, `--component-gauge-label-size`, `--component-gauge-tick-label-size`.
+
+Accessibility: the dial carries `role="meter"` with `aria-valuemin`/`aria-valuemax`/`aria-valuenow` and an `aria-valuetext` of the formatted value plus its unit. `label` becomes the `aria-label` (falling back to `"Gauge"`) — supply one when the dial has no visible caption. The center text is `aria-hidden` so it isn't read twice. While `loading` the placeholder is `aria-busy` and announces `loading-text`. The fill and needle transitions respect `prefers-reduced-motion`.
+
+```html
+<!-- KPI dial -->
+<y-gauge value="68" unit="%" label="Utilization" style="width: 220px"></y-gauge>
+
+<!-- Against a target -->
+<y-gauge value="72" target="90" unit="%" label="Quota" style="width: 220px"></y-gauge>
+
+<!-- Threshold zones -->
+<y-gauge id="health" value="84" unit="%" label="Health" style="width: 220px"></y-gauge>
+<script>
+    document.getElementById("health").ranges = [
+        { from: 0, to: 30, color: "var(--error-content)" },
+        { from: 30, to: 70, color: "var(--warning-content)" },
+        { from: 70, to: 100, color: "var(--success-content)" },
+    ];
+</script>
+
+<!-- Instrument dial: needle, no fill, labeled scale -->
+<y-gauge
+    value="55" min="0" max="120" unit=" mph"
+    needle progress="false"
+    ticks="12" minor-ticks="1" tick-labels
+    style="width: 300px"
+></y-gauge>
+
+<!-- Semicircle: 9 o'clock to 3 o'clock -->
+<y-gauge
+    value="42" unit="%" label="Storage"
+    start-angle="270" end-angle="450"
+    style="width: 240px"
+></y-gauge>
+
+<!-- Loading -->
+<y-gauge loading label="CPU load" style="width: 220px"></y-gauge>
 ```
 
 ---

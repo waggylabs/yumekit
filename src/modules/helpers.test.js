@@ -4,6 +4,7 @@ import {
     luminance,
     contrastTextColor,
     isSafeCssColor,
+    safeColor,
     getColorVarPair,
     getColorSoftPair,
     clamp,
@@ -163,6 +164,36 @@ describe("helpers", () => {
                 "oklch(var(--x) 0 0)",
                 "#fff;",
             ].forEach((c) => expect(isSafeCssColor(c), c).to.be.false);
+        });
+    });
+
+    // ── safeColor ─────────────────────────────────────────────
+    describe("safeColor", () => {
+        it("passes through literals isSafeCssColor accepts", () => {
+            ["#f00", "rgb(255 0 0)", "oklch(0.628 0.225 29.234)"].forEach((c) =>
+                expect(safeColor(c), c).to.equal(c),
+            );
+        });
+
+        it("accepts a bare var() reference, with or without a fallback", () => {
+            expect(safeColor("var(--error-content)")).to.equal(
+                "var(--error-content)",
+            );
+            expect(safeColor("  var(--primary-content, #f00)  ")).to.equal(
+                "var(--primary-content, #f00)",
+            );
+        });
+
+        it("rejects var() that smuggles in a second declaration", () => {
+            [
+                "var(--x);background:url(evil)",
+                "var(--x){color:red}",
+                "var(--x) red",
+                "var(x)",
+                "red",
+                "currentColor",
+                null,
+            ].forEach((c) => expect(safeColor(c), String(c)).to.be.null);
         });
     });
 

@@ -39,6 +39,7 @@ export * from "./components/y-dock/y-dock.js";
 export * from "./components/y-form/y-form.js";
 export * from "./components/y-help/y-help.js";
 export * from "./components/y-gallery/y-gallery.js";
+export * from "./components/y-gauge/y-gauge.js";
 export * from "./components/y-grid/y-grid.js";
 export * from "./components/y-icon/y-icon.js";
 export { registerIcon, registerIcons, getIcon } from "./icons/registry.js";

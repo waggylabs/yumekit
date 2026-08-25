@@ -295,6 +295,30 @@ declare module "react" {
                 loop?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-gauge": El<{
+                value?: string | number;
+                min?: string | number;
+                max?: string | number;
+                "start-angle"?: string | number;
+                "end-angle"?: string | number;
+                thickness?: string | number;
+                progress?: boolean | string;
+                needle?: boolean | string;
+                target?: string | number;
+                ranges?:
+                    | Array<{ from: number; to: number; color?: string }>
+                    | string;
+                ticks?: string | number;
+                "minor-ticks"?: string | number;
+                "tick-labels"?: boolean | string;
+                "show-value"?: boolean | string;
+                label?: string;
+                unit?: string;
+                decimals?: string | number;
+                color?: string;
+                loading?: boolean | string;
+                "loading-text"?: string;
+            }>;
             "y-grid": El<{
                 columns?: string | number;
                 rows?: string | number;

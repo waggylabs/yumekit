@@ -100,6 +100,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Droplist     | `<y-droplist>`     | Drag-and-drop reorderable list                         |
 | Form         | `<y-form>`         | Form container that renders and manages form controls  |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                            |
+| Gauge        | `<y-gauge>`        | Radial gauge / instrument dial                         |
 | Grid         | `<y-grid>`         | CSS Grid layout container                              |
 | Help         | `<y-help>`         | Guided product tour / onboarding walkthrough           |
 | Icon         | `<y-icon>`         | SVG icon display                                       |
