@@ -31,7 +31,7 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [1.0.0]
+## [0.5.5-beta.1]
 
 ### Added
 
