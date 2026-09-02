@@ -6,19 +6,51 @@
  * fix the component instead.
  */
 
+import { sendKeys } from "@web/test-runner-commands";
+
 /**
  * Whether the engine implements a native input of this `type`.
  *
  * An engine without one falls back to `text`, which changes both `input.type`
  * and how typed characters are read back — `06/15/2022` stays as typed instead
- * of parsing to `2022-06-15`. Playwright's WebKit build ships without `date`
- * and `datetime-local`; Safari itself has both. A test that needs the native
- * control asks first rather than asserting a capability the build lacks.
+ * of parsing to `2022-06-15`. A test that needs the native control asks first
+ * rather than asserting a capability the build lacks. Note that this only
+ * reports what the type reflects to; see `supportsTypedDateInput` for whether
+ * the control can actually be typed into.
  */
 export function supportsInputType(type) {
     const input = document.createElement("input");
     input.setAttribute("type", type);
     return input.type === type;
+}
+
+let typedDateSupport = null;
+
+/**
+ * Whether a date can be entered into a native date input by typing.
+ *
+ * Playwright's WebKit build reflects `type="date"` but draws a plain text
+ * field with no segments, so keystrokes land as free text that value
+ * sanitization then discards, leaving `value` empty. Reflection alone
+ * therefore says nothing about whether the control is typeable, so this
+ * probes it for real, once per session.
+ */
+export async function supportsTypedDateInput() {
+    if (typedDateSupport !== null) return typedDateSupport;
+    if (!supportsInputType("date")) {
+        typedDateSupport = false;
+        return typedDateSupport;
+    }
+
+    const probe = document.createElement("input");
+    probe.type = "date";
+    document.body.appendChild(probe);
+    probe.focus();
+    await sendKeys({ type: "06/15/2022" });
+    typedDateSupport = probe.value === "2022-06-15";
+    probe.remove();
+
+    return typedDateSupport;
 }
 
 /**

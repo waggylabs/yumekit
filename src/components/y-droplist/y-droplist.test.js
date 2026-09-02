@@ -1670,7 +1670,7 @@ describe("YumeDroplist", () => {
                 composed: true,
                 cancelable: true,
                 clientX: cRect.right + 5,
-                clientY: cRect.top + cRect.height / 2,
+                clientY: cRect.bottom - 1,
             }),
         );
         a.dispatchEvent(
