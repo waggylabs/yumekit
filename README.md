@@ -105,6 +105,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Help         | `<y-help>`         | Guided product tour / onboarding walkthrough           |
 | Icon         | `<y-icon>`         | SVG icon display                                       |
 | Input        | `<y-input>`        | Text input field                                       |
+| Key          | `<y-key>`          | Keyboard key / shortcut chord as keycaps               |
 | Masonry      | `<y-masonry>`      | JS-positioned masonry layout                           |
 | Menu         | `<y-menu>`         | Dropdown navigation menu                               |
 | Money        | `<y-money>`        | Currency input with locale-aware formatting            |

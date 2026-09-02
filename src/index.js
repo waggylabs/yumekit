@@ -45,6 +45,7 @@ export * from "./components/y-icon/y-icon.js";
 export { registerIcon, registerIcons, getIcon } from "./icons/registry.js";
 export * from "./components/y-input/y-input.js";
 export * from "./components/y-textarea/y-textarea.js";
+export * from "./components/y-key/y-key.js";
 export * from "./components/y-masonry/y-masonry.js";
 export * from "./components/y-menu/y-menu.js";
 export * from "./components/y-money/y-money.js";

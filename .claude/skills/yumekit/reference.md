@@ -995,6 +995,43 @@ Slot: default (label text)
 
 ---
 
+## y-key
+
+Keyboard key or chord drawn as keycaps. Presentational only — it never binds, listens for, or dispatches keyboard events; registering the shortcut stays the app's job.
+
+| Attribute   | Values / Notes                                                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `keys`      | `+`-joined chord, e.g. `mod+shift+k`. Hides the default slot when present                                                    |
+| `platform`  | `auto` (default) \| `mac` \| `windows` \| `linux` — resolves `mod`, drives `notation="auto"`; detection is memoized, not reactive |
+| `notation`  | `auto` (default — symbols on macOS, words elsewhere) \| `symbol` \| `text`                                                   |
+| `size`      | `small` \| `medium` (default) \| `large` — font size is in `em`, so an inline key tracks its paragraph                       |
+| `variant`   | `outlined` (default, carries the keycap bottom edge) \| `filled` \| `flat`                                                   |
+| `color`     | color scheme name or CSS color literal (default: `base`)                                                                    |
+| `separator` | glyph between caps, e.g. `+`; empty (default) leaves only the gap                                                           |
+| `combined`  | boolean — one cap for the whole chord (`⌘K`) instead of one per key                                                          |
+| `pressed`   | boolean — depressed visual state; sets no ARIA state                                                                        |
+| `label`     | overrides the computed accessible name                                                                                      |
+
+Chord tokens: `mod` (primary accelerator: ⌘ on Apple, Ctrl elsewhere), `cmd` (the literal Meta/Super key — Win on Windows), `ctrl`, `alt`, `shift`, `enter`, `esc`, `tab`, `space`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `plus` (literal `+`). Aliases fold in (`command`/`meta`/`super`/`win` → `cmd`, `control` → `ctrl`, `option`/`opt` → `alt`, `return` → `enter`, `escape` → `esc`, `del` → `delete`, `arrowup` → `up`, …). Case-insensitive, whitespace-tolerant; single characters uppercase. An unrecognized token renders and speaks verbatim — no throw, no warning.
+
+Events: none
+
+Slot: default (cap content when `keys` is absent)
+
+Parts: `chord`, `key`, `separator`
+
+Accessibility: chord mode sets `aria-label` on the host to the spoken form ("Command Shift K") and marks the caps `aria-hidden`, because `⌘`, `⎋`, and `↵` announce badly or not at all. Precedence: author `aria-label` → `label` → computed. Slot mode computes no name, so prefer `keys` over slotted glyphs.
+
+```html
+<y-key keys="mod+k"></y-key>
+<y-key keys="mod+shift+x" separator="+"></y-key>
+<y-key size="small" variant="flat" keys="esc"></y-key>
+<y-key platform="windows" notation="text" keys="mod+alt+1"></y-key>
+<y-key>F1</y-key>
+```
+
+---
+
 ## y-rating
 
 Form-associated. Renders a row of icons; icons up to `value` are filled, the rest are muted.

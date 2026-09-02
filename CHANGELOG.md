@@ -35,6 +35,8 @@ Delete any empty sections before publishing.
 
 ### Added
 
+- `y-key`, a keycap primitive for documenting keyboard shortcuts. `keys` takes a `+`-joined chord (`keys="mod+shift+k"`) and resolves it per platform, with `platform` and `notation` to pin the rendering and `separator`, `combined` and `pressed` to shape it. Chord mode names the host with the spoken form, so `⌘⇧K` is announced "Command Shift K" rather than "place of interest sign".
+
 - `y-gauge`, a radial gauge. It reads as a KPI dial by default — neutral track, accent fill, big centre number — and becomes an instrument dial with `needle`, `ticks`, `tick-labels` and a `ranges` array of coloured zones. `start-angle` / `end-angle` set the sweep, from a semicircle to a closed circle, and `target` marks a goal on the arc.
 
 - `safeColor` in `@waggylabs/yumekit/modules/helpers.js`, the looser sibling of `isSafeCssColor`: it also accepts a bare `var(--token)` reference, for the cases where naming a theme token is the ordinary way to colour something, such as a `y-gauge` zone.

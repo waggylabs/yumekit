@@ -1,6 +1,6 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 60 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 61 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
 0.5.5-beta.1
@@ -1156,6 +1156,52 @@ The `flat` style uses `--{color}-background-app` as the background, so it automa
 <y-tag color="primary" removable>JavaScript</y-tag>
 <y-tag color="success" variant="outlined" shape="round">Active</y-tag>
 <y-tag color="base" variant="flat">Draft</y-tag>
+```
+
+---
+
+### y-key
+Keyboard key / chord displayed as keycaps. Purely presentational — it never binds, listens for, or dispatches keyboard events; registering the shortcut stays the app's job.
+
+Tag: `<y-key>`
+Attributes:
+- `keys` — chord string, `+`-joined, e.g. `"mod+shift+k"`. When present the default slot is hidden. Tokens: `mod`, `cmd`, `ctrl`, `alt`, `shift`, `enter`, `esc`, `tab`, `space`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `plus` (the escape for a literal `+`). Aliases fold in (`command`/`meta`/`super`/`win` → `cmd`, `control` → `ctrl`, `option`/`opt` → `alt`, `return` → `enter`, `escape` → `esc`, `del` → `delete`, `arrowup` → `up`, …). Matching is case-insensitive and whitespace around tokens is ignored. Single characters uppercase (`k` → `K`); an unrecognized token renders and is spoken verbatim, with no throw and no console warning.
+- `platform` — `"auto"` (default) | `"mac"` | `"windows"` | `"linux"`. Resolves `mod` and drives `notation="auto"`. Detection is memoized at module scope and is not reactive; with no `navigator` it resolves to `"linux"`. Pin it explicitly in docs that describe one platform, or where server-rendered markup must match the client.
+- `notation` — `"auto"` (default) | `"symbol"` | `"text"`. `auto` uses symbols on macOS and words elsewhere. `text` on macOS gives the Apple word forms (`Cmd`, `Opt`, `Return`, `Esc`, `Del`); `symbol` off macOS uses the cross-platform symbols (`⇧ ↑ ↓ ← →`) and falls back to words for the rest.
+- `size` — `"small"` | `"medium"` (default) | `"large"`. Font size is in `em`, so an inline key tracks its paragraph.
+- `variant` — `"outlined"` (default) | `"filled"` | `"flat"`. `outlined` carries the keycap bottom edge; `flat` drops the border and edge for dense footers.
+- `color` — color scheme name or CSS color literal (default `"base"`). Literals are gated through `isSafeCssColor` and fall back to `base`.
+- `separator` — glyph drawn between caps, e.g. `separator="+"`. Empty (default) leaves only the gap.
+- `combined` — boolean, draws the whole chord inside one cap (`⌘K`) instead of one cap per key.
+- `pressed` — boolean, depressed visual state. Presentational only; it sets no ARIA state, so an app toggling it owns `aria-pressed` on the wrapping control.
+- `label` — overrides the computed accessible name.
+
+Events: none.
+
+Slots: default (cap content when `keys` is absent)
+
+Parts: `chord` (wrapper around all caps), `key` (each cap, in both modes), `separator` (each separator glyph)
+
+Accessibility: in chord mode the host gets an `aria-label` with the spoken form ("Command Shift K") and the caps are `aria-hidden`, since `⌘`, `⎋`, and `↵` announce badly or not at all. Precedence is author `aria-label` → `label` → computed name. In slot mode no name is computed — the slotted text is already the accessible name — so glyph-only usages should use `keys` rather than slotted glyphs.
+
+CSS Custom Properties:
+```
+--component-key-border-radius        /* cap corner */
+--component-key-border-width         /* cap outline */
+--component-key-edge-width           /* inset bottom edge that reads as a keycap */
+--component-key-gap                  /* space between caps in a chord */
+--component-key-height-small/medium/large      /* cap height; min-width matches, so single glyphs are square */
+--component-key-padding-small/medium/large     /* horizontal padding for multi-character legends */
+--component-key-font-size-small/medium/large   /* relative, so caps shrink with their context */
+```
+
+```html
+<y-key keys="mod+k"></y-key>
+<!-- ⌘ K on macOS, Ctrl K elsewhere -->
+<y-key keys="mod+shift+x" separator="+"></y-key>
+<y-key size="small" variant="flat" keys="esc"></y-key>
+<y-key platform="windows" notation="text" keys="mod+alt+1"></y-key>
+<y-key>F1</y-key>
 ```
 
 ---

@@ -356,6 +356,10 @@
     "code": {
       "border-width": { "$type": "borderWidth", "$value": "2px 2px 6px 2px" }
     },
+    "key": {
+      "border-width": { "$type": "borderWidth", "$value": "2px 2px 6px 2px" },
+      "edge-width": { "$type": "dimension", "$value": "0px" }
+    },
     "data-grid": {
       "border-width": { "$type": "borderWidth", "$value": "2px 2px 6px 2px" }
     },

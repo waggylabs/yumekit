@@ -451,6 +451,18 @@ declare module "react" {
                 "error-text"?: string;
                 autocomplete?: string;
             }>;
+            "y-key": El<{
+                keys?: string;
+                platform?: "auto" | "mac" | "windows" | "linux";
+                notation?: "auto" | "symbol" | "text";
+                size?: "small" | "medium" | "large";
+                variant?: "outlined" | "filled" | "flat";
+                color?: string;
+                separator?: string;
+                combined?: boolean | string;
+                pressed?: boolean | string;
+                label?: string;
+            }>;
             "y-masonry": El<{
                 columns?: string | number;
                 gap?:
