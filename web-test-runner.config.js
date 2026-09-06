@@ -42,6 +42,16 @@ const products = (process.env.BROWSERS || "")
     .map((name) => name.trim().toLowerCase())
     .filter((name) => ALL_PRODUCTS.includes(name));
 
+/**
+ * A CI runner is a fraction of a development machine, so the settings that keep
+ * a local run quick starve it. Pages that lose the CPU stop being served
+ * `requestAnimationFrame`, and every `await nextFrame()` — including the one
+ * inside `fixture()` — then hangs until mocha's timeout, which is why a
+ * starved run fails as scattered timeouts in tests that never assert on time.
+ */
+const isCI = Boolean(process.env.CI);
+const concurrency = Number(process.env.WTR_CONCURRENCY) || (isCI ? 2 : 4);
+
 export default {
     nodeResolve: true,
     files: ["src/**/*.test.js"],
@@ -54,8 +64,15 @@ export default {
     // Capped rather than left to default (half the host's cores): Firefox and
     // WebKit go flaky once many pages compete for the machine, and a lost
     // session is reported as a missing test rather than a failure. Four keeps
-    // the three-engine run under a minute with room to spare.
-    concurrency: 4,
+    // the three-engine run under a minute with room to spare locally; CI takes
+    // half that, and runs one engine per job on top.
+    concurrency,
+    testFramework: {
+        config: {
+            // Mocha's 2s default leaves no headroom on a shared runner.
+            timeout: isCI ? "10000" : "2000",
+        },
+    },
     browsers: (products.length ? products : ALL_PRODUCTS).map((product) =>
         playwrightLauncher({ product }),
     ),

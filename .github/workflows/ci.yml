@@ -31,6 +31,10 @@ jobs:
             - run: npx eslint .
 
     test:
+        strategy:
+            fail-fast: false
+            matrix:
+                browser: [chromium, firefox, webkit]
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -42,12 +46,12 @@ jobs:
 
             - run: npm ci
 
-            # The same three engines the release runs. Engine-specific failures
-            # are the whole reason this job exists, so none of them is optional.
-            - name: Install Playwright browsers
-              run: npx playwright install --with-deps chromium firefox webkit
+            - name: Install Playwright ${{ matrix.browser }}
+              run: npx playwright install --with-deps ${{ matrix.browser }}
 
             - run: npm test
+              env:
+                  BROWSERS: ${{ matrix.browser }}
 
     build:
         runs-on: ubuntu-latest
