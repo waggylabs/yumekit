@@ -1,0 +1,85 @@
+name: Release
+
+# The only sanctioned way to cut a release. Tests, lint and build run first,
+# and the tag is created only if they pass — so a failing suite can never leave
+# a published release or a dangling tag behind. Pick the branch to release from
+# in the "Run workflow" dropdown; the version comes from package.json.
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    # The same gate that runs on every push, re-run against the exact commit
+    # being released rather than trusting an earlier run of it.
+    gate:
+        uses: ./.github/workflows/ci.yml
+
+    tag:
+        needs: gate
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        outputs:
+            tag: ${{ steps.meta.outputs.tag }}
+            dist-tag: ${{ steps.meta.outputs.dist-tag }}
+            prerelease: ${{ steps.meta.outputs.prerelease }}
+        steps:
+            - uses: actions/checkout@v4
+
+            # A semver prerelease (0.5.5-beta.2) ships under the `beta` dist-tag
+            # and skips the Storybook deploy; a plain version is a full release.
+            - name: Resolve version
+              id: meta
+              run: |
+                  version=$(node -p "require('./package.json').version")
+                  echo "tag=v$version" >> "$GITHUB_OUTPUT"
+                  if [[ "$version" == *-* ]]; then
+                      echo "dist-tag=beta" >> "$GITHUB_OUTPUT"
+                      echo "prerelease=true" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "dist-tag=latest" >> "$GITHUB_OUTPUT"
+                      echo "prerelease=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Refuse to reuse an existing tag
+              run: |
+                  tag="${{ steps.meta.outputs.tag }}"
+                  if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+                      echo "::error::$tag already exists — bump the version in package.json first."
+                      exit 1
+                  fi
+
+            - name: Create tag and release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  gh release create "${{ steps.meta.outputs.tag }}" \
+                      --target "$GITHUB_SHA" \
+                      --title "${{ steps.meta.outputs.tag }}" \
+                      --generate-notes \
+                      ${{ steps.meta.outputs.prerelease == 'true' && '--prerelease' || '' }}
+
+    publish:
+        needs: tag
+        permissions:
+            contents: read
+            id-token: write
+        uses: ./.github/workflows/npm-publish.yml
+        with:
+            tag: ${{ needs.tag.outputs.dist-tag }}
+            ref: ${{ github.sha }}
+        secrets: inherit
+
+    deploy-storybook:
+        needs: [tag, publish]
+        if: needs.tag.outputs.prerelease == 'false'
+        permissions:
+            contents: read
+            id-token: write
+        uses: ./.github/workflows/deploy-storybook.yml
+        with:
+            ref: ${{ github.sha }}
+        secrets: inherit

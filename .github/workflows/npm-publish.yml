@@ -8,6 +8,11 @@ on:
                 required: false
                 type: string
                 default: latest
+            ref:
+                description: "Commit or tag to publish; defaults to the triggering ref"
+                required: false
+                type: string
+                default: ""
 
 jobs:
     build-and-publish:
@@ -19,6 +24,8 @@ jobs:
             version: ${{ steps.pkg.outputs.version }}
         steps:
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.ref }}
 
             - uses: actions/setup-node@v4
               with:
