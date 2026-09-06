@@ -1126,7 +1126,6 @@ describe("YumeDroplist", () => {
             </div>
         `);
         const src = container.querySelector("#src");
-        const dest = container.querySelector("#dest");
         const a = src.children[0];
 
         const leaveSpy = sandbox.spy();
