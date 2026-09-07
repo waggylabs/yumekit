@@ -14,8 +14,8 @@ import "@waggylabs/yumekit";
 import "@waggylabs/yumekit/components/y-theme";
 import "@waggylabs/yumekit/components/y-button";
 
-// Icon registry
-import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
+// Icon registry (subpath entry — does not pull in the whole kit)
+import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit/icons/registry.js";
 import "@waggylabs/yumekit/icons/all.js"; // loads all 60+ pre-built icons
 
 // Styles (if not using y-theme element)
@@ -2595,7 +2595,7 @@ Accessibility: respects `prefers-reduced-motion: reduce` — animations are skip
 ## Icon Registry API
 
 ```javascript
-import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit";
+import { registerIcon, registerIcons, getIcon } from "@waggylabs/yumekit/icons/registry.js";
 
 // Single icon (raw SVG string)
 registerIcon(
