@@ -24,6 +24,19 @@ const MIN_COLUMN_WIDTH = 48;
 // than a sort click.
 const COLUMN_DRAG_THRESHOLD = 4;
 
+// Input types whose `selectionStart` / `setSelectionRange` are usable. Every
+// other type (`number`, `date`, …) reports a null caret and throws
+// InvalidStateError on write, so the filter caret has to be written through a
+// temporary `text` type swap. The swap only makes writes land — the real caret
+// of a selection-less input still cannot be read back.
+const SELECTABLE_INPUT_TYPES = new Set([
+    "text",
+    "search",
+    "url",
+    "tel",
+    "password",
+]);
+
 // The header-menu popovers are rendered with `portal`, which relocates their
 // content into a `.y-popover-portal` element under `document.body`. Styles
 // written inside the data-grid's own shadow root can't reach that, so the menu
@@ -1289,7 +1302,7 @@ export class YumeDataGrid extends HTMLElement {
                 // re-targeted to the host (without). Only the former carries
                 // the value — acting on the latter would reset the filter.
                 if (!e.detail) return;
-                this._setColumnFilter(col.key, e.detail.value ?? "");
+                this._setColumnFilter(col.key, e.detail.value ?? "", true);
             });
             cell.appendChild(input);
             tr.appendChild(cell);
@@ -2416,6 +2429,9 @@ export class YumeDataGrid extends HTMLElement {
             return null;
         }
         const inner = active.input;
+        // `selectionStart` is null on types with no selection API (`number`,
+        // `date`), and the real caret can't be read out of them by any means.
+        // `_restoreFilterFocus` falls back to end-of-value for those.
         return {
             key: active.getAttribute("data-col-key"),
             start: inner?.selectionStart ?? null,
@@ -3250,6 +3266,43 @@ export class YumeDataGrid extends HTMLElement {
         return editor.value;
     }
 
+    /**
+     * Replaces the row body and footer while leaving the header in place, so
+     * an inline filter input the user is typing in is never destroyed. A
+     * segmented `date` input in particular cannot survive being rebuilt
+     * mid-entry: refocusing it lands on the first segment, so the remaining
+     * keystrokes overwrite the segments already filled in.
+     * @returns {boolean} False when the state needs a full render, leaving the
+     *   caller to fall back.
+     */
+    _refreshRowsInPlace() {
+        const container = this.shadowRoot.querySelector(".grid-container");
+        const tbody = container?.querySelector(".grid-scroll table tbody");
+        // Loading (overlay or skeleton) and virtual scrolling both restructure
+        // more than the body, so they take the full path.
+        if (!tbody || this.loading || this._scrollEl) return false;
+
+        const allEntries = this._buildRowEntries();
+        if (this._shouldVirtualize(allEntries)) return false;
+
+        const filteredCount = this._getFilteredCount();
+        const showPagination =
+            this.enablePagination && this.groupBy.length === 0;
+        const oldFooter = container.querySelector(".grid-footer");
+        const newFooter = this._buildFooter(filteredCount, showPagination);
+        // The footer appearing or disappearing means the layout changed by
+        // more than its contents.
+        if (!oldFooter !== !newFooter) return false;
+
+        tbody.replaceWith(
+            this._buildBody(this._parsedColumns, allEntries, 0, 0),
+        );
+        if (oldFooter) oldFooter.replaceWith(newFooter);
+        this._syncSelectAllHeader();
+        this.setAttribute("aria-rowcount", String(filteredCount));
+        return true;
+    }
+
     _render() {
         const columns = this._parsedColumns;
         const filteredCount = this._getFilteredCount();
@@ -3449,13 +3502,22 @@ export class YumeDataGrid extends HTMLElement {
         if (!next) return;
         const inner = next.input;
         (inner || next).focus?.();
-        if (inner && state.start != null && "setSelectionRange" in inner) {
+        if (!inner) return;
+
+        // A null captured caret means the type has no selection API, so the
+        // best available approximation is the end of the value — where typing
+        // leaves it. Without this the caret sits at 0 and each keystroke
+        // prepends, which reverses typed digits.
+        const start = state.start ?? inner.value.length;
+        const end = state.end ?? start;
+
+        this._withSelectableInput(inner, () => {
             try {
-                inner.setSelectionRange(state.start, state.end ?? state.start);
+                inner.setSelectionRange(start, end);
             } catch {
                 /* selection unsupported for this input type — ignore */
             }
-        }
+        });
     }
 
     _rowKeyFor(row, idx) {
@@ -3482,7 +3544,13 @@ export class YumeDataGrid extends HTMLElement {
         return true;
     }
 
-    _setColumnFilter(key, value) {
+    /**
+     * @param {string} key Column key being filtered.
+     * @param {string} value New filter value; empty clears the filter.
+     * @param {boolean} inPlace Set by the inline filter row, where the user is
+     *   mid-keystroke and the header must not be rebuilt.
+     */
+    _setColumnFilter(key, value, inPlace = false) {
         if (value == null || value === "") {
             delete this._columnFilters[key];
         } else {
@@ -3491,6 +3559,8 @@ export class YumeDataGrid extends HTMLElement {
         this._currentPage = 1;
         const cancelled = !this._emitFilterChange();
         if (this.mode === "server" && cancelled) return;
+
+        if (inPlace && this._refreshRowsInPlace()) return;
         this._render();
     }
 
@@ -3543,6 +3613,23 @@ export class YumeDataGrid extends HTMLElement {
         if (this.groupBy.length > 0) return false;
         if (entries.length === 0) return false;
         return true;
+    }
+
+    /**
+     * Refreshes the select-all checkbox against the rows a partial refresh has
+     * just changed. The cell is rebuilt rather than mutated because its change
+     * handler closes over the visible rows.
+     */
+    _syncSelectAllHeader() {
+        const current = this.shadowRoot.querySelector(
+            '[part="header-row"] .select-cell',
+        );
+        if (!current) return;
+
+        const next = this._buildSelectAllHeader();
+        const rowspan = current.getAttribute("rowspan");
+        if (rowspan) next.setAttribute("rowspan", rowspan);
+        current.replaceWith(next);
     }
 
     _teardownVirtualScroll() {
@@ -3613,6 +3700,29 @@ export class YumeDataGrid extends HTMLElement {
             leadingPx: start * rowH,
             trailingPx: (total - end) * rowH,
         };
+    }
+
+    /**
+     * Runs `fn` with the input temporarily switched to `type="text"` when its
+     * real type has no selection API, so a caret write lands on a `number` or
+     * `date` filter instead of throwing. The swap is synchronous and preserves
+     * the value, so it is never visible to the user.
+     * @param {HTMLInputElement|null|undefined} input
+     * @param {() => any} fn
+     * @returns {any} `fn`'s return value, or null when there is no input.
+     */
+    _withSelectableInput(input, fn) {
+        if (!input) return null;
+
+        const realType = input.type;
+        const needsSwap = !SELECTABLE_INPUT_TYPES.has(realType);
+        if (needsSwap) input.type = "text";
+
+        try {
+            return fn();
+        } finally {
+            if (needsSwap) input.type = realType;
+        }
     }
 }
 

@@ -233,7 +233,6 @@ describe("YumeBreak", () => {
         el.removeAttribute("label");
         await aTimeout(0);
 
-        const slot = el.shadowRoot.querySelector("slot");
         let calls = 0;
         const original = el._updateContentVisibility.bind(el);
         el._updateContentVisibility = () => {

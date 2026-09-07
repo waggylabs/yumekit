@@ -71,7 +71,7 @@ A divider that draws a line, optionally broken by centered content (text, icon, 
 | `variant`     | `solid` (default) \| `dashed` \| `dotted` — line style                                      |
 | `label`       | Convenience text rendered in the center                                                     |
 | `icon`        | Convenience icon name rendered in the center (icon then label when both are set)            |
-| `inset`       | `none` (default) \| `small` \| `medium` \| `large` — outer end padding                       |
+| `inset`       | `none` (default) \| `small` \| `medium` \| `large` — outer end padding                      |
 
 **Slots:** default — content rendered in the center; takes precedence over `label` / `icon`.
 
@@ -99,13 +99,13 @@ A divider that draws a line, optionally broken by centered content (text, icon, 
 
 Navigation breadcrumb trail with collapse/expand support and SPA-friendly navigation.
 
-| Attribute   | Values / Notes                                                                                              |
-| ----------- | ----------------------------------------------------------------------------------------------------------- |
+| Attribute   | Values / Notes                                                                                                                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `items`     | Array of `{ text, href?, icon? }` objects. Assign the `.items` property directly (rich data — keeps identity, accepts non-serializable fields); the `items` attribute accepts a JSON string as an initial value but is not kept in sync after a property set |
-| `size`      | `small` \| `medium` (default) \| `large`                                                                    |
-| `separator` | Separator character (default: chevron-right icon). Can also use `separator` slot for custom icon separators |
-| `max-items` | Number — collapses middle items when count exceeds this value                                               |
-| `history`   | Set to `"false"` for full-page navigation instead of `pushState`                                            |
+| `size`      | `small` \| `medium` (default) \| `large`                                                                                                                                                                                                                     |
+| `separator` | Separator character (default: chevron-right icon). Can also use `separator` slot for custom icon separators                                                                                                                                                  |
+| `max-items` | Number — collapses middle items when count exceeds this value                                                                                                                                                                                                |
+| `history`   | Set to `"false"` for full-page navigation instead of `pushState`                                                                                                                                                                                             |
 
 **Events:** `navigate` (cancelable, `detail: { href }`), `expand`
 
@@ -135,19 +135,19 @@ Navigation breadcrumb trail with collapse/expand support and SPA-friendly naviga
 
 When `href` is set, the internal element renders as `<a>` instead of `<button>` — all styles, sizes, and color variants apply identically.
 
-| Attribute    | Values / Notes                                                                         |
-| ------------ | -------------------------------------------------------------------------------------- |
-| `color`      | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`      |
-| `size`       | `small` \| `medium` \| `large`                                                         |
-| `variant`    | `outlined` (default) \| `filled` \| `flat`                                             |
-| `style-type` | **deprecated** alias for `variant` (still honored; `variant` wins if both set) — removed in a future major version |
+| Attribute      | Values / Notes                                                                                                                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color`        | `base` \| `primary` \| `secondary` \| `success` \| `warning` \| `error` \| `help`                                                                                                               |
+| `size`         | `small` \| `medium` \| `large`                                                                                                                                                                  |
+| `variant`      | `outlined` (default) \| `filled` \| `flat`                                                                                                                                                      |
+| `style-type`   | **deprecated** alias for `variant` (still honored; `variant` wins if both set) — removed in a future major version                                                                              |
 | `padding-mode` | `auto` (default) \| `square` \| `wide` — `square` forces equal block/inline padding (e.g. paginator numbers), `wide` keeps inline padding even when icon-only, `auto` squares icon-only buttons |
-| `disabled`   | boolean                                                                                |
-| `type`       | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                 |
-| `href`       | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled` |
-| `target`     | e.g. `"_blank"` — only applies when `href` is set                                      |
-| `rel`        | e.g. `"noopener noreferrer"` — only applies when `href` is set                         |
-| form attrs   | `form`, `formaction`, `formmethod`, `formenctype`, `formnovalidate`, `formtarget`, `autofocus` are reflected to the underlying control |
+| `disabled`     | boolean                                                                                                                                                                                         |
+| `type`         | `button` (default) \| `submit` \| `reset` — ignored when `href` is set                                                                                                                          |
+| `href`         | URL — switches internal element to `<a>`; disabled removes href + sets `aria-disabled`                                                                                                          |
+| `target`       | e.g. `"_blank"` — only applies when `href` is set                                                                                                                                               |
+| `rel`          | e.g. `"noopener noreferrer"` — only applies when `href` is set                                                                                                                                  |
+| form attrs     | `form`, `formaction`, `formmethod`, `formenctype`, `formnovalidate`, `formtarget`, `autofocus` are reflected to the underlying control                                                          |
 
 Slots: default (label), `left-icon`, `right-icon`
 
@@ -221,26 +221,26 @@ Slot: default (accepts any child elements — typically `y-button`, `y-input`, o
 
 Form-associated. Always set `name` inside a `<form>`.
 
-| Attribute        | Values / Notes                                                            |
-| ---------------- | ------------------------------------------------------------------------- |
-| `type`           | `text` \| `email` \| `password` \| `number` \| `tel` \| `url` \| `search` |
-| `name`           | form field name                                                           |
-| `value`          | current value                                                             |
-| `placeholder`    |                                                                           |
-| `label`          | visible label text                                                        |
-| `label-position` | `top` (default) \| `bottom` \| `left` \| `right`                          |
-| `size`           | `small` \| `medium` \| `large`                                            |
-| `variant`        | `default` (full border) \| `underline` (bottom border only, square bottom corners) |
-| `disabled`       | boolean                                                                   |
-| `readonly`       | boolean                                                                   |
-| `required`       | boolean                                                                   |
-| `invalid`        | boolean — applies error state                                             |
-| `max-length`     | number string                                                             |
-| `min-length`     | number string                                                             |
-| `min`, `max`, `step` | numeric constraints applied when `type="number"`                      |
-| `pattern`        | regex string                                                              |
-| `autocomplete`   | forwarded to the inner `<input>` (e.g. `email`, `current-password`)       |
-| `error-text`     | validation message below the field; applies the error state and describes the input |
+| Attribute            | Values / Notes                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| `type`               | `text` \| `email` \| `password` \| `number` \| `tel` \| `url` \| `search`           |
+| `name`               | form field name                                                                     |
+| `value`              | current value                                                                       |
+| `placeholder`        |                                                                                     |
+| `label`              | visible label text                                                                  |
+| `label-position`     | `top` (default) \| `bottom` \| `left` \| `right`                                    |
+| `size`               | `small` \| `medium` \| `large`                                                      |
+| `variant`            | `default` (full border) \| `underline` (bottom border only, square bottom corners)  |
+| `disabled`           | boolean                                                                             |
+| `readonly`           | boolean                                                                             |
+| `required`           | boolean                                                                             |
+| `invalid`            | boolean — applies error state                                                       |
+| `max-length`         | number string                                                                       |
+| `min-length`         | number string                                                                       |
+| `min`, `max`, `step` | numeric constraints applied when `type="number"`                                    |
+| `pattern`            | regex string                                                                        |
+| `autocomplete`       | forwarded to the inner `<input>` (e.g. `email`, `current-password`)                 |
+| `error-text`         | validation message below the field; applies the error state and describes the input |
 
 Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
@@ -263,24 +263,24 @@ Events: `input` (`{value}`) on every keystroke, `change` (`{value}`) on commit �
 
 Form-associated. Multi-line text input. A distinct component from `y-input`.
 
-| Attribute        | Values / Notes                                   |
-| ---------------- | ------------------------------------------------ |
-| `name`           | form field name                                  |
-| `value`          | current value                                    |
-| `placeholder`    |                                                  |
-| `label`          | visible label text                               |
-| `label-position` | `top` (default) \| `bottom` \| `left` \| `right` |
-| `rows`           | number of visible rows (default: `3`)            |
-| `size`           | `small` \| `medium` \| `large`                   |
-| `variant`        | `default` \| `underline` (bottom border only, square bottom corners) |
-| `disabled`       | boolean                                          |
-| `required`       | boolean                                          |
-| `invalid`        | boolean — applies error state                    |
-| `autocomplete`   | forwarded to the inner `<textarea>`              |
-| `error-text`     | validation message below the field; applies the error state and describes the textarea |
-| `triggers`       | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?}`; empty (default) disables mentions |
-| `mention-loading` | boolean — shows the mention popup's busy state  |
-| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`) |
+| Attribute             | Values / Notes                                                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | form field name                                                                                                                     |
+| `value`               | current value                                                                                                                       |
+| `placeholder`         |                                                                                                                                     |
+| `label`               | visible label text                                                                                                                  |
+| `label-position`      | `top` (default) \| `bottom` \| `left` \| `right`                                                                                    |
+| `rows`                | number of visible rows (default: `3`)                                                                                               |
+| `size`                | `small` \| `medium` \| `large`                                                                                                      |
+| `variant`             | `default` \| `underline` (bottom border only, square bottom corners)                                                                |
+| `disabled`            | boolean                                                                                                                             |
+| `required`            | boolean                                                                                                                             |
+| `invalid`             | boolean — applies error state                                                                                                       |
+| `autocomplete`        | forwarded to the inner `<textarea>`                                                                                                 |
+| `error-text`          | validation message below the field; applies the error state and describes the textarea                                              |
+| `triggers`            | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?}`; empty (default) disables mentions |
+| `mention-loading`     | boolean — shows the mention popup's busy state                                                                                      |
+| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`)                                                                        |
 
 Accessibility: `aria-label` / `aria-labelledby` on the host are forwarded to the inner control, so the accessible name reaches what a screen reader actually reads. `error-text` renders its message inside this component's shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing outside the component cannot cross the shadow boundary, so pass the message in rather than an id.
 
@@ -309,26 +309,26 @@ Events: `input` (`{value}`) on every keystroke, `change` (`{value}`) on commit �
 
 Form-associated. Rich text (WYSIWYG) editor built on `contenteditable`; its value is sanitized HTML. Use `y-textarea` for plain multi-line text and `y-code` for read-only code display.
 
-| Attribute        | Values / Notes                                                                                     |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| `name`           | form field name                                                                                     |
-| `value`          | content as sanitized HTML; reflected on `change`, not on every keystroke                             |
-| `mode`           | `rich` — default and only supported value in v1; reserved for a future markdown mode                 |
-| `toolbar`        | space-separated tool ids, `\|` for a group separator; `false` hides the toolbar                      |
-| `placeholder`    | shown when the editor is empty                                                                       |
-| `rows`           | visible rows at the default font size (default: `6`)                                                 |
-| `max-length`     | max character count of the plain text; blocks further input and marks invalid                        |
-| `show-count`     | boolean — renders a character counter (`n / max-length` when `max-length` is set)                    |
-| `size`           | `small` \| `medium` \| `large`                                                                       |
-| `disabled`       | boolean — non-editable, non-focusable, excluded from submission                                      |
-| `readonly`       | boolean — non-editable but focusable; toolbar hidden; still submits                                  |
-| `required`       | boolean — invalid when the plain-text content is empty                                               |
-| `invalid`        | boolean — applies error state                                                                        |
-| `allowed-blocks` | space-separated block types (default: `p h1 h2 h3 blockquote ul ol code`); anything else becomes `p` |
-| `image-upload`   | boolean — routes image insertion through the `image-upload` event instead of inlining the source     |
-| `triggers`       | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?, atomic?}`; empty (default) disables mentions |
-| `mention-loading` | boolean — shows the mention popup's busy state                                                     |
-| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`)                                   |
+| Attribute             | Values / Notes                                                                                                                               |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | form field name                                                                                                                              |
+| `value`               | content as sanitized HTML; reflected on `change`, not on every keystroke                                                                     |
+| `mode`                | `rich` — default and only supported value in v1; reserved for a future markdown mode                                                         |
+| `toolbar`             | space-separated tool ids, `\|` for a group separator; `false` hides the toolbar                                                              |
+| `placeholder`         | shown when the editor is empty                                                                                                               |
+| `rows`                | visible rows at the default font size (default: `6`)                                                                                         |
+| `max-length`          | max character count of the plain text; blocks further input and marks invalid                                                                |
+| `show-count`          | boolean — renders a character counter (`n / max-length` when `max-length` is set)                                                            |
+| `size`                | `small` \| `medium` \| `large`                                                                                                               |
+| `disabled`            | boolean — non-editable, non-focusable, excluded from submission                                                                              |
+| `readonly`            | boolean — non-editable but focusable; toolbar hidden; still submits                                                                          |
+| `required`            | boolean — invalid when the plain-text content is empty                                                                                       |
+| `invalid`             | boolean — applies error state                                                                                                                |
+| `allowed-blocks`      | space-separated block types (default: `p h1 h2 h3 blockquote ul ol code`); anything else becomes `p`                                         |
+| `image-upload`        | boolean — routes image insertion through the `image-upload` event instead of inlining the source                                             |
+| `triggers`            | mention triggers — JSON array of `{trigger, type?, minChars?, maxChars?, allowSpaces?, insert?, atomic?}`; empty (default) disables mentions |
+| `mention-loading`     | boolean — shows the mention popup's busy state                                                                                               |
+| `mention-query-delay` | debounce in ms before `mention-query` fires (default: `150`)                                                                                 |
 
 Tool ids for `toolbar`: `bold`, `italic`, `underline`, `strike`, `inline-code`, `heading`, `blockquote`, `code`, `ordered-list`, `unordered-list`, `link`, `image`, `undo`, `redo`. Default: `bold italic underline strike | heading blockquote code | ordered-list unordered-list | link image | undo redo`. Block tools are dropped automatically when `allowed-blocks` does not permit what they produce, so `allowed-blocks` is the single source of truth.
 
@@ -364,7 +364,7 @@ Shortcuts: Ctrl/Cmd+B bold, +I italic, +U underline, +K link, +Shift+X strike, +
 
 **Security:** every path that introduces HTML (`value`, the default slot, paste) runs through `src/modules/html-sanitizer.js`. Only the tags implied by `allowed-blocks` plus inline formatting, `<a>` and `<img>` survive; `on*`, `<script>`, `<style>`, `<iframe>` are stripped; only `http`, `https`, `mailto` and `data:` raster images are permitted on `href` / `src`.
 
-**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`, `--component-editor-mention-popup-max-height`, `--component-editor-mention-popup-min-width`, `--component-editor-mention-chip-background`, `--component-editor-mention-chip-color` (the four mention properties are also read by `y-textarea`'s popup)
+**CSS Custom Properties:** `--component-editor-background`, `--component-editor-color`, `--component-editor-border-color`, `--component-editor-border-color-focus`, `--component-editor-border-color-invalid`, `--component-editor-border-width`, `--component-editor-border-radius`, `--component-editor-padding`, `--component-editor-font-size`, `--component-editor-line-height`, `--component-editor-min-height` (computed from `rows`; overridable), `--component-editor-max-height` (when set, the surface scrolls and the toolbar stays pinned), `--component-editor-placeholder-color`, `--component-editor-toolbar-background`, `--component-editor-toolbar-border-color`, `--component-editor-toolbar-gap`, `--component-editor-toolbar-active-color` (color of a tool whose formatting is active at the caret; defaults to the primary content color), `--component-editor-link-color`, `--component-editor-code-background`, `--component-editor-blockquote-border-color`, `--component-editor-counter-color`, `--component-editor-counter-color-invalid`, `--component-editor-mention-popup-max-height`, `--component-editor-mention-popup-min-width`, `--component-editor-mention-chip-background`, `--component-editor-mention-chip-color` (the four mention properties are also read by `y-textarea`'s popup)
 
 **CSS Parts:** `wrapper`, `label`, `toolbar`, `toolbar-group`, `toolbar-button`, `editor`, `content`, `footer`, `counter`, `link-popover`, `mention-popup`, `mention-option`, `mention-option-avatar`, `mention-option-label`, `mention-option-description`, `mention-empty`, `mention-loading`, `mention-chip`
 
@@ -387,25 +387,27 @@ Shortcuts: Ctrl/Cmd+B bold, +I italic, +U underline, +K link, +Shift+X strike, +
 
 Form-associated.
 
-| Attribute      | Values / Notes                                  |
-| -------------- | ----------------------------------------------- |
-| `options`      | JSON: `[{"value":"a","label":"Option A"}, ...]` |
-| `value`        | selected value (or JSON array if `multiple`)    |
-| `name`         | form field name                                 |
-| `placeholder`  |                                                 |
-| `size`         | `small` \| `medium` \| `large`                  |
-| `variant`      | `default` \| `underline` (bottom border only on the trigger, square bottom corners) |
-| `disabled`     | boolean                                         |
-| `required`     | boolean                                         |
-| `invalid`      | boolean — error state                           |
-| `multiple`     | boolean                                         |
-| `searchable`   | boolean — inline filter input (autocomplete)    |
-| `clearable`    | boolean — shows a clear (×) button when a value is set |
-| `display-mode` | `tag` — render selected items as removable tags (requires `multiple`) |
-| `label-position` | `top` (default) \| `bottom`                   |
-| `close-on-click-outside` | `"false"` keeps the dropdown open on outside click |
-| `portal`       | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors |
-| `error-text`   | validation message below the field; applies the error state and describes the combobox |
+| Attribute                | Values / Notes                                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `options`                | JSON: `[{"value":"a","label":"Option A","color":"success"}, ...]` — `color` is optional, a semantic name or a gated CSS color literal |
+| `value`                  | selected value (or JSON array if `multiple`)                                                                                          |
+| `name`                   | form field name                                                                                                                       |
+| `placeholder`            |                                                                                                                                       |
+| `size`                   | `small` \| `medium` \| `large`                                                                                                        |
+| `variant`                | `default` \| `underline` (bottom border only on the trigger, square bottom corners)                                                   |
+| `disabled`               | boolean                                                                                                                               |
+| `required`               | boolean                                                                                                                               |
+| `invalid`                | boolean — error state                                                                                                                 |
+| `multiple`               | boolean                                                                                                                               |
+| `searchable`             | boolean — inline filter input (autocomplete)                                                                                          |
+| `clearable`              | boolean — shows a clear (×) button when a value is set                                                                                |
+| `display-mode`           | `tag` — render selected items as removable tags (requires `multiple`)                                                                 |
+| `label-position`         | `top` (default) \| `bottom`                                                                                                           |
+| `close-on-click-outside` | `"false"` keeps the dropdown open on outside click                                                                                    |
+| `portal`                 | boolean — render the dropdown into the nearest `<y-theme>` (or `<body>`) to escape clipped / low-stacking ancestors                   |
+| `error-text`             | validation message below the field; applies the error state and describes the combobox                                                |
+
+A selected option with a `color` is filled solidly with it. Hovering an unselected one instead tints the row — the color as the text over a light wash of it — so the assignment reads before the option is committed, without looking selected. Options without a `color` keep the neutral hover.
 
 The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
 
@@ -428,33 +430,33 @@ Events: `change`
 
 Form-associated. Multi-value token (chip) input with typeahead — the user types into a single-line field and commits entries as removable tokens. Sits between `y-select multiple` (dropdown over a fixed list) and `y-tag` (display only): facet chips with `allow-custom` off, free-form topic/recipient entry with it on.
 
-| Attribute              | Values / Notes                                                                                       |
-| ---------------------- | ---------------------------------------------------------------------------------------------------- |
-| `value`                | committed tokens — JSON array or separator-delimited string (`value="a, b, c"`); property takes objects or strings. Rich data, not reflected |
-| `options`              | suggestion list, same shape as a token. JSON array or property. Rich data, not reflected              |
-| `name`                 | form field name — **one entry per token** is submitted under it                                       |
-| `async`                | boolean — typing emits `query` instead of filtering locally; the component never fetches              |
-| `loading`              | boolean — busy state in the popup; set automatically between `query` and the next `options` assignment |
-| `query-delay`          | ms to debounce before `query` (default `200`; `0` disables)                                           |
-| `filter`               | `contains` (default) \| `starts-with` \| `none` (app has already filtered)                            |
-| `allow-custom`         | boolean — whether unmatched text may become a token                                                   |
-| `max`                  | number — token cap; commits are blocked at the limit and `rangeOverflow` is reported                   |
-| `duplicates`           | `ignore` (default; repeat dropped, existing token pulses) \| `allow` \| `error` (dropped + invalid). Case-insensitive on `value`. Governs **text** commits only — activating a committed option in the popup toggles it off, like `y-select multiple` |
-| `separators`           | characters that commit the pending text, in addition to Enter (default `","`; e.g. `",;"`)            |
-| `placeholder`          | hidden once a token exists                                                                            |
-| `placeholder-persist`  | boolean — keep the placeholder while tokens are present                                               |
-| `token-variant`        | `filled` (default) \| `outlined` \| `flat` — forwarded to each `y-tag`; tokens with no `color` use `primary`, matching `y-select` tag mode |
-| `token-shape`          | `square` (default) \| `round` — forwarded to each `y-tag`                                             |
-| `size`                 | `small` \| `medium` \| `large`; tokens render one step down                                           |
-| `variant`              | `default` \| `underline` (bottom border only, square bottom corners)                                  |
-| `label-position`       | `top` (default) \| `left` \| `hidden`                                                                 |
-| `clearable`            | boolean — control that removes every token at once                                                    |
-| `portal`               | boolean — render the popup into the nearest `<y-theme>` (or `<body>`). Custom properties set inline on the host are forwarded onto the portal, so e.g. an inline `--component-select-z-index` still lifts the popup above another portaled surface |
-| `disabled`             | boolean — non-interactive, not submitted                                                              |
-| `readonly`             | boolean — tokens visible and focusable but not removable; no input, no popup                          |
-| `required`             | boolean — at least one token (`valueMissing`)                                                         |
-| `invalid`              | boolean — forces the error state                                                                      |
-| `error-text`           | validation message below the control; applies the error state and describes the combobox              |
+| Attribute             | Values / Notes                                                                                                                                                                                                                                        |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`               | committed tokens — JSON array or separator-delimited string (`value="a, b, c"`); property takes objects or strings. Rich data, not reflected                                                                                                          |
+| `options`             | suggestion list, same shape as a token. JSON array or property. Rich data, not reflected                                                                                                                                                              |
+| `name`                | form field name — **one entry per token** is submitted under it                                                                                                                                                                                       |
+| `async`               | boolean — typing emits `query` instead of filtering locally; the component never fetches                                                                                                                                                              |
+| `loading`             | boolean — busy state in the popup; set automatically between `query` and the next `options` assignment                                                                                                                                                |
+| `query-delay`         | ms to debounce before `query` (default `200`; `0` disables)                                                                                                                                                                                           |
+| `filter`              | `contains` (default) \| `starts-with` \| `none` (app has already filtered)                                                                                                                                                                            |
+| `allow-custom`        | boolean — whether unmatched text may become a token                                                                                                                                                                                                   |
+| `max`                 | number — token cap; commits are blocked at the limit and `rangeOverflow` is reported                                                                                                                                                                  |
+| `duplicates`          | `ignore` (default; repeat dropped, existing token pulses) \| `allow` \| `error` (dropped + invalid). Case-insensitive on `value`. Governs **text** commits only — activating a committed option in the popup toggles it off, like `y-select multiple` |
+| `separators`          | characters that commit the pending text, in addition to Enter (default `","`; e.g. `",;"`)                                                                                                                                                            |
+| `placeholder`         | hidden once a token exists                                                                                                                                                                                                                            |
+| `placeholder-persist` | boolean — keep the placeholder while tokens are present                                                                                                                                                                                               |
+| `token-variant`       | `filled` (default) \| `outlined` \| `flat` — forwarded to each `y-tag`; tokens with no `color` use `primary`, matching `y-select` tag mode                                                                                                            |
+| `token-shape`         | `square` (default) \| `round` — forwarded to each `y-tag`                                                                                                                                                                                             |
+| `size`                | `small` \| `medium` \| `large`; tokens render one step down                                                                                                                                                                                           |
+| `variant`             | `default` \| `underline` (bottom border only, square bottom corners)                                                                                                                                                                                  |
+| `label-position`      | `top` (default) \| `left` \| `hidden`                                                                                                                                                                                                                 |
+| `clearable`           | boolean — control that removes every token at once                                                                                                                                                                                                    |
+| `portal`              | boolean — render the popup into the nearest `<y-theme>` (or `<body>`). Custom properties set inline on the host are forwarded onto the portal, so e.g. an inline `--component-select-z-index` still lifts the popup above another portaled surface    |
+| `disabled`            | boolean — non-interactive, not submitted                                                                                                                                                                                                              |
+| `readonly`            | boolean — tokens visible and focusable but not removable; no input, no popup                                                                                                                                                                          |
+| `required`            | boolean — at least one token (`valueMissing`)                                                                                                                                                                                                         |
+| `invalid`             | boolean — forces the error state                                                                                                                                                                                                                      |
+| `error-text`          | validation message below the control; applies the error state and describes the combobox                                                                                                                                                              |
 
 Token / Option shape: `{value, label?, icon?, color?, invalid?, disabled?}`. `value` is required and is the dedupe + submission identity; `label` falls back to it; `icon` is a `y-icon` name; `color` is a semantic name or a CSS color gated by `isSafeCssColor`; `invalid` renders the chip in the error state and keeps it removable (never silently dropped); `disabled` is options-only.
 
@@ -468,7 +470,7 @@ Keyboard: one tab stop. `Down`/`Up` move the suggestion highlight (opening the p
 
 Accessibility: ARIA 1.2 combobox with `aria-activedescendant` so focus never leaves the input; `role="listbox"` popup, `role="list"` token strip, and each remove control named after its own token (`aria-label="Remove Design"`). A polite live region reports the suggestion count and every add and remove.
 
-A committed option stays in the list, rendered with the `y-select` accent fill (or its own `color`) and `aria-selected="true"`; the keyboard highlight is an inset ring on those rows so it stays visible over the fill.
+A committed option stays in the list, rendered with the `y-select` accent fill (or its own `color`) and `aria-selected="true"`; the keyboard highlight is an inset ring on those rows so it stays visible over the fill. An uncommitted option carrying a `color` hovers and highlights in that color — colored text over a light wash of it — as `y-select` does.
 
 CSS Parts: `wrapper label control token-list token token-remove input clear-button popup option option-icon option-label empty loading error-text`.
 CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{small|medium|large}`, `--component-tokens-min-height-{small|medium|large}`, `--component-tokens-max-height`, `--component-tokens-input-min-width`, `--component-tokens-popup-max-height`. Chips reuse `--component-tag-*` and field chrome reuses `--component-input-*`.
@@ -484,7 +486,13 @@ CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{sm
     <span slot="label">Team</span>
 </y-tokens>
 
-<y-tokens name="topics" allow-custom separators=",;" max="5" placeholder="Add a topic…"></y-tokens>
+<y-tokens
+    name="topics"
+    allow-custom
+    separators=",;"
+    max="5"
+    placeholder="Add a topic…"
+></y-tokens>
 ```
 
 ---
@@ -513,16 +521,16 @@ CSS Custom Properties: `--component-checkbox-size`, `--component-checkbox-icon-s
 
 Form-associated. Group by giving the same `name`, or render a managed group from one element via `options`.
 
-| Attribute        | Values / Notes                 |
-| ---------------- | ------------------------------ |
-| `name`, `value`  |                                |
-| `checked`        | boolean                        |
-| `disabled`       | boolean                        |
-| `required`       | boolean                        |
+| Attribute        | Values / Notes                                                                 |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `name`, `value`  |                                                                                |
+| `checked`        | boolean                                                                        |
+| `disabled`       | boolean                                                                        |
+| `required`       | boolean                                                                        |
 | `options`        | JSON: `[{"value":"a","label":"Option A"}, ...]` — render a managed radio group |
-| `size`           | `small` \| `medium` \| `large` |
-| `label`          |                                |
-| `label-position` | `right` (default) \| `left`    |
+| `size`           | `small` \| `medium` \| `large`                                                 |
+| `label`          |                                                                                |
+| `label-position` | `right` (default) \| `left`                                                    |
 
 Events: `change`
 CSS Custom Properties: `--component-radio-size`, `--component-radio-dot-size`, `--component-radio-background`, `--component-radio-color` (border), `--component-radio-accent` (dot); checked-state overrides (fall back to the unchecked values) `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`
@@ -533,22 +541,55 @@ CSS Custom Properties: `--component-radio-size`, `--component-radio-dot-size`, `
 
 Form-associated.
 
-| Attribute        | Values / Notes                 |
-| ---------------- | ------------------------------ |
-| `name`, `value`  |                                |
-| `checked`        | boolean                        |
-| `disabled`       | boolean                        |
-| `required`       | boolean                        |
-| `size`           | `small` \| `medium` \| `large` |
-| `on-color`       | scheme or CSS color for the track when checked (default `primary`) |
-| `off-color`      | scheme or CSS color for the track when unchecked |
-| `animate`        | `"false"` disables the slide transition |
+| Attribute        | Values / Notes                                                                 |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `name`, `value`  |                                                                                |
+| `checked`        | boolean                                                                        |
+| `disabled`       | boolean                                                                        |
+| `required`       | boolean                                                                        |
+| `size`           | `small` \| `medium` \| `large`                                                 |
+| `on-color`       | scheme or CSS color for the track when checked (default `primary`)             |
+| `off-color`      | scheme or CSS color for the track when unchecked                               |
+| `animate`        | `"false"` disables the slide transition                                        |
 | `toggle-label`   | boolean — inline on/off text inside the track (`on-label` / `off-label` slots) |
-| `label`          |                                |
-| `label-position` | `right` \| `left`              |
+| `label`          |                                                                                |
+| `label-position` | `right` \| `left`                                                              |
 
 Events: `change`
 Slots: `label`, `on-label`, `off-label`
+
+---
+
+## y-toggle
+
+Segmented single-select control — a button group visually, a radio group semantically. The thumb slides between segments as the value changes. Form-associated. Use `y-switch` for binary on/off, `y-tabs` when the choice swaps a content panel, and `y-button-group` for independent actions.
+
+| Attribute     | Values / Notes                                                                                                                                                                    |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options`     | `[{ value, label?, icon?, color?, disabled?, ariaLabel? }]` — rich data; attribute takes JSON as a seed only. `color` overrides the group color while that option is selected     |
+| `value`       | selected value; reflected. Defaults to the first enabled option                                                                                                                   |
+| `name`        | form field name                                                                                                                                                                   |
+| `size`        | `small` \| `medium` (default) \| `large`                                                                                                                                          |
+| `variant`     | `solid` (default) \| `outline` \| `flat` — matches the `y-button` variant of the same name; `solid`/`flat` fill the selection, `outline` tints it behind a matching border        |
+| `color`       | role marking the selection: `base` \| `primary` (default) \| `secondary` \| `success` \| `warning` \| `error` \| `help`, or a CSS color literal. Per-option via `options[].color` |
+| `orientation` | `horizontal` (default) \| `vertical`                                                                                                                                              |
+| `full-width`  | boolean — equal-width segments filling the container                                                                                                                              |
+| `animate`     | `"false"` moves the thumb instantly; reduced motion disables the slide either way                                                                                                 |
+| `disabled`    | boolean — disables the group; per-option via `options[].disabled`                                                                                                                 |
+
+Methods: `select(value)` fires the events; setting `value` moves the selection silently.
+Events: `y-toggle-select` (cancelable, `{ value, previousValue }`), `change` (`{ value, previousValue }`)
+Slots: `option-{value}` — custom content for one segment
+Parts: `base`, `track`, `thumb`, `segment`, `label`, `icon`
+A11y: `role="radiogroup"` + `role="radio"` segments, roving tabindex, arrows select as they move, `Home`/`End`, `Space`/`Enter`. `aria-label` on the host is forwarded to the track; icon-only options need `ariaLabel`.
+
+```html
+<y-toggle
+    name="view"
+    aria-label="View mode"
+    options='[{"value":"list","label":"List","icon":"list-bullet"},{"value":"grid","label":"Grid","icon":"grid"}]'
+></y-toggle>
+```
 
 ---
 
@@ -556,23 +597,23 @@ Slots: `label`, `on-label`, `off-label`
 
 Form-associated.
 
-| Attribute                             | Values / Notes                   |
-| ------------------------------------- | -------------------------------- |
-| `name`, `value`, `min`, `max`, `step` | `value` reads/writes `"min,max"` in range mode |
-| `disabled`                            | boolean                          |
-| `required`                            | boolean                          |
-| `size`                                | `small` \| `medium` \| `large`   |
-| `color`                               | scheme or CSS color for the track fill and thumb (default `primary`) |
-| `orientation`                         | `horizontal` (default) \| `vertical` |
-| `range`                               | boolean — two-thumb range slider (uses `value-min` / `value-max`) |
-| `value-min`, `value-max`              | the two thumb positions in range mode (default `min` / `max`) |
-| `min-gap`                             | minimum gap between thumbs in range mode (default: `step`) |
+| Attribute                             | Values / Notes                                                                                     |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `name`, `value`, `min`, `max`, `step` | `value` reads/writes `"min,max"` in range mode                                                     |
+| `disabled`                            | boolean                                                                                            |
+| `required`                            | boolean                                                                                            |
+| `size`                                | `small` \| `medium` \| `large`                                                                     |
+| `color`                               | scheme or CSS color for the track fill and thumb (default `primary`)                               |
+| `orientation`                         | `horizontal` (default) \| `vertical`                                                               |
+| `range`                               | boolean — two-thumb range slider (uses `value-min` / `value-max`)                                  |
+| `value-min`, `value-max`              | the two thumb positions in range mode (default `min` / `max`)                                      |
+| `min-gap`                             | minimum gap between thumbs in range mode (default: `step`)                                         |
 | `ticks`                               | `"true"` (mark per step), a number `N` (N intervals), or JSON array of positions `"[0,25,50,100]"` |
-| `tick-labels`                         | boolean — value labels beneath ticks |
-| `snap-to-ticks`                       | boolean — snap to nearest tick instead of step |
-| `show-value`                          | `none` (default) \| `always` \| `dragging` — value bubble |
-| `value-position`                      | `start` \| `end` (default: `start` horizontal, `end` vertical) |
-| `aria-label-min`, `aria-label-max`    | accessible labels for the lower / upper thumbs |
+| `tick-labels`                         | boolean — value labels beneath ticks                                                               |
+| `snap-to-ticks`                       | boolean — snap to nearest tick instead of step                                                     |
+| `show-value`                          | `none` (default) \| `always` \| `dragging` — value bubble                                          |
+| `value-position`                      | `start` \| `end` (default: `start` horizontal, `end` vertical)                                     |
+| `aria-label-min`, `aria-label-max`    | accessible labels for the lower / upper thumbs                                                     |
 
 Events: `change`, `input`
 
@@ -582,22 +623,22 @@ Events: `change`, `input`
 
 Form container — renders a group of YumeKit form controls from a JSON `fields` array, plus submit/reset buttons, and collects all values into one payload on submit.
 
-| Attribute        | Values / Notes                                                       |
-| ---------------- | -------------------------------------------------------------------- |
-| `fields`         | JSON array of field descriptors (see below); order defines layout    |
-| `submit-text`    | submit button label (default `Submit`)                               |
-| `reset-text`     | reset button label (default `Reset`)                                 |
-| `no-reset`       | boolean — hide the reset button                                      |
-| `layout`         | `vertical` (default) \| `horizontal` \| `inline`                     |
-| `label-position` | `top` (default) \| `left` (label column via `--component-form-label-width`) |
-| `size`           | `small` \| `medium` \| `large` — propagated to controls and buttons  |
-| `disabled`       | boolean — disables all controls and buttons                          |
-| `loading`        | boolean — blocks re-submission, shows a busy indicator, keeps values |
+| Attribute        | Values / Notes                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `fields`         | JSON array of field descriptors (see below); order defines layout                                                   |
+| `submit-text`    | submit button label (default `Submit`)                                                                              |
+| `reset-text`     | reset button label (default `Reset`)                                                                                |
+| `no-reset`       | boolean — hide the reset button                                                                                     |
+| `layout`         | `vertical` (default) \| `horizontal` \| `inline`                                                                    |
+| `label-position` | `top` (default) \| `left` (label column via `--component-form-label-width`)                                         |
+| `size`           | `small` \| `medium` \| `large` — propagated to controls and buttons                                                 |
+| `disabled`       | boolean — disables all controls and buttons                                                                         |
+| `loading`        | boolean — blocks re-submission, shows a busy indicator, keeps values                                                |
 | `loading-mode`   | `ring` (default — progress ring in the action row) \| `skeleton` (skeleton placeholders over the fields and labels) |
-| `novalidate`     | boolean — skip built-in validation on submit                         |
-| `action`         | optional native form action URL (progressive enhancement)            |
-| `method`         | `get` \| `post` (default `post`), used when `action` is set          |
-| `name`           | form name                                                            |
+| `novalidate`     | boolean — skip built-in validation on submit                                                                        |
+| `action`         | optional native form action URL (progressive enhancement)                                                           |
+| `method`         | `get` \| `post` (default `post`), used when `action` is set                                                         |
+| `name`           | form name                                                                                                           |
 
 Field descriptor keys: `type` (`input` \| `textarea` \| `select` \| `checkbox` \| `radio` \| `switch` \| `slider` \| `date` \| `color` \| `rating`; `input` also takes `inputType`), `name`, `label`, `value`, `placeholder`, `required`, `disabled`, `options` (select/radio), `min`/`max`/`step`, `help`, `autocomplete`, `errorText` (message used in place of the generic "X is required" / "X is invalid" copy), `validate(value, values)` (returns a message or `null`; runs after the built-in checks pass, for cross-field and domain rules). A `type` that is not a component type but names a native input type (`text`, `email`, `url`, `tel`, `number`, `password`, `search`, `time`, `datetime-local`, `month`, `week`) is sugar for `{type: "input", inputType: <that>}`. An entry with a `slot` key renders a named `<slot>` outlet at that position instead — project a child with the matching `slot="…"` attribute, and slotted named controls join value collection and validation.
 
@@ -623,7 +664,11 @@ CSS Custom Properties: `--component-form-gap`, `--component-form-actions-gap`, `
         {"type":"switch","name":"newsletter","label":"Newsletter"}
     ]'
 >
-    <y-input slot="extra" name="attachment" placeholder="Attachment URL"></y-input>
+    <y-input
+        slot="extra"
+        name="attachment"
+        placeholder="Attachment URL"
+    ></y-input>
 </y-form>
 ```
 
@@ -637,8 +682,8 @@ Form-associated. Drag-and-drop file upload with client-side validation, a manage
 | ---------------- | ------------------------------------------------------------------------------ |
 | `name`           | form field name; each file is appended to `FormData` under this name           |
 | `accept`         | native `accept` syntax (extensions and/or MIME types); enforced on pick + drop |
-| `multiple`       | boolean; when absent a new pick/drop replaces the current file                  |
-| `disabled`       | boolean                                                                         |
+| `multiple`       | boolean; when absent a new pick/drop replaces the current file                 |
+| `disabled`       | boolean                                                                        |
 | `required`       | boolean — `:invalid` while no files are selected                               |
 | `max-files`      | number — max count (only meaningful with `multiple`); excess rejected          |
 | `max-size`       | number — max bytes per file                                                    |
@@ -891,13 +936,13 @@ Pre-built icon names (loaded with `icons/all.js`): `accessible`, `eye`, `eye-off
 
 Overlays a count/status on another element.
 
-| Attribute   | Values / Notes                                  |
-| ----------- | ----------------------------------------------- |
-| `value`     | text displayed inside the badge                 |
-| `color`     | color scheme name (default `primary`)           |
-| `position`  | `top` (default) \| `bottom` — vertical          |
-| `alignment` | `left` \| `right` (default) — horizontal        |
-| `size`      | `small` (default) \| `medium` \| `large`        |
+| Attribute   | Values / Notes                           |
+| ----------- | ---------------------------------------- |
+| `value`     | text displayed inside the badge          |
+| `color`     | color scheme name (default `primary`)    |
+| `position`  | `top` (default) \| `bottom` — vertical   |
+| `alignment` | `left` \| `right` (default) — horizontal |
+| `size`      | `small` (default) \| `medium` \| `large` |
 
 Slots: default (the element the badge overlays)
 
@@ -911,13 +956,13 @@ Slots: default (the element the badge overlays)
 
 ## y-avatar
 
-| Attribute | Values / Notes                                     |
-| --------- | -------------------------------------------------- |
-| `src`     | image URL                                          |
-| `alt`     | alt text; shown as initials when image unavailable |
-| `shape`   | `circle` (default) \| `square` \| `rounded`        |
-| `size`    | `small` \| `medium` \| `large`                     |
-| `color`   | color scheme for initials background               |
+| Attribute | Values / Notes                                                                                                                                |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src`     | image URL                                                                                                                                     |
+| `alt`     | alt text; shown as initials when image unavailable                                                                                            |
+| `shape`   | `circle` (default) \| `square` \| `rounded`                                                                                                   |
+| `size`    | `small` \| `medium` \| `large`                                                                                                                |
+| `color`   | color scheme for initials background                                                                                                          |
 | `loading` | boolean — renders a `y-skeleton` placeholder sized to `size` and shaped by `shape`; takes precedence over `src`/initials and sets `aria-busy` |
 
 CSS parts: `avatar`, `skeleton` (loading placeholder)
@@ -939,14 +984,14 @@ CSS parts: `avatar`, `skeleton` (loading placeholder)
 
 ## y-tag
 
-| Attribute    | Values / Notes                             |
-| ------------ | ------------------------------------------ |
-| `color`      | color scheme name                          |
-| `size`       | `small` \| `medium` \| `large`             |
-| `variant`    | `filled` (default) \| `outlined` \| `flat` |
+| Attribute    | Values / Notes                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `color`      | color scheme name                                                                                                  |
+| `size`       | `small` \| `medium` \| `large`                                                                                     |
+| `variant`    | `filled` (default) \| `outlined` \| `flat`                                                                         |
 | `style-type` | **deprecated** alias for `variant` (still honored; `variant` wins if both set) — removed in a future major version |
-| `shape`      | `square` (default) \| `round`              |
-| `removable`  | boolean — shows close button               |
+| `shape`      | `square` (default) \| `round`                                                                                      |
+| `removable`  | boolean — shows close button                                                                                       |
 
 Events: `remove`
 
@@ -956,6 +1001,43 @@ Slot: default (label text)
 <y-tag color="primary" removable>JavaScript</y-tag>
 <y-tag color="success" variant="outlined" shape="round">Active</y-tag>
 <y-tag color="base" variant="flat">Draft</y-tag>
+```
+
+---
+
+## y-key
+
+Keyboard key or chord drawn as keycaps. Presentational only — it never binds, listens for, or dispatches keyboard events; registering the shortcut stays the app's job.
+
+| Attribute   | Values / Notes                                                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `keys`      | `+`-joined chord, e.g. `mod+shift+k`. Hides the default slot when present                                                         |
+| `platform`  | `auto` (default) \| `mac` \| `windows` \| `linux` — resolves `mod`, drives `notation="auto"`; detection is memoized, not reactive |
+| `notation`  | `auto` (default — symbols on macOS, words elsewhere) \| `symbol` \| `text`                                                        |
+| `size`      | `small` \| `medium` (default) \| `large` — font size is in `em`, so an inline key tracks its paragraph                            |
+| `variant`   | `outlined` (default, carries the keycap bottom edge) \| `filled` \| `flat`                                                        |
+| `color`     | color scheme name or CSS color literal (default: `base`)                                                                          |
+| `separator` | glyph between caps, e.g. `+`; empty (default) leaves only the gap                                                                 |
+| `combined`  | boolean — one cap for the whole chord (`⌘K`) instead of one per key                                                               |
+| `pressed`   | boolean — depressed visual state; sets no ARIA state                                                                              |
+| `label`     | overrides the computed accessible name                                                                                            |
+
+Chord tokens: `mod` (primary accelerator: ⌘ on Apple, Ctrl elsewhere), `cmd` (the literal Meta/Super key — Win on Windows), `ctrl`, `alt`, `shift`, `enter`, `esc`, `tab`, `space`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `plus` (literal `+`). Aliases fold in (`command`/`meta`/`super`/`win` → `cmd`, `control` → `ctrl`, `option`/`opt` → `alt`, `return` → `enter`, `escape` → `esc`, `del` → `delete`, `arrowup` → `up`, …). Case-insensitive, whitespace-tolerant; single characters uppercase. An unrecognized token renders and speaks verbatim — no throw, no warning.
+
+Events: none
+
+Slot: default (cap content when `keys` is absent)
+
+Parts: `chord`, `key`, `separator`
+
+Accessibility: chord mode sets `aria-label` on the host to the spoken form ("Command Shift K") and marks the caps `aria-hidden`, because `⌘`, `⎋`, and `↵` announce badly or not at all. Precedence: author `aria-label` → `label` → computed. Slot mode computes no name, so prefer `keys` over slotted glyphs.
+
+```html
+<y-key keys="mod+k"></y-key>
+<y-key keys="mod+shift+x" separator="+"></y-key>
+<y-key size="small" variant="flat" keys="esc"></y-key>
+<y-key platform="windows" notation="text" keys="mod+alt+1"></y-key>
+<y-key>F1</y-key>
 ```
 
 ---
@@ -988,25 +1070,25 @@ Events: `change` — `event.detail.value`
 
 ## y-progress
 
-| Attribute        | Values / Notes                 |
-| ---------------- | ------------------------------ |
-| `value`          | number `min`–`max`             |
-| `values`         | JSON array of numbers — multiple segments/series |
-| `min`, `max`     | numeric bounds (default `0` / `100`) |
-| `step`           | numeric step                   |
-| `mode`           | `bar` (default) \| `ring` \| `pie` |
-| `indeterminate`  | boolean — animated loading state |
-| `disabled`       | boolean                        |
-| `color`          | color scheme name or CSS color |
-| `track-color`    | scheme or CSS color for the unfilled track |
-| `size`           | `small` \| `medium` \| `large` |
-| `thickness`      | `small` \| `medium` (default) \| `large` — bar/ring thickness |
-| `label-display`  | `"false"` hides the label (default shown) |
-| `label-format`   | `percent` (default) \| `value` \| `fraction` |
-| `segmented`      | boolean or number — split the bar into N segments |
-| `segment-gap`    | gap between segments           |
-| `start-angle`    | ring/pie start angle in degrees (default `0`) |
-| `direction`      | `clockwise` (default) \| `counterclockwise` — ring/pie sweep |
+| Attribute       | Values / Notes                                                |
+| --------------- | ------------------------------------------------------------- |
+| `value`         | number `min`–`max`                                            |
+| `values`        | JSON array of numbers — multiple segments/series              |
+| `min`, `max`    | numeric bounds (default `0` / `100`)                          |
+| `step`          | numeric step                                                  |
+| `mode`          | `bar` (default) \| `ring` \| `pie`                            |
+| `indeterminate` | boolean — animated loading state                              |
+| `disabled`      | boolean                                                       |
+| `color`         | color scheme name or CSS color                                |
+| `track-color`   | scheme or CSS color for the unfilled track                    |
+| `size`          | `small` \| `medium` \| `large`                                |
+| `thickness`     | `small` \| `medium` (default) \| `large` — bar/ring thickness |
+| `label-display` | `"false"` hides the label (default shown)                     |
+| `label-format`  | `percent` (default) \| `value` \| `fraction`                  |
+| `segmented`     | boolean or number — split the bar into N segments             |
+| `segment-gap`   | gap between segments                                          |
+| `start-angle`   | ring/pie start angle in degrees (default `0`)                 |
+| `direction`     | `clockwise` (default) \| `counterclockwise` — ring/pie sweep  |
 
 ```html
 <y-progress value="65" color="primary"></y-progress>
@@ -1016,14 +1098,64 @@ Events: `change` — `event.detail.value`
 
 ---
 
+## y-gauge
+
+| Attribute                  | Values / Notes                                                        |
+| -------------------------- | --------------------------------------------------------------------- |
+| `value`                    | number, clamped into `min`–`max` (defaults to `min`)                  |
+| `min`, `max`               | numeric bounds (default `0` / `100`)                                  |
+| `start-angle`, `end-angle` | degrees, clock convention (default `225` / `495` — a 270° sweep)      |
+| `thickness`                | ring width as a fraction of the radius, `0.04`–`0.4` (default `0.16`) |
+| `progress`                 | `"false"` hides the arc fill (default shown)                          |
+| `needle`                   | boolean — instrument pointer; moves the readout below its sweep       |
+| `target`                   | number — caret marker on the arc                                      |
+| `ranges`                   | property or JSON — `[{ from, to, color }]` zones on the track         |
+| `ticks`                    | number of major tick intervals (default `0`)                          |
+| `minor-ticks`              | subdivisions between major ticks (default `0`)                        |
+| `tick-labels`              | boolean — label each major tick with its value                        |
+| `show-value`               | `"false"` hides the center number (default shown)                     |
+| `label`                    | caption under the value                                               |
+| `unit`                     | appended to the value (`%`, ` mph`, ` rpm`)                           |
+| `decimals`                 | fractional digits, `0`–`6` (default `0`)                              |
+| `color`                    | CSS color or `var(--token)` accent; overrides any range color         |
+| `loading`                  | boolean — circular skeleton placeholder                               |
+| `loading-text`             | announced while `loading` (default `"Loading gauge…"`)                |
+
+Size it with a CSS width on the host. `role="meter"`; `label` becomes the `aria-label`, so supply one when there is no visible caption.
+
+```html
+<y-gauge value="68" unit="%" label="Utilization" style="width: 220px"></y-gauge>
+<y-gauge
+    value="72"
+    target="90"
+    unit="%"
+    label="Quota"
+    style="width: 220px"
+></y-gauge>
+<y-gauge
+    value="55"
+    min="0"
+    max="120"
+    unit=" mph"
+    needle
+    progress="false"
+    ticks="12"
+    minor-ticks="1"
+    tick-labels
+    style="width: 300px"
+></y-gauge>
+```
+
+---
+
 ## y-tooltip
 
-| Attribute  | Values / Notes                                   |
-| ---------- | ------------------------------------------------ |
-| `text`     | tooltip content (required)                       |
-| `position` | `top` (default) \| `bottom` \| `left` \| `right` |
+| Attribute  | Values / Notes                                               |
+| ---------- | ------------------------------------------------------------ |
+| `text`     | tooltip content (required)                                   |
+| `position` | `top` (default) \| `bottom` \| `left` \| `right`             |
 | `color`    | scheme or CSS color for the background; text auto-contrasted |
-| `delay`    | show delay in ms (default `200`)                 |
+| `delay`    | show delay in ms (default `200`)                             |
 | `open`     | boolean — force open programmatically (bypasses hover/focus) |
 
 Slot: default (trigger element)
@@ -1042,17 +1174,17 @@ Slot: default (trigger element)
 
 Lightweight, dependency-free code block. Renders slotted text with optional line numbers, copy button, filename header, and a `max-lines` collapse. A built-in tokenizer covers **JavaScript** (aliases: `js` / `jsx` / `mjs` / `cjs`), **TypeScript** (aliases: `ts` / `tsx` / `mts` / `cts`), **JSON**, **CSS**, **Python** (aliases: `py` / `python3`), **Bash** (aliases: `sh` / `shell` / `zsh`), and **HTML** (aliases: `htm` / `xml` / `svg`); other languages fall back to plain text. The HTML tokenizer treats `<style>` and `<script>` bodies as text rather than recursively tokenizing them. Consumers can also pipe an external highlighter's output (Prism, shiki, etc.) through the sanitized `highlighted` slot — that path takes precedence when present.
 
-| Attribute       | Values / Notes                                                                                       |
-| --------------- | ---------------------------------------------------------------------------------------------------- |
-| `language`      | string — built-in tokenizers: `javascript` (`js` / `jsx` / `mjs` / `cjs`), `typescript` (`ts` / `tsx` / `mts` / `cts`), `json`, `css`, `python` (`py` / `python3`), `bash` (`sh` / `shell` / `zsh`), `html` (`htm` / `xml` / `svg`). Anything else renders as plain text. Also used in the `aria-label`. Default `"text"`. |
-| `line-numbers`  | boolean — when set, line numbers render and each line becomes a click/keyboard target that copies it |
-| `max-lines`     | number — caps visible lines; an expand toggle reveals the rest                                       |
-| `wrap`          | boolean — wraps long lines (otherwise the block scrolls horizontally)                                |
-| `filename`      | string — renders a header bar with the filename and copy button                                      |
-| `copyable`      | defaults to `true` — copy button shown by default; `copyable="false"` to hide                        |
-| `disabled`      | boolean — suppresses interactive affordances; source still renders                                   |
-| `copy-label`    | string — idle copy-button text (default `"Copy"`)                                                    |
-| `copied-label`  | string — post-copy feedback text (default `"Copied!"`)                                               |
+| Attribute      | Values / Notes                                                                                                                                                                                                                                                                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `language`     | string — built-in tokenizers: `javascript` (`js` / `jsx` / `mjs` / `cjs`), `typescript` (`ts` / `tsx` / `mts` / `cts`), `json`, `css`, `python` (`py` / `python3`), `bash` (`sh` / `shell` / `zsh`), `html` (`htm` / `xml` / `svg`). Anything else renders as plain text. Also used in the `aria-label`. Default `"text"`. |
+| `line-numbers` | boolean — when set, line numbers render and each line becomes a click/keyboard target that copies it                                                                                                                                                                                                                       |
+| `max-lines`    | number — caps visible lines; an expand toggle reveals the rest                                                                                                                                                                                                                                                             |
+| `wrap`         | boolean — wraps long lines (otherwise the block scrolls horizontally)                                                                                                                                                                                                                                                      |
+| `filename`     | string — renders a header bar with the filename and copy button                                                                                                                                                                                                                                                            |
+| `copyable`     | defaults to `true` — copy button shown by default; `copyable="false"` to hide                                                                                                                                                                                                                                              |
+| `disabled`     | boolean — suppresses interactive affordances; source still renders                                                                                                                                                                                                                                                         |
+| `copy-label`   | string — idle copy-button text (default `"Copy"`)                                                                                                                                                                                                                                                                          |
+| `copied-label` | string — post-copy feedback text (default `"Copied!"`)                                                                                                                                                                                                                                                                     |
 
 Slots: (default) raw source code — plain text (escape `<` and `&`) **or** wrap the source in a `<template>` child so the browser preserves it verbatim without escaping (preferred for HTML / XML / SVG samples; if any `<template>` is present it becomes the source). `highlighted` — sanitized pre-highlighted markup (allowlist: `<span>` with class names from common highlighter tokens). `header` — extra header content.
 
@@ -1066,14 +1198,15 @@ CSS Parts: `header`, `filename`, `copy-button`, `copy-feedback`, `pre`, `code`, 
 
 ```html
 <y-code language="javascript" filename="hello.js" line-numbers>
-function hello() {
-    return "world";
-}
+    function hello() { return "world"; }
 </y-code>
 
 <!-- Pre-highlighted via an external highlighter -->
 <y-code language="javascript">
-    <div slot="highlighted"><span class="token keyword">const</span> x = <span class="token number">1</span>;</div>
+    <div slot="highlighted">
+        <span class="token keyword">const</span> x =
+        <span class="token number">1</span>;
+    </div>
 </y-code>
 ```
 
@@ -1081,9 +1214,9 @@ function hello() {
 
 ## y-card
 
-| Attribute | Values / Notes               |
-| --------- | ---------------------------- |
-| `color`   | color scheme name            |
+| Attribute | Values / Notes                 |
+| --------- | ------------------------------ |
+| `color`   | color scheme name              |
 | `raised`  | boolean — elevated drop shadow |
 
 Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body)
@@ -1204,7 +1337,9 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
         max-width: calc((1 - var(--y-sidebar-collapsed, 0)) * 200px);
         overflow: hidden;
         white-space: nowrap;
-        transition: opacity 0.2s ease, max-width 0.2s ease;
+        transition:
+            opacity 0.2s ease,
+            max-width 0.2s ease;
     }
 </style>
 <y-sidebar id="nav">
@@ -1219,12 +1354,12 @@ All `--component-sidebar-*` tokens fall back to `--component-appbar-*` so existi
 
 ## y-drawer
 
-| Attribute   | Values / Notes                                                                       |
-| ----------- | ------------------------------------------------------------------------------------ |
-| `visible`   | boolean — toggle to open/close (also a property: `el.visible = true`)                |
+| Attribute   | Values / Notes                                                                         |
+| ----------- | -------------------------------------------------------------------------------------- |
+| `visible`   | boolean — toggle to open/close (also a property: `el.visible = true`)                  |
 | `anchor`    | element ID (no `#`) of a trigger element; clicking it toggles the drawer automatically |
-| `position`  | `left` (default) \| `right` \| `top` \| `bottom`                                     |
-| `resizable` | boolean — adds a drag handle for resizing                                            |
+| `position`  | `left` (default) \| `right` \| `top` \| `bottom`                                       |
+| `resizable` | boolean — adds a drag handle for resizing                                              |
 
 Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, the anchor click, the overlay click, or Escape. Mounting already `visible` does not fire `open`; that is a starting state, not a transition.
 
@@ -1273,15 +1408,15 @@ Drag-and-drop reorderable list. Supports within-list reordering, cross-list grou
 
 **Events:**
 
-| Event          | Detail                                      | Cancelable | Notes                                                                                                       |
-| -------------- | ------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
-| `drag:start`   | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag begins                                                                 |
-| `drag:end`     | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag ends (drop or cancel)                                                  |
-| `drag:enter`   | `{ originalEvent, item, list, from }`       | no         | Fired on a target list when the drag enters it (cross-list only)                                            |
-| `drag:leave`   | `{ originalEvent, item, list, to }`         | no         | Fired on a list when the drag leaves it (cross-list only)                                                   |
-| `drag:preview` | `{ item, preview, list }`                   | **yes**    | Fired after the preview element is created but **before** it is appended to `document.body`; `preventDefault()` cancels it (no insertion)   |
-| `reorder`      | `{ oldIndex, newIndex, item, list, from? }` | no         | Fired on the destination list after a successful drop or keyboard move                                      |
-| `update`       | `{ item, oldIndex, newIndex, list, from? }` | no         | Fired on both source (cross-list) and destination after every successful drop                               |
+| Event          | Detail                                      | Cancelable | Notes                                                                                                                                     |
+| -------------- | ------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `drag:start`   | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag begins                                                                                               |
+| `drag:end`     | `{ originalEvent, item, list }`             | no         | Fired on the source list when a drag ends (drop or cancel)                                                                                |
+| `drag:enter`   | `{ originalEvent, item, list, from }`       | no         | Fired on a target list when the drag enters it (cross-list only)                                                                          |
+| `drag:leave`   | `{ originalEvent, item, list, to }`         | no         | Fired on a list when the drag leaves it (cross-list only)                                                                                 |
+| `drag:preview` | `{ item, preview, list }`                   | **yes**    | Fired after the preview element is created but **before** it is appended to `document.body`; `preventDefault()` cancels it (no insertion) |
+| `reorder`      | `{ oldIndex, newIndex, item, list, from? }` | no         | Fired on the destination list after a successful drop or keyboard move                                                                    |
+| `update`       | `{ item, oldIndex, newIndex, list, from? }` | no         | Fired on both source (cross-list) and destination after every successful drop                                                             |
 
 For cross-list drops: the source `update` fires first with `newIndex: -1`; the destination `reorder` and `update` fire second with `from` set to the source list. For clone drops `oldIndex` is `-1`.
 
@@ -1304,6 +1439,7 @@ For cross-list drops: the source `update` fires first with `newIndex: -1`; the d
 - `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`
 - `--component-droplist-swap-indicator-background`
 - `--component-droplist-item-padding`, `--component-droplist-item-margin`
+- `--component-droplist-empty-min-height` (default `40px`) — drop area reserved when the list is empty and can receive items from its group, so an emptied column stays a drop target. Empty lists with no `group`, or with `put="false"`, ignore it and stay collapsed
 - `--component-droplist-transition-duration`, `--component-droplist-transition-easing`
 - `--component-droplist-drag-preview-opacity` (default `0.85`)
 - `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`)
@@ -1409,20 +1545,20 @@ CSS Parts: `gallery`, `item`, `item-img`, `expand-overlay`, `expand-img`, `expan
 
 Slideshow container. Each direct child becomes one slide. For image galleries with a lightbox use `y-gallery` instead.
 
-| Attribute        | Values / Notes                                                              |
-| ---------------- | -------------------------------------------------------------------------- |
-| `index`          | number (default `0`) — leftmost visible slide; reflects as the user navigates |
-| `per-view`       | number (default `1`) — slides visible at once; fractional values peek the next |
-| `gap`            | CSS length between slides (default `0`)                                    |
-| `orientation`    | `horizontal` (default) \| `vertical` — vertical requires an explicit host height |
-| `loop`           | boolean — wrap from last slide back to first                               |
-| `autoplay`       | boolean — advance automatically                                            |
-| `interval`       | number (default `5000`) — autoplay delay in ms                            |
-| `pause-on-hover` | boolean (default `true`) — pause autoplay while hovered or focused         |
-| `arrows`         | `true` (default) \| `false` \| `hover`                                     |
-| `pagination`     | `dots` (default) \| `fraction` \| `none`                                   |
-| `swipe`          | boolean (default `true`) — pointer/touch drag navigation                   |
-| `snap`           | `start` (default) \| `center` — slide alignment within the viewport        |
+| Attribute        | Values / Notes                                                                                                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index`          | number (default `0`) — leftmost visible slide; reflects as the user navigates. Clamped to the last index that still fills the viewport (`per-view="2"` with 5 slides tops out at 3) |
+| `per-view`       | number (default `1`) — slides visible at once; fractional values peek the next                                                                                                      |
+| `gap`            | CSS length between slides (default `0`)                                                                                                                                             |
+| `orientation`    | `horizontal` (default) \| `vertical` — vertical requires an explicit host height                                                                                                    |
+| `loop`           | boolean — wrap from last slide back to first                                                                                                                                        |
+| `autoplay`       | boolean — advance automatically                                                                                                                                                     |
+| `interval`       | number (default `5000`) — autoplay delay in ms                                                                                                                                      |
+| `pause-on-hover` | boolean (default `true`) — pause autoplay while hovered or focused                                                                                                                  |
+| `arrows`         | `true` (default) \| `false` \| `hover`                                                                                                                                              |
+| `pagination`     | `dots` (default) \| `fraction` \| `none` — one dot per slide, with every slide in view marked `aria-current` (`per-view="2"` highlights two)                                        |
+| `swipe`          | boolean (default `true`) — pointer/touch drag navigation                                                                                                                            |
+| `snap`           | `start` (default) \| `center` — slide alignment within the viewport                                                                                                                 |
 
 Children: any elements — each direct child is one slide.
 
@@ -1447,14 +1583,14 @@ CSS Parts: `viewport`, `track`, `prev-button`, `next-button`, `pagination`, `dot
 
 ## y-dialog
 
-| Attribute       | Values / Notes                                                                        |
-| --------------- | ------------------------------------------------------------------------------------- |
-| `visible`       | boolean — toggle to open/close (also a property: `el.visible = true`)                 |
-| `anchor`        | element ID (no `#`) of a trigger element; clicking it opens the dialog automatically  |
-| `closable`      | controls the built-in close button                                                    |
-| `show-backdrop` | controls the backdrop                                                                 |
-| `animate`       | open/close animation                                                                  |
-| `position`      | dialog placement                                                                      |
+| Attribute       | Values / Notes                                                                       |
+| --------------- | ------------------------------------------------------------------------------------ |
+| `visible`       | boolean — toggle to open/close (also a property: `el.visible = true`)                |
+| `anchor`        | element ID (no `#`) of a trigger element; clicking it opens the dialog automatically |
+| `closable`      | controls the built-in close button                                                   |
+| `show-backdrop` | controls the backdrop                                                                |
+| `animate`       | open/close animation                                                                 |
+| `position`      | dialog placement                                                                     |
 
 Events: `open`, `close` (bubble, composed) — fired on every transition, whichever path caused it: `visible`, `show()` / `hide()`, the anchor click, the close button, or Escape. Mounting already `visible` does not fire `open`; that is a starting state, not a transition.
 
@@ -1479,13 +1615,13 @@ Slots: `header`, `body`, `footer` — **named slots only**; content without a `s
 
 Fixed navigation bar (dock) for primary app navigation. Displays icon+label items with optional per-item slot templates.
 
-| Attribute    | Values / Notes                                                                                |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| `items`      | JSON array of `{ name, icon, href?, selected?, slot? }` objects                               |
-| `position`   | `bottom` (default) \| `top` — which edge of the viewport the dock anchors to                  |
-| `breakpoint` | number (px) — when set, dock is only visible below this width; omit for always visible        |
-| `size`       | `small` \| `medium` (default) \| `large`                                                      |
-| `history`    | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href` |
+| Attribute    | Values / Notes                                                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `items`      | JSON array of `{ name, icon, href?, selected?, slot? }` objects                                                                          |
+| `position`   | `bottom` (default) \| `top` — which edge of the viewport the dock anchors to                                                             |
+| `breakpoint` | number (px) — when set, dock is only visible below this width; omit for always visible                                                   |
+| `size`       | `small` \| `medium` (default) \| `large`                                                                                                 |
+| `history`    | omit (default) for `pushState` SPA navigation; `"false"` for full-page `window.location.href`                                            |
 | `floating`   | boolean — when present, renders the dock as a bordered, rounded island inset from the edges with a shadow (like a non-sticky `y-appbar`) |
 
 **Events:** `navigate` (cancelable, `detail: { href }`)
@@ -1569,7 +1705,9 @@ Events:
 - `navigate` — cancelable; `detail.href`. Fires before navigation when an item with `href` is clicked. Cancel to handle navigation in app code.
 
 ```html
-<y-button id="opts-btn">Options<y-icon slot="right-icon" name="chevron-down" size="small"></y-icon></y-button>
+<y-button id="opts-btn"
+    >Options<y-icon slot="right-icon" name="chevron-down" size="small"></y-icon
+></y-button>
 <!-- anchor is a plain element ID; the menu wires the anchor's click itself -->
 <y-menu
     id="opts-menu"
@@ -1590,22 +1728,22 @@ Events:
 
 Guided product-tour / onboarding overlay. Given an ordered list of steps, dims the page, highlights one or more targets per step (single SVG mask for clean multi-target cutouts), and anchors a tooltip with helper text. Untargeted steps render a centered tooltip. The overlay and tooltip are portaled out of `<y-help>` to escape ancestor `overflow` / `transform` / `z-index` contexts — into the nearest enclosing `<y-theme>` (falling back to `document.body`). Keep `<y-help>` inside your `<y-theme>` so the portaled tour inherits the active theme; mounting on `document.body` would render with the default un-themed palette since theme variables are scoped to the `<y-theme>` subtree.
 
-| Attribute                       | Values / Notes                                                                                                                                       |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `steps`                         | `HelpStep[]` (property; JSON string via attribute). Each step `{ target?: string \| string[], title?, content, position?, anchor?, highlightPadding? }` |
-| `open`                          | boolean — reflects whether the tour is active                                                                                                        |
-| `index`                         | number — 0-based active step, reflected                                                                                                              |
-| `default-position`              | `auto` (default) \| `top` \| `bottom` \| `left` \| `right` \| `center`                                                                                |
-| `untargeted-position`           | `center` (default) \| other positions — fallback when no target resolves                                                                             |
-| `default-anchor`                | `bounds` (default) \| `first` \| `last` \| numeric index — multi-target anchor                                                                       |
-| `highlight-padding`             | number (px, default `8`) — pixel padding around each highlight                                                                                       |
-| `show-progress`                 | defaults to `true` — show "N of M" in the tooltip                                                                                                    |
-| `show-arrows`                   | defaults to `true` — large overlay-edge prev/next arrows                                                                                             |
-| `close-on-escape`               | defaults to `true`                                                                                                                                   |
-| `close-on-overlay-click`        | defaults to `false`                                                                                                                                  |
-| `disable-target-interaction`    | defaults to `true` — when `false`, highlighted elements remain clickable                                                                             |
-| `prev-label` / `next-label` / `finish-label` / `close-label` | button text; `finish-label` is shown on the next button on the last step (when `loop` is unset)                          |
-| `loop`                          | boolean — when set, advancing past the last step returns to the first                                                                                |
+| Attribute                                                    | Values / Notes                                                                                                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `steps`                                                      | `HelpStep[]` (property; JSON string via attribute). Each step `{ target?: string \| string[], title?, content, position?, anchor?, highlightPadding? }` |
+| `open`                                                       | boolean — reflects whether the tour is active                                                                                                           |
+| `index`                                                      | number — 0-based active step, reflected                                                                                                                 |
+| `default-position`                                           | `auto` (default) \| `top` \| `bottom` \| `left` \| `right` \| `center`                                                                                  |
+| `untargeted-position`                                        | `center` (default) \| other positions — fallback when no target resolves                                                                                |
+| `default-anchor`                                             | `bounds` (default) \| `first` \| `last` \| numeric index — multi-target anchor                                                                          |
+| `highlight-padding`                                          | number (px, default `8`) — pixel padding around each highlight                                                                                          |
+| `show-progress`                                              | defaults to `true` — show "N of M" in the tooltip                                                                                                       |
+| `show-arrows`                                                | defaults to `true` — large overlay-edge prev/next arrows                                                                                                |
+| `close-on-escape`                                            | defaults to `true`                                                                                                                                      |
+| `close-on-overlay-click`                                     | defaults to `false`                                                                                                                                     |
+| `disable-target-interaction`                                 | defaults to `true` — when `false`, highlighted elements remain clickable                                                                                |
+| `prev-label` / `next-label` / `finish-label` / `close-label` | button text; `finish-label` is shown on the next button on the last step (when `loop` is unset)                                                         |
+| `loop`                                                       | boolean — when set, advancing past the last step returns to the first                                                                                   |
 
 Slots: none in v1. Step title/content come from each step's `title` / `content` fields, button text from the `prev-label` / `next-label` / `finish-label` / `close-label` attributes. Per-region slot overrides and declarative `<y-help-step>` children are planned for a future release; style the existing rendering via the documented CSS parts in the meantime.
 
@@ -1624,11 +1762,21 @@ Accessibility: tooltip is `role="dialog"` `aria-modal="true"`, focus is trapped 
 <script type="module">
     const help = document.getElementById("tour");
     help.steps = [
-        { target: "btn-create", title: "Start here", content: "Spin up a new agent." },
-        { target: ["card-1", "card-2"], anchor: "bounds", content: "Each agent gets a card." },
+        {
+            target: "btn-create",
+            title: "Start here",
+            content: "Spin up a new agent.",
+        },
+        {
+            target: ["card-1", "card-2"],
+            anchor: "bounds",
+            content: "Each agent gets a card.",
+        },
         { title: "All set!", content: "You can replay this any time." },
     ];
-    document.getElementById("launch").addEventListener("click", () => help.start());
+    document
+        .getElementById("launch")
+        .addEventListener("click", () => help.start());
 </script>
 ```
 
@@ -1649,8 +1797,16 @@ Methods: `.show(opts)` — **single options object**: `{ message, color, duratio
 
 <script type="module">
     const toast = document.getElementById("toast");
-    toast.show({ message: "Saved successfully!", color: "success", duration: 3000 });
-    toast.show({ message: "Something went wrong.", color: "error", duration: 0 }); // persistent
+    toast.show({
+        message: "Saved successfully!",
+        color: "success",
+        duration: 3000,
+    });
+    toast.show({
+        message: "Something went wrong.",
+        color: "error",
+        duration: 0,
+    }); // persistent
 </script>
 ```
 
@@ -1658,13 +1814,13 @@ Methods: `.show(opts)` — **single options object**: `{ message, color, duratio
 
 ## y-tabs
 
-| Attribute  | Values / Notes                                   |
-| ---------- | ------------------------------------------------ |
-| `options`  | JSON array of tab objects (see shape below)      |
-| `position` | `top` (default) \| `bottom` \| `left` \| `right` |
-| `size`     | `small` \| `medium` \| `large`                   |
+| Attribute  | Values / Notes                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options`  | JSON array of tab objects (see shape below)                                                                                                         |
+| `position` | `top` (default) \| `bottom` \| `left` \| `right`                                                                                                    |
+| `size`     | `small` \| `medium` \| `large`                                                                                                                      |
 | `variant`  | `default` (bordered boxes) \| `accent` (minimal tabs; active tab shows a primary indicator border on its content-facing edge, like Material/Carbon) |
-| `overflow` | `scroll` (default; one line + prev/next arrows when the strip overflows) \| `wrap` (tabs flow onto multiple rows/columns) |
+| `overflow` | `scroll` (default; one line + prev/next arrows when the strip overflows) \| `wrap` (tabs flow onto multiple rows/columns)                           |
 
 Options object shape: `{"id":"tab1","label":"Tab 1","slot":"tab1","disabled":false,"leftIcon":"home","rightIcon":"arrow-right"}` — `id`, `label`, and `slot` are required; `disabled`, `leftIcon`, `rightIcon` are optional.
 
@@ -1710,17 +1866,17 @@ Deprecated slots (still functional, emit `console.warn`; use `leftIcon`/`rightIc
 
 Multi-step wizard that guides users through a sequential flow. Step content is provided via named slots.
 
-| Attribute               | Values / Notes                                                                                              |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `items`                 | JSON array of `{ label, slot, description?, icon?, status? }` objects                                       |
-| `current`               | number — zero-based active step index (default: `0`)                                                        |
-| `orientation`           | `horizontal` (default) \| `vertical`                                                                        |
-| `position`              | `start` (default) \| `end` — indicators before or after the content                                         |
-| `size`                  | `small` \| `medium` (default) \| `large`                                                                    |
-| `linear`                | boolean — restricts free navigation; must use `next()` / `complete()`                                       |
-| `editable`              | boolean — allows clicking completed steps to return to them                                                 |
+| Attribute               | Values / Notes                                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `items`                 | JSON array of `{ label, slot, description?, icon?, status? }` objects                                                                         |
+| `current`               | number — zero-based active step index (default: `0`)                                                                                          |
+| `orientation`           | `horizontal` (default) \| `vertical`                                                                                                          |
+| `position`              | `start` (default) \| `end` — indicators before or after the content                                                                           |
+| `size`                  | `small` \| `medium` (default) \| `large`                                                                                                      |
+| `linear`                | boolean — restricts free navigation; must use `next()` / `complete()`                                                                         |
+| `editable`              | boolean — allows clicking completed steps to return to them                                                                                   |
 | `responsive`            | defaults to `true` — auto-flips a declared horizontal layout to vertical below `responsive-breakpoint`. Pass `responsive="false"` to opt out. |
-| `responsive-breakpoint` | number (px) — host-width threshold below which the responsive flip triggers (default `600`)                 |
+| `responsive-breakpoint` | number (px) — host-width threshold below which the responsive flip triggers (default `600`)                                                   |
 
 Items shape: `{ label: string, slot: string, description?: string, icon?: string, status?: "complete" | "error" | "pending" }`
 
@@ -1811,14 +1967,14 @@ Methods: `expand()`, `collapse()`, `toggle()`
 
 ## y-table
 
-| Attribute | Values / Notes                                    |
-| --------- | ------------------------------------------------- |
-| `columns`       | JSON: `[{"key":"name","label":"Name"}, ...]`      |
-| `data`          | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]` |
-| `striped`       | boolean                                           |
-| `size`          | `small` \| `medium` \| `large`                    |
+| Attribute       | Values / Notes                                                                                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`       | JSON: `[{"key":"name","label":"Name"}, ...]`                                                                                                                          |
+| `data`          | JSON: `[{"name":"Alice","email":"a@b.com"}, ...]`                                                                                                                     |
+| `striped`       | boolean                                                                                                                                                               |
+| `size`          | `small` \| `medium` \| `large`                                                                                                                                        |
 | `loading`       | boolean — renders skeleton rows (from `y-skeleton`) in place of the body, disables sort, sets `aria-busy`. No overlay mode — use `y-data-grid` for spinner-on-refetch |
-| `skeleton-rows` | number of placeholder rows while `loading` (default `5`) |
+| `skeleton-rows` | number of placeholder rows while `loading` (default `5`)                                                                                                              |
 
 Slot: `skeleton` overrides the generated placeholder body. CSS parts: `skeleton-body`, `skeleton-row`, `skeleton-cell`.
 
@@ -1931,18 +2087,18 @@ Methods: `clear()`, `formatDate(date)`
 
 Form-associated color input with a trigger/popup pattern (like `y-date`). Shows a swatch and value string; opens a `y-colorpicker` popup on click.
 
-| Attribute        | Values / Notes                                                          |
-| ---------------- | ----------------------------------------------------------------------- |
-| `value`          | color string in the active format                                       |
-| `format`         | `hex` (default) \| `rgb` \| `hsl` \| `hsv`                              |
-| `formats`        | JSON array of available formats (default: all four)                     |
-| `show-alpha`     | boolean — enable alpha channel                                          |
-| `placeholder`    | trigger placeholder (default: `"Select color"`)                         |
-| `name`           | form field name                                                         |
-| `disabled`, `invalid`, `clearable` | booleans                                              |
-| `size`           | `small` \| `medium` \| `large`                                          |
-| `label-position` | `top` (default) \| `bottom`                                             |
-| `variant`        | `default` (full border) \| `underline` (bottom border, square corners)  |
+| Attribute                          | Values / Notes                                                         |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| `value`                            | color string in the active format                                      |
+| `format`                           | `hex` (default) \| `rgb` \| `hsl` \| `hsv`                             |
+| `formats`                          | JSON array of available formats (default: all four)                    |
+| `show-alpha`                       | boolean — enable alpha channel                                         |
+| `placeholder`                      | trigger placeholder (default: `"Select color"`)                        |
+| `name`                             | form field name                                                        |
+| `disabled`, `invalid`, `clearable` | booleans                                                               |
+| `size`                             | `small` \| `medium` \| `large`                                         |
+| `label-position`                   | `top` (default) \| `bottom`                                            |
+| `variant`                          | `default` (full border) \| `underline` (bottom border, square corners) |
 
 Slot: `label`
 Events: `change` — `event.detail: { value, hex, rgb, hsl, hsv, alpha }`
@@ -1967,7 +2123,7 @@ Standalone color picker — 2D saturation/brightness canvas, hue slider, optiona
 | Attribute    | Values / Notes                                                                  |
 | ------------ | ------------------------------------------------------------------------------- |
 | `value`      | initial color (`#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `hsv()`, `hsva()`) |
-| `format`     | `hex` (default) \| `rgb` \| `hsl` \| `hsv`                                       |
+| `format`     | `hex` (default) \| `rgb` \| `hsl` \| `hsv`                                      |
 | `formats`    | JSON array of available formats                                                 |
 | `show-alpha` | boolean — enable alpha slider and channel                                       |
 | `size`       | `small` \| `medium` \| `large` (scales canvas and inputs)                       |
@@ -1983,23 +2139,111 @@ CSS Parts: `colorpicker`, `canvas`, `canvas-handle`, `hue-slider`, `hue-thumb`, 
 
 ---
 
+## y-money
+
+Form-associated currency input. Always set `name` inside a `<form>`. Use this rather than `<y-input type="number">` for monetary amounts.
+
+Idle it shows a locale-formatted amount (`$1,234.56`); on focus it swaps to a plain editable number (`1234.56`) and reformats on blur. The submitted value is always a canonical decimal string.
+
+| Attribute        | Values / Notes                                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| `value`          | canonical decimal string, e.g. `1234.56` — always `.` and no grouping. `""` means no value, distinct from `"0"` |
+| `currency`       | ISO 4217 code (default `USD`); drives symbol and default precision                                              |
+| `locale`         | BCP 47 tag; omitted uses the browser locale                                                                     |
+| `precision`      | decimal places; defaults to the currency exponent (USD 2, JPY 0, KWD 3)                                         |
+| `display`        | `symbol` (default) \| `code` \| `name` \| `none`                                                                |
+| `allow-negative` | boolean — without it a typed `-` is rejected and a negative set in code clamps to zero                          |
+| `negative-style` | `minus` (default, `-$5.00`) \| `parentheses` (`($5.00)`)                                                        |
+| `step`           | arrow-key increment as a decimal string (default `1`)                                                           |
+| `min`, `max`     | decimal-string bounds; a violation flags invalid without rewriting the entry                                    |
+| `name`           | form field name                                                                                                 |
+| `placeholder`    |                                                                                                                 |
+| `size`           | `small` \| `medium` (default) \| `large`                                                                        |
+| `variant`        | `default` (full border) \| `underline` (bottom border only, square bottom corners)                              |
+| `label-position` | `top` (default) \| `bottom`                                                                                     |
+| `disabled`       | boolean                                                                                                         |
+| `required`       | boolean — empty value fails validation                                                                          |
+| `invalid`        | boolean — applies error state                                                                                   |
+| `error-text`     | validation message below the field; applies the error state and describes the input                             |
+| `autocomplete`   | forwarded to the inner control                                                                                  |
+
+Properties (read-only): `valueAsNumber`, `valueAsMinorUnits` (integer minor units via integer math — `1234.56` → `123456`), `formattedValue`, `validity`, `validationMessage`. Both numeric properties are `NaN` when the field is empty.
+
+Methods: `stepUp(n = 1)`, `stepDown(n = 1)`, `checkValidity()`, `reportValidity()`.
+
+Slots: `label`, `left-icon`, `right-icon`.
+
+Events: `input` (`{value, valueAsNumber}`) on each accepted keystroke — `value` may be partial, e.g. `"12."`; `change` (same detail) on commit, so blur after an edit, Enter, or a step. Setting `value` in code fires neither. Both bubble and are composed.
+
+Accessibility: the inner control is `<input type="text" inputmode="decimal">` — `type="number"` forbids grouping separators and reports `""` for partially-typed values. `aria-label` / `aria-labelledby` on the host are forwarded to it. Up/Down arrows step the value by `step`.
+
+CSS: inherits the shared field tokens so it lines up with `y-input`, plus `--component-money-negative-color` for negative amounts at rest (defaults to `--error-content`). Parts: `input`, `error-text`.
+
+Behavior: rounding is half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01`, not the float result. Pasting scrubs currency symbols and grouping separators. Grouping-as-you-type is deliberately not done — reformatting happens on blur so the caret never jumps mid-edit. The rounding and formatting come from `@waggylabs/yumekit/modules/money.js` (below), which display-only components should use rather than re-deriving them.
+
+```html
+<y-money name="price" currency="USD" value="1234.56" required>
+    <span slot="label">Price</span>
+</y-money>
+<y-money
+    name="balance"
+    currency="EUR"
+    locale="de-DE"
+    allow-negative
+    negative-style="parentheses"
+></y-money>
+```
+
+---
+
+## Money utilities (`@waggylabs/yumekit/modules/money.js`)
+
+The currency rules behind `y-money`, as pure functions. Reach for these when a component **displays** an amount without collecting one — a ledger row, a running balance, a day total. Do not re-implement currency formatting locally; a second rounding rule is worse than an extra import.
+
+The contract: an amount is an integer number of minor units plus a currency code, never a float. `12.34` is rejected rather than rounded into a plausible-looking wrong number. Amounts reach `Intl` as decimal strings, so pass anything past 2^53 as a string or `BigInt` and it stays exact.
+
+| Export                                    | Notes                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `formatMoney(value, options)`             | integer minor units → localized string; `""` when `value` isn't integer minor units. Options: `currency` (default `USD`), `locale`, `display` (`symbol` \| `narrowSymbol` \| `code` \| `name` \| `none`), `sign` (`auto` \| `always` \| `never` \| `accounting` \| `parentheses`), `precision` |
+| `currencyPrecision(currency, locale)`     | minor-unit exponent — USD 2, JPY 0, KWD 3 — cached; `2` for a code `Intl` can't resolve                                                                                                                                                                                                        |
+| `toMinorUnits(value)`                     | canonical signed integer string, or `null`. `"-0"` → `"0"`                                                                                                                                                                                                                                     |
+| `minorUnitsToDecimal(minor, precision)`   | `("-1234", 2)` → `"-12.34"`                                                                                                                                                                                                                                                                    |
+| `decimalToMinorUnits(decimal, precision)` | `("1234.56", 2)` → `"123456"`, rounding first                                                                                                                                                                                                                                                  |
+| `minorUnitsSign(value)`                   | `-1` debit, `1` credit, `0` zero, `null` when not an amount                                                                                                                                                                                                                                    |
+| `multiplyMinorUnits(value, quantity)`     | amount × whole count, exact at any width, `null` when either side isn't whole                                                                                                                                                                                                                  |
+| `roundDecimal(decimal, precision)`        | half-away-from-zero over digits (`1.005` → `1.01`); scrubs separators out of raw author strings                                                                                                                                                                                                |
+| `DEFAULT_CURRENCY`                        | `"USD"`                                                                                                                                                                                                                                                                                        |
+
+```js
+import {
+    formatMoney,
+    minorUnitsSign,
+} from "@waggylabs/yumekit/modules/money.js";
+
+formatMoney(-1234, { currency: "USD", locale: "en-US" }); // "-$12.34"
+formatMoney(-1234, { sign: "accounting" }); // "($12.34)"
+minorUnitsSign(-1234); // -1
+```
+
+---
+
 ## y-paginator
 
 Page navigation with a configurable button window, ellipsis collapsing, prev/next, an optional items-per-page select, and SPA-friendly cancelable events. Page buttons render as `y-button` (flat when inactive, filled primary for the active page).
 
-| Attribute            | Values / Notes                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `current-page`       | active page, 1-indexed. Clamped to `[1, total-pages]`; reads `0` when `total-pages = 0`. Default `1`/`0`   |
-| `total-pages`        | total pages. `0` = no data (page list omitted). Default `0`                                                |
-| `page-count`         | max page buttons shown (excl. ellipses), default `5`. Auto-shrinks to fit host width, grows back up to max |
-| `boundary-count`     | pages always shown at each end (default `1`)                                                                |
-| `variant`            | `default` (page numbers + prev/next) \| `compact` (first/prev/status/next/last) \| `detailed` (+ text labels) |
-| `size`               | `small` \| `medium` (default) \| `large` — forwarded to page buttons and the select                        |
-| `disabled`           | boolean — disables every control                                                                           |
-| `hide-on-single-page`| default `true` — hides when `total-pages <= 1` and no size select; `"false"` to always render              |
-| `items-per-page`     | currently selected items-per-page value (number)                                                           |
-| `page-size-options`  | JSON `[10,25,50]` or `[{value,label}]` — appends an items-per-page `y-select`                               |
-| `page-size-label`    | label for the select (only visible in `variant="detailed"`, else used as `aria-label`)                     |
+| Attribute             | Values / Notes                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `current-page`        | active page, 1-indexed. Clamped to `[1, total-pages]`; reads `0` when `total-pages = 0`. Default `1`/`0`      |
+| `total-pages`         | total pages. `0` = no data (page list omitted). Default `0`                                                   |
+| `page-count`          | max page buttons shown (excl. ellipses), default `5`. Auto-shrinks to fit host width, grows back up to max    |
+| `boundary-count`      | pages always shown at each end (default `1`)                                                                  |
+| `variant`             | `default` (page numbers + prev/next) \| `compact` (first/prev/status/next/last) \| `detailed` (+ text labels) |
+| `size`                | `small` \| `medium` (default) \| `large` — forwarded to page buttons and the select                           |
+| `disabled`            | boolean — disables every control                                                                              |
+| `hide-on-single-page` | default `true` — hides when `total-pages <= 1` and no size select; `"false"` to always render                 |
+| `items-per-page`      | currently selected items-per-page value (number)                                                              |
+| `page-size-options`   | JSON `[10,25,50]` or `[{value,label}]` — appends an items-per-page `y-select`                                 |
+| `page-size-label`     | label for the select (only visible in `variant="detailed"`, else used as `aria-label`)                        |
 
 Events (cancelable): `page-change` — `{ page }`; `update:current-page` — `{ page }`; `page-size-change` — `{ pageSize, previous }`; `update:items-per-page` — `{ pageSize, previous }`
 Methods: `goTo(page)`, `next()`, `previous()`, `setPageSize(value)`
@@ -2010,8 +2254,12 @@ Keyboard: on a page button, `ArrowLeft`/`ArrowRight` move focus; `Home`/`End` ju
 ```html
 <y-paginator total-pages="50" current-page="5"></y-paginator>
 <y-paginator
-    total-pages="100" current-page="42" boundary-count="2"
-    variant="detailed" items-per-page="25" page-size-options="[10, 25, 50, 100]"
+    total-pages="100"
+    current-page="42"
+    boundary-count="2"
+    variant="detailed"
+    items-per-page="25"
+    page-size-options="[10, 25, 50, 100]"
 ></y-paginator>
 ```
 
@@ -2021,12 +2269,12 @@ Keyboard: on a page button, `ArrowLeft`/`ArrowRight` move focus; `Home`/`End` ju
 
 Hierarchical navigation tree for sidebars, doc nav, and file/folder explorers. Use when leaf nodes are navigation targets (links); for collapsible content regions use `y-panelbar` / `y-panel`.
 
-| Attribute     | Values / Notes                                                                              |
-| ------------- | ------------------------------------------------------------------------------------------- |
-| `exclusive`   | boolean — expanding one branch collapses siblings at the same level                         |
-| `selection`   | `single` (default) \| `none` (route-driven only)                                            |
-| `route-match` | `exact` (default) \| `prefix` (highlights ancestors of the active route) \| `off`           |
-| `aria-label`  | defaults to `"Tree"`                                                                         |
+| Attribute     | Values / Notes                                                                    |
+| ------------- | --------------------------------------------------------------------------------- |
+| `exclusive`   | boolean — expanding one branch collapses siblings at the same level               |
+| `selection`   | `single` (default) \| `none` (route-driven only)                                  |
+| `route-match` | `exact` (default) \| `prefix` (highlights ancestors of the active route) \| `off` |
+| `aria-label`  | defaults to `"Tree"`                                                              |
 
 Methods: `getAllItems()`, `getVisibleItems()`, `focusItem(item)`
 Events (bubble from items): `navigate` (cancelable, `{ href, item }`), `select` (`{ item, href }`), `expand` (`{ item }`), `collapse` (`{ item }`), `toggle` (`{ item, expanded }`)
@@ -2042,7 +2290,9 @@ CSS Parts: `tree`
             <span slot="label">Installation</span>
         </y-tree-item>
     </y-tree-item>
-    <y-tree-item href="/api"><span slot="label">API Reference</span></y-tree-item>
+    <y-tree-item href="/api"
+        ><span slot="label">API Reference</span></y-tree-item
+    >
 </y-tree>
 ```
 
@@ -2052,13 +2302,13 @@ CSS Parts: `tree`
 
 Individual node in a `y-tree`.
 
-| Attribute  | Values / Notes                                                                  |
-| ---------- | ------------------------------------------------------------------------------- |
-| `href`     | navigation target; the item behaves as a link when set                          |
-| `expanded` | boolean — children visible                                                       |
-| `selected` | boolean — active/current; auto-managed by the tree when `route-match` is on      |
-| `disabled` | boolean — non-interactive, skipped in keyboard nav                               |
-| `history`  | `push` (default) \| `replace` \| `false` (full-page nav)                         |
+| Attribute  | Values / Notes                                                              |
+| ---------- | --------------------------------------------------------------------------- |
+| `href`     | navigation target; the item behaves as a link when set                      |
+| `expanded` | boolean — children visible                                                  |
+| `selected` | boolean — active/current; auto-managed by the tree when `route-match` is on |
+| `disabled` | boolean — non-interactive, skipped in keyboard nav                          |
+| `history`  | `push` (default) \| `replace` \| `false` (full-page nav)                    |
 
 Methods: `expand()`, `collapse()`, `toggle()`, `activate()`
 Slots: `icon`, `label` (default slot also accepted), `suffix`, `children` (nested `<y-tree-item>`)
@@ -2072,41 +2322,41 @@ Keyboard: ArrowUp/Down move between visible items; ArrowRight expands/focuses fi
 
 Interactive data grid for large datasets — client- or server-side sorting, filtering, and pagination on top of the `y-table` visual language, plus row selection, inline cell editing, grouping, multi-column header groups, and virtual scrolling. Use `y-table` for static reports; use `y-data-grid` for admin panels, CRMs, and any list users slice, page, select, or edit.
 
-| Attribute             | Values / Notes                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------------ |
-| `columns`             | JSON tree. Leaves: `{key, label, type, sortable, filterable, editable, editor, options, required, min, max, pattern, width, minWidth, resizable, reorderable, align}`. Groups: `{label, align, children:[...]}` (nest for multi-row headers). `type`: `text`/`number`/`date`/`checkbox`; `editor`: `text`/`number`/`date`/`select`/`checkbox` (`options` required for `select`) |
-| `data`                | JSON array of row objects keyed by column `key`                                                        |
-| `mode`                | `client` (default) — local sort/filter/page/edit; `server` — parent handles via events                 |
-| `page-size`           | rows per page (default `20`)                                                                            |
-| `current-page`        | 1-indexed (default `1`)                                                                                 |
-| `total-rows`          | required in `server` mode for pagination math                                                          |
-| `loading`             | boolean — presents a loading state + `aria-busy` (see `loading-mode`)                                   |
-| `loading-mode`        | `auto` (default) \| `overlay` \| `skeleton`. `overlay` dims the body under a spinner; `skeleton` renders placeholder rows; `auto` picks skeleton when no rows are visible (first load) and overlay when rows are present (refetch). Empty state is suppressed while loading in every mode. Slot `skeleton` overrides the placeholder body; parts `skeleton-body`/`skeleton-row`/`skeleton-cell`; `--component-data-grid-skeleton-row-height` overrides row height |
-| `skeleton-rows`       | placeholder row count in skeleton mode (default `page-size`, else `10`; clamped)                         |
-| `striped`             | boolean (default false)                                                                                 |
-| `hover`               | boolean (default true; `hover="false"` to disable)                                                     |
-| `fixed-header`        | boolean (default true) — sticky header                                                                  |
-| `filtering`           | `inline` (per-column input row) \| `advanced` (funnel popover per header) \| omitted (none)             |
-| `enable-sorting`      | boolean (default true) — click cycles asc→desc→none; shift-click for multi-sort                         |
-| `enable-pagination`   | boolean (default true)                                                                                  |
-| `show-item-count`     | boolean (default false) — row count in footer                                                          |
-| `enable-selection`    | boolean — checkbox column + row selection (Ctrl/Cmd+click)                                              |
-| `enable-editing`      | boolean — inline cell editing                                                                           |
-| `selection-mode`      | `multi` (default) \| `single`                                                                           |
-| `edit-on`             | `click` (default) \| `focus`                                                                            |
-| `row-key`             | column key used as the stable row id (falls back to array index)                                       |
-| `selected`            | JSON array of row keys to mark selected (mirrors the `selectedKeys` property)                          |
-| `empty-message`       | text when no rows visible (default `"No data available"`)                                               |
-| `row-height`          | px per row (default `40`; required for `virtual`)                                                       |
-| `global-search`       | search query across all column values                                                                  |
-| `group-by`            | JSON array of column keys — collapsible group rows (nested when multiple). Hides pagination             |
-| `aggregates`          | JSON map of key → `sum`/`avg`/`min`/`max`/`count`, rendered in group header cells                       |
-| `virtual`             | boolean — render only the visible window (needs `viewport-height`). Hides pagination; not with `group-by` |
-| `viewport-height`     | px of scrollable viewport (required for virtualization)                                                |
-| `buffer-size`         | extra rows above/below the viewport (default `10`)                                                      |
-| `enable-header-menu`  | boolean — kebab menu per header (sort, column visibility submenu, move column)                          |
-| `enable-column-resize`| boolean — drag handle on each leaf header (double-click resets); emits `column-resize`. Opt out via `resizable:false` / clamp with `minWidth` |
-| `enable-column-reorder`| boolean — drag a leaf header to reorder (within sibling group when nested); emits `column-reorder`. Opt out via `reorderable:false` |
+| Attribute               | Values / Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`               | JSON tree. Leaves: `{key, label, type, sortable, filterable, editable, editor, options, required, min, max, pattern, width, minWidth, resizable, reorderable, align}`. Groups: `{label, align, children:[...]}` (nest for multi-row headers). `type`: `text`/`number`/`date`/`checkbox`; `editor`: `text`/`number`/`date`/`select`/`checkbox` (`options` required for `select`)                                                                                   |
+| `data`                  | JSON array of row objects keyed by column `key`                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `mode`                  | `client` (default) — local sort/filter/page/edit; `server` — parent handles via events                                                                                                                                                                                                                                                                                                                                                                            |
+| `page-size`             | rows per page (default `20`)                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `current-page`          | 1-indexed (default `1`)                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `total-rows`            | required in `server` mode for pagination math                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `loading`               | boolean — presents a loading state + `aria-busy` (see `loading-mode`)                                                                                                                                                                                                                                                                                                                                                                                             |
+| `loading-mode`          | `auto` (default) \| `overlay` \| `skeleton`. `overlay` dims the body under a spinner; `skeleton` renders placeholder rows; `auto` picks skeleton when no rows are visible (first load) and overlay when rows are present (refetch). Empty state is suppressed while loading in every mode. Slot `skeleton` overrides the placeholder body; parts `skeleton-body`/`skeleton-row`/`skeleton-cell`; `--component-data-grid-skeleton-row-height` overrides row height |
+| `skeleton-rows`         | placeholder row count in skeleton mode (default `page-size`, else `10`; clamped)                                                                                                                                                                                                                                                                                                                                                                                  |
+| `striped`               | boolean (default false)                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `hover`                 | boolean (default true; `hover="false"` to disable)                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `fixed-header`          | boolean (default true) — sticky header                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `filtering`             | `inline` (per-column input row) \| `advanced` (funnel popover per header) \| omitted (none)                                                                                                                                                                                                                                                                                                                                                                       |
+| `enable-sorting`        | boolean (default true) — click cycles asc→desc→none; shift-click for multi-sort                                                                                                                                                                                                                                                                                                                                                                                   |
+| `enable-pagination`     | boolean (default true)                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `show-item-count`       | boolean (default false) — row count in footer                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `enable-selection`      | boolean — checkbox column + row selection (Ctrl/Cmd+click)                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `enable-editing`        | boolean — inline cell editing                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `selection-mode`        | `multi` (default) \| `single`                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `edit-on`               | `click` (default) \| `focus`                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `row-key`               | column key used as the stable row id (falls back to array index)                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `selected`              | JSON array of row keys to mark selected (mirrors the `selectedKeys` property)                                                                                                                                                                                                                                                                                                                                                                                     |
+| `empty-message`         | text when no rows visible (default `"No data available"`)                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `row-height`            | px per row (default `40`; required for `virtual`)                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `global-search`         | search query across all column values                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `group-by`              | JSON array of column keys — collapsible group rows (nested when multiple). Hides pagination                                                                                                                                                                                                                                                                                                                                                                       |
+| `aggregates`            | JSON map of key → `sum`/`avg`/`min`/`max`/`count`, rendered in group header cells                                                                                                                                                                                                                                                                                                                                                                                 |
+| `virtual`               | boolean — render only the visible window (needs `viewport-height`). Hides pagination; not with `group-by`                                                                                                                                                                                                                                                                                                                                                         |
+| `viewport-height`       | px of scrollable viewport (required for virtualization)                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `buffer-size`           | extra rows above/below the viewport (default `10`)                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `enable-header-menu`    | boolean — kebab menu per header (sort, column visibility submenu, move column)                                                                                                                                                                                                                                                                                                                                                                                    |
+| `enable-column-resize`  | boolean — drag handle on each leaf header (double-click resets); emits `column-resize`. Opt out via `resizable:false` / clamp with `minWidth`                                                                                                                                                                                                                                                                                                                     |
+| `enable-column-reorder` | boolean — drag a leaf header to reorder (within sibling group when nested); emits `column-reorder`. Opt out via `reorderable:false`                                                                                                                                                                                                                                                                                                                               |
 
 Slots: `header-before`, `header-after`, `footer-before`, `footer-after`, `empty`, `loading`, `pagination`
 Events: `page-change` (cancelable, `{page, pageSize}`), `sort-change` (`{column, direction, sorts}`), `filter-change` (`{filters, operators, globalSearch}`), `row-select` (`{rows, keys, event}`), `cell-edit-start` (`{row, column, value}`), `cell-edit-end` (cancelable, `{row, column, value, oldValue}`), `cell-edit-cancel`, `row-click`, `row-dblclick`, `group-toggle` (`{path, groupKey, expanded}`), `column-resize` (`{column, width}`), `column-reorder` (`{column, fromIndex, toIndex, order}`)
@@ -2118,7 +2368,8 @@ CSS Custom Properties: `--component-data-grid-*` (border, border-radius, padding
 <y-data-grid
     columns='[{"key":"name","label":"Name"},{"key":"age","label":"Age","type":"number"}]'
     data='[{"name":"Alice","age":30},{"name":"Bob","age":25}]'
-    filtering="inline" page-size="10"
+    filtering="inline"
+    page-size="10"
 ></y-data-grid>
 ```
 
@@ -2128,25 +2379,25 @@ CSS Custom Properties: `--component-data-grid-*` (border, border-radius, padding
 
 Target-anchored, slot-based floating panel — the primitive bridging `y-tooltip` (hover/focus text) and `y-dialog` (centered modal) for rich positioned popovers: confirm prompts, action menus, comboboxes, inline help. Used internally by `y-help`.
 
-| Attribute                | Values / Notes                                                                                       |
-| ------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `open`                   | reflects/toggles visibility                                                                           |
-| `anchor`                 | element `id` (no `#`) or CSS selector (or an `Element` via property). Falls back to a `[slot="trigger"]` child |
-| `position`               | `auto` (default) \| `top`/`bottom`/`left`/`right` + aligned variants (`top-start`, `bottom-end`, …)   |
-| `offset`                 | px gap between anchor and popover (default `8`)                                                       |
-| `pointer`                | render the arrow (default `true`; `pointer="false"` to hide)                                          |
-| `trigger`                | space-separated subset of `click`/`hover`/`focus`/`context-menu`/`manual` (default `manual`)          |
-| `delay-show`/`delay-hide`| ms before open/close on hover/focus (default `0`)                                                     |
-| `modal`                  | `role="dialog"` + focus trap + Escape always closes                                                  |
-| `show-backdrop`          | dim backdrop (implicitly true with `modal` unless `="false"`)                                         |
-| `close-on-escape`        | default `true` (always on for modal)                                                                  |
-| `close-on-outside-click` | default `true`                                                                                        |
-| `close-on-anchor-click`  | default `false` — when true, re-clicking the anchor toggles closed                                    |
-| `portal`                 | render into the nearest `<y-theme>` (fallback `document.body`) to escape stacking/transform/clip contexts while keeping the theme |
-| `text`                   | simple text body (equivalent to a `<span>` in the default slot)                                       |
-| `color`                  | `base` (default) \| `primary`/`secondary`/`success`/`warning`/`error`/`help`, or any safe CSS color   |
-| `size`                   | `small` \| `medium` (default) \| `large`                                                              |
-| `disabled`               | triggers inert; `show()` is a no-op; an open popover closes                                           |
+| Attribute                 | Values / Notes                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `open`                    | reflects/toggles visibility                                                                                                       |
+| `anchor`                  | element `id` (no `#`) or CSS selector (or an `Element` via property). Falls back to a `[slot="trigger"]` child                    |
+| `position`                | `auto` (default) \| `top`/`bottom`/`left`/`right` + aligned variants (`top-start`, `bottom-end`, …)                               |
+| `offset`                  | px gap between anchor and popover (default `8`)                                                                                   |
+| `pointer`                 | render the arrow (default `true`; `pointer="false"` to hide)                                                                      |
+| `trigger`                 | space-separated subset of `click`/`hover`/`focus`/`context-menu`/`manual` (default `manual`)                                      |
+| `delay-show`/`delay-hide` | ms before open/close on hover/focus (default `0`)                                                                                 |
+| `modal`                   | `role="dialog"` + focus trap + Escape always closes                                                                               |
+| `show-backdrop`           | dim backdrop (implicitly true with `modal` unless `="false"`)                                                                     |
+| `close-on-escape`         | default `true` (always on for modal)                                                                                              |
+| `close-on-outside-click`  | default `true`                                                                                                                    |
+| `close-on-anchor-click`   | default `false` — when true, re-clicking the anchor toggles closed                                                                |
+| `portal`                  | render into the nearest `<y-theme>` (fallback `document.body`) to escape stacking/transform/clip contexts while keeping the theme |
+| `text`                    | simple text body (equivalent to a `<span>` in the default slot)                                                                   |
+| `color`                   | `base` (default) \| `primary`/`secondary`/`success`/`warning`/`error`/`help`, or any safe CSS color                               |
+| `size`                    | `small` \| `medium` (default) \| `large`                                                                                          |
+| `disabled`                | triggers inert; `show()` is a no-op; an open popover closes                                                                       |
 
 Slots: default (body, falls back to `text`), `trigger` (becomes the anchor), `header`, `footer`, `pointer`
 Events (bubble + composed): `popover-open` (cancelable, `{trigger}`), `popover-opened` (`{position}`), `popover-close` (cancelable, `{reason}`), `popover-closed` (`{reason}`), `popover-anchor-change` (`{from, to}`)
@@ -2177,14 +2428,14 @@ Accessibility: non-modal uses `role="tooltip"`; modal uses `role="dialog"` + `ar
 
 Presentational container that clips its slotted content into a geometric shape via CSS `clip-path`. Useful for avatar masks, decorative panels, and non-rectangular skeleton loaders.
 
-| Attribute          | Values / Notes                                                                                       |
-| ------------------ | ---------------------------------------------------------------------------------------------------- |
-| `type`             | `rectangle` (default) \| `circle` \| `ellipse` \| `star` \| `heart` \| `chat-bubble` \| `times` \| `cross` \| `polygon` |
-| `polygon-points`   | required for `type="polygon"` — comma-separated coords (e.g. `"50% 0%, 100% 50%, 50% 100%, 0% 50%"`) |
-| `radius`           | shape radius for `circle`/`ellipse`, or corner radius for `rectangle` (e.g. `"50%"`, `"12px"`)       |
-| `fit`              | `contain` (default) \| `cover` \| `fill` — `object-fit` for slotted `<img>`/`<video>`                |
-| `preserve-aspect`  | boolean — locks the container to 1:1                                                                  |
-| `size`             | `small` \| `medium` (default) \| `large`                                                             |
+| Attribute         | Values / Notes                                                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `type`            | `rectangle` (default) \| `circle` \| `ellipse` \| `star` \| `heart` \| `chat-bubble` \| `times` \| `cross` \| `polygon` |
+| `polygon-points`  | required for `type="polygon"` — comma-separated coords (e.g. `"50% 0%, 100% 50%, 50% 100%, 0% 50%"`)                    |
+| `radius`          | shape radius for `circle`/`ellipse`, or corner radius for `rectangle` (e.g. `"50%"`, `"12px"`)                          |
+| `fit`             | `contain` (default) \| `cover` \| `fill` — `object-fit` for slotted `<img>`/`<video>`                                   |
+| `preserve-aspect` | boolean — locks the container to 1:1                                                                                    |
+| `size`            | `small` \| `medium` (default) \| `large`                                                                                |
 
 Events: `ready` — `{ clipPath }`
 Slot: default — content to clip (commonly an image)
@@ -2193,8 +2444,16 @@ CSS Custom Properties: `--component-shape-clip-path` (computed), `--component-sh
 
 ```html
 <y-shape type="circle"><img src="avatar.jpg" alt="" /></y-shape>
-<y-shape type="rectangle" radius="16px" size="large" style="background: var(--primary-content--);"></y-shape>
-<y-shape type="polygon" polygon-points="50% 0%, 100% 50%, 50% 100%, 0% 50%"></y-shape>
+<y-shape
+    type="rectangle"
+    radius="16px"
+    size="large"
+    style="background: var(--primary-content--);"
+></y-shape>
+<y-shape
+    type="polygon"
+    polygon-points="50% 0%, 100% 50%, 50% 100%, 0% 50%"
+></y-shape>
 ```
 
 ---
@@ -2203,12 +2462,12 @@ CSS Custom Properties: `--component-shape-clip-path` (computed), `--component-sh
 
 Presentational placeholder that mimics content while it loads, reducing perceived latency and layout shift. Purely decorative — internals are `aria-hidden`. Compose several skeletons to approximate the final layout.
 
-| Attribute   | Values / Notes                                                                                                       |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| `variant`   | `text` (default) \| `circle` \| `rect` — `text` renders line bars, `circle` a circle, `rect` a rounded rectangle     |
-| `width`     | explicit width, any CSS length (e.g. `120px`, `60%`, `8rem`); applied via a validated inline custom property         |
+| Attribute   | Values / Notes                                                                                                        |
+| ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| `variant`   | `text` (default) \| `circle` \| `rect` — `text` renders line bars, `circle` a circle, `rect` a rounded rectangle      |
+| `width`     | explicit width, any CSS length (e.g. `120px`, `60%`, `8rem`); applied via a validated inline custom property          |
 | `height`    | explicit height, any CSS length; `text` defaults to `1em`/line, `circle` matches width, `rect` needs a height/content |
-| `lines`     | `text` only — number of line bars (default `1`); the last bar is ~60% width when `> 1`                               |
+| `lines`     | `text` only — number of line bars (default `1`); the last bar is ~60% width when `> 1`                                |
 | `animation` | `pulse` (default) \| `wave` \| `none` — CSS-only; both animated styles fall back to static under reduced motion       |
 
 Slot: default — optional sizing content, rendered `visibility: hidden` so the skeleton inherits its dimensions. Explicit `width`/`height` take precedence over slotted content.
@@ -2236,15 +2495,15 @@ CSS Custom Properties: `--component-skeleton-bg`, `--component-skeleton-highligh
 
 Full-width inline alert / notification region with optional icon, action, and dismiss button.
 
-| Attribute     | Values / Notes                                                                          |
-| ------------- | --------------------------------------------------------------------------------------- |
-| `color`       | `base` (default) \| `primary`/`secondary`/`success`/`error`/`warning`/`help`            |
-| `icon`        | registered icon name shown before the content                                           |
-| `position`    | `push` (default, in-flow) \| `overlap` (positioned over content)                        |
-| `sticky`      | boolean — with `position="overlap"`, fixes the banner to the viewport top on scroll     |
-| `dismissable` | boolean — shows a close button                                                          |
-| `dismissed`   | boolean — reflects/sets the hidden state                                                |
-| `size`        | `small` \| `medium` (default) \| `large`                                                |
+| Attribute     | Values / Notes                                                                      |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `color`       | `base` (default) \| `primary`/`secondary`/`success`/`error`/`warning`/`help`        |
+| `icon`        | registered icon name shown before the content                                       |
+| `position`    | `push` (default, in-flow) \| `overlap` (positioned over content)                    |
+| `sticky`      | boolean — with `position="overlap"`, fixes the banner to the viewport top on scroll |
+| `dismissable` | boolean — shows a close button                                                      |
+| `dismissed`   | boolean — reflects/sets the hidden state                                            |
+| `size`        | `small` \| `medium` (default) \| `large`                                            |
 
 Events: `dismiss` (cancelable) — fired before hiding; `preventDefault()` keeps it open
 Methods: `dismiss()`, `show()`
@@ -2265,14 +2524,14 @@ CSS Custom Properties: `--component-banner-gap`, `--component-banner-padding-{sm
 
 A group of overlapping avatars rendered horizontally or vertically.
 
-| Attribute     | Values / Notes                                                                          |
-| ------------- | --------------------------------------------------------------------------------------- |
-| `avatars`     | JSON array `[{ alt, src, color, shape }]`; when set, slotted children are ignored       |
-| `orientation` | `horizontal` (default) \| `vertical`                                                    |
-| `overlap`     | px each avatar overlaps the previous (default `8`)                                      |
-| `stack-order` | `last` (default; final on top) \| `first` (leading on top)                              |
-| `max`         | max visible avatars; `0` (default) = unlimited. Excess collapses into a `+N` indicator  |
-| `size`        | `small` \| `medium` \| `large` — applied to JSON-rendered avatars                       |
+| Attribute     | Values / Notes                                                                         |
+| ------------- | -------------------------------------------------------------------------------------- |
+| `avatars`     | JSON array `[{ alt, src, color, shape }]`; when set, slotted children are ignored      |
+| `orientation` | `horizontal` (default) \| `vertical`                                                   |
+| `overlap`     | px each avatar overlaps the previous (default `8`)                                     |
+| `stack-order` | `last` (default; final on top) \| `first` (leading on top)                             |
+| `max`         | max visible avatars; `0` (default) = unlimited. Excess collapses into a `+N` indicator |
+| `size`        | `small` \| `medium` \| `large` — applied to JSON-rendered avatars                      |
 
 Events: `y-overflow-click` — fired when the `+N` indicator is clicked (`{ count }`)
 CSS Parts: `overflow` (the `+N` button)
@@ -2292,20 +2551,20 @@ CSS Parts: `overflow` (the `+N` button)
 
 Wrapper that applies a preset CSS-based entrance/exit animation to its children via the Web Animations API.
 
-| Attribute       | Values / Notes                                                                                       |
-| --------------- | ---------------------------------------------------------------------------------------------------- |
+| Attribute       | Values / Notes                                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `animation`     | `fade` (default) \| `slide` \| `zoom-in` \| `zoom-out` \| `flip-horizontal` \| `flip-vertical` \| `rotate-in` \| `bounce` \| `shake` \| `scale` |
-| `direction`     | `up` (default) \| `down` \| `left` \| `right` — used by `slide`/`bounce`/`shake`                      |
-| `duration`      | ms (default `300`)                                                                                   |
-| `delay`         | ms before start (default `0`)                                                                        |
-| `easing`        | CSS easing keyword, `cubic-bezier(...)`, or `steps(...)` (default `"ease-out"`)                       |
-| `trigger`       | `load` (default) \| `visible` (plays on scroll-in via `IntersectionObserver`) \| `manual`            |
-| `once`          | `"true"` (default) \| `"false"` — when false, visibility triggers re-fire on each entry              |
-| `reverse`       | boolean — plays in reverse                                                                           |
-| `stagger`       | boolean — animates each child with a per-index delay                                                 |
-| `stagger-delay` | per-child delay in ms when `stagger` is set (default `50`)                                            |
-| `disabled`      | boolean — blocks playback                                                                            |
-| `hidden`        | standard HTML attribute — cancels any in-flight animation and hides the host                         |
+| `direction`     | `up` (default) \| `down` \| `left` \| `right` — used by `slide`/`bounce`/`shake`                                                                |
+| `duration`      | ms (default `300`)                                                                                                                              |
+| `delay`         | ms before start (default `0`)                                                                                                                   |
+| `easing`        | CSS easing keyword, `cubic-bezier(...)`, or `steps(...)` (default `"ease-out"`)                                                                 |
+| `trigger`       | `load` (default) \| `visible` (plays on scroll-in via `IntersectionObserver`) \| `manual`                                                       |
+| `once`          | `"true"` (default) \| `"false"` — when false, visibility triggers re-fire on each entry                                                         |
+| `reverse`       | boolean — plays in reverse                                                                                                                      |
+| `stagger`       | boolean — animates each child with a per-index delay                                                                                            |
+| `stagger-delay` | per-child delay in ms when `stagger` is set (default `50`)                                                                                      |
+| `disabled`      | boolean — blocks playback                                                                                                                       |
+| `hidden`        | standard HTML attribute — cancels any in-flight animation and hides the host                                                                    |
 
 Events (bubble + composed): `animation-start`, `animation-end`, `animation-cancel` — each `{ animation, element }`
 Methods: `play()` → `Promise<void>`, `reset()`, `abort()`, `setAnimation(name, duration?, easing?)`
@@ -2319,7 +2578,13 @@ Accessibility: respects `prefers-reduced-motion: reduce` — animations are skip
     <y-card>Hello</y-card>
 </y-animate>
 
-<y-animate trigger="visible" animation="slide" direction="up" stagger stagger-delay="80">
+<y-animate
+    trigger="visible"
+    animation="slide"
+    direction="up"
+    stagger
+    stagger-delay="80"
+>
     <y-card>One</y-card>
     <y-card>Two</y-card>
 </y-animate>

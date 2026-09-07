@@ -377,6 +377,8 @@ export class YumeColorpicker extends HTMLElement {
         const fields = this._getChannelFields();
 
         this._channelInputs.innerHTML = "";
+        // Drives the wrapping rule: the stylesheet cannot count the channels.
+        this._channelInputs.dataset.count = String(fields.length);
         fields.forEach((f) => {
             const input = document.createElement("y-input");
             input.setAttribute("size", size);
@@ -777,18 +779,22 @@ export class YumeColorpicker extends HTMLElement {
                 --_swatch-size: var(--sizing-medium, 40px);
                 --_canvas-width: var(--component-colorpicker-width, 260px);
                 --_canvas-height: var(--component-colorpicker-canvas-height, 160px);
+                /* Tracks the label text, which grows with the size. */
+                --_format-width: 68px;
             }
 
             :host([size="small"]) {
                 --_swatch-size: var(--sizing-small, 32px);
                 --_canvas-width: var(--component-colorpicker-width-small, 200px);
                 --_canvas-height: var(--component-colorpicker-canvas-height-small, 120px);
+                --_format-width: 62px;
             }
 
             :host([size="large"]) {
                 --_swatch-size: var(--sizing-large, 56px);
                 --_canvas-width: var(--component-colorpicker-width-large, 320px);
                 --_canvas-height: var(--component-colorpicker-canvas-height-large, 200px);
+                --_format-width: 78px;
             }
 
             .colorpicker {
@@ -896,6 +902,7 @@ export class YumeColorpicker extends HTMLElement {
             /* ── Inputs row ── */
             .inputs-row {
                 display: flex;
+                flex-wrap: wrap;
                 align-items: flex-end;
                 gap: var(--spacing-x-small, 4px);
             }
@@ -913,7 +920,7 @@ export class YumeColorpicker extends HTMLElement {
 
             .format-select {
                 flex-shrink: 0;
-                width: 72px;
+                width: var(--_format-width);
             }
 
             .channel-inputs {
@@ -923,9 +930,46 @@ export class YumeColorpicker extends HTMLElement {
                 min-width: 0;
             }
 
+            /* Rather than squeeze the channels next to the swatch and the
+               format select until the digits no longer fit, drop them onto a
+               line of their own. How much room they need depends on how many
+               there are: a lone hex field is happy in whatever is left, while
+               four channels never fit alongside anything. (Hex is always a
+               single field — alpha rides along in the notation — so the counts
+               that occur are 1, 3, and 4.) */
+            .channel-inputs[data-count="3"] {
+                min-width: 132px;
+            }
+
+            .channel-inputs[data-count="4"] {
+                min-width: 100%;
+            }
+
             .channel-inputs y-input {
                 flex: 1;
                 min-width: 0;
+                /* A channel box is a fraction of the picker's width, so the
+                   default field padding and text size leave no room for three
+                   digits — least of all with four channels sharing the row. */
+                font-size: 0.875em;
+                --component-inputs-padding-small: 2px;
+                --component-inputs-padding-medium: 4px;
+                --component-inputs-padding-large: 6px;
+            }
+
+            /* Number spinners reserve space inside the box and paint over the
+               value — at this width they hide it entirely, and they are too
+               small to aim at anyway. Arrow keys still step the channel. */
+            .channel-inputs y-input::part(input) {
+                appearance: textfield;
+                text-align: center;
+            }
+
+            .channel-inputs y-input::part(input)::-webkit-outer-spin-button,
+            .channel-inputs y-input::part(input)::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                appearance: none;
+                margin: 0;
             }
 
             .channel-inputs y-input.full-width {

@@ -236,11 +236,11 @@ export class YumeCarousel extends HTMLElement {
         let target = Math.round(Number(index));
         if (!Number.isFinite(target)) return;
 
-        if (this.loop) {
-            target = ((target % total) + total) % total;
-        } else {
-            target = Math.max(0, Math.min(target, total - 1));
-        }
+        if (this.loop) target = ((target % total) + total) % total;
+        // The track stops at the last full view, so an index past it can never
+        // be scrolled to — clamping keeps `_index` in step with the scroll
+        // position instead of letting it settle back a moment later.
+        target = Math.max(0, Math.min(target, this._maxIndex()));
 
         this._navigate(target, true);
     }
@@ -598,8 +598,7 @@ export class YumeCarousel extends HTMLElement {
 
     _maxIndex() {
         const total = this._slides.length;
-        const visible = Math.ceil(this.perView);
-        return Math.max(0, total - visible);
+        return Math.max(0, total - this._visibleCount());
     }
 
     _navigate(index, smooth) {
@@ -826,9 +825,14 @@ export class YumeCarousel extends HTMLElement {
             return;
         }
 
+        // Every slide in view is marked, so `per-view="2"` lights two dots.
+        // The last window overlaps the previous one when the slides don't
+        // divide evenly, which is what makes the final slide's dot reachable.
+        const end = this._index + this._visibleCount();
         const dots = this._pagination.querySelectorAll(".dot");
         dots.forEach((dot, i) => {
-            if (i === this._index) dot.setAttribute("aria-current", "true");
+            const visible = i >= this._index && i < end;
+            if (visible) dot.setAttribute("aria-current", "true");
             else dot.removeAttribute("aria-current");
         });
     }
@@ -841,12 +845,21 @@ export class YumeCarousel extends HTMLElement {
 
     _updateVisibility() {
         const start = this._index;
-        const end = start + Math.ceil(this.perView);
+        const end = start + this._visibleCount();
         this._slides.forEach((slide, i) => {
             const hidden = i < start || i >= end;
             slide.toggleAttribute("inert", hidden);
             slide.setAttribute("aria-hidden", hidden ? "true" : "false");
         });
+    }
+
+    /**
+     * Slides on screen at once. A fractional `per-view` peeks the next slide,
+     * which counts as visible — it is reachable and not inert.
+     * @returns {number}
+     */
+    _visibleCount() {
+        return Math.ceil(this.perView);
     }
 
     _wireEvents() {

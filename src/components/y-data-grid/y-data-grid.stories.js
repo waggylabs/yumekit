@@ -1,4 +1,5 @@
 import "./y-data-grid.js";
+import "../y-key/y-key.js";
 import "../y-theme/y-theme.js";
 
 // Storybook renders templates as plain HTML strings, and we wrap JSON attribute
@@ -354,7 +355,8 @@ export const InlineEditing = {
     render: () => `
         <div style="${wrapStyle}">
             <p style="margin:0 0 12px;font-family:sans-serif;color:var(--base-content,#333)">
-                Click any cell to edit. Press <kbd>Enter</kbd> to commit, <kbd>Esc</kbd> to cancel.
+                Click any cell to edit. Press <y-key size="small" keys="enter"></y-key> to commit,
+                <y-key size="small" keys="esc"></y-key> to cancel.
                 The <em>Name</em> column is required.
             </p>
             <y-data-grid

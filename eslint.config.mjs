@@ -26,6 +26,10 @@ export default [{
     languageOptions: { globals: globals.node },
     rules: { "no-console": "off" },
 }, {
+    // Root tooling config runs in Node.
+    files: ["*.config.js", "*.config.mjs"],
+    languageOptions: { globals: globals.node },
+}, {
     // Tests run in the browser under web-test-runner's mocha.
     files: ["src/**/*.test.js", "test/**/*.test.js"],
     languageOptions: { globals: { ...globals.browser, ...globals.mocha } },

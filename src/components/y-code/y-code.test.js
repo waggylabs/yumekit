@@ -2,6 +2,21 @@ import { html, fixture, expect, oneEvent, nextFrame } from "@open-wc/testing";
 import sinon from "sinon";
 import "./y-code.js";
 
+/**
+ * The copied line fades in over `transition: background 0.4s`. WebKit reports
+ * the interpolated color from the first frame, so a read taken the moment the
+ * class lands still sees the transparent start; Chromium reports the target
+ * straight away. Wait for the color to arrive rather than racing it.
+ */
+async function paintedBackground(el, frames = 40) {
+    let color = getComputedStyle(el).backgroundColor;
+    for (let i = 0; i < frames && /, 0\)$|^transparent$/.test(color); i++) {
+        await nextFrame();
+        color = getComputedStyle(el).backgroundColor;
+    }
+    return color;
+}
+
 describe("YumeCode", () => {
     let sandbox;
     beforeEach(() => {
@@ -46,22 +61,20 @@ describe("YumeCode", () => {
         // changes and swap its children without touching attributes. A
         // MutationObserver keeps the rendered output in sync with the children.
         const el = await fixture("<y-code>old source</y-code>");
-        expect(el.shadowRoot.querySelector(".line-content").textContent).to.equal(
-            "old source",
-        );
+        expect(
+            el.shadowRoot.querySelector(".line-content").textContent,
+        ).to.equal("old source");
 
         el.textContent = "new source";
         await nextFrame();
 
-        expect(el.shadowRoot.querySelector(".line-content").textContent).to.equal(
-            "new source",
-        );
+        expect(
+            el.shadowRoot.querySelector(".line-content").textContent,
+        ).to.equal("new source");
     });
 
     it("renders an aria-label that includes the language and line count", async () => {
-        const el = await fixture(
-            '<y-code language="javascript">a\nb</y-code>',
-        );
+        const el = await fixture('<y-code language="javascript">a\nb</y-code>');
         const pre = el.shadowRoot.querySelector("pre.code");
         expect(pre.getAttribute("aria-label")).to.equal(
             "javascript code, 2 lines",
@@ -179,7 +192,7 @@ describe("YumeCode", () => {
             const line = el.shadowRoot.querySelector('.line[data-line="1"]');
             expect(line.classList.contains("is-copied")).to.be.true;
 
-            const bg = getComputedStyle(line).backgroundColor;
+            const bg = await paintedBackground(line);
             expect(bg).to.not.equal("rgba(0, 0, 0, 0)");
             expect(bg).to.not.equal("transparent");
         } finally {
@@ -313,7 +326,7 @@ describe("YumeCode", () => {
         // a plain string (not an html`` template) to keep the formatter from
         // reflowing it and stranding newlines/indentation inside the slot.
         const el = await fixture(
-            "<y-code><div slot=\"highlighted\">" +
+            '<y-code><div slot="highlighted">' +
                 '<span class="token keyword">const</span> x = ' +
                 '<span class="token number">1</span>;' +
                 "</div></y-code>",
@@ -329,7 +342,7 @@ describe("YumeCode", () => {
 
     it("strips disallowed elements from the highlighted slot", async () => {
         const el = await fixture(
-            "<y-code><div slot=\"highlighted\">" +
+            '<y-code><div slot="highlighted">' +
                 "<script>alert(1)</script>" +
                 '<span class="keyword">ok</span>' +
                 "</div></y-code>",
@@ -354,7 +367,7 @@ describe("YumeCode", () => {
 
     it("splits highlighted content into lines at \\n boundaries", async () => {
         const el = await fixture(
-            "<y-code><div slot=\"highlighted\">" +
+            '<y-code><div slot="highlighted">' +
                 '<span class="keyword">a</span>\n' +
                 '<span class="keyword">b</span>\n' +
                 '<span class="keyword">c</span>' +

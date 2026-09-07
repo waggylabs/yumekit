@@ -770,7 +770,7 @@ export class YumeDate extends HTMLElement {
             return `${datePart}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
         };
 
-        let startVal = "";
+        let startVal;
         let endVal = "";
         if (isRange && this.value) {
             const [s, e] = this.value.split(",");

@@ -8,6 +8,17 @@ const slides = (n) =>
 const make = (attrs = "", n = 3) =>
     fixture(`<y-carousel ${attrs}>${slides(n)}</y-carousel>`);
 
+// Indices of the dots marked current, and of the slides that are not inert.
+const currentDots = (el) =>
+    [...el.shadowRoot.querySelectorAll(".dot")]
+        .map((dot, i) => (dot.getAttribute("aria-current") === "true" ? i : -1))
+        .filter((i) => i >= 0);
+
+const visibleSlides = (el) =>
+    [...el.children]
+        .map((slide, i) => (slide.hasAttribute("inert") ? -1 : i))
+        .filter((i) => i >= 0);
+
 describe("<y-carousel>", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => sandbox.restore());
@@ -39,6 +50,32 @@ describe("<y-carousel>", () => {
         it("renders one dot per slide", async () => {
             const el = await make("", 4);
             expect(el.shadowRoot.querySelectorAll(".dot").length).to.equal(4);
+        });
+
+        it("marks one dot current at the default per-view", async () => {
+            const el = await make("", 4);
+            expect(currentDots(el)).to.eql([0]);
+        });
+
+        it("marks a dot for every slide in view when per-view > 1", async () => {
+            const el = await make('per-view="2"', 5);
+            expect(currentDots(el)).to.eql([0, 1]);
+        });
+
+        it("marks the last slide's dot current at the final index", async () => {
+            const el = await make('per-view="2"', 5);
+            // 5 slides two at a time stops at index 3, so the fifth dot only
+            // ever lights up if the whole visible window is marked.
+            el._index = el._maxIndex();
+            el._updateUi();
+            expect(currentDots(el)).to.eql([3, 4]);
+        });
+
+        it("keeps the current dots in step with the visible slides", async () => {
+            const el = await make('per-view="2"', 5);
+            el._index = 2;
+            el._updateUi();
+            expect(currentDots(el)).to.eql(visibleSlides(el));
         });
 
         it("renders a fraction indicator when pagination='fraction'", async () => {
@@ -128,6 +165,15 @@ describe("<y-carousel>", () => {
             const spy = sandbox.stub(el, "_scrollToSlide");
             el.goTo(99);
             expect(spy.firstCall.args[0]).to.equal(2);
+        });
+
+        it("goTo() clamps to the last reachable index when per-view > 1", async () => {
+            const el = await make('per-view="2"', 5);
+            const spy = sandbox.stub(el, "_scrollToSlide");
+            // Slide 5 sits in the index-3 window; targeting index 4 would
+            // leave `_index` ahead of a track that cannot scroll that far.
+            el.goTo(4);
+            expect(spy.firstCall.args[0]).to.equal(3);
         });
 
         it("goTo() wraps negative values when loop is on", async () => {

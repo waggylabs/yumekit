@@ -1,4 +1,4 @@
-import { fixture, expect, html } from "@open-wc/testing";
+import { fixture, expect, html, waitUntil } from "@open-wc/testing";
 import "./y-avatar.js";
 
 // 1x1 transparent GIF — a valid image source so tests that need the <img> to
@@ -192,13 +192,18 @@ describe("YumeAvatar", () => {
         const el = await fixture(
             html`<y-avatar src="/img/does-not-exist.png" alt="Jane Doe"></y-avatar>`,
         );
-        // Give the natural error event a tick to fire after the 404.
-        await new Promise((r) => setTimeout(r, 0));
+        // Wait for the real 404 to surface as an error event. A fixed tick
+        // raced the network: under parallel load the request outlives it, and
+        // the failure then landed as a DOM-node assertion, which takes the
+        // whole test session down with it.
+        await waitUntil(
+            () => el.shadowRoot.querySelectorAll("img").length === 0,
+            "the failed image should be replaced by initials",
+            { timeout: 5000 },
+        );
 
-        expect(el.shadowRoot.querySelector("img")).to.not.exist;
-        const h5 = el.shadowRoot.querySelector("h5");
-        expect(h5).to.exist;
-        expect(h5.textContent).to.equal("JD");
+        expect(el.shadowRoot.querySelectorAll("h5").length).to.equal(1);
+        expect(el.shadowRoot.querySelector("h5").textContent).to.equal("JD");
     });
 
     it("re-attempts the image after src changes following a failure", async () => {
@@ -273,8 +278,8 @@ describe("YumeAvatar", () => {
             );
             await new Promise((r) => setTimeout(r, 0));
             // Still a skeleton — the image never rendered to fail.
-            expect(el.shadowRoot.querySelector("y-skeleton")).to.exist;
-            expect(el.shadowRoot.querySelector("img")).to.not.exist;
+            expect(el.shadowRoot.querySelectorAll("y-skeleton").length).to.equal(1);
+            expect(el.shadowRoot.querySelectorAll("img").length).to.equal(0);
         });
     });
 

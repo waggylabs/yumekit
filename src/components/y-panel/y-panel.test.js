@@ -303,7 +303,7 @@ describe("YumePanel — href / route matching", () => {
             return origAdd(type, ...args);
         };
 
-        const el = await fixture(html`
+        await fixture(html`
             <y-panel href="/some-path">
                 <span slot="label">Link</span>
             </y-panel>

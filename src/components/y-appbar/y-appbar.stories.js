@@ -24,14 +24,12 @@ const navItemsWithHrefs = JSON.stringify([
     { text: "Reports", icon: "waveform", href: "/reports" },
 ]);
 
-// Force iframe rendering so y-menu's position:fixed popouts anchor to the
-// story viewport, not the docs page.
-const docsParams = { docs: { story: { inline: false, height: "300px" } } };
-
 export default {
     title: "Navigation/AppBar",
     tags: ["autodocs"],
-    parameters: docsParams,
+    // Reserve the room a nav item's dropdown needs, so the docs preview grows
+    // to hold one instead of cropping it at the fold.
+    decorators: [(story) => `<div style="min-height:260px">${story()}</div>`],
     argTypes: {
         size: {
             control: "select",
@@ -98,7 +96,6 @@ export const Sizes = {
             </y-appbar>
         </div>
     `,
-    parameters: { docs: { story: { inline: false, height: "440px" } } },
 };
 
 export const NavigateEvent = {

@@ -8,6 +8,11 @@ on:
                 required: false
                 type: string
                 default: storybook.yumekit.com
+            ref:
+                description: "Commit or tag to build; defaults to the triggering ref"
+                required: false
+                type: string
+                default: ""
     workflow_dispatch:
         inputs:
             bucket:
@@ -24,6 +29,8 @@ jobs:
             id-token: write
         steps:
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ inputs.ref }}
 
             - uses: actions/setup-node@v4
               with:

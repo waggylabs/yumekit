@@ -8,6 +8,17 @@ describe("YumeIcon", () => {
             .map((r) => r.cssText)
             .join(" ");
     }
+
+    /**
+     * Matches a `stroke-width` declaration regardless of how the engine
+     * serializes it: the component emits a unitless number, which Firefox
+     * reads back with a `px` unit while Chromium and WebKit keep it bare.
+     * Both render identically.
+     */
+    function strokeWidth(value) {
+        const number = String(value).replace(".", "\\.");
+        return new RegExp(`stroke-width:\\s*${number}(?:px)?\\s*!important`);
+    }
     it("renders with default attributes", async () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         const wrapper = el.shadowRoot.querySelector(".icon-wrapper");
@@ -199,7 +210,7 @@ describe("YumeIcon", () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         expect(el.weight).to.equal("regular");
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 2 !important");
+        expect(style).to.match(strokeWidth("2"));
     });
 
     it("applies thin weight", async () => {
@@ -207,7 +218,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="thin"></y-icon>`,
         );
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 1.5 !important");
+        expect(style).to.match(strokeWidth("1.5"));
     });
 
     it("applies regular weight", async () => {
@@ -215,7 +226,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="regular"></y-icon>`,
         );
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 2 !important");
+        expect(style).to.match(strokeWidth("2"));
     });
 
     it("applies thick weight", async () => {
@@ -223,7 +234,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="thick"></y-icon>`,
         );
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 2.5 !important");
+        expect(style).to.match(strokeWidth("2.5"));
     });
 
     it("ignores unknown weight values", async () => {
@@ -238,7 +249,7 @@ describe("YumeIcon", () => {
         const el = await fixture(html`<y-icon name="home"></y-icon>`);
         el.setAttribute("weight", "thick");
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 2.5 !important");
+        expect(style).to.match(strokeWidth("2.5"));
     });
 
     it("weight property setter updates attribute", async () => {
@@ -328,7 +339,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="x-thin"></y-icon>`,
         );
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 1 !important");
+        expect(style).to.match(strokeWidth("1"));
     });
 
     it("applies x-thick weight", async () => {
@@ -336,7 +347,7 @@ describe("YumeIcon", () => {
             html`<y-icon name="home" weight="x-thick"></y-icon>`,
         );
         const style = getCSS(el);
-        expect(style).to.include("stroke-width: 3 !important");
+        expect(style).to.match(strokeWidth("3"));
     });
 
     it("applies x-small size", async () => {

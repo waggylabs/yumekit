@@ -1,10 +1,12 @@
 import "../y-icon/y-icon.js";
+import { containingBlockRect } from "../../modules/floating.js";
 import {
     applyControlError,
     coerceRichData,
     contrastTextColor,
     createElement as _el,
     forwardControlAttributes,
+    getColorSoftPair,
     isSafeCssColor,
     manageLabelVisibility,
     resolveThemeMountPoint,
@@ -129,7 +131,11 @@ export class YumeSelect extends HTMLElement {
         }
 
         if (name === "aria-label" || name === "aria-labelledby") {
-            forwardControlAttributes(this, this._focusableControl(), SELECT_FORWARDED_ATTRIBUTES);
+            forwardControlAttributes(
+                this,
+                this._focusableControl(),
+                SELECT_FORWARDED_ATTRIBUTES,
+            );
         }
 
         if (name === "name") {
@@ -353,7 +359,11 @@ export class YumeSelect extends HTMLElement {
         this.shadowRoot.replaceChildren(this._generateTree());
         this._queryRefs();
         manageLabelVisibility(this.labelWrapper);
-        forwardControlAttributes(this, this._focusableControl(), SELECT_FORWARDED_ATTRIBUTES);
+        forwardControlAttributes(
+            this,
+            this._focusableControl(),
+            SELECT_FORWARDED_ATTRIBUTES,
+        );
         this._attachEventListeners();
         this._updateErrorText();
         this._updateDisplay();
@@ -533,7 +543,8 @@ export class YumeSelect extends HTMLElement {
             }
 
             .dropdown-item:hover {
-                background: var(--component-select-hover-background);
+                background: var(--option-soft-background, var(--component-select-hover-background));
+                color: var(--option-soft-color, inherit);
             }
 
             .dropdown-item.selected {
@@ -844,17 +855,21 @@ export class YumeSelect extends HTMLElement {
             containerChildren,
         );
 
-        const dropdown = _el("div", { class: "dropdown", part: "dropdown", role: "listbox" }, [
-            ...this.options.map((opt) =>
-                this._buildDropdownItem(opt, valueSet.has(opt.value)),
-            ),
-            (() => {
-                const noResults = _el("div", { class: "no-results" });
-                noResults.style.display = "none";
-                noResults.textContent = "No results";
-                return noResults;
-            })(),
-        ]);
+        const dropdown = _el(
+            "div",
+            { class: "dropdown", part: "dropdown", role: "listbox" },
+            [
+                ...this.options.map((opt) =>
+                    this._buildDropdownItem(opt, valueSet.has(opt.value)),
+                ),
+                (() => {
+                    const noResults = _el("div", { class: "no-results" });
+                    noResults.style.display = "none";
+                    noResults.textContent = "No results";
+                    return noResults;
+                })(),
+            ],
+        );
 
         const error = _el("div", {
             class: "error-text",
@@ -882,6 +897,12 @@ export class YumeSelect extends HTMLElement {
             "aria-selected": isSelected ? "true" : "false",
         });
         item.textContent = opt.label;
+
+        const soft = opt.color ? getColorSoftPair(opt.color) : null;
+        if (soft) {
+            item.style.setProperty("--option-soft-background", soft[0]);
+            item.style.setProperty("--option-soft-color", soft[1]);
+        }
 
         if (isSelected && opt.color) {
             const semantic = SEMANTIC_COLOR_VARS[opt.color];
@@ -1020,26 +1041,36 @@ export class YumeSelect extends HTMLElement {
         const gap = 4;
         const maxH = 200;
         const spaceBelow = window.innerHeight - rect.bottom - gap;
+        const opensDown = spaceBelow >= maxH || spaceBelow >= rect.top;
 
         if (this.portal) {
             // Viewport-relative positioning so the dropdown escapes any ancestor
             // with `overflow: auto/hidden/scroll`.
+            //
+            // A `position: fixed` element resolves against the nearest ancestor
+            // that establishes a containing block — a transform, filter,
+            // perspective, backdrop-filter, will-change or contain — rather than
+            // against the viewport, so the field coordinates read above land
+            // offset by that ancestor unless they are rebased onto its box.
+            // With no such ancestor the box is the viewport and nothing changes.
+            const cb = containingBlockRect(this.dropdown);
+
             this.dropdown.style.position = "fixed";
-            this.dropdown.style.left = `${rect.left}px`;
+            this.dropdown.style.left = `${rect.left - cb.left}px`;
             this.dropdown.style.right = "auto";
             this.dropdown.style.width = `${rect.width}px`;
-            if (spaceBelow >= maxH || spaceBelow >= rect.top) {
-                this.dropdown.style.top = `${rect.bottom + gap}px`;
+            if (opensDown) {
+                this.dropdown.style.top = `${rect.bottom + gap - cb.top}px`;
                 this.dropdown.style.bottom = "auto";
             } else {
                 this.dropdown.style.top = "auto";
-                this.dropdown.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+                this.dropdown.style.bottom = `${cb.bottom - rect.top + gap}px`;
             }
             return;
         }
 
         const wrapper = this.selectContainer.parentElement;
-        if (spaceBelow >= maxH || spaceBelow >= rect.top) {
+        if (opensDown) {
             this.dropdown.style.top = `${this.selectContainer.offsetTop + this.selectContainer.offsetHeight + gap}px`;
             this.dropdown.style.bottom = "auto";
         } else {

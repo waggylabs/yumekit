@@ -31,13 +31,65 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.5.4]
+## [0.5.5-beta.3]
+
+### Added
+
+- `y-key`, a keycap primitive for documenting keyboard shortcuts. `keys` takes a `+`-joined chord (`keys="mod+shift+k"`) and resolves it per platform, with `platform` and `notation` to pin the rendering and `separator`, `combined` and `pressed` to shape it. Chord mode names the host with the spoken form, so `⌘⇧K` is announced "Command Shift K" rather than "place of interest sign".
+
+- `y-gauge`, a radial gauge. It reads as a KPI dial by default — neutral track, accent fill, big center number — and becomes an instrument dial with `needle`, `ticks`, `tick-labels` and a `ranges` array of colored zones. `start-angle` / `end-angle` set the sweep, from a semicircle to a closed circle, and `target` marks a goal on the arc.
+
+- `safeColor` in `@waggylabs/yumekit/modules/helpers.js`, the looser sibling of `isSafeCssColor`: it also accepts a bare `var(--token)` reference, for the cases where naming a theme token is the ordinary way to color something, such as a `y-gauge` zone.
+
+- `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
+
+- `y-toggle`, a form-associated segmented control: a button group visually, a radio group semantically, with a thumb that slides between segments as the value changes. Options come from an `options` array.
+
+- `@waggylabs/yumekit/modules/money.js`, the currency rules behind `y-money` as a public module. It exports `formatMoney`, `currencyPrecision`, `toMinorUnits`, `minorUnitsToDecimal`, `decimalToMinorUnits`, `minorUnitsSign`, `multiplyMinorUnits` and `roundDecimal`, all pure and all working in integer minor units rather than floats, so an amount can be rounded and formatted without an input on screen.
+
+- `@waggylabs/yumekit/modules/tokenizer.js`, the syntax tokenizer behind `y-code` as a public module. It exports `tokenize(language, source)`, returning `{ type, text }` tokens whose `type` values are Prism-compatible class names, and `isSupportedLanguage(language)`, so code can be colored a line at a time without embedding a whole `y-code`.
+
+- Sixteen icons, all with filled variants: `currency` and `wallet` for monetary UI; `file`, `file-plus`, and `file-text` for documents; `crop`, `flip-horizontal`, `flip-vertical`, `rotate-left`, and `rotate-right` for image editing; `bank` for the institution behind an account; `utensils`, `cart-shopping`, and `car` for spend categories that were falling back to `tag`; `refresh` for retry and reload; and `bell-slash` for a muted notification.
+
+### Changed
+
+- **Breaking.** The `undo` and `redo` icons were circular arrows, which is what a rotation control looks like, not an undo control. Those two glyphs are now named `rotate-left` and `rotate-right`, and `undo` / `redo` are new return-arrow glyphs. Any `<y-icon name="undo">` or `name="redo"` that meant _rotate_ must switch to the new names; anything that meant _undo_ keeps working and simply gets the better glyph. `y-editor`'s toolbar is unaffected.
+
+- `tokenizer.js` moved from `src/components/y-code/` to `src/modules/`. `y-code`'s own behaviour is unchanged; the file was private to a component folder and is now published with the rest of `modules/`.
+
+- Options carrying a `color` now hover in that color in `y-select` and `y-tokens`, the color as the text over a light wash of it, instead of the neutral gray hover that gave no hint of the assignment until the option was committed. A selected option keeps its solid fill, so the two states stay distinct. Options without a color are unchanged.
+
+### Fixed
+
+- `y-menu` opened offset from its anchor whenever any ancestor carried a `transform`, `filter`, `perspective`, `backdrop-filter`, `will-change` or `contain`. That ancestor becomes the containing block for the menu's `position: fixed` surface, so the viewport coordinates it computed landed relative to the ancestor's corner instead. The menu now rebases them with `containingBlockOffset`, the same correction `y-popover` uses, and the walk crosses shadow boundaries so a menu inside another component's shadow tree sees a light-DOM ancestor too. With no such ancestor nothing changes.
+
+- `y-select`'s portaled listbox opened offset from its field under the same conditions, for the same reason, and is now rebased the same way. The upward-opening case anchors `bottom` rather than `top`, which resolves against the containing block's far edge, so `floating.js` gained `containingBlockRect` alongside `containingBlockOffset` to report that edge instead of leaving callers to read `window.innerHeight`. With no such ancestor the box is the viewport and nothing changes.
+
+- `y-editor` lost the caret in Safari after every rewrite of its content (normalization, list conversion, mention insertion), leaving the next keystroke to land wherever the browser felt like. Safari discards a range added to the document selection when it points inside a shadow tree, so the caret the editor carefully saved was never actually put back. It now restores the position with `setBaseAndExtent`, which every engine honours.
+
+- A mention inserted into `y-textarea` in Safari left a non-breaking space behind it rather than a plain one, so the submitted value differed by engine and searching it for the mention plus a space failed. Safari substitutes U+00A0 for the space that ends an inserted run, which is right for editable HTML and wrong for a textarea, whose value reads exactly as it submits; the substitution is now reverted in place, without reopening the popup on the mention just committed.
+
+- `y-colorpicker`'s channel values were hidden behind the number inputs' spin buttons. A channel box is a fraction of the picker's width, and between the field padding and the space a spin button reserves there was room for barely one digit. The spinners are gone (arrow keys still step a channel), the fields are tighter, and the channel row drops onto a line of its own when it would otherwise be squeezed, always with four channels across, and at `size="small"` with three. A single hex field is left where it is, so the small picker keeps its one-line layout. The format select also sizes with the picker now instead of clipping its chevron at `size="large"`. Firefox, which draws spin buttons permanently, was worst affected.
+
+- `y-editor` toolbar tools whose formatting is active at the caret now show it: the button already carried `aria-pressed`, which nothing painted, so bold, lists, and the rest looked identical whether on or off. Active tools take the primary color, overridable per theme with the new `--component-editor-toolbar-active-color` token.
+
+- Typing after leaving a list in `y-editor` produced a new paragraph for every letter, and the second Enter appeared to put the caret back at the end of the previous list item. Normalizing the document after each keystroke reshapes stray markup into permitted blocks, which detached whatever the caret sat in and dropped it to the top of the document; from there each keystroke landed as loose text and was wrapped into a paragraph of its own. The caret is now preserved across normalization. Firefox, which leaves a bare `<div>` behind when Enter exits a list, was affected on every list; Chrome and Safari were not.
+
+- Starting a second list in `y-editor` put the caret on the list itself rather than in its first item, so the text landed in the gutter before the marker instead of inside the item. Converting blocks to a list adds an `li` level that the saved caret position knew nothing about; the caret now follows its own nodes through the wrap, and any position left on a list descends into the item it points at. This also fixes a caret that jumped to the end of the line when a list was applied mid-word.
+
+- A `y-droplist` that ran out of items could not be dropped into. An empty list collapsed to zero height, leaving nothing under the cursor to hit-test, so neither native drag nor touch drag could reach it. Empty lists that can receive items from their group now reserve a drop area sized by the new `--component-droplist-empty-min-height` token (default `40px`); lists with no `group`, or with `put="false"`, still take up no space.
+
+- `y-carousel` pagination dots now mark every slide in view rather than only the leftmost one, so `per-view="2"` highlights two dots. The final slide's dot previously could never be reached: with 5 slides two at a time the carousel stops at index 3, leaving the fifth dot unlit even though that slide was on screen. `goTo()` (and the `End` key) also clamp to the last index that still fills the viewport instead of overshooting and settling back.
+
+- Digits typed into a numeric column filter in `y-data-grid`'s inline filter row (`filtering="inline"`) came out reversed, typing `2` then `5` produced `52`, and a `date` filter could not be typed into at all. Each keystroke rebuilt the whole grid, and the caret restore that carried focus across it relies on the selection API, which `number` and `date` inputs do not support. Typing in the filter row now refreshes only the rows and footer, leaving the header and the focused input untouched; the caret restore additionally falls back to the end of the value for those types on the paths that still re-render in full.
+
+## [0.5.4] - 2026-08-02
 
 ### Added
 
 - `y-tabs` now fires a cancelable `change` event whenever the active tab switches by click, keyboard, or `activateTab(id)`. The detail carries `{ id, previousId, tab, previousTab }`, and calling `preventDefault()` leaves the current tab in place so apps can guard a switch behind unsaved changes.
 
-- Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-colour glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
+- Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-color glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
 
 - `y-editor` and `y-textarea` gain caret-triggered mention autocomplete. A `triggers` array defines any number of literal prefixes (`@` people, `#` topics, anything else); the component detects the trigger at a word boundary, debounces by `mention-query-delay`, emits `mention-query`, and renders the candidates the app supplies through `setMentionCandidates(id, …)`. It never fetches, and stale responses are discarded. Insertion is one undo step, and `y-editor` can insert `atomic` mentions as a single non-editable unit that survives the sanitize round trip.
 

@@ -7,9 +7,6 @@ import { getIconNames } from "../../icons/registry.js";
 // selectable icons, and the `-fill` keys identify which have a filled version.
 const ALL_REGISTERED = getIconNames().sort();
 const ICON_NAMES = ALL_REGISTERED.filter((n) => !n.endsWith("-fill"));
-const FILLED_ICONS = ALL_REGISTERED.filter((n) => n.endsWith("-fill")).map(
-    (n) => n.replace(/-fill$/, ""),
-);
 
 export default {
     title: "Data/Icon",

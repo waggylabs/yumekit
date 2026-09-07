@@ -411,7 +411,6 @@ describe("<y-color>", () => {
             html`<form><y-color name="col" value="#ff0000"></y-color></form>`,
         );
         const form = el;
-        const color = form.querySelector("y-color");
         const fd = new FormData(form);
         expect(fd.get("col")).to.equal("#ff0000");
     });

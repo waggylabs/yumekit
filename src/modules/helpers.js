@@ -92,6 +92,31 @@ export function isSafeCssColor(value) {
     );
 }
 
+// A bare `var(--token)` reference, optionally with a fallback. Kept strict — no
+// `;{}` — so a value bound for an inline style can never smuggle in a second
+// declaration or close the rule.
+const VAR_REFERENCE = /^var\(\s*--[\w-]+\s*(?:,[^;{}]*)?\)$/;
+
+/**
+ * A color string safe to paint from author input: a literal `isSafeCssColor`
+ * accepts (`#hex`, `rgb()`/`hsl()`/`oklch()`/…) OR a `var(--token)` theme
+ * reference, optionally with a fallback. Returns the trimmed color, or null.
+ *
+ * The looser sibling of `isSafeCssColor`, for the cases where naming a theme
+ * token is the ordinary way to color something — a gauge zone, a chart series.
+ * Only a bare custom-property reference is allowed through, never arbitrary CSS.
+ *
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+export function safeColor(value) {
+    if (isSafeCssColor(value)) return value;
+    if (typeof value === "string" && VAR_REFERENCE.test(value.trim())) {
+        return value.trim();
+    }
+    return null;
+}
+
 /**
  * Return a [background, foreground] CSS variable pair for a color scheme.
  * Background is `--{color}-content--`, foreground is `--{color}-content-inverse`.
@@ -120,6 +145,36 @@ export function getColorVarPair(color, fallbackColor = "base") {
     }
     if (fallbackColor === null) return [color, "var(--base-content-inverse)"];
     return map[fallbackColor] || map.base;
+}
+
+/**
+ * Return a [background, foreground] pair for the soft treatment a colored item
+ * uses while hovered or keyboard-highlighted: the color itself as the text over
+ * a light wash of the same color. Deliberately weaker than the solid fill
+ * `getColorVarPair` produces, so a hovered row never reads as a selected one.
+ * @param {string} color — a semantic role name or a safe CSS color literal
+ * @param {number} [amount=18] — wash strength, in percent, for color literals
+ * @returns {[string, string] | null} — [bg, fg], or null when `color` is unusable
+ */
+export function getColorSoftPair(color, amount = 18) {
+    const roles = [
+        "base",
+        "primary",
+        "secondary",
+        "success",
+        "warning",
+        "error",
+        "help",
+    ];
+
+    if (roles.includes(color)) {
+        return [`var(--${color}-background-hover)`, `var(--${color}-content)`];
+    }
+    if (isSafeCssColor(color)) {
+        return [`color-mix(in srgb, ${color} ${amount}%, transparent)`, color];
+    }
+
+    return null;
 }
 
 // =============================================================================

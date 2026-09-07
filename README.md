@@ -100,12 +100,15 @@ Then use the `<y-theme>` component to apply a theme:
 | Droplist     | `<y-droplist>`     | Drag-and-drop reorderable list                         |
 | Form         | `<y-form>`         | Form container that renders and manages form controls  |
 | Gallery      | `<y-gallery>`      | Media gallery with lightbox                            |
+| Gauge        | `<y-gauge>`        | Radial gauge / instrument dial                         |
 | Grid         | `<y-grid>`         | CSS Grid layout container                              |
 | Help         | `<y-help>`         | Guided product tour / onboarding walkthrough           |
 | Icon         | `<y-icon>`         | SVG icon display                                       |
 | Input        | `<y-input>`        | Text input field                                       |
+| Key          | `<y-key>`          | Keyboard key / shortcut chord as keycaps               |
 | Masonry      | `<y-masonry>`      | JS-positioned masonry layout                           |
 | Menu         | `<y-menu>`         | Dropdown navigation menu                               |
+| Money        | `<y-money>`        | Currency input with locale-aware formatting            |
 | Paginator    | `<y-paginator>`    | Pagination controls                                    |
 | Panel Bar    | `<y-panelbar>`     | Accordion panel group                                  |
 | Popover      | `<y-popover>`      | Anchored floating popover                              |
@@ -126,6 +129,7 @@ Then use the `<y-theme>` component to apply a theme:
 | Textarea     | `<y-textarea>`     | Multi-line text input                                  |
 | Theme        | `<y-theme>`        | Theme provider                                         |
 | Toast        | `<y-toast>`        | Notification toast                                     |
+| Toggle       | `<y-toggle>`       | Segmented single-select control with a sliding thumb   |
 | Tokens       | `<y-tokens>`       | Multi-value token (chip) input with typeahead          |
 | Tooltip      | `<y-tooltip>`      | Tooltip / popover                                      |
 | Tree         | `<y-tree>`         | Hierarchical tree view                                 |

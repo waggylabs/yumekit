@@ -13,6 +13,8 @@ import {
     MentionController,
 } from "../../modules/mentions.js";
 
+const NBSP = "\u00A0";
+
 export class YumeTextarea extends HTMLElement {
     static formAssociated = true;
 
@@ -374,7 +376,10 @@ export class YumeTextarea extends HTMLElement {
 
         textarea.focus();
         textarea.setSelectionRange(start, end);
-        if (document.execCommand?.("insertText", false, text)) return;
+        if (document.execCommand?.("insertText", false, text)) {
+            this._repairInsertedSpaces(textarea, start, text);
+            return;
+        }
 
         const value = textarea.value;
         textarea.value = value.slice(0, start) + text + value.slice(end);
@@ -642,6 +647,36 @@ export class YumeTextarea extends HTMLElement {
             },
             applyInsertion: (payload) => host._applyMention(payload),
         };
+    }
+
+    /**
+     * Put back any plain space `execCommand` substituted a non-breaking space
+     * for. WebKit does this to the space that ends an inserted run, which is
+     * right for editable HTML — where a trailing space would collapse — and
+     * wrong for a textarea, whose value is submitted exactly as it reads.
+     *
+     * Only the characters this insertion wrote are examined, and only when they
+     * differ from what was asked for by nothing but that substitution, so a
+     * non-breaking space the author typed is left alone.
+     */
+    _repairInsertedSpaces(textarea, start, text) {
+        const end = start + text.length;
+        const written = textarea.value.slice(start, end);
+        if (written === text) return;
+
+        const repaired = [...written]
+            .map((ch, i) => (ch === NBSP && text[i] === " " ? " " : ch))
+            .join("");
+        if (repaired !== text) return;
+
+        const value = textarea.value;
+        textarea.value = value.slice(0, start) + text + value.slice(end);
+        textarea.setSelectionRange(end, end);
+
+        // The rewrite moves the fragment the insertion pinned, so pin it again
+        // before the `input` this dispatch raises re-reads the text.
+        this._mentions?.suppressInsertedFragment();
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
     _updateErrorText() {

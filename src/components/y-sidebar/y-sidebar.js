@@ -233,7 +233,7 @@ export class YumeSidebar extends HTMLElement {
             {
                 class: "collapse-btn",
                 color: "base",
-                "variant": "flat",
+                variant: "flat",
                 size: cfg.buttonSize,
                 "aria-label": isCollapsed
                     ? "Expand sidebar"
@@ -281,12 +281,13 @@ export class YumeSidebar extends HTMLElement {
         const btn = _el("y-button", {
             id: btnId,
             color: isActive ? "primary" : "base",
-            "variant": "flat",
+            variant: "flat",
             size: cfg.buttonSize,
             "aria-current": isActive ? "page" : false,
         });
 
-        if (item.icon) btn.appendChild(buildNavItemIcon(item.icon, cfg.iconSize));
+        if (item.icon)
+            btn.appendChild(buildNavItemIcon(item.icon, cfg.iconSize));
         if (showLabel) btn.append(item.text);
         if (showArrow) {
             btn.appendChild(
@@ -454,7 +455,7 @@ export class YumeSidebar extends HTMLElement {
                 padding-right: 0;
             }
 
-            /* Fixed-width icon column — keeps icons centred across expanded/collapsed states */
+            /* Fixed-width icon column — keeps icons centerd across expanded/collapsed states */
             .nav-item y-button::part(left-icon),
             .sidebar-footer y-button::part(left-icon) {
                 width: var(--_icon-col-width);

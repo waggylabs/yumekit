@@ -9,7 +9,9 @@ import { expect } from "@open-wc/testing";
 import "../dist/components/y-table.js";
 import "../dist/components/y-data-grid.js";
 import "../dist/components/y-button.js";
+import "../dist/components/y-money.js";
 import { registerIcon, getIcon } from "../dist/icons/registry.js";
+import { formatMoney } from "../dist/modules/money.js";
 
 describe("dist deep imports", () => {
     it("registers the custom elements", () => {
@@ -53,5 +55,19 @@ describe("dist deep imports", () => {
         // above would be invisible to it and no svg would render.
         expect(icon.shadowRoot.querySelector("svg")).to.exist;
         icon.remove();
+    });
+
+    it("formats money the same way from the module and from y-money", async () => {
+        const el = document.createElement("y-money");
+        el.setAttribute("locale", "en-US");
+        el.setAttribute("value", "1234.56");
+        document.body.appendChild(el);
+        await new Promise((r) => requestAnimationFrame(r));
+
+        // A separate copy of the module inlined into the element bundle would
+        // still agree here, so also assert the module resolves on its own.
+        expect(formatMoney(123456, { locale: "en-US" })).to.equal("$1,234.56");
+        expect(el.formattedValue).to.equal("$1,234.56");
+        el.remove();
     });
 });

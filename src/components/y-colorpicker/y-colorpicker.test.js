@@ -457,6 +457,88 @@ describe("<y-colorpicker>", () => {
     });
 
     // -------------------------------------------------------------------------
+    // Channel input legibility
+    // -------------------------------------------------------------------------
+
+    it("drops the number spinners from the channel inputs", async () => {
+        const el = await fixture(
+            html`<y-colorpicker format="rgb" value="#3599db"></y-colorpicker>`,
+        );
+        const input = el.shadowRoot.querySelector(".channel-inputs y-input");
+        // A channel box is far too narrow to spare the ~17px a spin button
+        // reserves — it covered the value outright.
+        expect(getComputedStyle(input.input).appearance).to.equal("textfield");
+    });
+
+    it("tightens the channel field padding", async () => {
+        const el = await fixture(
+            html`<y-colorpicker format="rgb" value="#3599db"></y-colorpicker>`,
+        );
+        const input = el.shadowRoot.querySelector(".channel-inputs y-input");
+        expect(
+            getComputedStyle(input)
+                .getPropertyValue("--component-inputs-padding-medium")
+                .trim(),
+        ).to.equal("4px");
+    });
+
+    it("reports the channel count so the row can wrap when crowded", async () => {
+        const el = await fixture(
+            html`<y-colorpicker format="rgb" value="#3599db"></y-colorpicker>`,
+        );
+        // Re-queried each time: changing an attribute re-renders the tree.
+        const count = () =>
+            el.shadowRoot.querySelector(".channel-inputs").dataset.count;
+        expect(count()).to.equal("3");
+
+        // A fourth channel never fits beside the swatch and format select, so
+        // the count drives the rule that gives the row its own line.
+        el.showAlpha = true;
+        await nextFrame();
+        expect(count()).to.equal("4");
+
+        el.format = "hex";
+        el.showAlpha = false;
+        await nextFrame();
+        expect(count()).to.equal("1");
+    });
+
+    it("only reserves a wrapping threshold when the channels need one", async () => {
+        const el = await fixture(
+            html`<y-colorpicker format="hex" value="#3599db"></y-colorpicker>`,
+        );
+        const minWidth = () =>
+            getComputedStyle(el.shadowRoot.querySelector(".channel-inputs"))
+                .minWidth;
+
+        // A single hex field fits in whatever is left over, so forcing it onto
+        // its own line just made the small picker look broken.
+        expect(minWidth()).to.equal("0px");
+
+        el.format = "rgb";
+        await nextFrame();
+        expect(minWidth()).to.equal("132px");
+    });
+
+    it("widens the format select with the picker size", async () => {
+        const width = async (size) => {
+            const el = await fixture(
+                html`<y-colorpicker size="${size}"></y-colorpicker>`,
+            );
+            const select = el.shadowRoot.querySelector(".format-select");
+            // A fixed width clipped the chevron once the label grew.
+            expect(select.scrollWidth - select.clientWidth, size).to.equal(0);
+            return Math.round(select.getBoundingClientRect().width);
+        };
+
+        const small = await width("small");
+        const medium = await width("medium");
+        const large = await width("large");
+        expect(small).to.be.lessThan(medium);
+        expect(medium).to.be.lessThan(large);
+    });
+
+    // -------------------------------------------------------------------------
     // Keyboard navigation — canvas
     // -------------------------------------------------------------------------
 

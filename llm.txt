@@ -1,9 +1,9 @@
 # YumeKit (@waggylabs/yumekit)
 
-A modern, framework-agnostic Web Components UI kit providing 57 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
+A modern, framework-agnostic Web Components UI kit providing 61 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.5.4
+0.5.5-beta.3
 
 ## License
 MIT
@@ -21,7 +21,7 @@ npm install @waggylabs/yumekit
 - Tree-shakeable ESM modules
 - ARIA-compliant and keyboard-navigable
 - Design token system via CSS custom properties
-- 60 built-in themes: 14 color families (blue, slate, mono, orange, green, red, teal, yellow, indigo, purple, pink, rose, brown, olive — `slate` is a desaturated bluish-gray (grey-dominant) cool neutral, `mono` is a shadcn-style monochrome family with a near-black/near-white primary on the default neutral surfaces, and `rose` is a muted dusty-rose) × dark and light variants; design-system families that also override shape and typography, not just color: Material Design 3 (`material-blue-*` and `material-purple-*`, rounded + Roboto), IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans), Ant Design (`ant-blue-*` daybreak blue `#1677ff` and `ant-green-*` polar green, 6px corners + native system-font stack), Tailwind/shadcn on Slate neutrals + Inter + 8px corners (monochrome `shadcn-light` / `shadcn-dark` plus Tailwind-blue `shadcn-blue-light` / `shadcn-blue-dark`, `#2563eb` primary), GitHub Primer (`primer-light` / `primer-dark` / `primer-dark-dimmed`), and Bootstrap (`bootstrap-light` / `bootstrap-dark`); plus two curated palette sets: Catppuccin (`catppuccin-latte` / `-frappe` / `-macchiato` / `-mocha`) and Nord (`nord` / `nord-aurora`); and `waggy` / `waggy-dark`, a high-contrast wild-palette theme (light + dark) with heavily rounded corners, thick borders (black on light, white on dark), hard offset shadows, and bottom-weighted per-side borders on buttons/fields/surfaces; and Kepler (`kepler-light` / `kepler-dark` / `kepler-amber` / `kepler-galaxy` / `kepler-matrix`), a retro terminal family in the Tomorrow typeface with fully squared 0px corners — neutral light/dark plus three tinted dark flavors (Amber orange-on-black, Galaxy blue-tinted, Matrix green-on-black) (60 themes total)
+- 60 built-in themes: 14 color families (blue, slate, mono, orange, green, red, teal, yellow, indigo, purple, pink, rose, brown, olive — `slate` is a desaturated bluish-gray (gray-dominant) cool neutral, `mono` is a shadcn-style monochrome family with a near-black/near-white primary on the default neutral surfaces, and `rose` is a muted dusty-rose) × dark and light variants; design-system families that also override shape and typography, not just color: Material Design 3 (`material-blue-*` and `material-purple-*`, rounded + Roboto), IBM Carbon (`carbon-light` / `carbon-dark`, sharp 0px corners + IBM Plex Sans), Ant Design (`ant-blue-*` daybreak blue `#1677ff` and `ant-green-*` polar green, 6px corners + native system-font stack), Tailwind/shadcn on Slate neutrals + Inter + 8px corners (monochrome `shadcn-light` / `shadcn-dark` plus Tailwind-blue `shadcn-blue-light` / `shadcn-blue-dark`, `#2563eb` primary), GitHub Primer (`primer-light` / `primer-dark` / `primer-dark-dimmed`), and Bootstrap (`bootstrap-light` / `bootstrap-dark`); plus two curated palette sets: Catppuccin (`catppuccin-latte` / `-frappe` / `-macchiato` / `-mocha`) and Nord (`nord` / `nord-aurora`); and `waggy` / `waggy-dark`, a high-contrast wild-palette theme (light + dark) with heavily rounded corners, thick borders (black on light, white on dark), hard offset shadows, and bottom-weighted per-side borders on buttons/fields/surfaces; and Kepler (`kepler-light` / `kepler-dark` / `kepler-amber` / `kepler-galaxy` / `kepler-matrix`), a retro terminal family in the Tomorrow typeface with fully squared 0px corners — neutral light/dark plus three tinted dark flavors (Amber orange-on-black, Galaxy blue-tinted, Matrix green-on-black) (60 themes total)
 - React JSX type declarations included
 - Form-associated components with native HTML form API support
 - Security-focused SVG icon sanitization (allowlist-based)
@@ -438,7 +438,7 @@ Dropdown/multi-select. Form-associated.
 
 Tag: `<y-select>`
 Attributes:
-- `options` — JSON string: `[{"value": "1", "label": "Option 1"}, ...]`
+- `options` — JSON string: `[{"value": "1", "label": "Option 1"}, ...]`. Each option also takes an optional `color` — a semantic name (`primary`, `success`, …) or a CSS color literal gated by `isSafeCssColor`
 - `value` — selected value string (comma-separated for multiple)
 - `name` — form field name
 - `placeholder`
@@ -455,6 +455,8 @@ Attributes:
 - `close-on-click-outside` — set to `"false"` to keep the dropdown open when clicking outside
 - `portal` — boolean; renders the dropdown into the nearest `<y-theme>` (falling back to `<body>`) so it escapes scrollable, clipped, or low-stacking ancestors (e.g. inside a data-grid cell editor or dialog)
 - `error-text` — validation message rendered below the field; also applies the error state and becomes the combobox's accessible description
+
+A selected option with a `color` is filled solidly with it. Hovering an unselected one instead tints the row — the color as the text over a light wash of it — so the assignment reads before the option is committed, without looking selected. Options without a `color` keep the neutral hover.
 
 The trigger carries `role="combobox"` with `aria-expanded` / `aria-haspopup`, the panel `role="listbox"`, and each option `role="option"` with `aria-selected`.
 Accessibility: `aria-label` / `aria-labelledby` set on the host are forwarded to the inner control, so the accessible name actually reaches what a screen reader reads (setting them on the host alone does not). `error-text` renders its message inside this component's own shadow root and wires `aria-describedby` + `aria-invalid` there — an `aria-describedby` pointing at an element outside the component cannot resolve across the shadow boundary, so pass the message in rather than an id.
@@ -524,7 +526,7 @@ Accessibility: ARIA 1.2 combobox — `role="combobox"` on the input with `aria-e
 
 Validation: `valueMissing` when `required` and empty, `rangeOverflow` past `max`, `customError` when a token carries `invalid: true` or `duplicates="error"` is triggered. `formResetCallback` restores the initial `value`; `formStateRestoreCallback` restores from session state.
 
-A committed option stays in the list rather than disappearing, rendered with the `y-select` accent fill (or its own `color`, gated by `isSafeCssColor`) and `aria-selected="true"`; the keyboard highlight shows as an inset ring on those rows so it stays visible over the fill.
+A committed option stays in the list rather than disappearing, rendered with the `y-select` accent fill (or its own `color`, gated by `isSafeCssColor`) and `aria-selected="true"`; the keyboard highlight shows as an inset ring on those rows so it stays visible over the fill. An uncommitted option carrying a `color` hovers and highlights in that color — colored text over a light wash of it — as `y-select` does.
 
 CSS Parts: `wrapper label control token-list token token-remove input clear-button popup option option-icon option-label empty loading error-text`
 CSS Custom Properties: `--component-tokens-gap`, `--component-tokens-padding-{small|medium|large}`, `--component-tokens-min-height-{small|medium|large}`, `--component-tokens-max-height`, `--component-tokens-input-min-width`, `--component-tokens-popup-max-height`. Chip appearance reuses the existing `--component-tag-*` tokens and field chrome reuses `--component-input-*` / `--component-inputs-*` — no parallel token set is introduced for the chips.
@@ -721,6 +723,51 @@ Attributes:
 
 Events: `change`
 Slots: `label`, `on-label`, `off-label`
+
+---
+
+### y-toggle
+Segmented single-select control — a button group visually, a radio group semantically. Exactly one option is selected at a time and a thumb slides between segments as the value changes. Form-associated. Use it for mutually exclusive view or mode switches (list/grid, monthly/yearly, alignment) where every choice stays visible; use `<y-switch>` for binary on/off, `<y-tabs>` when the choice swaps a content panel, and `<y-button-group>` for a cluster of independent actions.
+
+Tag: `<y-toggle>`
+Attributes:
+- `options` — array of `{ value, label?, icon?, color?, disabled?, ariaLabel? }`. `icon` is a `y-icon` name; `color` overrides the group's `color` while that option is selected, so the thumb recolors as it slides; supply `ariaLabel` for icon-only segments. Rich data: set the property for live data; the attribute accepts a JSON string as a seed and is not kept in sync after an imperative set.
+- `value` — selected option value; reflected. Defaults to the first enabled option. A value naming an unknown or disabled option leaves nothing selected and hides the thumb.
+- `name` — form field name
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `variant` — `"solid"` (default, filled track) | `"outline"` (bordered track) | `"flat"` (no track). Each matches the `y-button` variant of the same name: `solid` and `flat` fill the selected segment with the color role and invert its text, `outline` tints it behind a border in the color role with matching text.
+- `color` — the role marking the selected segment: `base`, `primary` (default), `secondary`, `success`, `warning`, `error`, `help`, or a CSS color literal. An unrecognised value falls back to `primary`. Set per-option via `options[].color` for status-style toggles where each choice carries its own meaning.
+- `orientation` — `"horizontal"` (default) | `"vertical"`. The thumb slides along the matching axis.
+- `full-width` — boolean; fills the container with equal-width segments
+- `animate` — set to `"false"` to move the thumb instantly (default on). `prefers-reduced-motion: reduce` disables the slide either way.
+- `disabled` — boolean; disables the whole group. Individual options disable via `options[].disabled`.
+
+Methods: `select(value)` — the eventful path; fires `y-toggle-select` then `change`. Setting the `value` property or attribute moves the selection silently.
+
+Slots: `option-{value}` — replaces a segment's label/icon with custom content.
+
+Events: `y-toggle-select` (cancelable, detail `{ value, previousValue }`) before the change is applied; `change` (detail `{ value, previousValue }`) after. Both bubble and are composed.
+
+Accessibility: the track is `role="radiogroup"` and each segment a `role="radio"` button. `aria-label` / `aria-labelledby` on the host are forwarded to the track. Roving tabindex — only the selected segment is tabbable; arrows move and select in one step (both axis pairs work in either orientation), `Home`/`End` jump to the ends, `Space`/`Enter` select the focused segment. Disabled segments are skipped.
+
+Parts: `base` `track` `thumb` `segment` `label` `icon`
+
+```html
+<y-toggle
+  name="view"
+  aria-label="View mode"
+  options='[{"value":"list","label":"List","icon":"list-bullet"},{"value":"grid","label":"Grid","icon":"grid"}]'
+></y-toggle>
+
+<y-toggle full-width color="primary" value="yearly"
+  options='[{"value":"monthly","label":"Monthly"},{"value":"yearly","label":"Yearly"}]'></y-toggle>
+
+<!-- Per-option color: each choice carries its own meaning -->
+<y-toggle
+  aria-label="Status"
+  options='[{"value":"todo","label":"To do","color":"base"},{"value":"active","label":"Active","color":"warning"},{"value":"done","label":"Done","color":"success"}]'
+></y-toggle>
+```
 
 ---
 
@@ -1113,6 +1160,52 @@ The `flat` style uses `--{color}-background-app` as the background, so it automa
 
 ---
 
+### y-key
+Keyboard key / chord displayed as keycaps. Purely presentational — it never binds, listens for, or dispatches keyboard events; registering the shortcut stays the app's job.
+
+Tag: `<y-key>`
+Attributes:
+- `keys` — chord string, `+`-joined, e.g. `"mod+shift+k"`. When present the default slot is hidden. Tokens: `mod`, `cmd`, `ctrl`, `alt`, `shift`, `enter`, `esc`, `tab`, `space`, `backspace`, `delete`, `up`, `down`, `left`, `right`, `plus` (the escape for a literal `+`). Aliases fold in (`command`/`meta`/`super`/`win` → `cmd`, `control` → `ctrl`, `option`/`opt` → `alt`, `return` → `enter`, `escape` → `esc`, `del` → `delete`, `arrowup` → `up`, …). Matching is case-insensitive and whitespace around tokens is ignored. Single characters uppercase (`k` → `K`); an unrecognized token renders and is spoken verbatim, with no throw and no console warning.
+- `platform` — `"auto"` (default) | `"mac"` | `"windows"` | `"linux"`. Resolves `mod` and drives `notation="auto"`. Detection is memoized at module scope and is not reactive; with no `navigator` it resolves to `"linux"`. Pin it explicitly in docs that describe one platform, or where server-rendered markup must match the client.
+- `notation` — `"auto"` (default) | `"symbol"` | `"text"`. `auto` uses symbols on macOS and words elsewhere. `text` on macOS gives the Apple word forms (`Cmd`, `Opt`, `Return`, `Esc`, `Del`); `symbol` off macOS uses the cross-platform symbols (`⇧ ↑ ↓ ← →`) and falls back to words for the rest.
+- `size` — `"small"` | `"medium"` (default) | `"large"`. Font size is in `em`, so an inline key tracks its paragraph.
+- `variant` — `"outlined"` (default) | `"filled"` | `"flat"`. `outlined` carries the keycap bottom edge; `flat` drops the border and edge for dense footers.
+- `color` — color scheme name or CSS color literal (default `"base"`). Literals are gated through `isSafeCssColor` and fall back to `base`.
+- `separator` — glyph drawn between caps, e.g. `separator="+"`. Empty (default) leaves only the gap.
+- `combined` — boolean, draws the whole chord inside one cap (`⌘K`) instead of one cap per key.
+- `pressed` — boolean, depressed visual state. Presentational only; it sets no ARIA state, so an app toggling it owns `aria-pressed` on the wrapping control.
+- `label` — overrides the computed accessible name.
+
+Events: none.
+
+Slots: default (cap content when `keys` is absent)
+
+Parts: `chord` (wrapper around all caps), `key` (each cap, in both modes), `separator` (each separator glyph)
+
+Accessibility: in chord mode the host gets an `aria-label` with the spoken form ("Command Shift K") and the caps are `aria-hidden`, since `⌘`, `⎋`, and `↵` announce badly or not at all. Precedence is author `aria-label` → `label` → computed name. In slot mode no name is computed — the slotted text is already the accessible name — so glyph-only usages should use `keys` rather than slotted glyphs.
+
+CSS Custom Properties:
+```
+--component-key-border-radius        /* cap corner */
+--component-key-border-width         /* cap outline */
+--component-key-edge-width           /* inset bottom edge that reads as a keycap */
+--component-key-gap                  /* space between caps in a chord */
+--component-key-height-small/medium/large      /* cap height; min-width matches, so single glyphs are square */
+--component-key-padding-small/medium/large     /* horizontal padding for multi-character legends */
+--component-key-font-size-small/medium/large   /* relative, so caps shrink with their context */
+```
+
+```html
+<y-key keys="mod+k"></y-key>
+<!-- ⌘ K on macOS, Ctrl K elsewhere -->
+<y-key keys="mod+shift+x" separator="+"></y-key>
+<y-key size="small" variant="flat" keys="esc"></y-key>
+<y-key platform="windows" notation="text" keys="mod+alt+1"></y-key>
+<y-key>F1</y-key>
+```
+
+---
+
 ### y-rating
 Star/icon rating input. Form-associated.
 
@@ -1205,6 +1298,76 @@ Accessibility: each shape carries `role="progressbar"` with `aria-valuemin`/`ari
 
 <!-- Segmented bar (5 chunks) -->
 <y-progress value="40" segmented="5" size="large" label-display="false"></y-progress>
+```
+
+---
+
+### y-gauge
+Radial gauge / dial. Draws a value on a circular arc — a KPI dial by default (neutral track, accent fill, big center number), an instrument dial with `needle`, colored zones, and a labeled scale. Everything is drawn in a fixed 200-unit viewBox scaled by the SVG, so marks and text stay crisp at any size; give the host a CSS width to size it.
+
+Tag: `<y-gauge>`
+Attributes:
+- `value` — numeric. Defaults to `min`. Clamped into `[min, max]` for the arc; the center number shows the raw value.
+- `min` — numeric (default `0`)
+- `max` — numeric (default `100`)
+- `start-angle` — arc start in degrees, clock convention (`0` = 12 o'clock, increasing clockwise). Default `225`.
+- `end-angle` — arc end in degrees. Default `495` — a 270° sweep with the gap at the bottom. `start-angle="0" end-angle="360"` closes the dial into a full circle (the tick at `max` is dropped so it doesn't stack on the one at `min`).
+- `thickness` — ring width as a fraction of the radius, clamped to `0.04`–`0.4` (default `0.16`)
+- `progress` — `"true"` (default) | `"false"`. Fills the arc from `min` to `value`. With `ranges` set, the fill insets inside the zones so both stay legible.
+- `needle` — boolean. Draws a pointer at `value`. Moves the value/label readout below the needle's sweep so the pointer never crosses the number.
+- `target` — numeric. Renders a caret marker on the outside of the arc.
+- `ranges` — array of `{ from, to, color }` zones painted onto the track (redlines, thresholds, bands). Set as a property or a JSON attribute. `color` accepts a CSS color literal or a `var(--token)` reference; the zone containing `value` also tints the fill and the center number unless `color` is set.
+- `ticks` — number of major tick intervals around the arc (default `0` — none)
+- `minor-ticks` — subdivisions between each pair of major ticks (default `0`)
+- `tick-labels` — boolean. Labels each major tick with its value.
+- `show-value` — `"true"` (default) | `"false"`. Toggles the center number.
+- `label` — caption under the value (e.g. `"Speed"`)
+- `unit` — appended to the value (e.g. `"%"`, `" mph"`, `" rpm"`)
+- `decimals` — fractional digits in the center value, `0`–`6` (default `0`). Thousands are grouped by locale.
+- `color` — accent for the fill and the center number, as a CSS color literal or a `var(--token)` reference. Overrides any range color.
+- `loading` — boolean. Swaps the dial for a circular skeleton placeholder.
+- `loading-text` — accessible label announced while `loading` (default `"Loading gauge…"`)
+
+CSS Parts: `gauge`, `track`, `zone`, `progress`, `needle`, `needle-pointer`, `needle-hub`, `tick`, `tick-minor`, `tick-label`, `target`, `value`, `unit`, `label`, `skeleton`.
+
+CSS Custom Properties: `--component-gauge-track-color`, `--component-gauge-value-color`, `--component-gauge-needle-color`, `--component-gauge-target-color`, `--component-gauge-tick-color`, `--component-gauge-tick-minor-color`, `--component-gauge-label-color`, `--component-gauge-skeleton-color`, `--component-gauge-value-size`, `--component-gauge-label-size`, `--component-gauge-tick-label-size`.
+
+Accessibility: the dial carries `role="meter"` with `aria-valuemin`/`aria-valuemax`/`aria-valuenow` and an `aria-valuetext` of the formatted value plus its unit. `label` becomes the `aria-label` (falling back to `"Gauge"`) — supply one when the dial has no visible caption. The center text is `aria-hidden` so it isn't read twice. While `loading` the placeholder is `aria-busy` and announces `loading-text`. The fill and needle transitions respect `prefers-reduced-motion`.
+
+```html
+<!-- KPI dial -->
+<y-gauge value="68" unit="%" label="Utilization" style="width: 220px"></y-gauge>
+
+<!-- Against a target -->
+<y-gauge value="72" target="90" unit="%" label="Quota" style="width: 220px"></y-gauge>
+
+<!-- Threshold zones -->
+<y-gauge id="health" value="84" unit="%" label="Health" style="width: 220px"></y-gauge>
+<script>
+    document.getElementById("health").ranges = [
+        { from: 0, to: 30, color: "var(--error-content)" },
+        { from: 30, to: 70, color: "var(--warning-content)" },
+        { from: 70, to: 100, color: "var(--success-content)" },
+    ];
+</script>
+
+<!-- Instrument dial: needle, no fill, labeled scale -->
+<y-gauge
+    value="55" min="0" max="120" unit=" mph"
+    needle progress="false"
+    ticks="12" minor-ticks="1" tick-labels
+    style="width: 300px"
+></y-gauge>
+
+<!-- Semicircle: 9 o'clock to 3 o'clock -->
+<y-gauge
+    value="42" unit="%" label="Storage"
+    start-angle="270" end-angle="450"
+    style="width: 240px"
+></y-gauge>
+
+<!-- Loading -->
+<y-gauge loading label="CPU load" style="width: 220px"></y-gauge>
 ```
 
 ---
@@ -1497,7 +1660,7 @@ Styling the ghost placeholder: target it via the `[data-y-droplist-ghost]` attri
 
 Styling the drag preview: target the class set by `drag-preview-class` (default `.y-droplist__drag-preview`), the `[part="drag-preview"]` attribute selector, or the `--component-droplist-drag-preview-*` custom properties. Note: `::part(drag-preview)` does **not** work because the preview is rendered in `document.body`, not inside the shadow root — use the class or attribute selector instead.
 
-CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`, `--component-droplist-swap-indicator-background` (background applied to the active swap target), `--component-droplist-handle-color` and `--component-droplist-handle-size` (convenience tokens consumers can use to style their own handle elements; not used internally), `--component-droplist-drag-preview-opacity` (default `0.85`), `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`), `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a tilt), `--component-droplist-drag-preview-cursor-offset-x` / `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the cursor anchor), `--component-droplist-drag-preview-z-index` (default `9999`).
+CSS Custom Properties: `--component-droplist-ghost-opacity`, `--component-droplist-ghost-background`, `--component-droplist-ghost-border-color`, `--component-droplist-item-padding`, `--component-droplist-item-margin`, `--component-droplist-empty-min-height` (default `40px`; drop area reserved when the list is empty and can receive items from its group, so an emptied column remains a drop target — empty lists with no `group` or with `put="false"` stay collapsed), `--component-droplist-transition-duration` (override the `animation` attribute), `--component-droplist-transition-easing`, `--component-droplist-swap-indicator-background` (background applied to the active swap target), `--component-droplist-handle-color` and `--component-droplist-handle-size` (convenience tokens consumers can use to style their own handle elements; not used internally), `--component-droplist-drag-preview-opacity` (default `0.85`), `--component-droplist-drag-preview-shadow` (defaults to the theme-wide `--base-shadow` when unset; if `--base-shadow` is also unset, falls back to the hard-coded `0 4px 12px rgba(0,0,0,0.15)`), `--component-droplist-drag-preview-rotate` (default `0deg`; set e.g. `2deg` for a tilt), `--component-droplist-drag-preview-cursor-offset-x` / `--component-droplist-drag-preview-cursor-offset-y` (additive px offsets from the cursor anchor), `--component-droplist-drag-preview-z-index` (default `9999`).
 
 ```html
 <!-- Within-list reorder -->
@@ -1610,7 +1773,7 @@ Slideshow container. Each direct child becomes one slide. For image galleries wi
 
 Tag: `<y-carousel>`
 Attributes:
-- `index` — number (default `0`), leftmost visible slide; reflects as the user navigates
+- `index` — number (default `0`), leftmost visible slide; reflects as the user navigates. Clamped to the last index that still fills the viewport, so with `per-view="2"` and 5 slides the highest index is 3
 - `per-view` — number (default `1`), slides visible at once; fractional values peek the next slide
 - `gap` — CSS length between slides (default `"0"`)
 - `orientation` — `"horizontal"` (default) | `"vertical"`; vertical requires an explicit host height
@@ -1619,7 +1782,7 @@ Attributes:
 - `interval` — number (default `5000`), autoplay delay in ms
 - `pause-on-hover` — boolean (default `true`), pause autoplay while hovered or focused
 - `arrows` — `"true"` (default) | `"false"` | `"hover"`
-- `pagination` — `"dots"` (default) | `"fraction"` | `"none"`
+- `pagination` — `"dots"` (default) | `"fraction"` | `"none"`. Dots render one per slide, and every slide currently in view is marked `aria-current` — `per-view="2"` highlights two dots
 - `swipe` — boolean (default `true`), pointer/touch drag navigation
 - `snap` — `"start"` (default) | `"center"`, slide alignment within the viewport
 
@@ -2043,6 +2206,57 @@ Deprecated slots (use `leftIcon`/`rightIcon` option properties instead):
   <span slot="tab-content-a"><y-icon name="star"></y-icon> A</span>
   <div slot="a">Content A</div>
 </y-tabs>
+```
+
+---
+
+### y-money
+Currency input. Form-associated. Shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused (`1234.56`), and submits a canonical decimal string. Prefer this over `<y-input type="number">` for any monetary amount.
+
+Tag: `<y-money>`
+Attributes:
+- `value` — canonical decimal string, e.g. `"1234.56"`. Always `.` as the decimal separator and no grouping, whatever the locale. `""` means no value, which is distinct from `"0"`.
+- `currency` — ISO 4217 code (default `"USD"`). Drives the symbol and the default precision. An unknown code falls back to `USD` with a console warning.
+- `locale` — BCP 47 tag; omitted means the browser locale. Controls separators, grouping, and symbol placement.
+- `precision` — decimal places. Defaults to the currency's exponent (USD 2, JPY 0, KWD 3).
+- `display` — `"symbol"` (default, `$1,234.56`) | `"code"` (`USD 1,234.56`) | `"name"` (`1,234.56 US dollars`) | `"none"` (bare `1,234.56`)
+- `allow-negative` — boolean. Without it a typed `-` is rejected and a negative assigned in code clamps to zero.
+- `negative-style` — `"minus"` (default, `-$5.00`) | `"parentheses"` (`($5.00)`). Editing always uses a minus.
+- `step` — arrow-key increment as a decimal string (default `"1"`, one whole currency unit)
+- `min`, `max` — decimal-string bounds. A violation flags the field invalid; the entry is left as typed rather than silently clamped.
+- `name` — form field name
+- `placeholder`
+- `size` — `"small"` | `"medium"` (default) | `"large"`
+- `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners)
+- `label-position` — `"top"` (default) | `"bottom"`
+- `disabled` — boolean
+- `required` — boolean, empty value fails validation
+- `invalid` — boolean, applies error state
+- `error-text` — validation message rendered below the field; also applies the error state and becomes the accessible description
+- `autocomplete` — forwarded to the inner control
+
+Properties (JS only, read-only): `valueAsNumber` (float, `NaN` when empty), `valueAsMinorUnits` (integer minor units — `1234.56` → `123456`, derived with integer math, `NaN` when empty), `formattedValue` (the idle display string), `validity`, `validationMessage`.
+
+Methods: `stepUp(n = 1)` / `stepDown(n = 1)` increment by `step` clamped to `min`/`max`; `checkValidity()`; `reportValidity()`.
+
+Slots: `label`, `left-icon`, `right-icon`.
+
+Events: `input` (detail `{ value, valueAsNumber }`) on each accepted keystroke — `value` may be a partial entry such as `"12."`; `change` (same detail) on commit, meaning blur after an edit, Enter, or a step. Setting `value` in code fires neither. Both bubble and are composed.
+
+Accessibility: the inner control is `<input type="text" inputmode="decimal">` — not `type="number"`, which forbids grouping separators and reports `""` for a partially-typed value. `aria-label` / `aria-labelledby` on the host are forwarded to it. Up/Down arrows step the value.
+
+CSS Custom Properties: inherits the shared field tokens (`--component-input-background`, `--component-input-border-color`, `--component-input-accent`, `--component-input-error-color`, `--component-inputs-border-width`, `--component-inputs-border-radius-outer`, …) so it sits flush with `y-input`. Adds `--component-money-negative-color` for the idle color of negative amounts (defaults to `--error-content`).
+
+CSS Parts: `input`, `error-text`.
+
+Behavior notes: values round half-away-from-zero at `precision` using digit arithmetic, so `1.005` → `1.01` rather than the float result. Formatting hands the decimal string to `Intl.NumberFormat` directly, so amounts past float safety keep every digit. Pasting scrubs currency symbols and grouping separators, so `"$1,234.56"` yields `1234.56`. Grouping-as-you-type is deliberately not done — the field reformats on blur so the caret is never moved mid-edit. All of this lives in `@waggylabs/yumekit/modules/money.js` (see _Public Modules_), so a component that displays an amount without collecting one shares the rounding and formatting rather than re-deriving them.
+
+```html
+<y-money name="price" currency="USD" value="1234.56" required>
+  <span slot="label">Price</span>
+</y-money>
+
+<y-money name="balance" currency="EUR" locale="de-DE" allow-negative negative-style="parentheses"></y-money>
 ```
 
 ---
@@ -2475,16 +2689,18 @@ const names = getIconNames();
 
 Pre-built icon categories (loaded via `import "@waggylabs/yumekit/icons/all.js"`):
 - Arrows & chevrons (`arrow-up`, `arrow-down`, `arrow-left`, `arrow-right`, `chevron-up`, `chevron-down`, `chevron-left`, `chevron-right`, `expand-up`, `expand-down`, `expand-left`, `expand-right`, `ellipsis-v`, `ellipsis-h`)
-- Actions (`check`, `x`, `trash`, `floppy-disk`, `pencil`, `funnel`, `swap`, `share`, `magnifying-glass`, `plus`, `minus`, `copy`, `clipboard`, `scissors`, `undo`, `redo`)
+- Actions (`check`, `x`, `trash`, `floppy-disk`, `pencil`, `funnel`, `swap`, `share`, `magnifying-glass`, `plus`, `minus`, `copy`, `clipboard`, `scissors`, `undo`, `redo`, `refresh`) — `undo` / `redo` are return arrows. For the circular arrows that used to carry those names, use `rotate-left` / `rotate-right`. `refresh` is the two-arrow cycle: it is the retry / reload glyph, and the one to reach for instead of a rotation arrow.
+- Editing & transform (`crop`, `flip-horizontal`, `flip-vertical`, `rotate-left`, `rotate-right`)
 - Brackets (`up-from-bracket`, `down-from-bracket`, `left-from-bracket`, `right-from-bracket`, `up-to-bracket`, `down-to-bracket`, `left-to-bracket`, `right-to-bracket`)
-- Communication (`bell`, `mail`, `speech-bubble`, `paper-airplane`)
+- Communication (`bell`, `bell-slash`, `mail`, `speech-bubble`, `paper-airplane`) — `bell-slash` is the same bell muted, for a silenced or shelved notification; it is the glyph for that state, not `circle-slash`, which reads as forbidden rather than silenced
 - Faces (`face-smile`, `face-neutral`, `face-frown`)
-- Files & data (`archive`, `folder`, `floppy-disk`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `waveform`, `grid`, `layout`, `tag`)
-- Location & navigation (`home`, `menu`, `compass`, `map-marker`, `thumbtack`, `globe`)
+- Files & data (`archive`, `file`, `file-plus`, `file-text`, `folder`, `floppy-disk`, `bookmark`, `link`, `list-bullet`, `list-check`, `stack`, `diagram`, `waveform`, `grid`, `layout`, `tag`)
+- Money & spending (`currency`, `wallet`, `bank`, `cart-shopping`, `utensils`) — `bank` is the institution (a bank account, a direct debit, an ACH mandate); `currency` is a note and `wallet` a wallet. Card brand marks (Visa, Mastercard, …) are trademarks and are deliberately not bundled — supply your own artwork.
+- Location & navigation (`home`, `menu`, `compass`, `map-marker`, `thumbtack`, `globe`, `car`)
 - Media & display (`image`, `monitor`, `smartphone`, `tablet`, `moon`, `sun`, `palette`, `calendar`, `clock`, `play`, `pause`, `stop`, `skip-back`, `skip-forward`, `fast-back`, `fast-forward`)
 - People (`user`, `users`, `accessibility`)
 - Science & work (`flask`, `briefcase`, `puzzle`, `robot`, `wrench`, `bug`)
-- Brands & sign-in providers (`apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `discord`, `dropbox`, `facebook`, `figma`, `github`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, `zoom`) — solid single-colour marks; these have no filled variant, so `weight="filled"` falls back to the same glyph
+- Brands & sign-in providers (`apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `discord`, `dropbox`, `facebook`, `figma`, `github`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, `zoom`) — solid single-color marks; these have no filled variant, so `weight="filled"` falls back to the same glyph
 - Nature (`flower`, `campfire`)
 - Status & feedback (`star`, `heart`, `thumbs-up`, `thumbs-down`, `bolt`, `lock`, `unlock`, `shield`, `circle-slash`, `triangle-exclamation`, `circle-exclamation`, `circle-info`, `circle-question`)
 - Utilities & devices (`plug`, `bluetooth`, `fan`, `thermometer-high`, `thermometer-low`, `gasoline`, `ev-charger`)
@@ -2503,6 +2719,35 @@ For non-React TypeScript projects, augment `HTMLElementTagNameMap`:
 // Just import the library and use elements with full type safety.
 import "@waggylabs/yumekit";
 ```
+
+---
+
+## Public Modules
+
+Published alongside the components and importable on their own. A component is not required to use them.
+
+### Money (`@waggylabs/yumekit/modules/money.js`)
+
+The currency rules behind `y-money`, as pure functions, for anything that **displays** an amount without collecting one — a ledger row, a running balance, a day total. An input is the wrong shape for those, and a second rounding rule is worse than an extra import.
+
+The contract: an amount is an **integer number of minor units** plus a currency code, never a float. `12.34` has already lost the cent a balance is meant to reconcile, so a non-integer is rejected rather than rounded into a plausible-looking wrong number. Amounts reach `Intl` as decimal strings, so a balance past 2^53 stays exact; pass wide amounts as a string or `BigInt`.
+
+- `formatMoney(value, options)` — integer minor units to a localized string. `formatMoney(-1234, { currency: "USD" })` → `"-$12.34"`. Returns `""` for anything that isn't integer minor units. Options: `currency` (default `USD`), `locale`, `display` (`symbol` | `narrowSymbol` | `code` | `name` | `none`), `sign` (`auto` | `always` | `never` | `accounting` | `parentheses`), `precision` (overrides the currency exponent). An unusable currency code drops the affix rather than the figure
+- `currencyPrecision(currency, locale)` — the currency's minor-unit exponent (USD 2, JPY 0, KWD 3), read off `Intl` and cached; `2` for a code it can't resolve
+- `toMinorUnits(value)` — canonical signed integer string, or `null` when the value isn't integer minor units. `"-0"` and `"0"` both canonicalize to `"0"`
+- `minorUnitsToDecimal(minor, precision)` — `("-1234", 2)` → `"-12.34"`
+- `decimalToMinorUnits(decimal, precision)` — the other direction, `("1234.56", 2)` → `"123456"`, rounding first
+- `minorUnitsSign(value)` — `-1` debit, `1` credit, `0` zero, `null` when not an amount. Zero is its own answer; painting it as a credit asserts something
+- `multiplyMinorUnits(value, quantity)` — an amount times a whole count, exact at any width, `null` when either side isn't whole. There is no rounding rule in it to get wrong
+- `roundDecimal(decimal, precision)` — half-away-from-zero over digits, so `1.005` → `1.01`, not the float result. Scrubs grouping separators and symbols out of raw author strings
+- `DEFAULT_CURRENCY` — `"USD"`
+
+### Tokenizer (`@waggylabs/yumekit/modules/tokenizer.js`)
+
+The syntax highlighter behind `y-code`, for anything that renders code a line at a time without embedding a whole `y-code` per line.
+
+- `tokenize(language, source)` — `{ type, text }` tokens whose `type` values are Prism-compatible class names
+- `isSupportedLanguage(language)` — whether a language (or alias) has a built-in tokenizer
 
 ---
 

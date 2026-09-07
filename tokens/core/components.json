@@ -589,6 +589,10 @@
                 "$type": "number",
                 "$value": 9999
             },
+            "empty-min-height": {
+                "$type": "sizing",
+                "$value": "{sizing.medium}"
+            },
             "ghost-opacity": {
                 "$type": "number",
                 "$value": 0.5
@@ -706,6 +710,20 @@
             "expand-button-background-hover": {
                 "$type": "color",
                 "$value": "rgba(255, 255, 255, 0.2)"
+            }
+        },
+        "gauge": {
+            "value-size": {
+                "$type": "dimension",
+                "$value": "30px"
+            },
+            "label-size": {
+                "$type": "dimension",
+                "$value": "11px"
+            },
+            "tick-label-size": {
+                "$type": "dimension",
+                "$value": "9px"
             }
         },
         "icon": {
@@ -1066,6 +1084,60 @@
                 "$value": "240px"
             }
         },
+        "key": {
+            "border-radius": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "edge-width": {
+                "$type": "dimension",
+                "$value": "2px"
+            },
+            "gap": {
+                "$type": "spacing",
+                "$value": "{spacing.2x-small}"
+            },
+            "height-large": {
+                "$type": "sizing",
+                "$value": "28px"
+            },
+            "height-medium": {
+                "$type": "sizing",
+                "$value": "22px"
+            },
+            "height-small": {
+                "$type": "sizing",
+                "$value": "18px"
+            },
+            "padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.small}"
+            },
+            "padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            },
+            "font-size-large": {
+                "$type": "dimension",
+                "$value": "0.86em"
+            },
+            "font-size-medium": {
+                "$type": "dimension",
+                "$value": "0.78em"
+            },
+            "font-size-small": {
+                "$type": "dimension",
+                "$value": "0.7em"
+            }
+        },
         "masonry": {
             "mobile-breakpoint": {
                 "$type": "dimension",
@@ -1290,6 +1362,52 @@
             "accent-width": {
                 "$type": "borderWidth",
                 "$value": "2px"
+            }
+        },
+        "toggle": {
+            "border-radius-inner": {
+                "$type": "borderRadius",
+                "$value": "{radii.x-small}"
+            },
+            "border-radius-outer": {
+                "$type": "borderRadius",
+                "$value": "{radii.small}"
+            },
+            "border-width": {
+                "$type": "borderWidth",
+                "$value": "{border.x-thin}"
+            },
+            "gap-large": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "gap-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.small}"
+            },
+            "gap-small": {
+                "$type": "spacing",
+                "$value": "{spacing.2x-small}"
+            },
+            "padding": {
+                "$type": "spacing",
+                "$value": "{spacing.4x-small}"
+            },
+            "segment-padding-large": {
+                "$type": "spacing",
+                "$value": "{spacing.large}"
+            },
+            "segment-padding-medium": {
+                "$type": "spacing",
+                "$value": "{spacing.medium}"
+            },
+            "segment-padding-small": {
+                "$type": "spacing",
+                "$value": "{spacing.x-small}"
+            },
+            "transition-duration": {
+                "$type": "duration",
+                "$value": "200ms"
             }
         },
         "table": {

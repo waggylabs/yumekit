@@ -4,6 +4,21 @@ import "./y-menu.js";
 import { YumeMenu } from "./y-menu.js";
 import "../y-button/y-button.js";
 
+/** A host whose shadow tree holds the anchor a menu is measured against. */
+class MenuShadowHost extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: "open" });
+        const button = document.createElement("button");
+        button.textContent = "Menu";
+        this.shadowRoot.appendChild(button);
+    }
+}
+
+if (!customElements.get("menu-shadow-host")) {
+    customElements.define("menu-shadow-host", MenuShadowHost);
+}
+
 describe("YumeMenu", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => sandbox.restore());
@@ -641,7 +656,6 @@ describe("YumeMenu", () => {
         menu._anchorEl = wrapper.querySelector("#scroll-anchor");
         menu.visible = true;
         await new Promise((r) => setTimeout(r, 0));
-        const topBefore = menu.style.top;
         // Fire scroll event — position should be recalculated (top stays a pixel value)
         window.dispatchEvent(new Event("scroll", { bubbles: true }));
         await new Promise((r) => setTimeout(r, 0));
@@ -713,5 +727,118 @@ describe("YumeMenu", () => {
         expect(menuB.visible).to.be.true;
         // Menu A should have been closed by _closeAll
         expect(menuA.visible).to.be.false;
+    });
+
+    // A `position: fixed` menu resolves against the nearest ancestor with a
+    // transform, filter or containment rather than against the viewport, so
+    // without the rebase it opens offset by that ancestor's own position.
+    // Every assertion below measures the gap between the two rendered rects,
+    // which is what a user sees, rather than the style values that produce it.
+    describe("positioning under a containing-block ancestor", () => {
+        /** Open `menu` at `anchor` and measure where it actually landed. */
+        async function gapFrom(menu, anchor) {
+            menu._anchorEl = anchor;
+            menu.visible = true;
+            await new Promise((r) => setTimeout(r, 0));
+
+            const menuRect = menu.getBoundingClientRect();
+            const anchorRect = anchor.getBoundingClientRect();
+            return {
+                top: menuRect.top - anchorRect.bottom,
+                left: menuRect.left - anchorRect.left,
+            };
+        }
+
+        const items = [{ text: "One" }, { text: "Two" }];
+
+        it("opens flush to its anchor with no transformed ancestor", async () => {
+            const wrapper = await fixture(html`
+                <div>
+                    <button id="plain-anchor">Menu</button>
+                    <y-menu anchor="plain-anchor" .items=${items}></y-menu>
+                </div>
+            `);
+
+            const gap = await gapFrom(
+                wrapper.querySelector("y-menu"),
+                wrapper.querySelector("#plain-anchor"),
+            );
+            expect(Math.abs(gap.top)).to.be.lessThan(1);
+            expect(Math.abs(gap.left)).to.be.lessThan(1);
+        });
+
+        it("opens flush to its anchor inside a transformed ancestor", async () => {
+            const wrapper = await fixture(html`
+                <div style="transform: translate(40px, 60px)">
+                    <button id="moved-anchor">Menu</button>
+                    <y-menu anchor="moved-anchor" .items=${items}></y-menu>
+                </div>
+            `);
+
+            const gap = await gapFrom(
+                wrapper.querySelector("y-menu"),
+                wrapper.querySelector("#moved-anchor"),
+            );
+            expect(Math.abs(gap.top)).to.be.lessThan(1);
+            expect(Math.abs(gap.left)).to.be.lessThan(1);
+        });
+
+        // An identity transform still makes the ancestor a containing block —
+        // which is exactly the case Storybook's docs preview creates.
+        it("opens flush to its anchor under an identity transform", async () => {
+            const wrapper = await fixture(html`
+                <div style="transform: translateZ(0)">
+                    <button id="identity-anchor">Menu</button>
+                    <y-menu anchor="identity-anchor" .items=${items}></y-menu>
+                </div>
+            `);
+
+            const gap = await gapFrom(
+                wrapper.querySelector("y-menu"),
+                wrapper.querySelector("#identity-anchor"),
+            );
+            expect(Math.abs(gap.top)).to.be.lessThan(1);
+            expect(Math.abs(gap.left)).to.be.lessThan(1);
+        });
+
+        it("opens flush when `contain: paint` is what establishes the block", async () => {
+            const wrapper = await fixture(html`
+                <div style="contain: paint; width: 400px; height: 300px">
+                    <button id="contained-anchor">Menu</button>
+                    <y-menu anchor="contained-anchor" .items=${items}></y-menu>
+                </div>
+            `);
+
+            const gap = await gapFrom(
+                wrapper.querySelector("y-menu"),
+                wrapper.querySelector("#contained-anchor"),
+            );
+            expect(Math.abs(gap.top)).to.be.lessThan(1);
+            expect(Math.abs(gap.left)).to.be.lessThan(1);
+        });
+
+        // The walk has to cross the shadow boundary at its host: a menu living
+        // in another component's shadow tree cannot see the transformed light
+        // DOM ancestor through `parentElement` alone.
+        it("opens flush from inside a shadow tree under a transformed ancestor", async () => {
+            const wrapper = await fixture(html`
+                <div style="transform: translate(30px, 50px)">
+                    <menu-shadow-host></menu-shadow-host>
+                </div>
+            `);
+
+            const host = wrapper.querySelector("menu-shadow-host");
+            const menu = document.createElement("y-menu");
+            menu.items = items;
+            host.shadowRoot.appendChild(menu);
+            await new Promise((r) => setTimeout(r, 0));
+
+            const gap = await gapFrom(
+                menu,
+                host.shadowRoot.querySelector("button"),
+            );
+            expect(Math.abs(gap.top)).to.be.lessThan(1);
+            expect(Math.abs(gap.left)).to.be.lessThan(1);
+        });
     });
 });

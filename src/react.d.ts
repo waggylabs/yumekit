@@ -295,6 +295,30 @@ declare module "react" {
                 loop?: boolean | string;
                 size?: "small" | "medium" | "large";
             }>;
+            "y-gauge": El<{
+                value?: string | number;
+                min?: string | number;
+                max?: string | number;
+                "start-angle"?: string | number;
+                "end-angle"?: string | number;
+                thickness?: string | number;
+                progress?: boolean | string;
+                needle?: boolean | string;
+                target?: string | number;
+                ranges?:
+                    | Array<{ from: number; to: number; color?: string }>
+                    | string;
+                ticks?: string | number;
+                "minor-ticks"?: string | number;
+                "tick-labels"?: boolean | string;
+                "show-value"?: boolean | string;
+                label?: string;
+                unit?: string;
+                decimals?: string | number;
+                color?: string;
+                loading?: boolean | string;
+                "loading-text"?: string;
+            }>;
             "y-grid": El<{
                 columns?: string | number;
                 rows?: string | number;
@@ -404,6 +428,40 @@ declare module "react" {
                 required?: boolean | string;
                 autocomplete?: string;
                 "error-text"?: string;
+            }>;
+            "y-money": El<{
+                value?: string | number;
+                currency?: string;
+                locale?: string;
+                precision?: string | number;
+                display?: "symbol" | "code" | "name" | "none";
+                "allow-negative"?: boolean | string;
+                "negative-style"?: "minus" | "parentheses";
+                step?: string | number;
+                min?: string | number;
+                max?: string | number;
+                name?: string;
+                placeholder?: string;
+                size?: "small" | "medium" | "large";
+                variant?: "default" | "underline";
+                "label-position"?: "top" | "bottom";
+                disabled?: boolean | string;
+                required?: boolean | string;
+                invalid?: boolean | string;
+                "error-text"?: string;
+                autocomplete?: string;
+            }>;
+            "y-key": El<{
+                keys?: string;
+                platform?: "auto" | "mac" | "windows" | "linux";
+                notation?: "auto" | "symbol" | "text";
+                size?: "small" | "medium" | "large";
+                variant?: "outlined" | "filled" | "flat";
+                color?: string;
+                separator?: string;
+                combined?: boolean | string;
+                pressed?: boolean | string;
+                label?: string;
             }>;
             "y-masonry": El<{
                 columns?: string | number;
@@ -820,6 +878,27 @@ declare module "react" {
                     | "bottom-center";
                 duration?: string | number;
                 max?: string | number;
+            }>;
+            "y-toggle": El<{
+                options?:
+                    | Array<{
+                          value: string;
+                          label?: string;
+                          icon?: string;
+                          color?: string;
+                          disabled?: boolean;
+                          ariaLabel?: string;
+                      }>
+                    | string;
+                value?: string;
+                name?: string;
+                size?: "small" | "medium" | "large";
+                variant?: "solid" | "outline" | "flat";
+                color?: string;
+                orientation?: "horizontal" | "vertical";
+                "full-width"?: boolean | string;
+                animate?: boolean | string;
+                disabled?: boolean | string;
             }>;
             "y-tokens": El<{
                 value?:

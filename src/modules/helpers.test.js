@@ -4,7 +4,9 @@ import {
     luminance,
     contrastTextColor,
     isSafeCssColor,
+    safeColor,
     getColorVarPair,
+    getColorSoftPair,
     clamp,
     hsvToRgb,
     rgbToHsv,
@@ -165,6 +167,36 @@ describe("helpers", () => {
         });
     });
 
+    // ── safeColor ─────────────────────────────────────────────
+    describe("safeColor", () => {
+        it("passes through literals isSafeCssColor accepts", () => {
+            ["#f00", "rgb(255 0 0)", "oklch(0.628 0.225 29.234)"].forEach((c) =>
+                expect(safeColor(c), c).to.equal(c),
+            );
+        });
+
+        it("accepts a bare var() reference, with or without a fallback", () => {
+            expect(safeColor("var(--error-content)")).to.equal(
+                "var(--error-content)",
+            );
+            expect(safeColor("  var(--primary-content, #f00)  ")).to.equal(
+                "var(--primary-content, #f00)",
+            );
+        });
+
+        it("rejects var() that smuggles in a second declaration", () => {
+            [
+                "var(--x);background:url(evil)",
+                "var(--x){color:red}",
+                "var(--x) red",
+                "var(x)",
+                "red",
+                "currentColor",
+                null,
+            ].forEach((c) => expect(safeColor(c), String(c)).to.be.null);
+        });
+    });
+
     // ── getColorVarPair ───────────────────────────────────────
     describe("getColorVarPair", () => {
         it("returns CSS vars for a known color name", () => {
@@ -180,7 +212,7 @@ describe("helpers", () => {
         });
 
         it("returns base vars for an unknown color name with default fallback", () => {
-            const [bg, fg] = getColorVarPair("unknown");
+            const [bg] = getColorVarPair("unknown");
             expect(bg).to.include("--base-content--");
         });
 
@@ -191,8 +223,34 @@ describe("helpers", () => {
         });
 
         it("falls back to base when fallbackColor is also an unknown color name", () => {
-            const [bg, fg] = getColorVarPair("unknown", "also-unknown");
+            const [bg] = getColorVarPair("unknown", "also-unknown");
             expect(bg).to.include("--base-content--");
+        });
+    });
+
+    // ── getColorSoftPair ──────────────────────────────────────
+    describe("getColorSoftPair", () => {
+        it("returns the hover background and content vars for a role name", () => {
+            const [bg, fg] = getColorSoftPair("warning");
+            expect(bg).to.equal("var(--warning-background-hover)");
+            expect(fg).to.equal("var(--warning-content)");
+        });
+
+        it("washes a custom color literal and uses it as the text color", () => {
+            const [bg, fg] = getColorSoftPair("#ff0000");
+            expect(bg).to.equal("color-mix(in srgb, #ff0000 18%, transparent)");
+            expect(fg).to.equal("#ff0000");
+        });
+
+        it("honours a custom wash strength", () => {
+            const [bg] = getColorSoftPair("#ff0000", 40);
+            expect(bg).to.equal("color-mix(in srgb, #ff0000 40%, transparent)");
+        });
+
+        it("returns null for an unusable color", () => {
+            expect(getColorSoftPair("rebeccapurple")).to.equal(null);
+            expect(getColorSoftPair("red; background: url(x)")).to.equal(null);
+            expect(getColorSoftPair("")).to.equal(null);
         });
     });
 

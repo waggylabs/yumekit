@@ -3,6 +3,7 @@ import {
     computePosition,
     candidateSides,
     containingBlockOffset,
+    containingBlockRect,
     parsePosition,
     pointerOffsetFor,
 } from "./floating.js";
@@ -270,5 +271,29 @@ describe("containingBlockOffset", () => {
         expect(Math.round(offset.y)).to.equal(
             Math.round(near.getBoundingClientRect().top),
         );
+    });
+});
+
+describe("containingBlockRect", () => {
+    it("falls back to the viewport box when no ancestor establishes one", async () => {
+        const host = await fixture(html`<div><span></span></div>`);
+        const box = containingBlockRect(host.firstElementChild);
+        expect(box.left).to.equal(0);
+        expect(box.top).to.equal(0);
+        expect(box.right).to.equal(window.innerWidth);
+        expect(box.bottom).to.equal(window.innerHeight);
+    });
+
+    it("reports the far edges of a transformed ancestor, not the viewport's", async () => {
+        const host = await fixture(html`
+            <div style="position:absolute;top:100px;left:50px;width:200px;height:80px;transform:translateZ(0)">
+                <span></span>
+            </div>
+        `);
+        const box = containingBlockRect(host.firstElementChild);
+        const rect = host.getBoundingClientRect();
+        expect(box.right).to.be.closeTo(rect.right, 1);
+        expect(box.bottom).to.be.closeTo(rect.bottom, 1);
+        expect(box.bottom).to.not.be.closeTo(window.innerHeight, 1);
     });
 });

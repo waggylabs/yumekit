@@ -1065,7 +1065,6 @@ export class YumeProgress extends HTMLElement {
         sweep,
     ) {
         const cx = diameter / 2;
-        const cy = diameter / 2;
         const arcDeg = clamp(fraction, 0, 1) * 360;
         const endAngle = startAngle + sweep * arcDeg;
         return _svg("path", {

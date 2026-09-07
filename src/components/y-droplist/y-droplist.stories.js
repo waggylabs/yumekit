@@ -479,7 +479,7 @@ export const DragDropEvent = {
                     const log = document.getElementById('event-log');
                     log.textContent = 'drag:drop — item: ' + e.detail.item.dataset.id + ', index: ' + e.detail.index;
                 });
-            <\/script>
+            </script>
         </div>
     `,
 };
