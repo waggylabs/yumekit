@@ -1186,7 +1186,7 @@ export class YumeEditor extends HTMLElement {
 
             /* An active tool is marked with aria-pressed, which on its own is
                invisible. The icon is slotted, so it sits in this tree and takes
-               the colour directly; y-button writes its inner control's colour
+               the color directly; y-button writes its inner control's color
                as an inline custom property, which nothing inherited can beat. */
             .toolbar y-button[aria-pressed="true"] y-icon {
                 color: var(--component-editor-toolbar-active-color);

@@ -93,17 +93,21 @@ describe("1.0 icon additions", () => {
 
     it("file-plus and file-text keep the file outline plus their own marks", async () => {
         const plus = await fixture(html`<y-icon name="file-plus"></y-icon>`);
-        expect(plus.shadowRoot.querySelectorAll("svg polyline").length).to.equal(1);
+        expect(
+            plus.shadowRoot.querySelectorAll("svg polyline").length,
+        ).to.equal(1);
         // Outline plus the two strokes of the cross.
         expect(plus.shadowRoot.querySelectorAll("svg path").length).to.equal(3);
 
         const text = await fixture(html`<y-icon name="file-text"></y-icon>`);
-        expect(text.shadowRoot.querySelectorAll("svg polyline").length).to.equal(1);
+        expect(
+            text.shadowRoot.querySelectorAll("svg polyline").length,
+        ).to.equal(1);
         // Outline plus three text rules.
         expect(text.shadowRoot.querySelectorAll("svg path").length).to.equal(4);
     });
 
-    it("filled currency carries the centre disc and both edge marks as holes", async () => {
+    it("filled currency carries the center disc and both edge marks as holes", async () => {
         const el = await fixture(
             html`<y-icon name="currency" weight="filled"></y-icon>`,
         );
@@ -197,8 +201,9 @@ describe("payment, category and retry icons", () => {
         // Both halves of the cycle, each with its own arrowhead.
         expect(refresh.match(/a9 9 0 0 1/g).length).to.equal(2);
         expect(
-            (await fixture(html`<y-icon name="refresh"></y-icon>`)).shadowRoot
-                .querySelectorAll("svg polyline").length,
+            (
+                await fixture(html`<y-icon name="refresh"></y-icon>`)
+            ).shadowRoot.querySelectorAll("svg polyline").length,
         ).to.equal(2);
     });
 
@@ -272,7 +277,9 @@ describe("bell-slash", () => {
         const el = await fixture(html`<y-icon name="bell-slash"></y-icon>`);
         const svg = el.shadowRoot.querySelector("svg");
         expect(svg.querySelectorAll("path").length).to.equal(2);
-        expect(getIcon("bell-slash")).to.contain('d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"');
+        expect(getIcon("bell-slash")).to.contain(
+            'd="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"',
+        );
     });
 
     it("adds a slash the ringing bell does not carry", async () => {

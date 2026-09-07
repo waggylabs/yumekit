@@ -37,9 +37,9 @@ Delete any empty sections before publishing.
 
 - `y-key`, a keycap primitive for documenting keyboard shortcuts. `keys` takes a `+`-joined chord (`keys="mod+shift+k"`) and resolves it per platform, with `platform` and `notation` to pin the rendering and `separator`, `combined` and `pressed` to shape it. Chord mode names the host with the spoken form, so `⌘⇧K` is announced "Command Shift K" rather than "place of interest sign".
 
-- `y-gauge`, a radial gauge. It reads as a KPI dial by default — neutral track, accent fill, big centre number — and becomes an instrument dial with `needle`, `ticks`, `tick-labels` and a `ranges` array of coloured zones. `start-angle` / `end-angle` set the sweep, from a semicircle to a closed circle, and `target` marks a goal on the arc.
+- `y-gauge`, a radial gauge. It reads as a KPI dial by default — neutral track, accent fill, big center number — and becomes an instrument dial with `needle`, `ticks`, `tick-labels` and a `ranges` array of colored zones. `start-angle` / `end-angle` set the sweep, from a semicircle to a closed circle, and `target` marks a goal on the arc.
 
-- `safeColor` in `@waggylabs/yumekit/modules/helpers.js`, the looser sibling of `isSafeCssColor`: it also accepts a bare `var(--token)` reference, for the cases where naming a theme token is the ordinary way to colour something, such as a `y-gauge` zone.
+- `safeColor` in `@waggylabs/yumekit/modules/helpers.js`, the looser sibling of `isSafeCssColor`: it also accepts a bare `var(--token)` reference, for the cases where naming a theme token is the ordinary way to color something, such as a `y-gauge` zone.
 
 - `y-money`, a form-associated currency input. It shows a locale-formatted amount when idle (`$1,234.56`) and a plain editable number while focused, and submits a canonical decimal string rather than the display text.
 
@@ -47,7 +47,7 @@ Delete any empty sections before publishing.
 
 - `@waggylabs/yumekit/modules/money.js`, the currency rules behind `y-money` as a public module. It exports `formatMoney`, `currencyPrecision`, `toMinorUnits`, `minorUnitsToDecimal`, `decimalToMinorUnits`, `minorUnitsSign`, `multiplyMinorUnits` and `roundDecimal`, all pure and all working in integer minor units rather than floats, so an amount can be rounded and formatted without an input on screen.
 
-- `@waggylabs/yumekit/modules/tokenizer.js`, the syntax tokenizer behind `y-code` as a public module. It exports `tokenize(language, source)`, returning `{ type, text }` tokens whose `type` values are Prism-compatible class names, and `isSupportedLanguage(language)`, so code can be coloured a line at a time without embedding a whole `y-code`.
+- `@waggylabs/yumekit/modules/tokenizer.js`, the syntax tokenizer behind `y-code` as a public module. It exports `tokenize(language, source)`, returning `{ type, text }` tokens whose `type` values are Prism-compatible class names, and `isSupportedLanguage(language)`, so code can be colored a line at a time without embedding a whole `y-code`.
 
 - Sixteen icons, all with filled variants: `currency` and `wallet` for monetary UI; `file`, `file-plus`, and `file-text` for documents; `crop`, `flip-horizontal`, `flip-vertical`, `rotate-left`, and `rotate-right` for image editing; `bank` for the institution behind an account; `utensils`, `cart-shopping`, and `car` for spend categories that were falling back to `tag`; `refresh` for retry and reload; and `bell-slash` for a muted notification.
 
@@ -57,7 +57,7 @@ Delete any empty sections before publishing.
 
 - `tokenizer.js` moved from `src/components/y-code/` to `src/modules/`. `y-code`'s own behaviour is unchanged; the file was private to a component folder and is now published with the rest of `modules/`.
 
-- Options carrying a `color` now hover in that colour in `y-select` and `y-tokens`, the colour as the text over a light wash of it, instead of the neutral grey hover that gave no hint of the assignment until the option was committed. A selected option keeps its solid fill, so the two states stay distinct. Options without a colour are unchanged.
+- Options carrying a `color` now hover in that color in `y-select` and `y-tokens`, the color as the text over a light wash of it, instead of the neutral gray hover that gave no hint of the assignment until the option was committed. A selected option keeps its solid fill, so the two states stay distinct. Options without a color are unchanged.
 
 ### Fixed
 
@@ -71,7 +71,7 @@ Delete any empty sections before publishing.
 
 - `y-colorpicker`'s channel values were hidden behind the number inputs' spin buttons. A channel box is a fraction of the picker's width, and between the field padding and the space a spin button reserves there was room for barely one digit. The spinners are gone (arrow keys still step a channel), the fields are tighter, and the channel row drops onto a line of its own when it would otherwise be squeezed, always with four channels across, and at `size="small"` with three. A single hex field is left where it is, so the small picker keeps its one-line layout. The format select also sizes with the picker now instead of clipping its chevron at `size="large"`. Firefox, which draws spin buttons permanently, was worst affected.
 
-- `y-editor` toolbar tools whose formatting is active at the caret now show it: the button already carried `aria-pressed`, which nothing painted, so bold, lists, and the rest looked identical whether on or off. Active tools take the primary colour, overridable per theme with the new `--component-editor-toolbar-active-color` token.
+- `y-editor` toolbar tools whose formatting is active at the caret now show it: the button already carried `aria-pressed`, which nothing painted, so bold, lists, and the rest looked identical whether on or off. Active tools take the primary color, overridable per theme with the new `--component-editor-toolbar-active-color` token.
 
 - Typing after leaving a list in `y-editor` produced a new paragraph for every letter, and the second Enter appeared to put the caret back at the end of the previous list item. Normalizing the document after each keystroke reshapes stray markup into permitted blocks, which detached whatever the caret sat in and dropped it to the top of the document; from there each keystroke landed as loose text and was wrapped into a paragraph of its own. The caret is now preserved across normalization. Firefox, which leaves a bare `<div>` behind when Enter exits a list, was affected on every list; Chrome and Safari were not.
 
@@ -89,7 +89,7 @@ Delete any empty sections before publishing.
 
 - `y-tabs` now fires a cancelable `change` event whenever the active tab switches by click, keyboard, or `activateTab(id)`. The detail carries `{ id, previousId, tab, previousTab }`, and calling `preventDefault()` leaves the current tab in place so apps can guard a switch behind unsaved changes.
 
-- Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-colour glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
+- Twenty brand icons for OAuth / SSO sign-in buttons: `apple`, `atlassian`, `auth0`, `aws`, `bitbucket`, `dropbox`, `facebook`, `gitlab`, `google`, `linkedin`, `microsoft`, `notion`, `okta`, `reddit`, `salesforce`, `slack`, `spotify`, `twitch`, `x-twitter`, and `zoom`. They join the existing `discord`, `figma`, and `github` marks as solid single-color glyphs that inherit `currentColor`, and like those they have no filled variant — `weight="filled"` renders the same logo.
 
 - `y-editor` and `y-textarea` gain caret-triggered mention autocomplete. A `triggers` array defines any number of literal prefixes (`@` people, `#` topics, anything else); the component detects the trigger at a word boundary, debounces by `mention-query-delay`, emits `mention-query`, and renders the candidates the app supplies through `setMentionCandidates(id, …)`. It never fetches, and stale responses are discarded. Insertion is one undo step, and `y-editor` can insert `atomic` mentions as a single non-editable unit that survives the sanitize round trip.
 

@@ -194,7 +194,7 @@ describe("y-editor", () => {
             expect(el.shadowRoot.querySelector(".toolbar").hidden).to.be.true;
         });
 
-        it("paints the active tool with the toolbar active colour", async () => {
+        it("paints the active tool with the toolbar active color", async () => {
             const el = await fixture(
                 html`<y-editor value="<p>hello</p>"></y-editor>`,
             );
@@ -217,7 +217,7 @@ describe("y-editor", () => {
                 "true",
             );
             expect(iconColour("bold")).to.equal("rgb(1, 2, 3)");
-            // A tool that is not active keeps the ordinary colour.
+            // A tool that is not active keeps the ordinary color.
             expect(iconColour("italic")).to.equal(inactive);
 
             el._runTool("bold");
@@ -472,7 +472,9 @@ describe("y-editor", () => {
 
         it("moves a position on a list into the item it points at", async () => {
             const el = await fixture(
-                html`<y-editor value="<ul><li>one</li><li>two</li></ul>"></y-editor>`,
+                html`<y-editor
+                    value="<ul><li>one</li><li>two</li></ul>"
+                ></y-editor>`,
             );
             const list = content(el).querySelector("ul");
 

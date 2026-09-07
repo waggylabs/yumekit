@@ -178,7 +178,7 @@ import user from "./user.svg";
 import users from "./users.svg";
 import triangleExclamation from "./triangle-exclamation.svg";
 
-// Brand marks. Solid single-colour logos — no filled variants, since a logo
+// Brand marks. Solid single-color logos — no filled variants, since a logo
 // only reads one way.
 import apple from "./apple.svg";
 import atlassian from "./atlassian.svg";
