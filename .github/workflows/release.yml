@@ -29,12 +29,17 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+
             # A semver prerelease (0.5.5-beta.2) ships under the `beta` dist-tag
             # and skips the Storybook deploy; a plain version is a full release.
             - name: Resolve version
               id: meta
               run: |
                   version=$(node -p "require('./package.json').version")
+                  echo "version=$version" >> "$GITHUB_OUTPUT"
                   echo "tag=v$version" >> "$GITHUB_OUTPUT"
                   if [[ "$version" == *-* ]]; then
                       echo "dist-tag=beta" >> "$GITHUB_OUTPUT"
@@ -52,6 +57,13 @@ jobs:
                       exit 1
                   fi
 
+            # The release notes are the changelog entry — the same text that
+            # went in by hand before. No entry, no release.
+            - name: Read release notes from CHANGELOG
+              run: |
+                  node scripts/changelog-notes.js "${{ steps.meta.outputs.version }}" \
+                      > "$RUNNER_TEMP/notes.md"
+
             - name: Create tag and release
               env:
                   GH_TOKEN: ${{ github.token }}
@@ -59,7 +71,7 @@ jobs:
                   gh release create "${{ steps.meta.outputs.tag }}" \
                       --target "$GITHUB_SHA" \
                       --title "${{ steps.meta.outputs.tag }}" \
-                      --generate-notes \
+                      --notes-file "$RUNNER_TEMP/notes.md" \
                       ${{ steps.meta.outputs.prerelease == 'true' && '--prerelease' || '' }}
 
     publish:
