@@ -1,41 +1,38 @@
 name: Publish
 
 on:
-    release:
-        types: [published]
     workflow_dispatch:
+        inputs:
+            dist-tag:
+                description: "npm dist-tag to publish under"
+                required: true
+                type: choice
+                default: beta
+                options: [beta, latest]
 
 permissions:
     id-token: write
     contents: read
 
 jobs:
+    # One definition of the gate, shared with the Release workflow.
     test:
         uses: ./.github/workflows/ci.yml
 
-    publish-beta:
-        if: github.event.release.prerelease == true
+    publish-release:
         needs: test
         permissions:
             id-token: write
             contents: read
         uses: ./.github/workflows/npm-publish.yml
         with:
-            tag: beta
+            tag: ${{ inputs.dist-tag }}
         secrets: inherit
 
-    publish-release:
-        if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
-        needs: test
-        permissions:
-            id-token: write
-            contents: read
-        uses: ./.github/workflows/npm-publish.yml
-        secrets: inherit
-
+    # Storybook documents the current release, so a beta does not replace it.
     deploy-storybook:
-        if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
         needs: test
+        if: inputs.dist-tag == 'latest'
         permissions:
             id-token: write
             contents: read

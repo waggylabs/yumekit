@@ -33,8 +33,13 @@ npm install @waggylabs/yumekit
 - `@waggylabs/yumekit/components/y-{name}` — individual components
 - `@waggylabs/yumekit/icons/all.js` — all pre-built icons (line + filled variants)
 - `@waggylabs/yumekit/icons/all-filled.js` — filled icon variants only
-- `@waggylabs/yumekit/icons/registry` — icon registry API
+- `@waggylabs/yumekit/icons/registry.js` — icon registry API (`registerIcon`, `registerIcons`, `getIcon`, `getIconNames`)
 - `@waggylabs/yumekit/styles/{name}.css` — theme CSS files (e.g. `blue-dark.css`, `purple-light.css`, `olive-dark.css`)
+
+The root entry (`@waggylabs/yumekit`) registers every component, so it is marked
+`sideEffects: true` and cannot be tree-shaken — importing it pulls in the whole
+kit. Use the subpath entry points above to pull in only what you need; each one
+resolves to its own file and shares the same icon registry.
 
 CDN (IIFE):
 ```html
@@ -61,7 +66,7 @@ import "@waggylabs/yumekit/components/y-datepicker";
 
 ### Icons
 ```javascript
-import { registerIcon, registerIcons, getIcon, getIconNames } from "@waggylabs/yumekit";
+import { registerIcon, registerIcons, getIcon, getIconNames } from "@waggylabs/yumekit/icons/registry.js";
 import "@waggylabs/yumekit/icons/all.js"; // load all 100+ pre-built icons
 ```
 
@@ -2667,7 +2672,7 @@ For cross-origin theme files, add the `cross-origin` attribute:
 ## Icon Registry API
 
 ```javascript
-import { registerIcon, registerIcons, getIcon, getIconNames } from "@waggylabs/yumekit";
+import { registerIcon, registerIcons, getIcon, getIconNames } from "@waggylabs/yumekit/icons/registry.js";
 
 // Register one icon (raw SVG string)
 registerIcon("my-icon", `<svg viewBox="0 0 24 24">...</svg>`);
