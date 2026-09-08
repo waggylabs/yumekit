@@ -12,7 +12,8 @@ export default {
     argTypes: {
         options: {
             control: "text",
-            description: 'JSON array of `{ value, label }` objects.',
+            description:
+                'JSON array of `{ value, label, disabled? }` objects.',
         },
         value: {
             control: "text",
@@ -60,5 +61,49 @@ export const ManyOptions = {
             ])}'
             value="b"
         ></y-radio>
+    `,
+};
+
+export const DisabledOption = {
+    render: () => `
+        <y-radio
+            options='${JSON.stringify([
+                { value: "standard", label: "Standard shipping" },
+                { value: "express", label: "Express shipping" },
+                {
+                    value: "overnight",
+                    label: "Overnight (unavailable to this address)",
+                    disabled: true,
+                },
+            ])}'
+            value="standard"
+            aria-label="Shipping speed"
+        ></y-radio>
+    `,
+};
+
+export const Invalid = {
+    render: () => `
+        <y-radio
+            options='${defaultOptions}'
+            value=""
+            error-text="Choose an option to continue"
+            aria-label="Required choice"
+        ></y-radio>
+    `,
+};
+
+export const LabelledGroup = {
+    render: () => `
+        <div>
+            <p id="poll-question" style="margin: 0 0 8px; font-weight: 500;">
+                Which release should ship first?
+            </p>
+            <y-radio
+                options='${defaultOptions}'
+                value="option-2"
+                aria-labelledby="poll-question"
+            ></y-radio>
+        </div>
     `,
 };

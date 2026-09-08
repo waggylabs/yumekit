@@ -1,4 +1,13 @@
-import { hideEmptySlotContainers, upgradeProperties } from "../../modules/helpers.js";
+import {
+    hideEmptySlotContainers,
+    upgradeProperties,
+} from "../../modules/helpers.js";
+
+const SLOT_CONTAINERS = {
+    image: ".image",
+    header: ".header",
+    footer: ".footer",
+};
 
 export class YumeCard extends HTMLElement {
     static get observedAttributes() {
@@ -17,15 +26,12 @@ export class YumeCard extends HTMLElement {
 
     connectedCallback() {
         upgradeProperties(this);
-        this._updateColorStyles();
-        this._updateElevationStyles();
+        this._syncSlotVisibility();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
-        if (name === "color") this._updateColorStyles();
-        if (name === "raised") this._updateElevationStyles();
-        this.render();
+        this._syncSlotVisibility();
     }
 
     // -------------------------------------------------------------------------
@@ -33,11 +39,17 @@ export class YumeCard extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Color theme for the card surface. */
-    get color() { return this.getAttribute("color") || "base"; }
-    set color(val) { this.setAttribute("color", val); }
+    get color() {
+        return this.getAttribute("color") || "base";
+    }
+    set color(val) {
+        this.setAttribute("color", val);
+    }
 
     /** Whether the card uses a raised shadow instead of a border. */
-    get raised() { return this.hasAttribute("raised"); }
+    get raised() {
+        return this.hasAttribute("raised");
+    }
     set raised(val) {
         if (val) this.setAttribute("raised", "");
         else this.removeAttribute("raised");
@@ -57,19 +69,18 @@ export class YumeCard extends HTMLElement {
             <div class="footer" part="footer"><slot name="footer"></slot></div>
         `;
 
-        const slotsConfig = { image: ".image", header: ".header", footer: ".footer" };
-        hideEmptySlotContainers(this.shadowRoot, slotsConfig);
-        this._bindSlotListeners(slotsConfig);
+        this._syncSlotVisibility();
+        this._bindSlotListeners();
     }
 
     // -------------------------------------------------------------------------
     // Private
     // -------------------------------------------------------------------------
 
-    _bindSlotListeners(slotsConfig) {
+    _bindSlotListeners() {
         this.shadowRoot.querySelectorAll("slot").forEach((slot) => {
             slot.addEventListener("slotchange", () =>
-                hideEmptySlotContainers(this.shadowRoot, slotsConfig),
+                this._syncSlotVisibility(),
             );
         });
     }
@@ -80,17 +91,54 @@ export class YumeCard extends HTMLElement {
             :host([hidden]) {
                 display: none;
             }
+            :host {
+                --_card-content-color: var(--base-content--);
+                --_card-background: var(--base-background-component);
+                --_card-border-color: var(--base-border);
+            }
+            :host([color="primary"]) {
+                --_card-background: var(--primary-background-component);
+                --_card-border-color: var(--primary-border);
+            }
+            :host([color="secondary"]) {
+                --_card-background: var(--secondary-background-component);
+                --_card-border-color: var(--secondary-border);
+            }
+            :host([color="success"]) {
+                --_card-background: var(--success-background-component);
+                --_card-border-color: var(--success-border);
+            }
+            :host([color="error"]) {
+                --_card-background: var(--error-background-component);
+                --_card-border-color: var(--error-border);
+            }
+            :host([color="warning"]) {
+                --_card-background: var(--warning-background-component);
+                --_card-border-color: var(--warning-border);
+            }
 
             :host {
                 display: block;
                 box-sizing: border-box;
-                background: var(--card-background, var(--base-background-component));
-                border: 1px solid var(--card-border-color, var(--base-border));
-                border-width: var(--card-border-width, var(--component-card-border-width, 1px));
+                background: var(--card-background, var(--_card-background));
+                border: var(--card-border-width, var(--component-card-border-width, 1px))
+                    solid var(--card-border-color, var(--_card-border-color));
                 border-radius: var(--component-card-border-radius-outer);
                 font-family: var(--font-family-body);
-                color: var(--card-content-color, var(--base-content--));
+                color: var(--card-content-color, var(--_card-content-color));
                 box-shadow: var(--card-box-shadow, none);
+
+                /* Tracks the border colour so slotted content can key off it,
+                   and follows an ancestor's --card-border-color override. */
+                --card-section-background: var(--card-border-color, var(--_card-border-color));
+            }
+
+            /* A raised card keeps its border box and hides the line, rather
+               than zeroing the width - otherwise its contents sit 1px out of
+               line with the unraised cards beside it. */
+            :host([raised]) {
+                border-color: transparent;
+                box-shadow: var(--card-box-shadow, var(--base-shadow));
             }
 
             .image {
@@ -119,31 +167,8 @@ export class YumeCard extends HTMLElement {
         return sheet;
     }
 
-    _updateColorStyles() {
-        const colorVars = {
-            primary: ["--base-content--", "--primary-background-component", "--primary-border"],
-            secondary: ["--base-content--", "--secondary-background-component", "--secondary-border"],
-            base: ["--base-content--", "--base-background-component", "--base-border"],
-            success: ["--base-content--", "--success-background-component", "--success-border"],
-            error: ["--base-content--", "--error-background-component", "--error-border"],
-            warning: ["--base-content--", "--warning-background-component", "--warning-border"],
-        };
-
-        const [contentVar, bgVar, borderVar] = colorVars[this.color] || colorVars.base;
-        this.style.setProperty("--card-content-color",    `var(${contentVar})`);
-        this.style.setProperty("--card-background",       `var(${bgVar})`);
-        this.style.setProperty("--card-border-color",     `var(${borderVar})`);
-        this.style.setProperty("--card-section-background", `var(${borderVar})`);
-    }
-
-    _updateElevationStyles() {
-        if (this.raised) {
-            this.style.setProperty("--card-border-width", "0");
-            this.style.setProperty("--card-box-shadow", "var(--base-shadow)");
-        } else {
-            this.style.setProperty("--card-border-width", "var(--component-card-border-width)");
-            this.style.setProperty("--card-box-shadow", "none");
-        }
+    _syncSlotVisibility() {
+        hideEmptySlotContainers(this.shadowRoot, SLOT_CONTAINERS);
     }
 }
 

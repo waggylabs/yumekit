@@ -1,8 +1,16 @@
 import {
+    forwardControlAttributes,
     isSafeCssColor,
     manageLabelVisibility,
     upgradeProperties,
 } from "../../modules/helpers.js";
+
+/**
+ * Naming attributes moved from the host onto the inner `div[role=switch]`. The
+ * shared default set is narrowed here because `autocomplete` and `required`
+ * mean nothing on an element that is not a native form control.
+ */
+const SWITCH_FORWARDED_ATTRIBUTES = ["aria-label", "aria-labelledby"];
 
 class YumeSwitch extends HTMLElement {
     static formAssociated = true;
@@ -18,6 +26,8 @@ class YumeSwitch extends HTMLElement {
             "value",
             "on-color",
             "off-color",
+            "aria-label",
+            "aria-labelledby",
         ];
     }
 
@@ -372,10 +382,12 @@ class YumeSwitch extends HTMLElement {
 
     _updateAria() {
         const sw = this.shadowRoot?.querySelector(".switch");
-        if (sw) {
-            sw.setAttribute("aria-checked", this.checked);
-            sw.setAttribute("aria-disabled", this.disabled ? "true" : "false");
-        }
+        if (!sw) return;
+
+        sw.setAttribute("aria-checked", this.checked);
+        sw.setAttribute("aria-disabled", this.disabled ? "true" : "false");
+
+        forwardControlAttributes(this, sw, SWITCH_FORWARDED_ATTRIBUTES);
     }
 
     _updateDirection() {

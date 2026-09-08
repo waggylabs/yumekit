@@ -187,3 +187,19 @@ export const Invalid = {
 export const Disabled = {
     args: { disabled: true, value: "banana" },
 };
+
+/** The `label` attribute is shorthand for the `label` slot. */
+export const LabelAttribute = {
+    render: () => `
+        <div style="max-width:320px">
+            <y-select
+                label="Sort by"
+                options='${JSON.stringify([
+                    { value: "new", label: "Newest" },
+                    { value: "top", label: "Top rated" },
+                ])}'
+                value="new"
+            ></y-select>
+        </div>
+    `,
+};

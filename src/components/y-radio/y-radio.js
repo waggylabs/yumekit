@@ -1,14 +1,32 @@
 import {
+    applyControlError,
     coerceRichData,
     createElement as _el,
+    forwardControlAttributes,
     upgradeProperties,
 } from "../../modules/helpers.js";
+
+/**
+ * Naming attributes moved from the host onto the inner `fieldset[role=radiogroup]`.
+ * The shared default set is narrowed because `autocomplete` means nothing on a
+ * group, and `required` on a fieldset is not a native constraint.
+ */
+const RADIO_FORWARDED_ATTRIBUTES = ["aria-label", "aria-labelledby"];
 
 export class YumeRadio extends HTMLElement {
     static formAssociated = true;
 
     static get observedAttributes() {
-        return ["options", "name", "value", "disabled"];
+        return [
+            "options",
+            "name",
+            "value",
+            "disabled",
+            "invalid",
+            "error-text",
+            "aria-label",
+            "aria-labelledby",
+        ];
     }
 
     // -------------------------------------------------------------------------
@@ -34,6 +52,16 @@ export class YumeRadio extends HTMLElement {
             this._value = newVal;
             this._internals.setFormValue(newVal, this.name);
             this._updateChecked();
+        } else if (name === "invalid") {
+            this._updateValidationState();
+        } else if (name === "error-text") {
+            this._updateErrorText();
+        } else if (name === "aria-label" || name === "aria-labelledby") {
+            forwardControlAttributes(
+                this,
+                this._fieldset,
+                RADIO_FORWARDED_ATTRIBUTES,
+            );
         } else if (["options", "name", "disabled"].includes(name)) {
             if (name === "options") this._options = coerceRichData(newVal);
             this.render();
@@ -45,17 +73,41 @@ export class YumeRadio extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** @type {boolean} Whether the radio group is disabled. */
-    get disabled() { return this.hasAttribute("disabled"); }
+    get disabled() {
+        return this.hasAttribute("disabled");
+    }
     set disabled(val) {
         if (val) this.setAttribute("disabled", "");
         else this.removeAttribute("disabled");
     }
 
-    /** @type {string} The form name of the radio group. */
-    get name() { return this.getAttribute("name") || ""; }
-    set name(val) { this.setAttribute("name", val); }
+    /** @type {string} Validation message shown beneath the group. A non-empty value also puts the group in the invalid state and becomes its accessible description. */
+    get errorText() {
+        return this.getAttribute("error-text") || "";
+    }
+    set errorText(val) {
+        if (val == null || val === "") this.removeAttribute("error-text");
+        else this.setAttribute("error-text", val);
+    }
 
-    /** @type {Array<{value: string, label: string}>} The radio options. Rich data held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
+    /** @type {boolean} Whether the group is in an invalid state. */
+    get invalid() {
+        return this.hasAttribute("invalid");
+    }
+    set invalid(val) {
+        if (val) this.setAttribute("invalid", "");
+        else this.removeAttribute("invalid");
+    }
+
+    /** @type {string} The form name of the radio group. */
+    get name() {
+        return this.getAttribute("name") || "";
+    }
+    set name(val) {
+        this.setAttribute("name", val);
+    }
+
+    /** @type {Array<{value: string, label: string, disabled?: boolean}>} The radio options. An option with `disabled: true` renders unselectable and is skipped by arrow-key navigation. Rich data held as a property (identity preserved, not serialized); the `options` attribute seeds an initial value but is not kept in sync after an imperative set. */
     get options() {
         return Array.isArray(this._options) ? this._options : [];
     }
@@ -65,7 +117,9 @@ export class YumeRadio extends HTMLElement {
     }
 
     /** @type {string} The currently selected radio value. */
-    get value() { return this._value; }
+    get value() {
+        return this._value;
+    }
     set value(val) {
         this._value = val;
         this.setAttribute("value", val);
@@ -84,10 +138,25 @@ export class YumeRadio extends HTMLElement {
             this._buildOptions(),
         );
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
-        this.shadowRoot.replaceChildren(fieldset);
+        // The group, not any single input, is what carries the validation
+        // message — so `applyControlError` describes the fieldset.
+        const error = _el("div", {
+            class: "error-text",
+            part: "error-text",
+            id: "error-text",
+            "aria-live": "polite",
+            hidden: true,
+        });
 
+        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet()];
+        this.shadowRoot.replaceChildren(fieldset, error);
+
+        this._fieldset = fieldset;
+        this._errorElement = error;
+
+        forwardControlAttributes(this, fieldset, RADIO_FORWARDED_ATTRIBUTES);
         this._bindRadioListeners();
+        this._updateErrorText();
     }
 
     // -------------------------------------------------------------------------
@@ -95,40 +164,58 @@ export class YumeRadio extends HTMLElement {
     // -------------------------------------------------------------------------
 
     _bindRadioListeners() {
-        this.shadowRoot.querySelectorAll("input[type=radio]").forEach((input, i, list) => {
-            input.addEventListener("keydown", (e) => this._handleKey(e, i, list));
-            input.addEventListener("click", (e) => {
-                this.value = e.target.value;
-                this.dispatchEvent(new CustomEvent("change", {
-                    detail: { value: this.value },
-                    bubbles: true,
-                    composed: true,
-                }));
+        this.shadowRoot
+            .querySelectorAll("input[type=radio]")
+            .forEach((input, i, list) => {
+                input.addEventListener("keydown", (e) =>
+                    this._handleKey(e, i, list),
+                );
+                input.addEventListener("click", (e) => {
+                    if (e.target.disabled) return;
+
+                    this.value = e.target.value;
+                    this.dispatchEvent(
+                        new CustomEvent("change", {
+                            detail: { value: this.value },
+                            bubbles: true,
+                            composed: true,
+                        }),
+                    );
+                });
             });
-        });
     }
 
     _buildOptions() {
-        const { name, disabled, value, options } = this;
+        const { name, value, options } = this;
+        const selectedIndex = options.findIndex((opt) => opt.value === value);
+        const entryIndex =
+            selectedIndex !== -1 &&
+            !this._isOptionDisabled(options[selectedIndex])
+                ? selectedIndex
+                : options.findIndex((opt) => !this._isOptionDisabled(opt));
 
         return options.map((opt, idx) => {
             const isSelected = value === opt.value;
-            const tabindex = value
-                ? (isSelected ? "0" : "-1")
-                : (idx === 0 ? "0" : "-1");
 
             const input = _el("input", {
                 type: "radio",
                 name,
                 value: opt.value,
-                disabled,
+                disabled: this._isOptionDisabled(opt),
                 checked: isSelected,
-                tabindex,
+                tabindex: idx === entryIndex ? "0" : "-1",
                 role: "radio",
                 "aria-checked": String(isSelected),
             });
 
-            return _el("label", { part: "label" }, [input, opt.label]);
+            return _el(
+                "label",
+                {
+                    part: "label",
+                    class: this._isOptionDisabled(opt) ? "is-disabled" : null,
+                },
+                [input, opt.label],
+            );
         });
     }
 
@@ -193,43 +280,104 @@ export class YumeRadio extends HTMLElement {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
+            label.is-disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            fieldset.is-invalid input[type="radio"] {
+                border-color: var(--component-radio-error-color, var(--error-content));
+            }
+
+            .error-text {
+                margin-top: var(--spacing-2x-small, 4px);
+                font-size: 0.8em;
+                color: var(--component-radio-error-color, var(--error-content));
+            }
+
+            .error-text[hidden] {
+                display: none;
+            }
         `);
         return sheet;
     }
 
     _handleKey(e, index, radios) {
-        const len = radios.length;
-        let newIndex;
+        let step;
 
         if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-            e.preventDefault();
-            newIndex = (index + 1) % len;
+            step = 1;
         } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-            e.preventDefault();
-            newIndex = (index - 1 + len) % len;
+            step = -1;
         } else if (e.key === " " || e.key === "Enter") {
             e.preventDefault();
+            if (radios[index].disabled) return;
+
             this.value = radios[index].value;
-            this.dispatchEvent(new CustomEvent("change", {
-                detail: { value: this.value },
-                bubbles: true,
-                composed: true,
-            }));
+            this.dispatchEvent(
+                new CustomEvent("change", {
+                    detail: { value: this.value },
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
             return;
         } else {
             return;
         }
 
-        radios[newIndex].focus();
+        e.preventDefault();
+
+        const next = this._nextEnabledIndex(index, step, radios);
+        if (next !== -1) radios[next].focus();
+    }
+
+    _isOptionDisabled(opt) {
+        return this.disabled || opt?.disabled === true;
+    }
+
+    /**
+     * Walk the group from `index` in `step` direction, wrapping, and return the
+     * first enabled option. Returns -1 when no other option can take focus,
+     * which leaves focus where it is rather than moving it nowhere.
+     */
+    _nextEnabledIndex(index, step, radios) {
+        const len = radios.length;
+
+        for (let i = 1; i <= len; i++) {
+            const candidate = (((index + step * i) % len) + len) % len;
+            if (!radios[candidate].disabled) return candidate;
+        }
+
+        return -1;
     }
 
     _updateChecked() {
-        this.shadowRoot.querySelectorAll("input[type=radio]").forEach((input) => {
+        const radios = [
+            ...this.shadowRoot.querySelectorAll("input[type=radio]"),
+        ];
+        const selected = radios.find((input) => input.value === this.value);
+        const entry =
+            selected && !selected.disabled
+                ? selected
+                : radios.find((input) => !input.disabled);
+
+        radios.forEach((input) => {
             const isSelected = input.value === this.value;
             input.checked = isSelected;
             input.setAttribute("aria-checked", isSelected);
-            input.setAttribute("tabindex", isSelected ? "0" : "-1");
+            input.setAttribute("tabindex", input === entry ? "0" : "-1");
         });
+    }
+
+    _updateErrorText() {
+        applyControlError(this._fieldset, this._errorElement, this.errorText);
+        this._updateValidationState();
+    }
+
+    _updateValidationState() {
+        const isInvalid = this.hasAttribute("invalid") || this.errorText !== "";
+        this._fieldset?.classList.toggle("is-invalid", isInvalid);
     }
 }
 

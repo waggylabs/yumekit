@@ -774,7 +774,28 @@ export class YumeProgress extends HTMLElement {
                 color: var(--base-content--);
             }
 
+            /* The size attribute is the OUTER height: the padding and border are taken
+               inside it. At the shipped size tokens there is room to spare, but
+               a raw length such as size=8px used to be eaten whole by 4px of
+               padding on each side plus the border, leaving a bar that carried
+               the right value and painted nothing. The padding is capped at a
+               quarter of the space inside the border so a fill always survives;
+               at every named size the cap is far above the token and nothing
+               changes. */
             .track {
+                --_track-padding: max(
+                    0px,
+                    min(
+                        var(--component-progress-padding),
+                        calc(
+                            (
+                                var(--_size, var(--component-progress-size-medium)) -
+                                2 * var(--component-progress-border-width, 1px)
+                            ) / 4
+                        )
+                    )
+                );
+
                 position: relative;
                 width: 100%;
                 height: var(--_size, var(--component-progress-size-medium));
@@ -784,7 +805,7 @@ export class YumeProgress extends HTMLElement {
                 border-radius: var(--component-progress-border-radius-outer);
                 overflow: hidden;
                 box-sizing: border-box;
-                padding: var(--component-progress-padding);
+                padding: var(--_track-padding);
             }
 
             .track--segmented {

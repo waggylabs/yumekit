@@ -1,6 +1,7 @@
 import { expect } from "@open-wc/testing";
 import {
     DEFAULT_ALLOWED_TAGS,
+    DEFAULT_ID_PREFIX,
     isSafeUrl,
     sanitizeHtml,
     sanitizeHtmlToFragment,
@@ -415,6 +416,94 @@ describe("html-sanitizer", () => {
             const el = holder.querySelector("span[data-mention-value]");
             expect(el.querySelectorAll("*").length).to.equal(0);
             expect(el.textContent).to.equal("@Ada");
+        });
+    });
+
+    describe("allowIds", () => {
+        it("strips id by default", () => {
+            expect(sanitizeHtml('<h2 id="intro">Intro</h2>')).to.equal(
+                "<h2>Intro</h2>",
+            );
+        });
+
+        it("keeps a prefixed id on a heading when enabled", () => {
+            expect(
+                sanitizeHtml('<h2 id="intro">Intro</h2>', { allowIds: true }),
+            ).to.equal(`<h2 id="${DEFAULT_ID_PREFIX}intro">Intro</h2>`);
+        });
+
+        it("keeps ids on the other block elements", () => {
+            const out = sanitizeHtml(
+                '<p id="a">A</p><ul id="b"><li id="c">C</li></ul>',
+                { allowIds: true },
+            );
+
+            expect(out).to.contain(`id="${DEFAULT_ID_PREFIX}a"`);
+            expect(out).to.contain(`id="${DEFAULT_ID_PREFIX}b"`);
+            expect(out).to.contain(`id="${DEFAULT_ID_PREFIX}c"`);
+        });
+
+        it("accepts a custom prefix", () => {
+            expect(
+                sanitizeHtml('<h3 id="x">X</h3>', {
+                    allowIds: true,
+                    idPrefix: "doc-",
+                }),
+            ).to.equal('<h3 id="doc-x">X</h3>');
+        });
+
+        it("drops an id containing a space", () => {
+            expect(
+                sanitizeHtml('<h2 id="a b">T</h2>', { allowIds: true }),
+            ).to.equal("<h2>T</h2>");
+        });
+
+        it("drops an empty id", () => {
+            expect(sanitizeHtml('<h2 id="">T</h2>', { allowIds: true })).to.equal(
+                "<h2>T</h2>",
+            );
+        });
+
+        it("namespaces a clobbering id rather than emitting it bare", () => {
+            const out = sanitizeHtml('<h2 id="__proto__">T</h2>', {
+                allowIds: true,
+            });
+
+            expect(out).to.equal(`<h2 id="${DEFAULT_ID_PREFIX}__proto__">T</h2>`);
+            expect(out).to.not.contain('id="__proto__"');
+        });
+
+        it("does not keep an id on an inline element", () => {
+            expect(
+                sanitizeHtml('<a href="/x" id="link">L</a>', { allowIds: true }),
+            ).to.equal('<a href="/x">L</a>');
+        });
+
+        it("keeps stripping every other attribute when enabled", () => {
+            expect(
+                sanitizeHtml('<h2 id="a" class="x" onclick="evil()">T</h2>', {
+                    allowIds: true,
+                }),
+            ).to.equal(`<h2 id="${DEFAULT_ID_PREFIX}a">T</h2>`);
+        });
+
+        it("does not keep name, for, or headers alongside id", () => {
+            const out = sanitizeHtml(
+                '<p id="a" name="n" for="f" headers="h">T</p>',
+                { allowIds: true },
+            );
+
+            expect(out).to.equal(`<p id="${DEFAULT_ID_PREFIX}a">T</p>`);
+        });
+
+        it("survives the fragment entry point too", () => {
+            const frag = sanitizeHtmlToFragment('<h2 id="intro">I</h2>', {
+                allowIds: true,
+            });
+
+            expect(frag.firstElementChild.id).to.equal(
+                `${DEFAULT_ID_PREFIX}intro`,
+            );
         });
     });
 });

@@ -3,6 +3,7 @@ import {
     createElement as _el,
     forwardControlAttributes,
     manageLabelVisibility,
+    syncSlottedLabel,
     upgradeProperties,
 } from "../../modules/helpers.js";
 import {
@@ -44,6 +45,7 @@ export class YumeMoney extends HTMLElement {
             "autocomplete",
             "aria-label",
             "aria-labelledby",
+            "label",
         ];
     }
 
@@ -72,6 +74,7 @@ export class YumeMoney extends HTMLElement {
         this._internals.setFormValue(this._value, this.getAttribute("name"));
         this._updateDisplay();
         this._updateValidationState();
+        syncSlottedLabel(this);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -88,6 +91,11 @@ export class YumeMoney extends HTMLElement {
 
         if (name === "name") {
             this._internals.setFormValue(this._value, newValue);
+            return;
+        }
+
+        if (name === "label") {
+            syncSlottedLabel(this);
             return;
         }
 
@@ -211,6 +219,15 @@ export class YumeMoney extends HTMLElement {
     set invalid(val) {
         if (val) this.setAttribute("invalid", "");
         else this.removeAttribute("invalid");
+    }
+
+    /** @type {string} Shorthand for the `label` slot: sets the label text without composing a `<span slot="label">`. A hand-slotted label wins over this. */
+    get label() {
+        return this.getAttribute("label") || "";
+    }
+    set label(val) {
+        if (val == null || val === "") this.removeAttribute("label");
+        else this.setAttribute("label", val);
     }
 
     /** @type {string} Label position: "top" | "bottom" (default "top"). */

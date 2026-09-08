@@ -258,10 +258,7 @@ export function hslToHsv(h, s, l) {
 
 /** Convert RGB (0-255 each) to a hex string like "#ff0000". */
 export function rgbToHex(r, g, b) {
-    return (
-        "#" +
-        [r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("")
-    );
+    return "#" + [r, g, b].map((c) => c.toString(16).padStart(2, "0")).join("");
 }
 
 /** Convert RGBA to a hex8 string like "#ff000080". */
@@ -479,6 +476,46 @@ export function manageLabelVisibility(labelWrapper) {
             );
         labelWrapper.style.display = hasContent ? "flex" : "";
     });
+}
+
+/**
+ * Marks the light-DOM label span a component generated from its `label`
+ * attribute, so it can be told apart from one the caller slotted by hand.
+ */
+export const GENERATED_LABEL_ATTRIBUTE = "data-yumekit-label";
+
+/**
+ * Back a `label` attribute with the `slot="label"` child the labelled controls
+ * actually render from.
+ *
+ * @param {HTMLElement} host — the custom element
+ */
+export function syncSlottedLabel(host) {
+    const text = host.getAttribute("label") || "";
+    const generated = host.querySelector(
+        `:scope > [${GENERATED_LABEL_ATTRIBUTE}]`,
+    );
+    const authored = [...host.children].some(
+        (child) =>
+            child.getAttribute("slot") === "label" &&
+            !child.hasAttribute(GENERATED_LABEL_ATTRIBUTE),
+    );
+
+    if (authored || !text) {
+        generated?.remove();
+        return;
+    }
+
+    if (generated) {
+        generated.textContent = text;
+        return;
+    }
+
+    const span = document.createElement("span");
+    span.setAttribute("slot", "label");
+    span.setAttribute(GENERATED_LABEL_ATTRIBUTE, "");
+    span.textContent = text;
+    host.appendChild(span);
 }
 
 /**

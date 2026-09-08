@@ -15,6 +15,11 @@ export default {
             description: "Single date or date range selection.",
             table: { defaultValue: { summary: "single" } },
         },
+        errorText: {
+            control: "text",
+            description:
+                "Validation message shown below the field. A non-empty value also sets the invalid state and describes the field for assistive tech.",
+        },
         size: {
             control: "select",
             options: ["small", "medium", "large"],
@@ -138,6 +143,7 @@ export default {
             args.nativeMobile ? "native-mobile" : "",
             args.disabled ? "disabled" : "",
             args.invalid ? "invalid" : "",
+            args.errorText ? `error-text="${args.errorText}"` : "",
             args.showHours ? "show-hours" : "",
             args.showMinutes ? "show-minutes" : "",
             args.showSeconds ? "show-seconds" : "",
@@ -236,4 +242,18 @@ export const NativeMobile = {
 /** Native mobile range — renders two native date inputs in range mode on mobile. */
 export const NativeMobileRange = {
     args: { mode: "range", nativeMobile: true },
+};
+
+/** Validation message. A non-empty `error-text` also puts the field in the invalid state and describes it for assistive tech. */
+export const ErrorText = {
+    args: { errorText: "Choose a date in the future" },
+};
+
+/** The `label` attribute is shorthand for the `label` slot. */
+export const LabelAttribute = {
+    render: () => `
+        <div style="max-width:320px">
+            <y-date label="Start date"></y-date>
+        </div>
+    `,
 };

@@ -147,3 +147,13 @@ export const Invalid = {
 export const Disabled = {
     args: { disabled: true, value: "Disabled value" },
 };
+
+/** The `label` attribute is shorthand for the `label` slot — no `<span slot="label">` needed. `maxlength` caps the field at the native level. */
+export const LabelAttributeAndMaxLength = {
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:16px;max-width:320px">
+            <y-input label="Display name" maxlength="24" placeholder="Up to 24 characters"></y-input>
+            <y-input label="Attribute label"><span slot="label">Slotted label wins</span></y-input>
+        </div>
+    `,
+};

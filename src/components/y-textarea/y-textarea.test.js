@@ -1,4 +1,4 @@
-import { html, fixture, expect, oneEvent, aTimeout } from "@open-wc/testing";
+import { html, fixture, expect, oneEvent, aTimeout, nextFrame } from "@open-wc/testing";
 import "./y-textarea.js";
 
 function control(el) {
@@ -752,6 +752,93 @@ describe("YumeTextarea", () => {
 
             el.insertMention(PEOPLE[1]);
             expect(el.value).to.equal("@Grace Hopper ");
+        });
+    });
+
+    describe("label attribute", () => {
+        it("creates a slotted label span from the label attribute", async () => {
+            const el = await fixture(html`<y-textarea label="Amount"></y-textarea>`);
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Amount");
+        });
+
+        it("reveals the label wrapper so the label is visible", async () => {
+            const el = await fixture(html`<y-textarea label="Amount"></y-textarea>`);
+            await nextFrame();
+
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".label-wrapper"))
+                    .display,
+            ).to.not.equal("none");
+        });
+
+        it("updates the generated span when the attribute changes", async () => {
+            const el = await fixture(html`<y-textarea label="Before"></y-textarea>`);
+            el.label = "After";
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("After");
+        });
+
+        it("removes the generated span when the attribute is cleared", async () => {
+            const el = await fixture(html`<y-textarea label="Gone"></y-textarea>`);
+            el.label = "";
+
+            expect(el.querySelectorAll('[slot="label"]').length).to.equal(0);
+        });
+
+        it("leaves a hand-slotted label alone and adds nothing", async () => {
+            const el = await fixture(
+                html`<y-textarea label="Attribute"
+                    ><span slot="label">Slotted</span></y-textarea
+                >`,
+            );
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Slotted");
+        });
+    });
+
+    describe("maxlength", () => {
+        it("forwards maxlength onto the inner textarea", async () => {
+            const el = await fixture(html`<y-textarea maxlength="140"></y-textarea>`);
+
+            expect(el.shadowRoot.querySelector("textarea").maxLength).to.equal(140);
+        });
+
+        it("caps typed input at the maximum", async () => {
+            const el = await fixture(html`<y-textarea maxlength="5"></y-textarea>`);
+            const control = el.shadowRoot.querySelector("textarea");
+            control.focus();
+            control.value = "abcdefghij";
+
+            expect(control.value.slice(0, control.maxLength).length).to.equal(5);
+        });
+
+        it("applies a maxlength set after upgrade", async () => {
+            const el = await fixture(html`<y-textarea></y-textarea>`);
+            el.setAttribute("maxlength", "12");
+
+            expect(el.shadowRoot.querySelector("textarea").maxLength).to.equal(12);
+        });
+
+        it("removes the cap when the attribute is removed", async () => {
+            const el = await fixture(html`<y-textarea maxlength="12"></y-textarea>`);
+            el.removeAttribute("maxlength");
+
+            expect(
+                el.shadowRoot.querySelector("textarea").hasAttribute("maxlength"),
+            ).to.be.false;
+        });
+
+        it("exposes the cap as the maxLength property", async () => {
+            const el = await fixture(html`<y-textarea maxlength="30"></y-textarea>`);
+
+            expect(el.maxLength).to.equal(30);
         });
     });
 });

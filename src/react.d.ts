@@ -188,6 +188,7 @@ declare module "react" {
             "y-date": El<{
                 name?: string;
                 value?: string;
+                label?: string;
                 min?: string;
                 max?: string;
                 format?: string;
@@ -211,6 +212,7 @@ declare module "react" {
                 "mobile-breakpoint"?: string | number;
                 "native-mobile"?: boolean | string;
                 variant?: "default" | "underline";
+                "error-text"?: string;
             }>;
             "y-datepicker": El<{
                 value?: string;
@@ -417,6 +419,8 @@ declare module "react" {
                 name?: string;
                 value?: string;
                 placeholder?: string;
+                maxlength?: string | number;
+                label?: string;
                 disabled?: boolean | string;
                 invalid?: boolean | string;
                 size?: "small" | "medium" | "large";
@@ -431,6 +435,7 @@ declare module "react" {
             }>;
             "y-money": El<{
                 value?: string | number;
+                label?: string;
                 currency?: string;
                 locale?: string;
                 precision?: string | number;
@@ -609,12 +614,17 @@ declare module "react" {
             "y-radio": El<{
                 name?: string;
                 value?: string;
-                options?: Array<{ value: string; label: string }> | string;
+                options?:
+                    | Array<{ value: string; label: string; disabled?: boolean }>
+                    | string;
                 disabled?: boolean | string;
+                invalid?: boolean | string;
+                "error-text"?: string;
             }>;
             "y-select": El<{
                 name?: string;
                 value?: string;
+                label?: string;
                 disabled?: boolean | string;
                 multiple?: boolean | string;
                 size?: "small" | "medium" | "large";
@@ -782,6 +792,8 @@ declare module "react" {
                 name?: string;
                 value?: string;
                 placeholder?: string;
+                maxlength?: string | number;
+                label?: string;
                 rows?: string | number;
                 disabled?: boolean | string;
                 invalid?: boolean | string;

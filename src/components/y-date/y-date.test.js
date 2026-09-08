@@ -110,10 +110,10 @@ describe("<y-date>", () => {
             >
         `);
         const wrapper = el.shadowRoot.querySelector(".wrapper");
-        const children = [...wrapper.children];
-        expect(
-            children[children.length - 1].classList.contains("label-wrapper"),
-        ).to.be.true;
+        const classes = [...wrapper.children].map((c) => c.className);
+        expect(classes.indexOf("label-wrapper")).to.be.greaterThan(
+            classes.indexOf("trigger"),
+        );
     });
 
     it("applies default size attribute of medium", async () => {
@@ -713,6 +713,124 @@ describe("<y-date>", () => {
             const icon = btn.querySelector("y-icon");
             expect(icon).to.exist;
             expect(icon.getAttribute("name")).to.equal("x");
+        });
+    });
+
+    describe("accessible name and error surface", () => {
+        it("forwards aria-label onto the inner display field", async () => {
+            const el = await fixture(
+                html`<y-date aria-label="Start date"></y-date>`
+            );
+
+            expect(
+                el.shadowRoot.querySelector(".display").getAttribute("aria-label")
+            ).to.equal("Start date");
+        });
+
+        it("forwards aria-labelledby onto the inner display field", async () => {
+            const el = await fixture(
+                html`<y-date aria-labelledby="when"></y-date>`
+            );
+
+            expect(
+                el.shadowRoot
+                    .querySelector(".display")
+                    .getAttribute("aria-labelledby")
+            ).to.equal("when");
+        });
+
+        it("removes the forwarded name when the host attribute is removed", async () => {
+            const el = await fixture(html`<y-date aria-label="Gone"></y-date>`);
+            el.removeAttribute("aria-label");
+
+            expect(
+                el.shadowRoot.querySelector(".display").hasAttribute("aria-label")
+            ).to.be.false;
+        });
+
+        it("renders error-text and describes the field with it", async () => {
+            const el = await fixture(
+                html`<y-date error-text="Pick a date"></y-date>`
+            );
+            const display = el.shadowRoot.querySelector(".display");
+            const error = el.shadowRoot.querySelector(".error-text");
+
+            expect(error.textContent).to.equal("Pick a date");
+            expect(error.hidden).to.be.false;
+            expect(display.getAttribute("aria-invalid")).to.equal("true");
+            expect(display.getAttribute("aria-describedby")).to.equal(error.id);
+        });
+
+        it("styles the trigger as invalid while error-text is set", async () => {
+            const el = await fixture(
+                html`<y-date error-text="Pick a date"></y-date>`
+            );
+
+            expect(
+                el.shadowRoot.querySelector(".trigger").classList.contains("is-invalid")
+            ).to.be.true;
+        });
+
+        it("clears the error surface when error-text is removed", async () => {
+            const el = await fixture(
+                html`<y-date error-text="Pick a date"></y-date>`
+            );
+            el.errorText = "";
+            const display = el.shadowRoot.querySelector(".display");
+
+            expect(el.shadowRoot.querySelector(".error-text").hidden).to.be.true;
+            expect(display.hasAttribute("aria-invalid")).to.be.false;
+            expect(
+                el.shadowRoot.querySelector(".trigger").classList.contains("is-invalid")
+            ).to.be.false;
+        });
+    });
+
+    describe("label attribute", () => {
+        it("creates a slotted label span from the label attribute", async () => {
+            const el = await fixture(html`<y-date label="Amount"></y-date>`);
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Amount");
+        });
+
+        it("reveals the label wrapper so the label is visible", async () => {
+            const el = await fixture(html`<y-date label="Amount"></y-date>`);
+            await nextFrame();
+
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".label-wrapper"))
+                    .display,
+            ).to.not.equal("none");
+        });
+
+        it("updates the generated span when the attribute changes", async () => {
+            const el = await fixture(html`<y-date label="Before"></y-date>`);
+            el.label = "After";
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("After");
+        });
+
+        it("removes the generated span when the attribute is cleared", async () => {
+            const el = await fixture(html`<y-date label="Gone"></y-date>`);
+            el.label = "";
+
+            expect(el.querySelectorAll('[slot="label"]').length).to.equal(0);
+        });
+
+        it("leaves a hand-slotted label alone and adds nothing", async () => {
+            const el = await fixture(
+                html`<y-date label="Attribute"
+                    ><span slot="label">Slotted</span></y-date
+                >`,
+            );
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Slotted");
         });
     });
 });

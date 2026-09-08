@@ -10,6 +10,7 @@ import {
     isSafeCssColor,
     manageLabelVisibility,
     resolveThemeMountPoint,
+    syncSlottedLabel,
     upgradeProperties,
 } from "../../modules/helpers.js";
 
@@ -55,6 +56,7 @@ export class YumeSelect extends HTMLElement {
             "error-text",
             "aria-label",
             "aria-labelledby",
+            "label",
         ];
     }
 
@@ -82,6 +84,7 @@ export class YumeSelect extends HTMLElement {
 
         this.updateValidation();
         this._internals.setFormValue(this.value);
+        syncSlottedLabel(this);
     }
 
     disconnectedCallback() {
@@ -124,6 +127,10 @@ export class YumeSelect extends HTMLElement {
         ) {
             if (name === "options") this._options = coerceRichData(newValue);
             this.render();
+        }
+
+        if (name === "label") {
+            syncSlottedLabel(this);
         }
 
         if (name === "error-text") {
@@ -193,6 +200,15 @@ export class YumeSelect extends HTMLElement {
     set invalid(val) {
         if (val) this.setAttribute("invalid", "");
         else this.removeAttribute("invalid");
+    }
+
+    /** @type {string} Shorthand for the `label` slot: sets the label text without composing a `<span slot="label">`. A hand-slotted label wins over this. */
+    get label() {
+        return this.getAttribute("label") || "";
+    }
+    set label(val) {
+        if (val == null || val === "") this.removeAttribute("label");
+        else this.setAttribute("label", val);
     }
 
     /** @type {string} Label position: "top" | "bottom" (default "top"). */

@@ -253,3 +253,17 @@ export const AsyncCandidates = {
         `);
     },
 };
+
+/** The `label` attribute is shorthand for the `label` slot, and `maxlength` caps the textarea at the native level. */
+export const LabelAttributeAndMaxLength = {
+    render: () => `
+        <div style="max-width:420px">
+            <y-textarea
+                label="Memo"
+                maxlength="140"
+                rows="3"
+                placeholder="Up to 140 characters"
+            ></y-textarea>
+        </div>
+    `,
+};

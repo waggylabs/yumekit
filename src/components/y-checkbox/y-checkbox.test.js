@@ -116,4 +116,59 @@ describe("<y-checkbox>", () => {
         el.indeterminate = false;
         expect(el.hasAttribute("indeterminate")).to.be.false;
     });
+
+    describe("click() on the host", () => {
+        it("toggles when click() is called on the host", async () => {
+            const el = await fixture(html`<y-checkbox></y-checkbox>`);
+            el.click();
+
+            expect(el.checked).to.be.true;
+        });
+
+        it("fires exactly one change event for a host click", async () => {
+            const el = await fixture(html`<y-checkbox></y-checkbox>`);
+            let changes = 0;
+            el.addEventListener("change", () => changes++);
+            el.click();
+
+            expect(changes).to.equal(1);
+        });
+
+        it("fires exactly one change event for a real click inside", async () => {
+            const el = await fixture(html`<y-checkbox></y-checkbox>`);
+            let changes = 0;
+            el.addEventListener("change", () => changes++);
+            el.shadowRoot.querySelector(".wrapper").click();
+
+            expect(changes).to.equal(1);
+            expect(el.checked).to.be.true;
+        });
+
+        it("fires exactly one change event for a click on slotted label content", async () => {
+            const el = await fixture(
+                html`<y-checkbox><span>Remember me</span></y-checkbox>`,
+            );
+            let changes = 0;
+            el.addEventListener("change", () => changes++);
+            el.querySelector("span").click();
+
+            expect(changes).to.equal(1);
+            expect(el.checked).to.be.true;
+        });
+
+        it("does not toggle when disabled", async () => {
+            const el = await fixture(html`<y-checkbox disabled></y-checkbox>`);
+            el.click();
+
+            expect(el.checked).to.be.false;
+        });
+
+        it("clears an indeterminate state the same way toggle() does", async () => {
+            const el = await fixture(html`<y-checkbox indeterminate></y-checkbox>`);
+            el.click();
+
+            expect(el.indeterminate).to.be.false;
+            expect(el.checked).to.be.true;
+        });
+    });
 });

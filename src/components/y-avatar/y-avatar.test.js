@@ -1,4 +1,5 @@
 import { fixture, expect, html, waitUntil } from "@open-wc/testing";
+import sinon from "sinon";
 import "./y-avatar.js";
 
 // 1x1 transparent GIF — a valid image source so tests that need the <img> to
@@ -6,6 +7,9 @@ import "./y-avatar.js";
 const VALID_IMG = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 describe("YumeAvatar", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => sandbox.restore());
+
     it("renders an img when src is provided", async () => {
         const el = await fixture(
             html`<y-avatar src=${VALID_IMG} alt="User"></y-avatar>`,
@@ -319,6 +323,74 @@ describe("YumeAvatar", () => {
             expect(el.shadowRoot.querySelector("img")).to.be.null;
             expect(el.shadowRoot.querySelector("[onerror]")).to.be.null;
             expect(window.__xssAvatarInitials).to.be.undefined;
+        });
+    });
+
+    describe("x-large size", () => {
+        it("renders at the x-large token", async () => {
+            const el = await fixture(html`<y-avatar size="x-large"></y-avatar>`);
+            el.style.setProperty("--component-avatar-size-x-large", "80px");
+
+            expect(Math.round(el.getBoundingClientRect().width)).to.equal(80);
+        });
+
+        it("is larger than a large avatar", async () => {
+            const xLarge = await fixture(html`<y-avatar size="x-large"></y-avatar>`);
+            const large = await fixture(html`<y-avatar size="large"></y-avatar>`);
+            xLarge.style.setProperty("--component-avatar-size-x-large", "80px");
+            large.style.setProperty("--component-avatar-size-large", "51px");
+
+            expect(xLarge.getBoundingClientRect().width).to.be.greaterThan(
+                large.getBoundingClientRect().width,
+            );
+        });
+
+        it("does not warn for a recognized size", async () => {
+            const warn = sandbox.stub(console, "warn");
+            await fixture(html`<y-avatar size="x-large"></y-avatar>`);
+
+            expect(warn.callCount).to.equal(0);
+        });
+    });
+
+    describe("x-small size", () => {
+        it("renders at the x-small token", async () => {
+            const el = await fixture(html`<y-avatar size="x-small"></y-avatar>`);
+            el.style.setProperty("--component-avatar-size-x-small", "19px");
+
+            expect(
+                Math.round(el.getBoundingClientRect().width),
+            ).to.equal(19);
+        });
+
+        it("is smaller than a small avatar", async () => {
+            const xSmall = await fixture(html`<y-avatar size="x-small"></y-avatar>`);
+            const small = await fixture(html`<y-avatar size="small"></y-avatar>`);
+            xSmall.style.setProperty("--component-avatar-size-x-small", "19px");
+            small.style.setProperty("--component-avatar-size-small", "27px");
+
+            expect(xSmall.getBoundingClientRect().width).to.be.lessThan(
+                small.getBoundingClientRect().width,
+            );
+        });
+
+        it("no longer silently renders x-small at the medium size", async () => {
+            const xSmall = await fixture(html`<y-avatar size="x-small"></y-avatar>`);
+            const medium = await fixture(html`<y-avatar size="medium"></y-avatar>`);
+            xSmall.style.setProperty("--component-avatar-size-x-small", "19px");
+            medium.style.setProperty("--component-avatar-size-medium", "35px");
+
+            expect(xSmall.getBoundingClientRect().width).to.not.equal(
+                medium.getBoundingClientRect().width,
+            );
+        });
+
+        it("warns and falls back to medium for an unknown size", async () => {
+            const warn = sandbox.stub(console, "warn");
+            await fixture(html`<y-avatar size="enormous"></y-avatar>`);
+
+            expect(warn.callCount).to.be.greaterThan(0);
+            expect(warn.firstCall.args[0]).to.include("enormous");
         });
     });
 });

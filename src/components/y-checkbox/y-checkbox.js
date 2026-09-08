@@ -1,4 +1,7 @@
-import { createElement as _el, upgradeProperties } from "../../modules/helpers.js";
+import {
+    createElement as _el,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 import "../y-icon/y-icon.js";
 
 export class YumeCheckbox extends HTMLElement {
@@ -24,6 +27,8 @@ export class YumeCheckbox extends HTMLElement {
         this._internals = this.attachInternals();
         this.attachShadow({ mode: "open" });
         this.render();
+
+        this.addEventListener("click", (e) => this._handleHostClick(e));
     }
 
     connectedCallback() {
@@ -245,6 +250,21 @@ export class YumeCheckbox extends HTMLElement {
             }
         `);
         return sheet;
+    }
+
+    /**
+     * Toggle for `checkbox.click()` on the host, which used to do nothing
+     * because the only click listener lived on the shadow `.wrapper`.
+     *
+     * A click that started inside the component (or on slotted label content)
+     * is already handled there and arrives here only by bubbling, so it is
+     * ignored — otherwise every real click would toggle twice.
+     */
+    _handleHostClick(e) {
+        if (e.composedPath()[0] !== this) return;
+        if (this.disabled) return;
+
+        this.toggle();
     }
 
     _updateState() {

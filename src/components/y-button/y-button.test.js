@@ -358,4 +358,41 @@ describe("KeplerButton", () => {
         expect(shadowButton.hasAttribute("disabled")).to.be.false;
         expect(shadowButton.getAttribute("aria-disabled")).to.equal("false");
     });
+
+    describe("focus()", () => {
+        it("moves focus to the button when focus() is called on the host", async () => {
+            const el = await fixture(html`<y-button>Save</y-button>`);
+            el.focus();
+
+            expect(document.activeElement.tagName.toLowerCase()).to.equal("y-button");
+        });
+
+        it("focuses the inner control, not just the host", async () => {
+            const el = await fixture(html`<y-button>Save</y-button>`);
+            el.focus();
+
+            expect(el.shadowRoot.activeElement.classList.contains("button")).to.be
+                .true;
+        });
+
+        it("does not take focus when disabled", async () => {
+            const el = await fixture(html`<y-button disabled>Save</y-button>`);
+            el.focus();
+
+            expect(document.activeElement.tagName.toLowerCase()).to.not.equal(
+                "y-button",
+            );
+        });
+
+        it("does not take focus when a disabled link button", async () => {
+            const el = await fixture(
+                html`<y-button href="/x" disabled>Go</y-button>`,
+            );
+            el.focus();
+
+            expect(document.activeElement.tagName.toLowerCase()).to.not.equal(
+                "y-button",
+            );
+        });
+    });
 });

@@ -227,7 +227,7 @@ Form-associated. Always set `name` inside a `<form>`.
 | `name`               | form field name                                                                     |
 | `value`              | current value                                                                       |
 | `placeholder`        |                                                                                     |
-| `label`              | visible label text                                                                  |
+| `label`              | visible label text — shorthand for the `label` slot; a hand-slotted label wins    |
 | `label-position`     | `top` (default) \| `bottom` \| `left` \| `right`                                    |
 | `size`               | `small` \| `medium` \| `large`                                                      |
 | `variant`            | `default` (full border) \| `underline` (bottom border only, square bottom corners)  |
@@ -235,7 +235,7 @@ Form-associated. Always set `name` inside a `<form>`.
 | `readonly`           | boolean                                                                             |
 | `required`           | boolean                                                                             |
 | `invalid`            | boolean — applies error state                                                       |
-| `max-length`         | number string                                                                       |
+| `maxlength`          | maximum character count, applied to the inner `<input>`                             |
 | `min-length`         | number string                                                                       |
 | `min`, `max`, `step` | numeric constraints applied when `type="number"`                                    |
 | `pattern`            | regex string                                                                        |
@@ -268,7 +268,8 @@ Form-associated. Multi-line text input. A distinct component from `y-input`.
 | `name`                | form field name                                                                                                                     |
 | `value`               | current value                                                                                                                       |
 | `placeholder`         |                                                                                                                                     |
-| `label`               | visible label text                                                                                                                  |
+| `maxlength`           | maximum character count, applied to the inner `<textarea>`                                                                          |
+| `label`               | visible label text — shorthand for the `label` slot; a hand-slotted label wins                                                       |
 | `label-position`      | `top` (default) \| `bottom` \| `left` \| `right`                                                                                    |
 | `rows`                | number of visible rows (default: `3`)                                                                                               |
 | `size`                | `small` \| `medium` \| `large`                                                                                                      |
@@ -521,19 +522,19 @@ CSS Custom Properties: `--component-checkbox-size`, `--component-checkbox-icon-s
 
 Form-associated. Group by giving the same `name`, or render a managed group from one element via `options`.
 
-| Attribute        | Values / Notes                                                                 |
-| ---------------- | ------------------------------------------------------------------------------ |
-| `name`, `value`  |                                                                                |
-| `checked`        | boolean                                                                        |
-| `disabled`       | boolean                                                                        |
-| `required`       | boolean                                                                        |
-| `options`        | JSON: `[{"value":"a","label":"Option A"}, ...]` — render a managed radio group |
-| `size`           | `small` \| `medium` \| `large`                                                 |
-| `label`          |                                                                                |
-| `label-position` | `right` (default) \| `left`                                                    |
+| Attribute            | Values / Notes                                                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `name`, `value`      |                                                                                                                      |
+| `disabled`           | boolean — disables the whole group                                                                                   |
+| `options`            | `[{ value, label, disabled? }]` — a disabled option renders unselectable and is skipped by arrow keys                 |
+| `invalid`            | boolean — styles the group as invalid                                                                                |
+| `error-text`         | validation message below the group; non-empty also sets the invalid state and becomes the `aria-describedby` target   |
+| `aria-label`         | forwarded onto the inner `fieldset[role="radiogroup"]` — the host is not the accessible node, so a group needs this   |
+| `aria-labelledby`    | forwarded onto the same fieldset                                                                                     |
 
 Events: `change`
-CSS Custom Properties: `--component-radio-size`, `--component-radio-dot-size`, `--component-radio-background`, `--component-radio-color` (border), `--component-radio-accent` (dot); checked-state overrides (fall back to the unchecked values) `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`
+CSS Parts: `radio` (the fieldset), `label`, `error-text`
+CSS Custom Properties: `--component-radio-error-color`, `--component-radio-size`, `--component-radio-dot-size`, `--component-radio-background`, `--component-radio-color` (border), `--component-radio-accent` (dot); checked-state overrides (fall back to the unchecked values) `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`
 
 ---
 
@@ -961,7 +962,7 @@ Slots: default (the element the badge overlays)
 | `src`     | image URL                                                                                                                                     |
 | `alt`     | alt text; shown as initials when image unavailable                                                                                            |
 | `shape`   | `circle` (default) \| `square` \| `rounded`                                                                                                   |
-| `size`    | `small` \| `medium` \| `large`                                                                                                                |
+| `size`    | `x-small` \| `small` \| `medium` (default) \| `large` \| `x-large` — an unrecognized value warns and falls back to `medium`                 |
 | `color`   | color scheme for initials background                                                                                                          |
 | `loading` | boolean — renders a `y-skeleton` placeholder sized to `size` and shaped by `shape`; takes precedence over `src`/initials and sets `aria-busy` |
 
@@ -1081,7 +1082,7 @@ Events: `change` — `event.detail.value`
 | `disabled`      | boolean                                                       |
 | `color`         | color scheme name or CSS color                                |
 | `track-color`   | scheme or CSS color for the unfilled track                    |
-| `size`          | `small` \| `medium` \| `large`                                |
+| `size`          | `small` \| `medium` \| `large`, or a raw length. In `bar` mode this is the **outer** height — padding and border are taken inside it, capped so a thin bar still paints |
 | `thickness`     | `small` \| `medium` (default) \| `large` — bar/ring thickness |
 | `label-display` | `"false"` hides the label (default shown)                     |
 | `label-format`  | `percent` (default) \| `value` \| `fraction`                  |
@@ -1214,12 +1215,14 @@ CSS Parts: `header`, `filename`, `copy-button`, `copy-feedback`, `pre`, `code`, 
 
 ## y-card
 
-| Attribute | Values / Notes                 |
-| --------- | ------------------------------ |
-| `color`   | color scheme name              |
-| `raised`  | boolean — elevated drop shadow |
+| Attribute | Values / Notes                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------------------- |
+| `color`   | color scheme name — supplies the **defaults** for the custom properties below                       |
+| `raised`  | boolean — elevated drop shadow; keeps the border box and makes its line transparent, so a raised card stays aligned with unraised ones |
 
 Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body)
+
+CSS Custom Properties: `--card-background`, `--card-border-color`, `--card-border-width`, `--card-content-color`, `--card-box-shadow`. The component never writes these, so an ancestor (or a composing component's stylesheet) can set one and it wins; `color` only supplies the fallback. `--card-section-background` tracks `--card-border-color`.
 
 ```html
 <y-card>
@@ -2008,6 +2011,9 @@ Form-associated date input with popup calendar. Handles single dates and ranges.
 | `clearable`         | boolean — shows × button when value is set                                   |
 | `disabled`          | boolean                                                                      |
 | `invalid`           | boolean — error state                                                        |
+| `error-text`        | message below the field; non-empty also sets invalid and becomes `aria-describedby` |
+| `aria-label`        | forwarded onto the inner text field — needed when there is no slotted label  |
+| `aria-labelledby`   | forwarded onto the same field                                                |
 | `show-hours`        | boolean — show hour column in time picker                                    |
 | `show-minutes`      | boolean — show minutes column                                                |
 | `show-seconds`      | boolean — show seconds column                                                |
@@ -2399,6 +2405,15 @@ Target-anchored, slot-based floating panel — the primitive bridging `y-tooltip
 | `size`                    | `small` \| `medium` (default) \| `large`                                                                                          |
 | `disabled`                | triggers inert; `show()` is a no-op; an open popover closes                                                                       |
 
+**`portal` and a composing component's styles.** Portaling moves the surface *and its
+slotted body/header/footer children* out of the composing component's shadow root, so that
+component's `adoptedStyleSheets` no longer reach them. The trigger stays put, which makes
+the breakage look partial and random — the button is styled, the panel is naked — and
+nothing errors. Style portaled content with `::part()`, inline styles, or rules that live
+in the document or the `<y-theme>`, rather than in the composer's shadow root. Leaving
+`portal` off (the default) avoids it entirely. `y-select`'s `portal` and `y-help` portal by
+the same mechanism and carry the same consequence.
+
 Slots: default (body, falls back to `text`), `trigger` (becomes the anchor), `header`, `footer`, `pointer`
 Events (bubble + composed): `popover-open` (cancelable, `{trigger}`), `popover-opened` (`{position}`), `popover-close` (cancelable, `{reason}`), `popover-closed` (`{reason}`), `popover-anchor-change` (`{from, to}`)
 Methods: `show(detail?)` → `Promise<boolean>`, `hide(reason="api")`, `toggle()`, `updatePosition()`, `setAnchor(element|selector)`
@@ -2640,6 +2655,32 @@ Layout/typography tokens:
 --font-size-small | --font-size-label | --font-size-paragraph
 --radii-small | --radii-medium | --radii-large | --radii-full
 --base-shadow
+```
+
+### Naming traps
+
+These names do not mean what they look like, and a `var()` with no fallback fails
+**silently** — the property is dropped and nothing throws, logs, or shows in a test.
+
+| You might reach for | It does not exist — use |
+| --- | --- |
+| `--primary-background` | `--primary-content` for the strong brand fill (`--primary-content-inverse` for text on it). The `--primary-background-*` names are **pale tints** |
+| `--base-background` | `--base-background-app` / `-component` / `-hover` / `-active` |
+| `--base-content-muted` | `--base-content-light` / `-lighter` / `-lightest` |
+| `--border-radius-*` | `--radii-*` |
+| `--font-size-large` / `-medium` / `-x-small` | `--font-size-small`, `-paragraph`, `-label`, `-button`, `-quote`, `-h1`…`-h5`, `-display-1`…`-4` |
+
+Two more worth knowing:
+
+- **The `--border-*` scale is off by a step from its names:** `x-thin` 1px, `thin` **2px**,
+  `medium` **4px**, `thick` 8px, `x-thick` 10px. The 1px hairline is `--border-x-thin`.
+- **Every font-size token is in `em`, so they compound.** `--font-size-small` is `0.8em`;
+  nested inside something that already applied it you land at `0.64em`.
+
+Check a name before using it:
+
+```bash
+grep -o -- "--<prefix>[a-z-]*" node_modules/@waggylabs/yumekit/styles/variables.css | sort -u
 ```
 
 Custom theme: define these variables in CSS and point y-theme to the file:

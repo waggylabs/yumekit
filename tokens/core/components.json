@@ -147,6 +147,10 @@
                 "$type": "borderRadius",
                 "$value": "{radii.none}"
             },
+            "size-x-large": {
+                "$type": "sizing",
+                "$value": "{sizing.x-large}"
+            },
             "size-large": {
                 "$type": "sizing",
                 "$value": "{sizing.large}"
@@ -154,6 +158,10 @@
             "size-medium": {
                 "$type": "sizing",
                 "$value": "{sizing.medium}"
+            },
+            "size-x-small": {
+                "$type": "sizing",
+                "$value": "{sizing.x-small}"
             },
             "size-small": {
                 "$type": "sizing",

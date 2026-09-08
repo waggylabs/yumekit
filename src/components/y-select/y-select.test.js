@@ -1092,4 +1092,52 @@ describe("<y-select>", () => {
             expect(trigger.classList.contains("is-invalid")).to.be.true;
         });
     });
+
+    describe("label attribute", () => {
+        it("creates a slotted label span from the label attribute", async () => {
+            const el = await fixture(html`<y-select label="Amount"></y-select>`);
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Amount");
+        });
+
+        it("reveals the label wrapper so the label is visible", async () => {
+            const el = await fixture(html`<y-select label="Amount"></y-select>`);
+            await nextFrame();
+
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".label-wrapper"))
+                    .display,
+            ).to.not.equal("none");
+        });
+
+        it("updates the generated span when the attribute changes", async () => {
+            const el = await fixture(html`<y-select label="Before"></y-select>`);
+            el.label = "After";
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("After");
+        });
+
+        it("removes the generated span when the attribute is cleared", async () => {
+            const el = await fixture(html`<y-select label="Gone"></y-select>`);
+            el.label = "";
+
+            expect(el.querySelectorAll('[slot="label"]').length).to.equal(0);
+        });
+
+        it("leaves a hand-slotted label alone and adds nothing", async () => {
+            const el = await fixture(
+                html`<y-select label="Attribute"
+                    ><span slot="label">Slotted</span></y-select
+                >`,
+            );
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Slotted");
+        });
+    });
 });

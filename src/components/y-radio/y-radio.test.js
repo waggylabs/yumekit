@@ -194,4 +194,163 @@ describe("<y-radio>", () => {
         expect(el.value).to.equal("banana");
         expect(event.detail.value).to.equal("banana");
     });
+
+    describe("per-option disabled", () => {
+        const mixed = [
+            { value: "apple", label: "Apple" },
+            { value: "banana", label: "Banana", disabled: true },
+            { value: "cherry", label: "Cherry" },
+        ];
+
+        it("disables only the option marked disabled", async () => {
+            const el = await fixture(
+                html`<y-radio .options=${mixed} name="fruits"></y-radio>`
+            );
+            const inputs = el.shadowRoot.querySelectorAll("input[type=radio]");
+
+            expect(inputs[0].disabled).to.be.false;
+            expect(inputs[1].disabled).to.be.true;
+            expect(inputs[2].disabled).to.be.false;
+        });
+
+        it("does not change value when a disabled option is clicked", async () => {
+            const el = await fixture(
+                html`<y-radio .options=${mixed} name="fruits"></y-radio>`
+            );
+            el.shadowRoot.querySelectorAll("input[type=radio]")[1].click();
+
+            expect(el.value).to.equal("");
+        });
+
+        it("skips a disabled option during arrow-key navigation", async () => {
+            const el = await fixture(
+                html`<y-radio .options=${mixed} name="fruits"></y-radio>`
+            );
+            const inputs = el.shadowRoot.querySelectorAll("input[type=radio]");
+            inputs[0].focus();
+            inputs[0].dispatchEvent(
+                new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })
+            );
+
+            expect(el.shadowRoot.activeElement.value).to.equal("cherry");
+        });
+
+        it("gives the roving tabindex to the first enabled option", async () => {
+            const leadingDisabled = [
+                { value: "apple", label: "Apple", disabled: true },
+                { value: "banana", label: "Banana" },
+            ];
+            const el = await fixture(
+                html`<y-radio .options=${leadingDisabled} name="fruits"></y-radio>`
+            );
+            const inputs = el.shadowRoot.querySelectorAll("input[type=radio]");
+
+            expect(inputs[0].getAttribute("tabindex")).to.equal("-1");
+            expect(inputs[1].getAttribute("tabindex")).to.equal("0");
+        });
+
+        it("still honors the group-level disabled attribute", async () => {
+            const el = await fixture(
+                html`<y-radio .options=${options} name="fruits" disabled></y-radio>`
+            );
+            const enabled = [
+                ...el.shadowRoot.querySelectorAll("input[type=radio]"),
+            ].filter((input) => !input.disabled);
+
+            expect(enabled.length).to.equal(0);
+        });
+    });
+
+    describe("group naming", () => {
+        it("forwards aria-label onto the radiogroup", async () => {
+            const el = await fixture(
+                html`<y-radio
+                    .options=${options}
+                    name="fruits"
+                    aria-label="Pick a fruit"
+                ></y-radio>`
+            );
+            const fieldset = el.shadowRoot.querySelector("fieldset");
+
+            expect(fieldset.getAttribute("role")).to.equal("radiogroup");
+            expect(fieldset.getAttribute("aria-label")).to.equal("Pick a fruit");
+        });
+
+        it("forwards aria-labelledby onto the radiogroup", async () => {
+            const el = await fixture(
+                html`<y-radio
+                    .options=${options}
+                    name="fruits"
+                    aria-labelledby="question"
+                ></y-radio>`
+            );
+
+            expect(
+                el.shadowRoot
+                    .querySelector("fieldset")
+                    .getAttribute("aria-labelledby")
+            ).to.equal("question");
+        });
+
+        it("removes the forwarded name when the host attribute is removed", async () => {
+            const el = await fixture(
+                html`<y-radio
+                    .options=${options}
+                    name="fruits"
+                    aria-label="Pick a fruit"
+                ></y-radio>`
+            );
+            el.removeAttribute("aria-label");
+
+            expect(
+                el.shadowRoot.querySelector("fieldset").hasAttribute("aria-label")
+            ).to.be.false;
+        });
+    });
+
+    describe("validation", () => {
+        it("marks the group invalid when the invalid attribute is set", async () => {
+            const el = await fixture(
+                html`<y-radio .options=${options} name="fruits"></y-radio>`
+            );
+            el.invalid = true;
+
+            expect(
+                el.shadowRoot.querySelector("fieldset").classList.contains("is-invalid")
+            ).to.be.true;
+        });
+
+        it("renders error-text and describes the group with it", async () => {
+            const el = await fixture(
+                html`<y-radio
+                    .options=${options}
+                    name="fruits"
+                    error-text="Pick one"
+                ></y-radio>`
+            );
+            const fieldset = el.shadowRoot.querySelector("fieldset");
+            const error = el.shadowRoot.querySelector(".error-text");
+
+            expect(error.textContent).to.equal("Pick one");
+            expect(error.hidden).to.be.false;
+            expect(fieldset.getAttribute("aria-invalid")).to.equal("true");
+            expect(fieldset.getAttribute("aria-describedby")).to.equal(error.id);
+        });
+
+        it("clears the error surface when error-text is removed", async () => {
+            const el = await fixture(
+                html`<y-radio
+                    .options=${options}
+                    name="fruits"
+                    error-text="Pick one"
+                ></y-radio>`
+            );
+            el.errorText = "";
+            const fieldset = el.shadowRoot.querySelector("fieldset");
+
+            expect(el.shadowRoot.querySelector(".error-text").hidden).to.be.true;
+            expect(fieldset.hasAttribute("aria-invalid")).to.be.false;
+            expect(fieldset.classList.contains("is-invalid")).to.be.false;
+        });
+    });
 });

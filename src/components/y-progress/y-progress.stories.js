@@ -309,3 +309,14 @@ export const PieMultiSlice = {
 export const PieIndeterminate = {
     args: { mode: "pie", indeterminate: true, value: 0 },
 };
+
+/** `size` is the outer height in bar mode. The padding is capped so a thin raw length still paints a fill. */
+export const ThinBars = {
+    render: () => `
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:360px">
+            <y-progress mode="bar" size="4px" value="30" label-display="false"></y-progress>
+            <y-progress mode="bar" size="8px" value="50" label-display="false"></y-progress>
+            <y-progress mode="bar" size="12px" value="70" label-display="false"></y-progress>
+        </div>
+    `,
+};

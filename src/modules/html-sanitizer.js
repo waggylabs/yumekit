@@ -108,6 +108,38 @@ const CONTROL_CHARS = /[\u0000-\u001f\u007f]/g;
 const MAX_DEPTH = 100;
 
 /**
+ * Block elements that may keep an `id` under `allowIds`. Restricted to the
+ * headings and sectioning-ish blocks an in-document anchor actually targets —
+ * an `id` on an inline `<a>` or `<img>` buys nothing and widens the surface.
+ */
+const ID_BEARING_TAGS = new Set([
+    "p",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "blockquote",
+    "ul",
+    "ol",
+    "li",
+    "pre",
+]);
+
+/**
+ * Shape an `id` has to match to be preserved. `id` is not a script vector; the
+ * risk it carries is DOM clobbering, where a well-chosen id shadows a property
+ * on `document` or on a form. A conservative pattern plus the prefix below
+ * bounds that: a clobbering id has to be spelled exactly, and a prefixed one
+ * never is.
+ */
+const SAFE_ID_RE = /^[\w-]+$/;
+
+/** Default namespace applied to every preserved `id`. */
+export const DEFAULT_ID_PREFIX = "content-";
+
+/**
  * Strip URL-insignificant control characters and surrounding whitespace, giving
  * the same string the browser's URL parser would act on.
  *
@@ -185,11 +217,22 @@ function unwrap(el) {
  * @param {Element} el
  * @param {string} tag — lowercased tag name
  */
-function scrubAttributes(el, tag) {
+function scrubAttributes(el, tag, idPrefix) {
     const policy = ATTR_POLICY[tag];
+    const keepId = idPrefix != null && ID_BEARING_TAGS.has(tag);
 
     for (const attr of [...el.attributes]) {
         const name = attr.name.toLowerCase();
+
+        if (name === "id" && keepId) {
+            const value = attr.value.trim();
+            if (SAFE_ID_RE.test(value)) {
+                el.setAttribute("id", `${idPrefix}${value}`);
+            } else {
+                el.removeAttribute(attr.name);
+            }
+            continue;
+        }
 
         if (!policy || !policy.has(name)) {
             el.removeAttribute(attr.name);
@@ -266,11 +309,11 @@ function scrubMention(el) {
  * mutating it in place.
  *
  * @param {Node} root
- * @param {{allowed: Set<string>, allowMentions: boolean}} policy
+ * @param {{allowed: Set<string>, allowMentions: boolean, idPrefix: string|null}} policy
  * @param {number} depth
  */
 function scrub(root, policy, depth) {
-    const { allowed, allowMentions } = policy;
+    const { allowed, allowMentions, idPrefix } = policy;
 
     for (const child of [...root.childNodes]) {
         if (child.nodeType === Node.TEXT_NODE) continue;
@@ -301,7 +344,7 @@ function scrub(root, policy, depth) {
             continue;
         }
 
-        scrubAttributes(child, tag);
+        scrubAttributes(child, tag, idPrefix);
 
         // A link with no surviving href is just text; an image with no
         // surviving src has nothing to show.
@@ -328,12 +371,20 @@ function scrub(root, policy, depth) {
  * round trip mXSS payloads are built to exploit.
  *
  * @param {string} raw — untrusted HTML markup
- * @param {{allowedTags?: string[], allowMentions?: boolean}} [options] —
+ * @param {{allowedTags?: string[], allowMentions?: boolean, allowIds?: boolean,
+ *   idPrefix?: string}} [options] —
  *   `allowMentions` keeps `<span data-mention-value>` chips intact so an atomic
  *   mention survives the editor's serialize / parse round trip.
+ *   `allowIds` keeps an `id` on block elements so in-document anchors survive
+ *   the round trip; ids are matched against a conservative pattern and namespaced
+ *   with `idPrefix` (default `"content-"`) to bound DOM clobbering. Anything that
+ *   fails the pattern is dropped rather than corrected. Off by default.
  * @returns {DocumentFragment}
  */
-export function sanitizeHtmlToFragment(raw, { allowedTags, allowMentions } = {}) {
+export function sanitizeHtmlToFragment(
+    raw,
+    { allowedTags, allowMentions, allowIds, idPrefix } = {},
+) {
     const fragment = document.createDocumentFragment();
     if (!raw || typeof raw !== "string") return fragment;
 
@@ -342,6 +393,8 @@ export function sanitizeHtmlToFragment(raw, { allowedTags, allowMentions } = {})
             (allowedTags ?? DEFAULT_ALLOWED_TAGS).map((t) => t.toLowerCase()),
         ),
         allowMentions: allowMentions === true,
+        idPrefix:
+            allowIds === true ? (idPrefix ?? DEFAULT_ID_PREFIX) : null,
     };
 
     const doc = new DOMParser().parseFromString(raw, "text/html");
@@ -358,7 +411,8 @@ export function sanitizeHtmlToFragment(raw, { allowedTags, allowMentions } = {})
  * Sanitize an HTML string and return sanitized markup.
  *
  * @param {string} raw — untrusted HTML markup
- * @param {{allowedTags?: string[], allowMentions?: boolean}} [options]
+ * @param {{allowedTags?: string[], allowMentions?: boolean, allowIds?: boolean,
+ *   idPrefix?: string}} [options] — see `sanitizeHtmlToFragment`
  * @returns {string} — sanitized markup
  */
 export function sanitizeHtml(raw, options) {
