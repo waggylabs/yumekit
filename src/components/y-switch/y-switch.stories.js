@@ -103,3 +103,14 @@ export const Colors = {
 export const Disabled = {
     args: { disabled: true, checked: true },
 };
+
+/** A switch in a settings row takes its name from `aria-label`, which is forwarded onto the inner `role="switch"` element. */
+export const NamedFromHost = {
+    render: () => `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:320px">
+            <span id="marketing-label">Marketing email</span>
+            <y-switch checked aria-labelledby="marketing-label"></y-switch>
+        </div>
+    `,
+};
+

@@ -31,9 +31,21 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
-## [0.5.5-beta.3]
+## [0.5.5-beta.4]
 
 ### Added
+
+- `y-avatar` gained `x-small` and `x-large` sizes (`--component-avatar-size-x-small` 19px, `--component-avatar-size-x-large` 80px), both carried through `y-avatar-group`'s overflow bubble. An unrecognized `size` now warns on the console instead of silently rendering at `medium`, which is how callers passing `x-small` had been getting a full-size avatar with nothing to say so. The shared sizing scale gained `--sizing-x-large` (80px) to back the new step.
+
+- `sanitizeHtml` and `sanitizeHtmlToFragment` gained an opt-in `allowIds` option, so a heading can keep its `id` and an in-document anchor can survive the round trip. Ids are matched against a conservative pattern and namespaced with `idPrefix` (default `"content-"`) to bound DOM clobbering; anything that fails is dropped rather than corrected. Off by default, and `name` / `for` / `headers` are deliberately not included.
+
+- `y-input`, `y-textarea`, `y-select`, `y-money` and `y-date` now accept a `label` attribute. These controls render their label from a `slot="label"` child, so `label="Amount"` previously rendered nothing at all and failed silently — the field worked and simply looked unlabelled. The attribute creates the slotted span itself; a label composed by hand still wins.
+
+- `y-input` and `y-textarea` now observe `maxlength` and apply it to the inner control, so a character cap no longer needs the host's shadow root reached into. `y-textarea` also exposes it as a `maxLength` property.
+
+- `y-radio` gained `invalid` and `error-text`, matching `y-input` and `y-select`, and its `options` now honour a per-option `disabled` — an option the app marks unavailable renders unselectable and is skipped by arrow-key navigation instead of being refused only once the choice arrives. `--component-radio-error-color` colors the invalid border and message.
+
+- `y-date` gained `error-text`, so a field that can already enter the invalid state can now say why.
 
 - `y-key`, a keycap primitive for documenting keyboard shortcuts. `keys` takes a `+`-joined chord (`keys="mod+shift+k"`) and resolves it per platform, with `platform` and `notation` to pin the rendering and `separator`, `combined` and `pressed` to shape it. Chord mode names the host with the spoken form, so `⌘⇧K` is announced "Command Shift K" rather than "place of interest sign".
 
@@ -60,6 +72,14 @@ Delete any empty sections before publishing.
 - Options carrying a `color` now hover in that color in `y-select` and `y-tokens`, the color as the text over a light wash of it, instead of the neutral gray hover that gave no hint of the assignment until the option was committed. A selected option keeps its solid fill, so the two states stay distinct. Options without a color are unchanged.
 
 ### Fixed
+
+- `y-card` wrote `--card-background`, `--card-border-color` and the rest as inline styles on itself, and an inline style beats any inherited value — so a composing component or ancestor setting one to restyle a card was silently ignored. The colour scheme now supplies those values as defaults behind the public names instead, leaving an ancestor's override to win. A `raised` card also keeps its border box and makes the line transparent rather than zeroing the width, so it no longer sits 1px out of line with the unraised cards beside it, and empty sections are re-checked on connect so anything measuring a card gets real heights without first awaiting a frame.
+
+- `y-button.focus()` did nothing and returned normally: the host was not focusable and the shadow root had no `delegatesFocus`, leaving callers to reach for the inner control. Both are fixed, and a disabled link button now refuses focus rather than accepting it through its `tabindex="-1"`. `y-checkbox` had the mirror-image problem — `.click()` on the host did not toggle it, because the listener lived on the shadow `.wrapper` — and now toggles exactly once, whether the click is programmatic, a real click, or on slotted label content.
+
+- `y-progress` in `mode="bar"` painted nothing at a thin raw size. `size` is the outer height and the 4px padding plus the border are taken inside it, so `size="8px"` left zero fill — the bar carried the right value, width and colour and drew nothing. The padding is now capped at a quarter of the space inside the border, so a thin bar always paints; at the shipped size tokens the cap never engages and nothing changes.
+
+- `y-switch`, `y-radio` and `y-date` could not be given an accessible name from outside. Each owns the real control inside its shadow root — a `div[role=switch]`, a `fieldset[role=radiogroup]`, a text field — so an `aria-label` on the host named nothing and assistive tech read an unnamed control. All three now observe `aria-label` and `aria-labelledby` and forward them onto that inner element.
 
 - `y-menu` opened offset from its anchor whenever any ancestor carried a `transform`, `filter`, `perspective`, `backdrop-filter`, `will-change` or `contain`. That ancestor becomes the containing block for the menu's `position: fixed` surface, so the viewport coordinates it computed landed relative to the ancestor's corner instead. The menu now rebases them with `containingBlockOffset`, the same correction `y-popover` uses, and the walk crosses shadow boundaries so a menu inside another component's shadow tree sees a light-DOM ancestor too. With no such ancestor nothing changes.
 

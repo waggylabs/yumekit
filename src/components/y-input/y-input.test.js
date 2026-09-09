@@ -1,4 +1,4 @@
-import { fixture, html, expect, oneEvent } from "@open-wc/testing";
+import { fixture, html, expect, oneEvent, nextFrame } from "@open-wc/testing";
 import "./y-input.js";
 
 describe("<y-input>", () => {
@@ -385,6 +385,93 @@ describe("<y-input>", () => {
 
             expect(el.shadowRoot.querySelector("input") === input).to.be.true;
             expect(input.disabled).to.be.false;
+        });
+    });
+
+    describe("label attribute", () => {
+        it("creates a slotted label span from the label attribute", async () => {
+            const el = await fixture(html`<y-input label="Amount"></y-input>`);
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Amount");
+        });
+
+        it("reveals the label wrapper so the label is visible", async () => {
+            const el = await fixture(html`<y-input label="Amount"></y-input>`);
+            await nextFrame();
+
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".label-wrapper"))
+                    .display,
+            ).to.not.equal("none");
+        });
+
+        it("updates the generated span when the attribute changes", async () => {
+            const el = await fixture(html`<y-input label="Before"></y-input>`);
+            el.label = "After";
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("After");
+        });
+
+        it("removes the generated span when the attribute is cleared", async () => {
+            const el = await fixture(html`<y-input label="Gone"></y-input>`);
+            el.label = "";
+
+            expect(el.querySelectorAll('[slot="label"]').length).to.equal(0);
+        });
+
+        it("leaves a hand-slotted label alone and adds nothing", async () => {
+            const el = await fixture(
+                html`<y-input label="Attribute"
+                    ><span slot="label">Slotted</span></y-input
+                >`,
+            );
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Slotted");
+        });
+    });
+
+    describe("maxlength", () => {
+        it("forwards maxlength onto the inner input", async () => {
+            const el = await fixture(html`<y-input maxlength="140"></y-input>`);
+
+            expect(el.shadowRoot.querySelector("input").maxLength).to.equal(140);
+        });
+
+        it("caps typed input at the maximum", async () => {
+            const el = await fixture(html`<y-input maxlength="5"></y-input>`);
+            const control = el.shadowRoot.querySelector("input");
+            control.focus();
+            control.value = "abcdefghij";
+
+            expect(control.value.slice(0, control.maxLength).length).to.equal(5);
+        });
+
+        it("applies a maxlength set after upgrade", async () => {
+            const el = await fixture(html`<y-input></y-input>`);
+            el.setAttribute("maxlength", "12");
+
+            expect(el.shadowRoot.querySelector("input").maxLength).to.equal(12);
+        });
+
+        it("removes the cap when the attribute is removed", async () => {
+            const el = await fixture(html`<y-input maxlength="12"></y-input>`);
+            el.removeAttribute("maxlength");
+
+            expect(
+                el.shadowRoot.querySelector("input").hasAttribute("maxlength"),
+            ).to.be.false;
+        });
+
+        it("exposes the cap as the maxLength property", async () => {
+            const el = await fixture(html`<y-input maxlength="30"></y-input>`);
+
+            expect(el.maxLength).to.equal(30);
         });
     });
 });

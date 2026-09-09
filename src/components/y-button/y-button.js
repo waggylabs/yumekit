@@ -1,4 +1,8 @@
-import { contrastTextColor, isSafeCssColor, upgradeProperties } from "../../modules/helpers.js";
+import {
+    contrastTextColor,
+    isSafeCssColor,
+    upgradeProperties,
+} from "../../modules/helpers.js";
 
 export class YumeButton extends HTMLElement {
     static get observedAttributes() {
@@ -39,7 +43,8 @@ export class YumeButton extends HTMLElement {
 
     constructor() {
         super();
-        this.attachShadow({ mode: "open" });
+
+        this.attachShadow({ mode: "open", delegatesFocus: true });
         this.selectedValues = new Set();
         this._init();
     }
@@ -67,7 +72,11 @@ export class YumeButton extends HTMLElement {
 
         this._init();
 
-        if (["color", "size", "variant", "style-type", "disabled"].includes(name)) {
+        if (
+            ["color", "size", "variant", "style-type", "disabled"].includes(
+                name,
+            )
+        ) {
             this._updateStyles();
         }
     }
@@ -744,11 +753,10 @@ export class YumeButton extends HTMLElement {
 
         const disabled = this.hasAttribute("disabled");
         if (needsAnchor) {
-            // <a> has no native disabled — manage via aria and href removal
             if (disabled) {
                 this.button.removeAttribute("href");
                 this.button.setAttribute("aria-disabled", "true");
-                this.button.setAttribute("tabindex", "-1");
+                this.button.removeAttribute("tabindex");
             } else {
                 this.button.setAttribute("href", this.getAttribute("href"));
                 this.button.setAttribute("aria-disabled", "false");

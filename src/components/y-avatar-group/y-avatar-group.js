@@ -85,7 +85,7 @@ export class YumeAvatarGroup extends HTMLElement {
         this.setAttribute("overlap", val);
     }
 
-    /** Avatar size for JSON-rendered avatars: "small" | "medium" | "large". */
+    /** Avatar size for JSON-rendered avatars: "x-small" | "small" | "medium" | "large" | "x-large". */
     get size() {
         return this.getAttribute("size") || "medium";
     }
@@ -216,6 +216,11 @@ export class YumeAvatarGroup extends HTMLElement {
                 padding: 0;
                 ${isVertical ? "margin-block-start" : "margin-inline-start"}: -${this.overlap}px;
             }
+            .overflow[data-size="x-small"] {
+                width: var(--component-avatar-size-x-small, 19px);
+                height: var(--component-avatar-size-x-small, 19px);
+                font-size: calc(var(--component-avatar-size-x-small, 19px) * 0.4);
+            }
             .overflow[data-size="small"] {
                 width: var(--component-avatar-size-small, 27px);
                 height: var(--component-avatar-size-small, 27px);
@@ -230,6 +235,11 @@ export class YumeAvatarGroup extends HTMLElement {
                 width: var(--component-avatar-size-large, 51px);
                 height: var(--component-avatar-size-large, 51px);
                 font-size: calc(var(--component-avatar-size-large, 51px) * 0.4);
+            }
+            .overflow[data-size="x-large"] {
+                width: var(--component-avatar-size-x-large, 80px);
+                height: var(--component-avatar-size-x-large, 80px);
+                font-size: calc(var(--component-avatar-size-x-large, 80px) * 0.4);
             }
             .overflow[data-shape="circle"] {
                 border-radius: var(--component-avatar-border-radius-circle, 9999px);

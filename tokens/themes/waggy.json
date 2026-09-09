@@ -466,6 +466,12 @@
         "background": { "$type": "color", "$value": "{primary.content.DEFAULT}" },
         "border": { "color": { "$type": "color", "$value": "{base.border}" } },
         "dot": { "color": { "$type": "color", "$value": "{primary.content.inverse}" } }
+      },
+      "error": {
+        "color": {
+          "$type": "color",
+          "$value": "{error.content.DEFAULT}"
+        }
       }
     },
     "select": {

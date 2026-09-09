@@ -505,4 +505,82 @@ describe("YumeProgress", () => {
         el.values = '[{"value":10},{"value":20}]';
         expect(el.values.length).to.equal(2);
     });
+
+    describe("thin bars", () => {
+        // The fixture loads no theme, so the chrome tokens are undefined and
+        // resolve to 0 — supply them the way a theme would, or the clamp being
+        // tested never engages.
+        const themed = (el) => {
+            el.style.setProperty("--component-progress-padding", "4px");
+            el.style.setProperty("--component-progress-border-width", "1px");
+            return el;
+        };
+
+        it("paints a visible fill at a small raw size", async () => {
+            const el = themed(
+                await fixture(
+                    html`<y-progress mode="bar" size="8px" value="50"></y-progress>`
+                )
+            );
+
+            expect(
+                el.shadowRoot.querySelector(".bar").getBoundingClientRect().height
+            ).to.be.greaterThan(0);
+        });
+
+        it("keeps the outer track at the requested size", async () => {
+            const el = themed(
+                await fixture(
+                    html`<y-progress mode="bar" size="8px" value="50"></y-progress>`
+                )
+            );
+
+            expect(
+                Math.round(
+                    el.shadowRoot.querySelector(".track").getBoundingClientRect()
+                        .height
+                )
+            ).to.equal(8);
+        });
+
+        it("still fills half the width at a small raw size", async () => {
+            const el = themed(
+                await fixture(
+                    html`<y-progress mode="bar" size="8px" value="50"></y-progress>`
+                )
+            );
+            const ratio =
+                el.shadowRoot.querySelector(".bar").getBoundingClientRect().width /
+                el.shadowRoot.querySelector(".track").getBoundingClientRect().width;
+
+            expect(ratio).to.be.greaterThan(0.4);
+            expect(ratio).to.be.lessThan(0.6);
+        });
+
+        it("clamps the padding only when the size cannot absorb it", async () => {
+            const el = themed(
+                await fixture(
+                    html`<y-progress mode="bar" size="8px" value="50"></y-progress>`
+                )
+            );
+
+            // (8px - 2 * 1px) / 4 = 1.5px, below the 4px token.
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".track")).paddingTop
+            ).to.equal("1.5px");
+        });
+
+        it("leaves the padding at the token where the size can absorb it", async () => {
+            const el = themed(
+                await fixture(
+                    html`<y-progress mode="bar" size="40px" value="50"></y-progress>`
+                )
+            );
+
+            // (40px - 2 * 1px) / 4 = 9.5px, well above the 4px token.
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".track")).paddingTop
+            ).to.equal("4px");
+        });
+    });
 });

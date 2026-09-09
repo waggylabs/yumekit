@@ -266,3 +266,12 @@ export const Invalid = {
 export const Disabled = {
     args: { disabled: true, label: "Price" },
 };
+
+/** The `label` attribute is shorthand for the `label` slot. */
+export const LabelAttribute = {
+    render: () => `
+        <div style="max-width:280px">
+            <y-money label="You send" currency="USD" value="1250.00"></y-money>
+        </div>
+    `,
+};

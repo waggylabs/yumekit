@@ -7,13 +7,21 @@ export default {
     argTypes: {
         color: {
             control: "select",
-            options: ["base", "primary", "secondary", "success", "warning", "error"],
+            options: [
+                "base",
+                "primary",
+                "secondary",
+                "success",
+                "warning",
+                "error",
+            ],
             description: "Color theme for the card surface.",
             table: { defaultValue: { summary: "base" } },
         },
         raised: {
             control: "boolean",
-            description: "Whether the card uses a raised shadow instead of a border.",
+            description:
+                "Whether the card uses a raised shadow instead of a border.",
             table: { defaultValue: { summary: false } },
         },
     },
@@ -120,4 +128,29 @@ export const LoadingRecipe = {
             },
         },
     },
+};
+
+export const AncestorOverride = {
+    render: () => `
+        <div style="--card-background: #10233f; --card-border-color: #3f6fb5; --card-content-color: #dce8fb; display:flex; gap:16px;">
+            <y-card>
+                <span slot="header">Overridden from an ancestor</span>
+                <p>The wrapper sets --card-background, --card-border-color and --card-content-color.</p>
+            </y-card>
+            <y-card color="error">
+                <span slot="header">color="error", still overridden</span>
+                <p>The color attribute only supplies the fallback.</p>
+            </y-card>
+        </div>
+    `,
+};
+
+export const RaisedAlignment = {
+    render: () => `
+        <div style="display:flex;gap:16px;align-items:flex-start">
+            <y-card><p>Unraised</p></y-card>
+            <y-card raised><p>Raised</p></y-card>
+            <y-card><p>Unraised</p></y-card>
+        </div>
+    `,
 };

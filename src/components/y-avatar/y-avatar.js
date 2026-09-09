@@ -36,30 +36,50 @@ export class YumeAvatar extends HTMLElement {
     // -------------------------------------------------------------------------
 
     /** Initials fallback text when no src is provided (default "AN"). */
-    get alt() { return this.getAttribute("alt") || "AN"; }
-    set alt(val) { this.setAttribute("alt", val); }
+    get alt() {
+        return this.getAttribute("alt") || "AN";
+    }
+    set alt(val) {
+        this.setAttribute("alt", val);
+    }
 
     /** Color theme for the initials avatar background. */
-    get color() { return this.getAttribute("color") || "primary"; }
-    set color(val) { this.setAttribute("color", val); }
+    get color() {
+        return this.getAttribute("color") || "primary";
+    }
+    set color(val) {
+        this.setAttribute("color", val);
+    }
 
     /** When set, renders a skeleton placeholder in place of the image/initials. */
-    get loading() { return this.hasAttribute("loading"); }
+    get loading() {
+        return this.hasAttribute("loading");
+    }
     set loading(val) {
         if (val) this.setAttribute("loading", "");
         else this.removeAttribute("loading");
     }
 
     /** Shape of the avatar: "circle" | "square" | "rounded" (default "circle"). */
-    get shape() { return this.getAttribute("shape") || "circle"; }
-    set shape(val) { this.setAttribute("shape", val); }
+    get shape() {
+        return this.getAttribute("shape") || "circle";
+    }
+    set shape(val) {
+        this.setAttribute("shape", val);
+    }
 
-    /** Avatar size: "small" | "medium" | "large" (default "medium"). */
-    get size() { return this.getAttribute("size") || "medium"; }
-    set size(val) { this.setAttribute("size", val); }
+    /** Avatar size: "x-small" | "small" | "medium" | "large" | "x-large" (default "medium"). */
+    get size() {
+        return this.getAttribute("size") || "medium";
+    }
+    set size(val) {
+        this.setAttribute("size", val);
+    }
 
     /** Image URL. When set, renders an <img> instead of initials. */
-    get src() { return this.getAttribute("src"); }
+    get src() {
+        return this.getAttribute("src");
+    }
     set src(val) {
         if (val) this.setAttribute("src", val);
         else this.removeAttribute("src");
@@ -77,7 +97,9 @@ export class YumeAvatar extends HTMLElement {
         // image (`_imgFailed`) is a resolved state, not a loading one.
         if (this.loading) {
             this.setAttribute("aria-busy", "true");
-            this.shadowRoot.adoptedStyleSheets = [this._buildSkeletonStyleSheet(dimensions, borderRadius)];
+            this.shadowRoot.adoptedStyleSheets = [
+                this._buildSkeletonStyleSheet(dimensions, borderRadius),
+            ];
             this.shadowRoot.replaceChildren(this._buildSkeleton(dimensions));
             return;
         }
@@ -86,7 +108,15 @@ export class YumeAvatar extends HTMLElement {
         const [bgColor, textColor] = getColorVarPair(this.color);
         const showImg = !!this.src && !this._imgFailed;
 
-        this.shadowRoot.adoptedStyleSheets = [this._buildStyleSheet(showImg, dimensions, borderRadius, bgColor, textColor)];
+        this.shadowRoot.adoptedStyleSheets = [
+            this._buildStyleSheet(
+                showImg,
+                dimensions,
+                borderRadius,
+                bgColor,
+                textColor,
+            ),
+        ];
         this.shadowRoot.replaceChildren(this._buildAvatar(showImg));
     }
 
@@ -101,10 +131,14 @@ export class YumeAvatar extends HTMLElement {
                 alt: this.alt,
                 part: "avatar",
             });
-            img.addEventListener("error", () => {
-                this._imgFailed = true;
-                this.render();
-            }, { once: true });
+            img.addEventListener(
+                "error",
+                () => {
+                    this._imgFailed = true;
+                    this.render();
+                },
+                { once: true },
+            );
             return img;
         }
         return _el("div", { class: "avatar", part: "avatar" }, [
@@ -197,11 +231,22 @@ export class YumeAvatar extends HTMLElement {
 
     _getDimensions(size) {
         const map = {
+            "x-small": "var(--component-avatar-size-x-small, 19px)",
             small: "var(--component-avatar-size-small, 27px)",
             medium: "var(--component-avatar-size-medium, 35px)",
             large: "var(--component-avatar-size-large, 51px)",
+            "x-large": "var(--component-avatar-size-x-large, 80px)",
         };
-        return map[size] || map.medium;
+
+        if (!map[size]) {
+            console.warn(
+                `y-avatar: unknown size "${size}" — falling back to "medium". ` +
+                    `Expected one of: ${Object.keys(map).join(", ")}.`,
+            );
+            return map.medium;
+        }
+
+        return map[size];
     }
 
     _getInitials(alt) {

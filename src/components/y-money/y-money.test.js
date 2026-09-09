@@ -1,4 +1,4 @@
-import { fixture, html, expect, oneEvent } from "@open-wc/testing";
+import { fixture, html, expect, oneEvent, nextFrame } from "@open-wc/testing";
 import sinon from "sinon";
 import "./y-money.js";
 
@@ -403,6 +403,54 @@ describe("<y-money>", () => {
             el.value = "99";
             form.reset();
             expect(el.value).to.equal("10.00");
+        });
+    });
+
+    describe("label attribute", () => {
+        it("creates a slotted label span from the label attribute", async () => {
+            const el = await fixture(html`<y-money label="Amount"></y-money>`);
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Amount");
+        });
+
+        it("reveals the label wrapper so the label is visible", async () => {
+            const el = await fixture(html`<y-money label="Amount"></y-money>`);
+            await nextFrame();
+
+            expect(
+                getComputedStyle(el.shadowRoot.querySelector(".label-wrapper"))
+                    .display,
+            ).to.not.equal("none");
+        });
+
+        it("updates the generated span when the attribute changes", async () => {
+            const el = await fixture(html`<y-money label="Before"></y-money>`);
+            el.label = "After";
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("After");
+        });
+
+        it("removes the generated span when the attribute is cleared", async () => {
+            const el = await fixture(html`<y-money label="Gone"></y-money>`);
+            el.label = "";
+
+            expect(el.querySelectorAll('[slot="label"]').length).to.equal(0);
+        });
+
+        it("leaves a hand-slotted label alone and adds nothing", async () => {
+            const el = await fixture(
+                html`<y-money label="Attribute"
+                    ><span slot="label">Slotted</span></y-money
+                >`,
+            );
+            const slotted = el.querySelectorAll('[slot="label"]');
+
+            expect(slotted.length).to.equal(1);
+            expect(slotted[0].textContent).to.equal("Slotted");
         });
     });
 });

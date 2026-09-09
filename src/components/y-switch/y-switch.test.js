@@ -146,4 +146,59 @@ describe("<y-switch>", () => {
         expect(sw.getAttribute("value")).to.equal("enabled");
         expect(new FormData(form).get("pref")).to.equal("enabled");
     });
+
+    describe("accessible name", () => {
+        it("forwards aria-label onto the inner role=switch element", async () => {
+            const el = await fixture(
+                html`<y-switch aria-label="Marketing email"></y-switch>`
+            );
+            const sw = el.shadowRoot.querySelector('[role="switch"]');
+
+            expect(sw.getAttribute("aria-label")).to.equal("Marketing email");
+        });
+
+        it("forwards aria-labelledby onto the inner role=switch element", async () => {
+            const el = await fixture(
+                html`<y-switch aria-labelledby="setting-name"></y-switch>`
+            );
+
+            expect(
+                el.shadowRoot
+                    .querySelector('[role="switch"]')
+                    .getAttribute("aria-labelledby")
+            ).to.equal("setting-name");
+        });
+
+        it("updates the forwarded name when the host attribute changes", async () => {
+            const el = await fixture(html`<y-switch aria-label="Before"></y-switch>`);
+            el.setAttribute("aria-label", "After");
+
+            expect(
+                el.shadowRoot
+                    .querySelector('[role="switch"]')
+                    .getAttribute("aria-label")
+            ).to.equal("After");
+        });
+
+        it("removes the forwarded name when the host attribute is removed", async () => {
+            const el = await fixture(html`<y-switch aria-label="Gone"></y-switch>`);
+            el.removeAttribute("aria-label");
+
+            expect(
+                el.shadowRoot
+                    .querySelector('[role="switch"]')
+                    .hasAttribute("aria-label")
+            ).to.be.false;
+        });
+
+        it("does not forward autocomplete or required onto the switch", async () => {
+            const el = await fixture(
+                html`<y-switch aria-label="Named" required autocomplete="on"></y-switch>`
+            );
+            const sw = el.shadowRoot.querySelector('[role="switch"]');
+
+            expect(sw.hasAttribute("required")).to.be.false;
+            expect(sw.hasAttribute("autocomplete")).to.be.false;
+        });
+    });
 });

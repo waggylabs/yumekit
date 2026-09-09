@@ -1,10 +1,20 @@
 import "../y-datepicker/y-datepicker.js";
 import "../y-icon/y-icon.js";
 import {
+    applyControlError,
     createElement as _el,
+    forwardControlAttributes,
     manageLabelVisibility,
+    syncSlottedLabel,
     upgradeProperties,
 } from "../../modules/helpers.js";
+
+/**
+ * Naming attributes moved from the host onto the inner text field. The shared
+ * default set is narrowed because `autocomplete` is already set on the display
+ * input and `required` is not a constraint the component enforces natively.
+ */
+const DATE_FORWARDED_ATTRIBUTES = ["aria-label", "aria-labelledby"];
 
 export class YumeDate extends HTMLElement {
     static formAssociated = true;
@@ -36,6 +46,10 @@ export class YumeDate extends HTMLElement {
             "mobile-breakpoint",
             "native-mobile",
             "variant",
+            "error-text",
+            "aria-label",
+            "aria-labelledby",
+            "label",
         ];
     }
 
@@ -62,6 +76,7 @@ export class YumeDate extends HTMLElement {
             this.setAttribute("label-position", "top");
         this._setupMediaQuery();
         this.render();
+        syncSlottedLabel(this);
         document.addEventListener("click", this._onDocumentClick);
     }
 
@@ -87,6 +102,18 @@ export class YumeDate extends HTMLElement {
         }
         if (name === "invalid") {
             this._updateValidationState();
+            return;
+        }
+        if (name === "error-text") {
+            this._updateErrorText();
+            return;
+        }
+        if (name === "aria-label" || name === "aria-labelledby") {
+            this._forwardNamingAttributes();
+            return;
+        }
+        if (name === "label") {
+            syncSlottedLabel(this);
             return;
         }
         if (this.shadowRoot.innerHTML) this.render();
@@ -124,6 +151,15 @@ export class YumeDate extends HTMLElement {
             : this.removeAttribute("disabled");
     }
 
+    /** @type {string} Validation message shown beneath the field. A non-empty value also puts the field in the invalid state and becomes its accessible description. */
+    get errorText() {
+        return this.getAttribute("error-text") || "";
+    }
+    set errorText(v) {
+        if (v == null || v === "") this.removeAttribute("error-text");
+        else this.setAttribute("error-text", v);
+    }
+
     /** @type {string} Date display format string. Defaults to "MM/DD/YYYY", or
      *  a time-aware variant when show-hours / show-minutes / show-seconds are set. */
     get format() {
@@ -153,6 +189,15 @@ export class YumeDate extends HTMLElement {
     }
     set invalid(v) {
         v ? this.setAttribute("invalid", "") : this.removeAttribute("invalid");
+    }
+
+    /** @type {string} Shorthand for the `label` slot: sets the label text without composing a `<span slot="label">`. A hand-slotted label wins over this. */
+    get label() {
+        return this.getAttribute("label") || "";
+    }
+    set label(val) {
+        if (val == null || val === "") this.removeAttribute("label");
+        else this.setAttribute("label", val);
     }
 
     /** @type {string} Label position: "top" | "bottom" (default "top"). */
@@ -386,6 +431,8 @@ export class YumeDate extends HTMLElement {
         );
 
         manageLabelVisibility(this.shadowRoot.querySelector(".label-wrapper"));
+        this._forwardNamingAttributes();
+        this._updateErrorText();
         if (!isDisabled) this._bindListeners();
     }
 
@@ -745,8 +792,19 @@ export class YumeDate extends HTMLElement {
         if (isLabelTop) wrapperChildren.push(this._buildLabelSlot());
         wrapperChildren.push(trigger, popup);
         if (!isLabelTop) wrapperChildren.push(this._buildLabelSlot());
+        wrapperChildren.push(this._buildErrorElement());
 
         return _el("div", { class: "wrapper" }, wrapperChildren);
+    }
+
+    _buildErrorElement() {
+        return _el("div", {
+            class: "error-text",
+            part: "error-text",
+            id: "error-text",
+            "aria-live": "polite",
+            hidden: true,
+        });
     }
 
     _buildLabelSlot() {
@@ -817,6 +875,7 @@ export class YumeDate extends HTMLElement {
         if (isLabelTop) wrapperChildren.push(this._buildLabelSlot());
         wrapperChildren.push(trigger);
         if (!isLabelTop) wrapperChildren.push(this._buildLabelSlot());
+        wrapperChildren.push(this._buildErrorElement());
 
         return _el("div", { class: "wrapper" }, wrapperChildren);
     }
@@ -963,6 +1022,15 @@ export class YumeDate extends HTMLElement {
             .trigger.is-invalid {
                 border-color: var(--component-input-error-border-color);
                 background: var(--component-input-error-background);
+            }
+
+            .error-text {
+                font-size: 0.8em;
+                color: var(--component-input-error-color);
+            }
+
+            .error-text[hidden] {
+                display: none;
             }
 
             .display {
@@ -1409,6 +1477,20 @@ export class YumeDate extends HTMLElement {
         return d;
     }
 
+    /**
+     * The host is never the accessible node — assistive tech reads the inner
+     * text field — so a name given on the host has to be moved onto it. A range
+     * on mobile has two native inputs and both take the group's name.
+     */
+    _forwardNamingAttributes() {
+        const controls = this.shadowRoot.querySelectorAll(
+            ".display, .native-date",
+        );
+        controls.forEach((control) =>
+            forwardControlAttributes(this, control, DATE_FORWARDED_ATTRIBUTES),
+        );
+    }
+
     _renderMobile() {
         const isDisabled = this.disabled;
         const isLabelTop = this.labelPosition === "top";
@@ -1420,6 +1502,9 @@ export class YumeDate extends HTMLElement {
             this._buildMobileTree(isDisabled, isLabelTop),
         );
 
+        manageLabelVisibility(this.shadowRoot.querySelector(".label-wrapper"));
+        this._forwardNamingAttributes();
+        this._updateErrorText();
         if (!isDisabled) this._bindMobileListeners();
     }
 
@@ -1483,11 +1568,21 @@ export class YumeDate extends HTMLElement {
         this._updateClearBtn();
     }
 
+    _updateErrorText() {
+        const control = this.shadowRoot.querySelector(
+            ".display, .native-date",
+        );
+        const errorEl = this.shadowRoot.querySelector(".error-text");
+        applyControlError(control, errorEl, this.errorText);
+        this._updateValidationState();
+    }
+
     _updateValidationState() {
+        const isInvalid = this.invalid || this.errorText !== "";
         const trigger = this.shadowRoot.querySelector(".trigger");
         const label = this.shadowRoot.querySelector(".label-wrapper");
-        trigger?.classList.toggle("is-invalid", this.invalid);
-        label?.classList.toggle("is-invalid", this.invalid);
+        trigger?.classList.toggle("is-invalid", isInvalid);
+        label?.classList.toggle("is-invalid", isInvalid);
     }
 }
 

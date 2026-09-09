@@ -175,6 +175,10 @@
     "large": {
       "$type": "sizing",
       "$value": "56px"
+    },
+    "x-large": {
+      "$type": "sizing",
+      "$value": "80px"
     }
   }
 }

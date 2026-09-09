@@ -87,9 +87,11 @@ export const Colors = {
 export const Sizes = {
     render: () => `
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+            <y-avatar alt="XS" size="x-small"></y-avatar>
             <y-avatar alt="SM" size="small"></y-avatar>
             <y-avatar alt="MD" size="medium"></y-avatar>
             <y-avatar alt="LG" size="large"></y-avatar>
+            <y-avatar alt="XL" size="x-large"></y-avatar>
         </div>
     `,
 };

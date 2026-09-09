@@ -866,6 +866,12 @@
             "$value": "{primary.content.DEFAULT}"
           }
         }
+      },
+      "error": {
+        "color": {
+          "$type": "color",
+          "$value": "{error.content.DEFAULT}"
+        }
       }
     },
     "select": {

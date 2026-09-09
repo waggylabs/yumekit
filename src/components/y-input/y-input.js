@@ -3,6 +3,7 @@ import {
     createElement as _el,
     forwardControlAttributes,
     manageLabelVisibility,
+    syncSlottedLabel,
     upgradeProperties,
 } from "../../modules/helpers.js";
 
@@ -22,12 +23,14 @@ export class YumeInput extends HTMLElement {
             "max",
             "step",
             "placeholder",
+            "maxlength",
             "variant",
             "required",
             "autocomplete",
             "error-text",
             "aria-label",
             "aria-labelledby",
+            "label",
         ];
     }
 
@@ -48,10 +51,16 @@ export class YumeInput extends HTMLElement {
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
         this._internals.setFormValue(this.value);
+        syncSlottedLabel(this);
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
+
+        if (name === "label") {
+            syncSlottedLabel(this);
+            return;
+        }
 
         if (name === "value") {
             if (this.input) this.input.value = newValue;
@@ -102,7 +111,8 @@ export class YumeInput extends HTMLElement {
             name === "min" ||
             name === "max" ||
             name === "step" ||
-            name === "placeholder"
+            name === "placeholder" ||
+            name === "maxlength"
         ) {
             if (this.input) {
                 if (newValue != null) {
@@ -152,12 +162,31 @@ export class YumeInput extends HTMLElement {
         else this.removeAttribute("invalid");
     }
 
+    /** @type {string} Shorthand for the `label` slot: sets the label text without composing a `<span slot="label">`. A hand-slotted label wins over this. */
+    get label() {
+        return this.getAttribute("label") || "";
+    }
+    set label(val) {
+        if (val == null || val === "") this.removeAttribute("label");
+        else this.setAttribute("label", val);
+    }
+
     /** @type {string} Label position: "top" | "bottom" (default "top"). */
     get labelPosition() {
         return this.getAttribute("label-position") || "top";
     }
     set labelPosition(val) {
         this.setAttribute("label-position", val);
+    }
+
+    /** @type {number|null} Maximum character count enforced by the native control. */
+    get maxLength() {
+        const raw = this.getAttribute("maxlength");
+        return raw == null ? null : Number(raw);
+    }
+    set maxLength(val) {
+        if (val == null || val === "") this.removeAttribute("maxlength");
+        else this.setAttribute("maxlength", val);
     }
 
     /** @type {string} The form field name. */
@@ -318,10 +347,12 @@ export class YumeInput extends HTMLElement {
         const max = this.getAttribute("max");
         const step = this.getAttribute("step");
         const placeholder = this.getAttribute("placeholder");
+        const maxlength = this.getAttribute("maxlength");
         if (min != null) input.setAttribute("min", min);
         if (max != null) input.setAttribute("max", max);
         if (step != null) input.setAttribute("step", step);
         if (placeholder != null) input.setAttribute("placeholder", placeholder);
+        if (maxlength != null) input.setAttribute("maxlength", maxlength);
 
         const container = _el("div", { class: "input-container" }, [
             _el("slot", { name: "left-icon" }),

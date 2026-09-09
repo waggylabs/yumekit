@@ -5,6 +5,7 @@ import {
     createElement as _el,
     forwardControlAttributes,
     manageLabelVisibility,
+    syncSlottedLabel,
     upgradeProperties,
 } from "../../modules/helpers.js";
 import {
@@ -37,6 +38,8 @@ export class YumeTextarea extends HTMLElement {
             "triggers",
             "aria-label",
             "aria-labelledby",
+            "label",
+            "maxlength",
         ];
     }
 
@@ -58,6 +61,7 @@ export class YumeTextarea extends HTMLElement {
         if (!this.hasAttribute("label-position"))
             this.setAttribute("label-position", "top");
         this._internals.setFormValue(this.value);
+        syncSlottedLabel(this);
     }
 
     disconnectedCallback() {
@@ -69,6 +73,11 @@ export class YumeTextarea extends HTMLElement {
 
         if (name === "triggers") {
             this._mentions.triggers = newValue;
+            return;
+        }
+
+        if (name === "label") {
+            syncSlottedLabel(this);
             return;
         }
 
@@ -139,6 +148,17 @@ export class YumeTextarea extends HTMLElement {
             return;
         }
 
+        if (name === "maxlength") {
+            if (this.textarea) {
+                if (newValue != null) {
+                    this.textarea.setAttribute("maxlength", newValue);
+                } else {
+                    this.textarea.removeAttribute("maxlength");
+                }
+            }
+            return;
+        }
+
         this.render();
     }
 
@@ -177,12 +197,31 @@ export class YumeTextarea extends HTMLElement {
         else this.removeAttribute("invalid");
     }
 
+    /** @type {string} Shorthand for the `label` slot: sets the label text without composing a `<span slot="label">`. A hand-slotted label wins over this. */
+    get label() {
+        return this.getAttribute("label") || "";
+    }
+    set label(val) {
+        if (val == null || val === "") this.removeAttribute("label");
+        else this.setAttribute("label", val);
+    }
+
     /** @type {string} Label position: "top" | "bottom" (default "top"). */
     get labelPosition() {
         return this.getAttribute("label-position") || "top";
     }
     set labelPosition(val) {
         this.setAttribute("label-position", val);
+    }
+
+    /** @type {number|null} Maximum character count enforced by the native control. */
+    get maxLength() {
+        const raw = this.getAttribute("maxlength");
+        return raw == null ? null : Number(raw);
+    }
+    set maxLength(val) {
+        if (val == null || val === "") this.removeAttribute("maxlength");
+        else this.setAttribute("maxlength", val);
     }
 
     /**
@@ -457,6 +496,7 @@ export class YumeTextarea extends HTMLElement {
             part: "textarea",
             rows,
             placeholder: this.getAttribute("placeholder"),
+            maxlength: this.getAttribute("maxlength"),
             disabled: isDisabled || null,
         });
 

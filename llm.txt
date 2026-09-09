@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 61 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.5.5-beta.3
+0.5.5-beta.4
 
 ## License
 MIT
@@ -219,7 +219,8 @@ Attributes:
 - `name` — form field name
 - `value` — current value
 - `placeholder`
-- `label` — visible label text
+- `maxlength` — maximum character count, applied to the inner `<input>`
+- `label` — visible label text. Shorthand for the `label` slot: the component creates the `<span slot="label">` itself. A hand-slotted label wins over the attribute.
 - `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `size` — `"small"` | `"medium"` | `"large"`
 - `variant` — `"default"` (full border) | `"underline"` (bottom border only, square bottom corners — Material/Carbon field style)
@@ -264,6 +265,8 @@ Attributes:
 - `clearable` — boolean, shows a clear (×) button when a value is set
 - `disabled` — boolean
 - `invalid` — boolean, applies error state
+- `error-text` — validation message rendered below the field; a non-empty value also sets the invalid state and becomes the field's `aria-describedby` target
+- `aria-label` / `aria-labelledby` — forwarded onto the inner text field (and onto both native inputs in mobile range mode). The host is not the accessible node, so a field with no slotted label needs one of these
 - `show-hours` — boolean, show hour column in time picker
 - `show-minutes` — boolean, show minutes column (implies `show-hours`)
 - `show-seconds` — boolean, show seconds column (implies `show-minutes`)
@@ -348,7 +351,8 @@ Attributes:
 - `name` — form field name
 - `value` — current value
 - `placeholder`
-- `label` — visible label text
+- `maxlength` — maximum character count, applied to the inner `<textarea>`
+- `label` — visible label text. Shorthand for the `label` slot: the component creates the `<span slot="label">` itself. A hand-slotted label wins over the attribute.
 - `label-position` — `"top"` (default) | `"bottom"` | `"left"` | `"right"`
 - `rows` — number of visible rows (default: `"3"`)
 - `size` — `"small"` | `"medium"` | `"large"`
@@ -702,14 +706,16 @@ Radio button. Form-associated.
 
 Tag: `<y-radio>`
 Attributes:
-- `name`, `value`, `checked`, `disabled`, `required`
-- `options` — JSON array `[{"value":"a","label":"Option A"}, ...]` to render a managed radio group from one element; omit to compose individual `<y-radio>` children instead
-- `size` — `"small"` | `"medium"` | `"large"`
-- `label`, `label-position`
+- `name`, `value`, `disabled` — `disabled` applies to the whole group
+- `options` — array of `{ value, label, disabled? }`. An option with `disabled: true` renders unselectable and is skipped by arrow-key navigation. Rich data: set the property for live data; the attribute accepts a JSON string as a seed and is not kept in sync after an imperative set.
+- `invalid` — boolean; styles the group as invalid
+- `error-text` — validation message rendered below the group; a non-empty value also sets the invalid state and becomes the group's `aria-describedby` target
+- `aria-label` / `aria-labelledby` — forwarded onto the inner `fieldset[role="radiogroup"]`. The host is not the accessible node, so a group needs one of these (or a visible question referenced by `aria-labelledby`) to be named
 
 Events: `change`
+CSS Parts: `radio` (the fieldset), `label`, `error-text`
 
-CSS Custom Properties: `--component-radio-size` sets the control diameter; `--component-radio-dot-size` the center dot. Unchecked state: `--component-radio-background` (default transparent), `--component-radio-color` (border), `--component-radio-accent` (dot). Checked-state overrides (each falls back to its unchecked value): `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`. Filled-style design systems (Shadcn, Bootstrap, Primer) fill the checked control with the primary color and draw a primary-inverse center dot; outlined ones (Material, Carbon, Ant) keep a transparent fill with a primary ring and primary dot.
+CSS Custom Properties: `--component-radio-error-color` colors the invalid border and message. `--component-radio-size` sets the control diameter; `--component-radio-dot-size` the center dot. Unchecked state: `--component-radio-background` (default transparent), `--component-radio-color` (border), `--component-radio-accent` (dot). Checked-state overrides (each falls back to its unchecked value): `--component-radio-checked-background`, `--component-radio-checked-border-color`, `--component-radio-checked-dot-color`. Filled-style design systems (Shadcn, Bootstrap, Primer) fill the checked control with the primary color and draw a primary-inverse center dot; outlined ones (Material, Carbon, Ant) keep a transparent fill with a primary ring and primary dot.
 
 ---
 
@@ -725,6 +731,7 @@ Attributes:
 - `animate` — set to `"false"` to disable the slide transition (default on)
 - `toggle-label` — boolean; shows inline on/off text inside the track (customize via the `on-label` / `off-label` slots)
 - `label-position` — `"right"` | `"left"`
+- `aria-label` / `aria-labelledby` — forwarded onto the inner `div[role="switch"]`. The host is not the accessible node, so a switch composed into a settings row needs one of these to be named
 
 Events: `change`
 Slots: `label`, `on-label`, `off-label`
@@ -1103,7 +1110,7 @@ Attributes:
 - `src` — image URL
 - `alt` — alt text / initials fallback
 - `shape` — `"circle"` (default) | `"square"` | `"rounded"`
-- `size` — `"small"` | `"medium"` | `"large"`
+- `size` — `"x-small"` | `"small"` | `"medium"` (default) | `"large"` | `"x-large"`, sized by `--component-avatar-size-{size}`. An unrecognized value warns on the console and falls back to `"medium"`
 - `color` — predefined scheme or CSS color for the initials background; text color is auto-contrasted
 - `loading` — boolean; renders a `<y-skeleton>` placeholder sized to `size` and shaped by `shape`, taking precedence over `src`/initials. Sets `aria-busy`.
 
@@ -1248,7 +1255,7 @@ Attributes:
 - `min` — numeric (default `0`)
 - `max` — numeric (default `100`)
 - `step` — numeric, snaps `percentage` to step boundaries
-- `size` — `"small"` | `"medium"` (default) | `"large"` or a raw length (e.g. `"160px"`). Bar thickness in `bar`, diameter in `ring`/`pie`.
+- `size` — `"small"` | `"medium"` (default) | `"large"` or a raw length (e.g. `"160px"`). Bar thickness in `bar`, diameter in `ring`/`pie`. In `bar` mode this is the **outer** height: `--component-progress-padding` and `--component-progress-border-width` are taken inside it. The padding is capped at a quarter of the space inside the border, so a thin bar such as `size="8px"` still paints a fill; at the named sizes the cap never engages.
 - `thickness` — `"small"` | `"medium"` (default) | `"large"` or a raw length. Ring stroke width; ignored in `bar`/`pie`.
 - `color` — predefined scheme (default `"primary"`) or any CSS color
 - `track-color` — overrides the unfilled track / ring background; falls back to `--base-background-component`
@@ -1487,6 +1494,7 @@ Notes:
 - Positioning uses a flip-and-shift strategy: try the requested side → opposite → perpendiculars; cross-axis shift keeps the popover in view but is skipped entirely when the anchor itself is off-screen. Best-fit fallback when no side fits (pointer hidden).
 - Detects transformed/filtered/clip-pathed ancestors and adjusts coords so `position: fixed` still lands on the viewport correctly (Storybook docs, animated panels, etc.).
 - `portal="true"` moves the surface (plus backdrop and slotted body/header/footer children) into a `<div class="y-popover-portal">` appended to the nearest enclosing `<y-theme>` (so it inherits the theme), falling back to `<body>` when there is no `<y-theme>` ancestor. The trigger stays in place.
+- **A component that composes `y-popover` loses its styling of the slotted content when `portal` is on.** Those nodes leave the composing component's shadow root, so its `adoptedStyleSheets` no longer reach them — and because the trigger stays put, the breakage looks partial and random: the button is styled, the panel is naked. Nothing errors. Style portaled content with `::part()`, inline styles, or rules that live in the document (or the `<y-theme>`) rather than in the composer's shadow root — or leave `portal` off, which is the default. The same applies to `y-select`'s `portal` and to `y-help`, which portal by the same mechanism.
 - Detached or removed anchors during the open lifecycle re-resolve on every reposition.
 - Body / header / footer content is rendered as DOM (slotted), not via `textContent`, so consumers can put rich markup in slots.
 
@@ -1497,10 +1505,12 @@ Content container card.
 
 Tag: `<y-card>`
 Attributes:
-- `color` — color scheme name
-- `raised` — boolean; applies an elevated drop shadow
+- `color` — color scheme name; picks the **defaults** for the custom properties below
+- `raised` — boolean; applies an elevated drop shadow. The border box is kept and its line made transparent, so a raised card stays aligned with unraised cards beside it
 
 Slots: `image` (flush, no padding, clips to card border radius), `header`, `footer`, default (body content)
+
+CSS Custom Properties: `--card-background`, `--card-border-color`, `--card-border-width`, `--card-content-color`, `--card-box-shadow`. These are the override surface and are **not** written by the component, so setting one from an ancestor (or a composing component's stylesheet) restyles the card — `color` only supplies the fallback. `--card-section-background` tracks `--card-border-color` for slotted content.
 
 ---
 
@@ -2592,11 +2602,41 @@ Applied by y-theme or by manually including a theme CSS file. Variables follow t
 
 Where `{scheme}` is: `base`, `primary`, `secondary`, `success`, `warning`, `error`, `help`
 
+### Token naming traps
+
+Several of these names do not mean what they look like, and a `var()` with no fallback
+fails **silently** — the property is dropped and nothing throws, logs, or shows up in a
+test. Check a name before using it:
+
+```bash
+grep -o -- "--<prefix>[a-z-]*" node_modules/@waggylabs/yumekit/styles/variables.css | sort -u
+```
+
+- **There is no `--primary-background`.** The strong brand color is `--primary-content`,
+  and text on it is `--primary-content-inverse`. The `--primary-background-*` names
+  (`-app`, `-component`, `-hover`, `-active`) are its **pale tints** — so a chip filled
+  with `--primary-background-component` and lettered in `--primary-content-inverse` is
+  white on near-white. The same holds for every other `{scheme}`.
+- **There is no `--base-background`** — it is `--base-background-app` / `-component` /
+  `-hover` / `-active`.
+- **There is no `--base-content-muted`** — the muted steps are `--base-content-light`,
+  `-lighter`, and `-lightest`.
+- **There is no `--border-radius-*` scale** — corner radii are `--radii-*`.
+- **There is no `--font-size-large` / `-medium` / `-x-small`** — the scale is
+  `--font-size-small`, `-paragraph`, `-label`, `-button`, `-quote`, `-h1`…`-h5`, and
+  `-display-1`…`-4`.
+- **The `--border-*` scale is not what its names suggest:** `--border-x-thin` is 1px,
+  `--border-thin` is **2px**, `--border-medium` is **4px**, `--border-thick` is 8px, and
+  `--border-x-thick` is 10px. The 1px hairline most components want is `x-thin`.
+- **Every font-size token is in `em`, so they compound.** `--font-size-small` is `0.8em`;
+  nesting it inside something that already applied it lands at `0.64em`.
+
 Additional tokens:
 ```
 --spacing-none, --spacing-4x-small, --spacing-2x-small, --spacing-x-small, --spacing-small, --spacing-medium, --spacing-large, --spacing-x-large, --spacing-2x-large, --spacing-4x-large
 --font-size-small, --font-size-paragraph, --font-size-label, --font-size-button, --font-size-quote, --font-size-h1…h5, --font-size-display-1…4
 --radii-none, --radii-x-small, --radii-small, --radii-medium, --radii-large, --radii-x-large, --radii-full
+--sizing-2x-small, --sizing-x-small, --sizing-small, --sizing-medium, --sizing-large, --sizing-x-large
 --font-weight-body (300), --font-weight-heading (500)
 --base-shadow
 ```
@@ -2746,6 +2786,24 @@ The contract: an amount is an **integer number of minor units** plus a currency 
 - `multiplyMinorUnits(value, quantity)` — an amount times a whole count, exact at any width, `null` when either side isn't whole. There is no rounding rule in it to get wrong
 - `roundDecimal(decimal, precision)` — half-away-from-zero over digits, so `1.005` → `1.01`, not the float result. Scrubs grouping separators and symbols out of raw author strings
 - `DEFAULT_CURRENCY` — `"USD"`
+
+### HTML sanitizer (`@waggylabs/yumekit/modules/html-sanitizer.js`)
+
+The allowlist sanitizer every path that introduces HTML runs through, for anything rendering untrusted markup of its own.
+
+- `sanitizeHtml(raw, options)` — sanitized markup as a string
+- `sanitizeHtmlToFragment(raw, options)` — the same as a `DocumentFragment`. Prefer this when the result goes straight into the DOM: it skips the serialize / re-parse round trip that mXSS payloads are built to exploit
+- `isSafeUrl(value, { allowDataImage })` — whether a value is safe on `href` / `src`
+- `tagsForBlocks(blocks)` — a `y-editor` block set as the tag allowlist it implies
+- `DEFAULT_ALLOWED_TAGS`, `INLINE_TAGS`, `DEFAULT_ID_PREFIX`
+
+Options:
+- `allowedTags` — the block tags to keep. Defaults to `DEFAULT_ALLOWED_TAGS`, which stops at `h3` (matching `y-editor`'s default `allowed-blocks`), so `h4`–`h6` are **unwrapped to bare text** unless you pass them explicitly. Inline formatting, `<a>` and `<img>` are always permitted
+- `allowMentions` — keep `<span data-mention-value>` chips intact so an atomic mention survives the editor's serialize / parse round trip
+- `allowIds` — keep an `id` on block elements (`p`, `h1`–`h6`, `blockquote`, `ul`, `ol`, `li`, `pre`) so in-document anchors survive the round trip. Off by default. Ids are matched against `^[\w-]+$` and namespaced with `idPrefix` (default `DEFAULT_ID_PREFIX`, `"content-"`); anything failing the pattern is dropped rather than corrected. `id` is not a script vector — the risk it carries is DOM clobbering, and the pattern plus the prefix bound it. `name`, `for`, and `headers` are deliberately **not** included: same risk, no anchor payoff
+- `idPrefix` — override the namespace applied to preserved ids
+
+Every other attribute on every other tag is removed, which is how `on*` handlers, `style`, and `class` are stripped without enumerating them.
 
 ### Tokenizer (`@waggylabs/yumekit/modules/tokenizer.js`)
 
