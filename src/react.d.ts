@@ -381,20 +381,11 @@ declare module "react" {
                 open?: boolean | string;
                 index?: number | string;
                 "default-position"?:
-                    | "top"
-                    | "bottom"
-                    | "left"
-                    | "right"
-                    | "center"
-                    | "auto";
+                    "top" | "bottom" | "left" | "right" | "center" | "auto";
                 "untargeted-position"?:
-                    | "top"
-                    | "bottom"
-                    | "left"
-                    | "right"
-                    | "center"
-                    | "auto";
-                "default-anchor"?: "bounds" | "first" | "last" | number | string;
+                    "top" | "bottom" | "left" | "right" | "center" | "auto";
+                "default-anchor"?:
+                    "bounds" | "first" | "last" | number | string;
                 "highlight-padding"?: number | string;
                 "show-progress"?: boolean | string;
                 "show-arrows"?: boolean | string;
@@ -412,7 +403,13 @@ declare module "react" {
                 size?: "x-small" | "small" | "medium" | "large" | "x-large";
                 color?: string;
                 label?: string;
-                weight?: "thin" | "regular" | "thick" | "x-thin" | "x-thick" | "filled";
+                weight?:
+                    | "thin"
+                    | "regular"
+                    | "thick"
+                    | "x-thin"
+                    | "x-thick"
+                    | "filled";
             }>;
             "y-input": El<{
                 type?: string;
@@ -592,11 +589,7 @@ declare module "react" {
                 disabled?: boolean | string;
                 segmented?: boolean | string | number;
                 "segment-gap"?:
-                    | "none"
-                    | "x-small"
-                    | "small"
-                    | "medium"
-                    | string;
+                    "none" | "x-small" | "small" | "medium" | string;
                 "start-angle"?: string | number;
                 direction?: "clockwise" | "counterclockwise";
             }>;
@@ -615,7 +608,11 @@ declare module "react" {
                 name?: string;
                 value?: string;
                 options?:
-                    | Array<{ value: string; label: string; disabled?: boolean }>
+                    | Array<{
+                          value: string;
+                          label: string;
+                          disabled?: boolean;
+                      }>
                     | string;
                 disabled?: boolean | string;
                 invalid?: boolean | string;
@@ -842,7 +839,9 @@ declare module "react" {
                 "row-height"?: string | number;
                 "global-search"?: string;
                 "group-by"?: string | string[];
-                aggregates?: string | Record<string, "sum" | "avg" | "min" | "max" | "count">;
+                aggregates?:
+                    | string
+                    | Record<string, "sum" | "avg" | "min" | "max" | "count">;
                 virtual?: boolean | string;
                 "viewport-height"?: string | number;
                 "buffer-size"?: string | number;
@@ -878,6 +877,7 @@ declare module "react" {
             "y-theme": El<{
                 theme?: string;
                 "cross-origin"?: boolean | string;
+                s;
                 "no-default-font"?: boolean | string;
             }>;
             "y-toast": El<{

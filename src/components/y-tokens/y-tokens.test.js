@@ -4,6 +4,7 @@ import { pasteEvent } from "../../../test/browser.js";
 import "./y-tokens.js";
 import "../y-input/y-input.js";
 import "../y-theme/y-theme.js";
+import "../../themes/all.js"; // registers the built-in themes y-theme applies
 import variablesCSS from "../../../styles/variables.css";
 
 const OPTIONS = [

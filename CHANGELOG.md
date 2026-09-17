@@ -31,6 +31,12 @@ Delete any empty sections before publishing.
 <!-- ### Security -->
 <!-- Vulnerability patches or hardening changes -->
 
+## [0.5.6]
+
+### Changed
+
+- **Breaking.** `<y-theme>` no longer bundles every theme's CSS. Themes are now opt-in through a registry (`registerTheme`, `registerThemes`, `getThemeNames`) mirroring the icon registry, and `configureThemes({ allow, fallback, allowUrls, allowCrossOriginUrls })` declares once at startup which of them an app permits. Two defaults changed and both fail closed: `allowUrls` is `false`, so `<y-theme theme="/my-theme.css">` stops loading until the app opts in, and `cross-origin` on the element is no longer sufficient on its own — remote themes also need `allowCrossOriginUrls`. A refused theme now applies the policy fallback and fires `theme-reject` (with `theme`, `reason`, `fallback`) rather than rendering an unthemed page, and a successful one fires `theme-change`. Apps importing the umbrella entry keep today's behavior with no code change; apps importing `components/y-theme.js` directly must add `import "@waggylabs/yumekit/themes/all.js"` or register the themes they ship. `no-default-font` is now an observed attribute, so removing it at runtime injects the font.
+
 ## [0.5.5]
 
 ### Added

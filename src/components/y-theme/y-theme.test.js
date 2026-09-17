@@ -1,5 +1,37 @@
 import { fixture, html, expect, waitUntil } from "@open-wc/testing";
 import "./y-theme.js";
+import "../../themes/all.js";
+import sinon from "sinon";
+import variablesCSS from "../../../styles/variables.css";
+import {
+    configureThemes,
+    getTheme,
+    getThemeNames,
+    registerTheme,
+} from "../../themes/registry.js";
+
+// Captured before any test registers a theme, so the token-baseline guard sees
+// only what themes/all.js bundles.
+const BUNDLED_THEMES = getThemeNames();
+
+/** Declared custom property names in a CSS string. */
+function declaredProps(css) {
+    const re = /--([\w-]+):\s*([^;]+);/g;
+    const props = new Set();
+    let match;
+    while ((match = re.exec(css)) !== null) props.add(`--${match[1]}`);
+    return props;
+}
+
+/** Restores the shipped theme policy so one test's config can't leak. */
+function resetThemePolicy() {
+    configureThemes({
+        allow: null,
+        fallback: "blue-light",
+        allowUrls: false,
+        allowCrossOriginUrls: false,
+    });
+}
 
 /** Helper to build a minimal Response-like object for fetch stubs. */
 function cssResponse(body, contentType = "text/css") {
@@ -10,6 +42,9 @@ function cssResponse(body, contentType = "text/css") {
 }
 
 describe("<y-theme>", () => {
+    beforeEach(resetThemePolicy);
+    afterEach(resetThemePolicy);
+
     it("renders slotted content", async () => {
         const el = await fixture(
             html`<y-theme><div id="test-content">Hello</div></y-theme>`,
@@ -520,6 +555,7 @@ describe("<y-theme>", () => {
         let originalFetch;
 
         beforeEach(() => {
+            configureThemes({ allowUrls: true, allowCrossOriginUrls: true });
             originalFetch = window.fetch;
             window.fetch = async (url) => {
                 const str = url.toString();
@@ -628,8 +664,11 @@ describe("<y-theme>", () => {
             expect(
                 el.style.getPropertyValue("--spacing-medium").trim(),
             ).to.equal("8px");
-            // Only one <style> tag (variables only, no theme)
-            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+            // The policy fallback is applied rather than an unthemed page
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("light");
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(2);
         });
 
         it("blocks a cross-origin theme URL and returns empty CSS when cross-origin attribute is absent", async () => {
@@ -645,8 +684,11 @@ describe("<y-theme>", () => {
                 () => el.shadowRoot.querySelectorAll("style").length >= 1,
             );
 
-            // Only the base style should be present (no theme CSS loaded)
-            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+            // The remote CSS is never applied; the fallback theme is
+            expect(el.style.getPropertyValue("--xo-var")).to.equal("");
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("light");
         });
 
         it("allows a cross-origin theme URL when the cross-origin attribute is present", async () => {
@@ -700,6 +742,7 @@ describe("<y-theme>", () => {
         let originalFetch;
 
         beforeEach(() => {
+            configureThemes({ allowUrls: true });
             originalFetch = window.fetch;
         });
 
@@ -767,6 +810,7 @@ describe("<y-theme>", () => {
         let originalFetch;
 
         beforeEach(() => {
+            configureThemes({ allowUrls: true });
             originalFetch = window.fetch;
         });
 
@@ -786,8 +830,11 @@ describe("<y-theme>", () => {
                 () => el.shadowRoot.querySelectorAll("style").length >= 1,
             );
 
-            // Only base style, no theme style
-            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+            // The rejected payload is never applied; the fallback theme is
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("light");
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(2);
         });
 
         it("blocks response with text/html content-type", async () => {
@@ -802,7 +849,11 @@ describe("<y-theme>", () => {
                 () => el.shadowRoot.querySelectorAll("style").length >= 1,
             );
 
-            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+            // The rejected payload is never applied; the fallback theme is
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("light");
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(2);
         });
 
         it("allows response with text/css content-type", async () => {
@@ -861,6 +912,7 @@ describe("<y-theme>", () => {
         let originalFetch;
 
         beforeEach(() => {
+            configureThemes({ allowUrls: true });
             originalFetch = window.fetch;
         });
 
@@ -959,6 +1011,475 @@ describe("<y-theme>", () => {
             // Remove _themeProps to simulate a fresh element with no prior _applyTheme
             el._themeProps = undefined;
             expect(() => el.clearThemeProperties()).to.not.throw();
+        });
+    });
+
+    describe("theme policy", () => {
+        const sandbox = sinon.createSandbox();
+        const mounted = [];
+
+        beforeEach(() => {
+            sandbox.stub(console, "error");
+        });
+
+        afterEach(() => {
+            sandbox.restore();
+            while (mounted.length) mounted.pop().remove();
+        });
+
+        /**
+         * Mounts a <y-theme> with listeners attached before it connects, so the
+         * events fired during connectedCallback are observed. `fixture()`
+         * connects before it returns, which is too late for those.
+         */
+        async function mount(attrs = {}) {
+            const el = document.createElement("y-theme");
+            for (const [name, value] of Object.entries(attrs)) {
+                el.setAttribute(name, value);
+            }
+            const events = { change: [], reject: [] };
+            el.addEventListener("theme-change", (e) =>
+                events.change.push(e.detail),
+            );
+            el.addEventListener("theme-reject", (e) =>
+                events.reject.push(e.detail),
+            );
+            mounted.push(el);
+            document.body.appendChild(el);
+            return { el, events };
+        }
+
+        it("falls back to a themed page when the name is unregistered", async () => {
+            const { el, events } = await mount({ theme: "not-a-real-theme" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject.length).to.equal(1);
+            expect(events.reject[0].reason).to.equal("unregistered");
+            expect(events.reject[0].theme).to.equal("not-a-real-theme");
+            expect(events.reject[0].fallback).to.equal("blue-light");
+            // The fallback theme is applied, not a bare variables sheet
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("light");
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(2);
+        });
+
+        it("names the registry in the unregistered-theme error", async () => {
+            await mount({ theme: "not-a-real-theme" });
+
+            await waitUntil(() => console.error.callCount > 0);
+
+            expect(console.error.firstCall.args[0]).to.include(
+                "not-a-real-theme",
+            );
+            expect(console.error.firstCall.args[0]).to.include("registerTheme");
+        });
+
+        it("blocks a registered theme that is outside the allow list", async () => {
+            configureThemes({ allow: ["blue-light"] });
+
+            const { el, events } = await mount({ theme: "waggy" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].reason).to.equal("not-allowed");
+            expect(events.change[0].theme).to.equal("blue-light");
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("light");
+        });
+
+        it("applies a registered theme that is inside the allow list", async () => {
+            configureThemes({ allow: ["blue-light", "blue-dark"] });
+
+            const { el, events } = await mount({ theme: "blue-dark" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject.length).to.equal(0);
+            expect(events.change[0].theme).to.equal("blue-dark");
+            expect(
+                el.style.getPropertyValue("--base-background-app"),
+            ).to.include("dark");
+        });
+
+        it("names configureThemes in the not-permitted error", async () => {
+            configureThemes({ allow: ["blue-light"] });
+
+            await mount({ theme: "waggy" });
+
+            await waitUntil(() => console.error.callCount > 0);
+
+            expect(console.error.firstCall.args[0]).to.include("not permitted");
+            expect(console.error.firstCall.args[0]).to.include(
+                "configureThemes",
+            );
+        });
+
+        it("blocks a URL theme when allowUrls is false", async () => {
+            const fetchSpy = sandbox.stub(window, "fetch");
+
+            const { events } = await mount({ theme: "/some-theme.css" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].reason).to.equal("urls-disabled");
+            expect(fetchSpy.callCount).to.equal(0);
+        });
+
+        it("names configureThemes in the urls-disabled error", async () => {
+            sandbox.stub(window, "fetch");
+
+            await mount({ theme: "/some-theme.css" });
+
+            await waitUntil(() => console.error.callCount > 0);
+
+            expect(console.error.firstCall.args[0]).to.include("allowUrls");
+        });
+
+        it("loads a URL theme once allowUrls is enabled", async () => {
+            configureThemes({ allowUrls: true });
+            sandbox
+                .stub(window, "fetch")
+                .resolves(cssResponse(":root { --policy-var: teal; }"));
+
+            const { el, events } = await mount({ theme: "/some-theme.css" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject.length).to.equal(0);
+            expect(el.style.getPropertyValue("--policy-var")).to.equal("teal");
+        });
+
+        it("blocks a cross-origin URL when allowCrossOriginUrls is false, even with the attribute", async () => {
+            configureThemes({ allowUrls: true });
+            const fetchSpy = sandbox.stub(window, "fetch");
+
+            const { events } = await mount({
+                theme: "https://other.example.com/theme.css",
+                "cross-origin": "",
+            });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].reason).to.equal("cross-origin");
+            expect(fetchSpy.callCount).to.equal(0);
+            expect(console.error.firstCall.args[0]).to.include(
+                "allowCrossOriginUrls",
+            );
+        });
+
+        it("still requires the cross-origin attribute when allowCrossOriginUrls is true", async () => {
+            configureThemes({ allowUrls: true, allowCrossOriginUrls: true });
+            const fetchSpy = sandbox.stub(window, "fetch");
+
+            const { events } = await mount({
+                theme: "https://other.example.com/theme.css",
+            });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].reason).to.equal("cross-origin");
+            expect(fetchSpy.callCount).to.equal(0);
+            expect(console.error.firstCall.args[0]).to.include(
+                '"cross-origin" attribute',
+            );
+        });
+
+        it("reports content-type as the rejection reason", async () => {
+            configureThemes({ allowUrls: true });
+            sandbox
+                .stub(window, "fetch")
+                .resolves(cssResponse("{}", "application/json"));
+
+            const { events } = await mount({ theme: "/bad.css" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].reason).to.equal("content-type");
+        });
+
+        it("reports fetch-failed as the rejection reason", async () => {
+            configureThemes({ allowUrls: true });
+            sandbox.stub(window, "fetch").rejects(new Error("Network error"));
+
+            const { events } = await mount({ theme: "/gone.css" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].reason).to.equal("fetch-failed");
+        });
+
+        it("applies base variables only when the fallback is itself unregistered", async () => {
+            configureThemes({ fallback: "no-such-fallback" });
+
+            const { el, events } = await mount({ theme: "also-missing" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject[0].fallback).to.equal("no-such-fallback");
+            // Base variables still land; no theme <style> is added
+            expect(
+                el.style.getPropertyValue("--spacing-medium").trim(),
+            ).to.equal("8px");
+            expect(el.shadowRoot.querySelectorAll("style").length).to.equal(1);
+        });
+
+        it("fires theme-change with the applied name on success", async () => {
+            const { events } = await mount({ theme: "nord" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.change.length).to.equal(1);
+            expect(events.change[0].theme).to.equal("nord");
+            expect(events.reject.length).to.equal(0);
+        });
+
+        it("fires theme-change again when the theme attribute changes", async () => {
+            const { el, events } = await mount({ theme: "blue-light" });
+
+            await waitUntil(() => events.change.length > 0);
+            el.setAttribute("theme", "blue-dark");
+            await waitUntil(() => events.change.length > 1);
+
+            expect(events.change[1].theme).to.equal("blue-dark");
+        });
+
+        it("bubbles theme-change out of the element", async () => {
+            const seen = [];
+            const onChange = (e) => seen.push(e.detail.theme);
+            document.addEventListener("theme-change", onChange);
+
+            const el = document.createElement("y-theme");
+            el.setAttribute("theme", "blue-dark");
+            mounted.push(el);
+            document.body.appendChild(el);
+            await waitUntil(() => seen.length > 0);
+            document.removeEventListener("theme-change", onChange);
+
+            expect(seen[0]).to.equal("blue-dark");
+        });
+
+        it("applies a theme registered at runtime", async () => {
+            registerTheme(
+                "test-runtime-theme",
+                ":root { --runtime-var: magenta; }",
+                { font: null },
+            );
+
+            const { el, events } = await mount({ theme: "test-runtime-theme" });
+
+            await waitUntil(() => events.change.length > 0);
+
+            expect(events.reject.length).to.equal(0);
+            expect(el.style.getPropertyValue("--runtime-var")).to.equal(
+                "magenta",
+            );
+        });
+    });
+
+    describe("no-default-font", () => {
+        const FONT_LINK = 'link[data-yumekit-font="Tomorrow"]';
+
+        afterEach(() => {
+            for (const link of document.querySelectorAll(FONT_LINK)) {
+                link.remove();
+            }
+        });
+
+        it("is an observed attribute", () => {
+            expect(customElements.get("y-theme").observedAttributes).to.include(
+                "no-default-font",
+            );
+        });
+
+        it("injects no font link while the attribute is present", async () => {
+            await fixture(
+                html`<y-theme no-default-font theme="kepler-light"></y-theme>`,
+            );
+
+            expect(document.querySelectorAll(FONT_LINK).length).to.equal(0);
+        });
+
+        it("injects the font when the attribute is removed at runtime", async () => {
+            const el = await fixture(
+                html`<y-theme no-default-font theme="kepler-dark"></y-theme>`,
+            );
+
+            expect(document.querySelectorAll(FONT_LINK).length).to.equal(0);
+
+            el.removeAttribute("no-default-font");
+
+            await waitUntil(
+                () => document.querySelectorAll(FONT_LINK).length === 1,
+            );
+
+            expect(document.querySelectorAll(FONT_LINK).length).to.equal(1);
+        });
+
+        it("reflects the noDefaultFont property to the attribute", async () => {
+            const el = await fixture(html`<y-theme></y-theme>`);
+
+            el.noDefaultFont = true;
+            expect(el.hasAttribute("no-default-font")).to.be.true;
+
+            el.noDefaultFont = false;
+            expect(el.hasAttribute("no-default-font")).to.be.false;
+        });
+    });
+
+    describe("token baseline", () => {
+        it("declares every theme-declared property in the base sheet", () => {
+            const base = declaredProps(variablesCSS);
+            const missing = new Set();
+
+            for (const name of BUNDLED_THEMES) {
+                for (const prop of declaredProps(getTheme(name))) {
+                    if (!base.has(prop)) missing.add(`${name}:${prop}`);
+                }
+            }
+
+            expect([...missing].join(", ")).to.equal("");
+        });
+
+        it("resets ancestor-only tokens with a single theme permitted", async () => {
+            configureThemes({ allow: ["waggy", "blue-light"] });
+
+            const outer = await fixture(
+                html`<y-theme theme="waggy">
+                    <y-theme theme="blue-light" id="inner"></y-theme>
+                </y-theme>`,
+            );
+
+            const inner = outer.querySelector("#inner");
+            const token = "--component-tabs-inactive-background";
+
+            await waitUntil(
+                () => inner.style.getPropertyValue(token) === "initial",
+            );
+
+            // waggy declares it, blue-light does not — the nested theme must
+            // reset it rather than inherit the ancestor's value.
+            expect(outer.style.getPropertyValue(token)).to.not.equal("");
+            expect(outer.style.getPropertyValue(token)).to.not.equal("initial");
+            expect(inner.style.getPropertyValue(token)).to.equal("initial");
+        });
+
+        it("accounts for every base-sheet property on the host", async () => {
+            const el = await fixture(
+                html`<y-theme theme="blue-light"></y-theme>`,
+            );
+
+            const base = declaredProps(variablesCSS);
+            const applied = new Set(el._themeProps);
+            const unaccounted = [...base].filter((p) => !applied.has(p));
+
+            expect(unaccounted.join(", ")).to.equal("");
+        });
+    });
+
+    describe("accessibility", () => {
+        const sandbox = sinon.createSandbox();
+
+        beforeEach(() => {
+            sandbox.stub(console, "error");
+        });
+
+        afterEach(() => sandbox.restore());
+
+        /** Resolves once the element has applied a theme. */
+        function applied(el) {
+            return new Promise((resolve) =>
+                el.addEventListener("theme-change", resolve, { once: true }),
+            );
+        }
+
+        it("keeps focus on slotted content when a rejected theme rebuilds the shadow DOM", async () => {
+            const el = await fixture(
+                html`<y-theme theme="blue-light">
+                    <input id="focus-probe" />
+                </y-theme>`,
+            );
+
+            const input = el.querySelector("#focus-probe");
+            input.focus();
+            expect(document.activeElement.id).to.equal("focus-probe");
+
+            const settled = applied(el);
+            el.setAttribute("theme", "not-a-real-theme");
+            await settled;
+
+            // The slot is replaced on every apply; slotted light-DOM nodes must
+            // not be re-parented, so focus survives the fallback.
+            expect(document.activeElement.id).to.equal("focus-probe");
+        });
+
+        it("keeps focus on slotted content across a successful theme switch", async () => {
+            const el = await fixture(
+                html`<y-theme theme="blue-light">
+                    <input id="focus-probe-2" />
+                </y-theme>`,
+            );
+
+            const input = el.querySelector("#focus-probe-2");
+            input.focus();
+
+            const settled = applied(el);
+            el.setAttribute("theme", "blue-dark");
+            await settled;
+
+            expect(document.activeElement.id).to.equal("focus-probe-2");
+        });
+
+        it("exposes no live region or role that a rejection could announce", async () => {
+            const el = await fixture(
+                html`<y-theme theme="not-a-real-theme"></y-theme>`,
+            );
+
+            await waitUntil(
+                () => el.shadowRoot.querySelectorAll("style").length > 0,
+            );
+
+            // y-theme is a styling wrapper: it must stay invisible to AT, so a
+            // fallback swap has nothing to announce.
+            expect(el.hasAttribute("role")).to.be.false;
+            expect(el.hasAttribute("aria-live")).to.be.false;
+            expect(el.hasAttribute("aria-busy")).to.be.false;
+            expect(
+                el.shadowRoot.querySelectorAll("[aria-live], [role]").length,
+            ).to.equal(0);
+        });
+
+        it("renders only style and slot elements in its shadow root", async () => {
+            const el = await fixture(
+                html`<y-theme theme="not-a-real-theme"></y-theme>`,
+            );
+
+            await waitUntil(() => el.shadowRoot.querySelector("slot") !== null);
+
+            const tags = [...el.shadowRoot.children].map((n) =>
+                n.tagName.toLowerCase(),
+            );
+
+            expect(tags.join(",")).to.equal("style,style,slot");
+        });
+
+        it("does not move slotted content out of the light DOM on rejection", async () => {
+            const el = await fixture(
+                html`<y-theme theme="blue-light">
+                    <span id="child-probe">Hello</span>
+                </y-theme>`,
+            );
+
+            const settled = applied(el);
+            el.setAttribute("theme", "not-a-real-theme");
+            await settled;
+
+            expect(el.querySelectorAll("#child-probe").length).to.equal(1);
+            expect(el.querySelector("#child-probe").textContent).to.equal(
+                "Hello",
+            );
         });
     });
 });

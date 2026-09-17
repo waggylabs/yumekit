@@ -47,6 +47,7 @@ function componentExternal(id) {
     return (
         /^\.\.\/\.\.\/modules\/[\w.-]+\.js$/.test(id) ||
         id === "../../icons/registry.js" ||
+        id === "../../themes/registry.js" ||
         crossComponentImport.test(id)
     );
 }
@@ -54,6 +55,7 @@ function componentExternal(id) {
 // Map source-tree specifiers onto the flatter dist/ layout:
 //   ../../modules/helpers.js  → ../modules/helpers.js
 //   ../../icons/registry.js   → ../icons/registry.js
+//   ../../themes/registry.js  → ../themes/registry.js
 //   ../y-icon/y-icon.js       → ./y-icon.js
 function componentPaths(id) {
     const sibling = id.match(crossComponentImport);
@@ -141,7 +143,26 @@ export default [
         plugins: [svgString()],
     },
 
-    // 4. Individual components
+    // 4. Theme entrypoints
+    {
+        input: "src/themes/registry.js",
+        output: {
+            file: "dist/themes/registry.js",
+            format: "esm",
+        },
+        plugins: [],
+    },
+    {
+        input: "src/themes/all.js",
+        output: {
+            file: "dist/themes/all.js",
+            format: "esm",
+        },
+        external: ["./registry.js"],
+        plugins: [cssString()],
+    },
+
+    // 5. Individual components
     ...componentNames.map((name) => ({
         input: `${componentDir}/${name}/${name}.js`,
         output: {

@@ -1,4 +1,6 @@
 import "./y-theme.js";
+import { configureThemes, getThemeNames } from "../../themes/registry.js";
+import "../../themes/all.js"; // registers the built-in themes y-theme applies
 import "../y-button/y-button.js";
 import "../y-card/y-card.js";
 import "../y-tag/y-tag.js";
@@ -156,4 +158,60 @@ export const Kepler = {
             ${showcase("kepler-matrix", "Kepler Matrix")}
         </div>
     `,
+};
+
+
+// A restricted theme set: the app permits three of the registered themes and
+// nothing else. The picker is built from getThemeNames() intersected with the
+// allow list, so it can never offer a theme that would be refused, and the
+// fourth button asks for one that is registered but not permitted — it lands on
+// the policy fallback and fires theme-reject instead of rendering unthemed.
+export const RestrictedThemeSet = {
+    render: () => {
+        const allow = ["waggy", "kepler-matrix", "nord"];
+        configureThemes({ allow, fallback: "waggy" });
+
+        const offered = getThemeNames().filter((name) => allow.includes(name));
+        const buttons = [...offered, "blue-dark"]
+            .map(
+                (name) =>
+                    `<y-button data-theme="${name}" variant="${
+                        allow.includes(name) ? "filled" : "outlined"
+                    }" color="${allow.includes(name) ? "primary" : "base"}">
+                        ${name}${allow.includes(name) ? "" : " (blocked)"}
+                    </y-button>`,
+            )
+            .join("");
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                ${buttons}
+            </div>
+            <div data-status style="margin-bottom:16px;font-family:var(--font-family-body)"></div>
+            <div data-stage></div>
+        `;
+
+        const status = wrapper.querySelector("[data-status]");
+        const stage = wrapper.querySelector("[data-stage]");
+
+        const paint = (theme) => {
+            stage.innerHTML = showcase(theme, "Restricted set");
+            const host = stage.querySelector("y-theme");
+            host.addEventListener("theme-change", (e) => {
+                status.textContent = `Applied: ${e.detail.theme}`;
+            });
+            host.addEventListener("theme-reject", (e) => {
+                status.textContent = `Rejected "${e.detail.theme}" (${e.detail.reason}) — fell back to ${e.detail.fallback}`;
+            });
+        };
+
+        wrapper.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-theme]");
+            if (btn) paint(btn.dataset.theme);
+        });
+
+        paint(offered[0]);
+        return wrapper;
+    },
 };
