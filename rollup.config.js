@@ -63,6 +63,25 @@ function componentPaths(id) {
     return id.replace(/^\.\.\/\.\.\//, "../");
 }
 
+// Entrypoints that own module-scoped runtime state — the icon and theme
+// registries, and the bundles that populate them. The root ESM build keeps
+// them external instead of inlining private copies, so `registerTheme` imported
+// from "@waggylabs/yumekit" writes to the same map that
+// "@waggylabs/yumekit/components/y-theme.js" reads from.
+const sharedRegistryImport =
+    /^(?:\.{1,2}\/)+((?:icons|themes)\/(?:registry|all|all-filled)\.js)$/;
+
+function sharedRegistryExternal(id) {
+    return sharedRegistryImport.test(id);
+}
+
+// dist/index.js sits one level above dist/icons/ and dist/themes/, so source
+// specifiers of any depth collapse onto the same "./icons/registry.js".
+function sharedRegistryPaths(id) {
+    const match = id.match(sharedRegistryImport);
+    return match ? `./${match[1]}` : id;
+}
+
 // Copy non-JS assets (styles/, modules/) into dist/
 function copyAssets() {
     return {
@@ -100,7 +119,12 @@ export default [
         output: {
             file: "dist/index.js",
             format: "esm",
+            paths: sharedRegistryPaths,
         },
+        external: sharedRegistryExternal,
+        // As in the component builds below: keep external ids as the authored
+        // relative specifiers so the matchers above see them.
+        makeAbsoluteExternalsRelative: false,
         plugins: [cssString(), svgString(), copyAssets()],
     },
 

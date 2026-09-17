@@ -125,4 +125,31 @@ describe("dist theme registry", () => {
         expect(bundled.length).to.equal(60);
         expect(bundled.includes("blue-light")).to.be.true;
     });
+
+    // Last, because importing the root bundle registers every bundled theme
+    // and would spoil the counts above.
+    it("shares that registry with the root entrypoint too", async () => {
+        // The root ESM bundle keeps ../themes/registry.js external for this
+        // reason: the documented pairing of registerTheme from
+        // "@waggylabs/yumekit" with a deep import of
+        // "@waggylabs/yumekit/components/y-theme.js" has to reach one map, or
+        // y-theme falls back instead of applying the theme.
+        const root = await import("../dist/index.js");
+
+        root.registerTheme("dist-root-theme", ":root { --dist-root: teal; }", {
+            font: null,
+        });
+        expect(getThemeNames().includes("dist-root-theme")).to.be.true;
+
+        const el = document.createElement("y-theme");
+        el.setAttribute("theme", "dist-root-theme");
+        const applied = new Promise((resolve) =>
+            el.addEventListener("theme-change", resolve, { once: true }),
+        );
+        document.body.appendChild(el);
+        await applied;
+
+        expect(el.style.getPropertyValue("--dist-root")).to.equal("teal");
+        el.remove();
+    });
 });

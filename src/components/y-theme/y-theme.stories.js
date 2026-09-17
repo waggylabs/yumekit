@@ -1,5 +1,9 @@
 import "./y-theme.js";
-import { configureThemes, getThemeNames } from "../../themes/registry.js";
+import {
+    configureThemes,
+    getThemeNames,
+    getThemePolicy,
+} from "../../themes/registry.js";
 import "../../themes/all.js"; // registers the built-in themes y-theme applies
 import "../y-button/y-button.js";
 import "../y-card/y-card.js";
@@ -161,15 +165,24 @@ export const Kepler = {
 };
 
 
+const RESTRICTED_ALLOW = ["waggy", "kepler-matrix", "nord"];
+
 // A restricted theme set: the app permits three of the registered themes and
 // nothing else. The picker is built from getThemeNames() intersected with the
 // allow list, so it can never offer a theme that would be refused, and the
 // fourth button asks for one that is registered but not permitted — it lands on
 // the policy fallback and fires theme-reject instead of rendering unthemed.
 export const RestrictedThemeSet = {
+    // The policy is module-scoped, so narrowing it here would otherwise outlive
+    // the story and leave every other theme story rendering the fallback.
+    // Snapshot it on entry and put it back when Storybook unmounts the story.
+    beforeEach: () => {
+        const previous = getThemePolicy();
+        configureThemes({ allow: RESTRICTED_ALLOW, fallback: "waggy" });
+        return () => configureThemes(previous);
+    },
     render: () => {
-        const allow = ["waggy", "kepler-matrix", "nord"];
-        configureThemes({ allow, fallback: "waggy" });
+        const allow = RESTRICTED_ALLOW;
 
         const offered = getThemeNames().filter((name) => allow.includes(name));
         const buttons = [...offered, "blue-dark"]
