@@ -877,7 +877,6 @@ declare module "react" {
             "y-theme": El<{
                 theme?: string;
                 "cross-origin"?: boolean | string;
-                s;
                 "no-default-font"?: boolean | string;
             }>;
             "y-toast": El<{
