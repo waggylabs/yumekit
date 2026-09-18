@@ -1,6 +1,7 @@
 ﻿import "./y-button.js";
 import "../y-icon/y-icon.js";
 import "../y-theme/y-theme.js";
+import "../../themes/all.js"; // registers the built-in themes y-theme applies
 import "../../icons/all.js";
 
 export default {
