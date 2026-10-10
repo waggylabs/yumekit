@@ -61,11 +61,11 @@
       },
       "lighter": {
         "$type": "color",
-        "$value": "#94a3b8"
+        "$value": "#64748b"
       },
       "lightest": {
         "$type": "color",
-        "$value": "#cbd5e1"
+        "$value": "#94a3b8"
       },
       "DEFAULT": {
         "$type": "color",
@@ -492,7 +492,7 @@
       "placeholder": {
         "color": {
           "$type": "color",
-          "$value": "{base.content.lightest}"
+          "$value": "{base.content.light}"
         }
       },
       "toolbar": {
@@ -591,7 +591,7 @@
       },
       "content-color": {
         "$type": "color",
-        "$value": "{base.content.lightest}"
+        "$value": "{base.content.light}"
       }
     },
     "button": {
@@ -808,7 +808,7 @@
       "placeholder": {
         "color": {
           "$type": "color",
-          "$value": "{base.content.lightest}"
+          "$value": "{base.content.light}"
         }
       },
       "icon": {
@@ -1044,7 +1044,7 @@
       "color": {
         "light": {
           "$type": "color",
-          "$value": "{base.content.lightest}"
+          "$value": "{base.content.light}"
         },
         "DEFAULT": {
           "$type": "color",
