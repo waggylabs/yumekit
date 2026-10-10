@@ -47,6 +47,7 @@ function componentExternal(id) {
     return (
         /^\.\.\/\.\.\/modules\/[\w.-]+\.js$/.test(id) ||
         id === "../../icons/registry.js" ||
+        id === "../../themes/registry.js" ||
         crossComponentImport.test(id)
     );
 }
@@ -54,11 +55,31 @@ function componentExternal(id) {
 // Map source-tree specifiers onto the flatter dist/ layout:
 //   ../../modules/helpers.js  → ../modules/helpers.js
 //   ../../icons/registry.js   → ../icons/registry.js
+//   ../../themes/registry.js  → ../themes/registry.js
 //   ../y-icon/y-icon.js       → ./y-icon.js
 function componentPaths(id) {
     const sibling = id.match(crossComponentImport);
     if (sibling) return `./${sibling[1]}.js`;
     return id.replace(/^\.\.\/\.\.\//, "../");
+}
+
+// Entrypoints that own module-scoped runtime state — the icon and theme
+// registries, and the bundles that populate them. The root ESM build keeps
+// them external instead of inlining private copies, so `registerTheme` imported
+// from "@waggylabs/yumekit" writes to the same map that
+// "@waggylabs/yumekit/components/y-theme.js" reads from.
+const sharedRegistryImport =
+    /^(?:\.{1,2}\/)+((?:icons|themes)\/(?:registry|all|all-filled)\.js)$/;
+
+function sharedRegistryExternal(id) {
+    return sharedRegistryImport.test(id);
+}
+
+// dist/index.js sits one level above dist/icons/ and dist/themes/, so source
+// specifiers of any depth collapse onto the same "./icons/registry.js".
+function sharedRegistryPaths(id) {
+    const match = id.match(sharedRegistryImport);
+    return match ? `./${match[1]}` : id;
 }
 
 // Copy non-JS assets (styles/, modules/) into dist/
@@ -98,7 +119,12 @@ export default [
         output: {
             file: "dist/index.js",
             format: "esm",
+            paths: sharedRegistryPaths,
         },
+        external: sharedRegistryExternal,
+        // As in the component builds below: keep external ids as the authored
+        // relative specifiers so the matchers above see them.
+        makeAbsoluteExternalsRelative: false,
         plugins: [cssString(), svgString(), copyAssets()],
     },
 
@@ -141,7 +167,26 @@ export default [
         plugins: [svgString()],
     },
 
-    // 4. Individual components
+    // 4. Theme entrypoints
+    {
+        input: "src/themes/registry.js",
+        output: {
+            file: "dist/themes/registry.js",
+            format: "esm",
+        },
+        plugins: [],
+    },
+    {
+        input: "src/themes/all.js",
+        output: {
+            file: "dist/themes/all.js",
+            format: "esm",
+        },
+        external: ["./registry.js"],
+        plugins: [cssString()],
+    },
+
+    // 5. Individual components
     ...componentNames.map((name) => ({
         input: `${componentDir}/${name}/${name}.js`,
         output: {

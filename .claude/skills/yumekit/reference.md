@@ -40,21 +40,80 @@ Wherever a `color` attribute accepts a "CSS color value" (`y-button`, `y-badge`,
 
 Injects design tokens as CSS custom properties. Wraps entire app.
 
-| Attribute         | Values                                                                        | Notes                                             |
-| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------------------- |
-| `theme`           | `"blue-light"` \| `"blue-dark"` \| `"orange-light"` \| `"orange-dark"` \| URL | Built-in palette or path to custom CSS            |
-| `cross-origin`    | boolean                                                                       | Allows loading theme from a different origin      |
-| `no-default-font` | boolean                                                                       | Skips injecting the Lexend font from Google Fonts |
+| Attribute         | Values                                                                        | Notes                                                                                                       |
+| ----------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `theme`           | `"blue-light"` \| `"blue-dark"` \| `"orange-light"` \| `"orange-dark"` \| URL | A **registered** theme name, or a URL when `allowUrls` is enabled                                           |
+| `cross-origin`    | boolean                                                                       | Permits a cross-origin URL for this element. Not sufficient alone — the app must also set `allowCrossOriginUrls` |
+| `no-default-font` | boolean                                                                       | Skips injecting the active theme's webfont. Observed, so removing it at runtime injects the font             |
+
+| Event          | Detail                          | Notes                                                                                                                             |
+| -------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `theme-change` | `{ theme }`                     | Fired after a theme is applied. `theme` is the theme actually applied — the fallback, when the request was refused                 |
+| `theme-reject` | `{ theme, reason, fallback }`   | `reason` is `"unregistered"` \| `"not-allowed"` \| `"urls-disabled"` \| `"cross-origin"` \| `"fetch-failed"` \| `"content-type"` |
+
+Both events bubble, are composed, and are not cancelable.
 
 ```html
 <y-theme theme="blue-light">
     <!-- entire app -->
 </y-theme>
+```
 
-<!-- custom theme file -->
+Theme names must be registered before `<y-theme>` can apply them. The umbrella
+entry registers all 60 built-ins; importing `components/y-theme.js` directly
+registers none.
+
+```javascript
+// All built-ins (what `import "@waggylabs/yumekit"` already does)
+import "@waggylabs/yumekit/themes/all.js";
+
+// Or just what you ship — `font` is a Google Fonts `family=` query, or null
+// for a native system-font stack
+import { registerTheme } from "@waggylabs/yumekit";
+registerTheme("my-brand", cssString, { font: null });
+```
+
+### Theme policy
+
+```javascript
+import { configureThemes, getThemeNames } from "@waggylabs/yumekit";
+
+configureThemes({
+    allow: ["waggy", "waggy-dark"], // null (default) = any registered theme
+    fallback: "waggy", //              applied when a request is refused
+    allowUrls: false, //               URL themes (default false)
+    allowCrossOriginUrls: false, //    cross-origin URLs (default false)
+});
+
+getThemeNames(); // registered names, in registration order — use for pickers
+```
+
+Call once at startup; repeated calls merge over the previous config. The policy
+lives in module scope, so markup cannot override it. A refused theme applies the
+`fallback` and logs a `console.error` naming the reason.
+
+`allowUrls` and `allowCrossOriginUrls` both default to `false`, so the `theme`
+attribute is not an arbitrary CSS loader unless you opt in — which matters
+wherever untrusted input can reach it (`?theme=`, a CMS field, a stored
+preference). This is an application guardrail, **not** a security boundary:
+anyone with devtools can monkey-patch the page. The durable part is the
+registry — an unregistered theme's CSS is not in the bundle at all.
+
+```javascript
+// URL themes, same-origin only
+configureThemes({ allowUrls: true });
+```
+
+```html
 <y-theme theme="/my-theme.css"></y-theme>
+```
 
-<!-- cross-origin custom theme -->
+```javascript
+// Cross-origin: app opt-in AND the per-element attribute are both required
+configureThemes({ allowUrls: true, allowCrossOriginUrls: true });
+```
+
+```html
 <y-theme theme="https://example.com/theme.css" cross-origin></y-theme>
 ```
 
@@ -2683,7 +2742,24 @@ Check a name before using it:
 grep -o -- "--<prefix>[a-z-]*" node_modules/@waggylabs/yumekit/styles/variables.css | sort -u
 ```
 
-Custom theme: define these variables in CSS and point y-theme to the file:
+Custom theme: define these variables in CSS, then either register the CSS as a
+named theme (works with the default policy, no network request):
+
+```javascript
+import { registerTheme } from "@waggylabs/yumekit";
+registerTheme("my-brand", myThemeCss, { font: null });
+```
+
+```html
+<y-theme theme="my-brand"></y-theme>
+```
+
+...or point y-theme at the file, which requires opting into URL themes:
+
+```javascript
+import { configureThemes } from "@waggylabs/yumekit";
+configureThemes({ allowUrls: true });
+```
 
 ```html
 <y-theme theme="/my-theme.css"></y-theme>

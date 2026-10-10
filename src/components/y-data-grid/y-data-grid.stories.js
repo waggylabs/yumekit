@@ -1,6 +1,7 @@
 import "./y-data-grid.js";
 import "../y-key/y-key.js";
 import "../y-theme/y-theme.js";
+import "../../themes/all.js"; // registers the built-in themes y-theme applies
 
 // Storybook renders templates as plain HTML strings, and we wrap JSON attribute
 // values in single quotes. Any apostrophe inside the JSON (e.g. "O'Connor")

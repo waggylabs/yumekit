@@ -10,7 +10,13 @@ import "../dist/components/y-table.js";
 import "../dist/components/y-data-grid.js";
 import "../dist/components/y-button.js";
 import "../dist/components/y-money.js";
+import "../dist/components/y-theme.js";
 import { registerIcon, getIcon } from "../dist/icons/registry.js";
+import {
+    configureThemes,
+    getThemeNames,
+    registerTheme,
+} from "../dist/themes/registry.js";
 import { formatMoney } from "../dist/modules/money.js";
 
 describe("dist deep imports", () => {
@@ -68,6 +74,82 @@ describe("dist deep imports", () => {
         // still agree here, so also assert the module resolves on its own.
         expect(formatMoney(123456, { locale: "en-US" })).to.equal("$1,234.56");
         expect(el.formattedValue).to.equal("$1,234.56");
+        el.remove();
+    });
+});
+
+describe("dist theme registry", () => {
+    afterEach(() => {
+        configureThemes({
+            allow: null,
+            fallback: "blue-light",
+            allowUrls: false,
+            allowCrossOriginUrls: false,
+        });
+    });
+
+    it("ships y-theme without any bundled theme CSS", () => {
+        // dist/components/y-theme.js carries only variables.css; the themes
+        // live in dist/themes/all.js. Nothing is registered until asked for.
+        expect(getThemeNames().length).to.equal(0);
+    });
+
+    it("shares one registry between the component bundle and the registry bundle", async () => {
+        // The component build keeps ../themes/registry.js external. If it
+        // inlined its own copy instead, this theme would register into a
+        // registry y-theme cannot see and the token below would never land.
+        registerTheme("dist-smoke-theme", ":root { --dist-smoke: teal; }", {
+            font: null,
+        });
+
+        const el = document.createElement("y-theme");
+        el.setAttribute("theme", "dist-smoke-theme");
+        const applied = new Promise((resolve) =>
+            el.addEventListener("theme-change", resolve, { once: true }),
+        );
+        document.body.appendChild(el);
+        await applied;
+
+        expect(el.style.getPropertyValue("--dist-smoke")).to.equal("teal");
+        el.remove();
+    });
+
+    it("registers every bundled theme from dist/themes/all.js", async () => {
+        await import("../dist/themes/all.js");
+
+        // Excluding the theme the previous test registered.
+        const bundled = getThemeNames().filter(
+            (n) => !n.startsWith("dist-smoke"),
+        );
+
+        expect(bundled.length).to.equal(60);
+        expect(bundled.includes("blue-light")).to.be.true;
+    });
+
+    // Last, because importing the root bundle registers every bundled theme
+    // and would spoil the counts above.
+    it("shares that registry with the root entrypoint too", async () => {
+        // The root ESM bundle keeps ../themes/registry.js external for this
+        // reason: the documented pairing of registerTheme from
+        // "@waggylabs/yumekit" with a deep import of
+        // "@waggylabs/yumekit/components/y-theme.js" has to reach one map, or
+        // y-theme falls back instead of applying the theme.
+        const root = await import("../dist/index.js");
+
+        root.registerTheme("dist-root-theme", ":root { --dist-root: teal; }", {
+            font: null,
+        });
+        expect(getThemeNames().includes("dist-root-theme")).to.be.true;
+
+        const el = document.createElement("y-theme");
+        el.setAttribute("theme", "dist-root-theme");
+        const applied = new Promise((resolve) =>
+            el.addEventListener("theme-change", resolve, { once: true }),
+        );
+        document.body.appendChild(el);
+        await applied;
+
+        expect(el.style.getPropertyValue("--dist-root")).to.equal("teal");
         el.remove();
     });
 });

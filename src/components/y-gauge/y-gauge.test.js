@@ -1,5 +1,6 @@
 import { html, fixture, expect } from "@open-wc/testing";
 import "../y-theme/y-theme.js"; // registers y-theme so themed tokens resolve
+import "../../themes/all.js"; // registers the built-in themes y-theme applies
 import "./y-gauge.js";
 
 async function gauge(props = {}) {

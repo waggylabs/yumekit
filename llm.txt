@@ -3,7 +3,7 @@
 A modern, framework-agnostic Web Components UI kit providing 61 production-ready custom HTML elements. Built entirely on native web standards with zero external runtime dependencies.
 
 ## Version
-0.5.5
+0.5.6
 
 ## License
 MIT
@@ -93,14 +93,22 @@ Theme provider. Wraps your app and injects design tokens as CSS custom propertie
 
 Attributes:
 - `theme` — built-in palette name or a URL/path to a custom CSS theme file. Built-in names: `"blue-light"` | `"blue-dark"` | `"slate-light"` | `"slate-dark"` | `"mono-light"` | `"mono-dark"` | `"orange-light"` | `"orange-dark"` | `"green-light"` | `"green-dark"` | `"red-light"` | `"red-dark"` | `"teal-light"` | `"teal-dark"` | `"yellow-light"` | `"yellow-dark"` | `"indigo-light"` | `"indigo-dark"` | `"purple-light"` | `"purple-dark"` | `"pink-light"` | `"pink-dark"` | `"brown-light"` | `"brown-dark"` | `"olive-light"` | `"olive-dark"` | `"material-blue-light"` | `"material-blue-dark"` | `"carbon-light"` | `"carbon-dark"` | `"ant-blue-light"` | `"ant-blue-dark"` | `"shadcn-light"` | `"shadcn-dark"` | `"shadcn-blue-light"` | `"shadcn-blue-dark"` | `"waggy"` | `"kepler-light"` | `"kepler-dark"` | `"kepler-amber"` | `"kepler-galaxy"` | `"kepler-matrix"` (plus `primer-*`, `bootstrap-*`, `catppuccin-*`, `nord` / `nord-aurora`, `rose-*`, `mono-*`, `material-purple-*`, `ant-green-*` — see the full list above)
-- `cross-origin` — boolean, enables CORS for remote theme URLs
-- `no-default-font` — boolean, skips injecting the default Lexend font from Google Fonts
+- `cross-origin` — boolean, permits a cross-origin theme URL **for this element**. Since 0.5.6 the attribute alone is not sufficient: the app must also opt in with `configureThemes({ allowCrossOriginUrls: true })`. Both are required.
+- `no-default-font` — boolean, skips injecting the active theme's webfont from Google Fonts. Observed since 0.5.6, so removing it at runtime injects the font; adding it does not remove an already-injected `<link>`, which may be shared with other `<y-theme>` elements.
+
+A theme name only works if it has been **registered**. The umbrella entry (`import "@waggylabs/yumekit"`) registers all 60 built-ins, so nothing changes for most apps. Importing `components/y-theme.js` directly registers none — add `import "@waggylabs/yumekit/themes/all.js"`, or register just the ones you ship. See the Theme Registry API below.
+
+Events:
+- `theme-change` — fired after a theme is successfully applied. `detail: { theme }` names the theme that was actually applied, which is the fallback when the request was refused. Not cancelable. Bubbles and is composed.
+- `theme-reject` — fired when a requested theme is refused. `detail: { theme, reason, fallback }`, where `reason` is one of `"unregistered"` | `"not-allowed"` | `"urls-disabled"` | `"cross-origin"` | `"fetch-failed"` | `"content-type"`. A `theme-change` for the fallback follows. Not cancelable. Bubbles and is composed.
 
 ```html
 <y-theme theme="blue-light">
   <!-- app content -->
 </y-theme>
 ```
+
+A refused theme applies the policy `fallback` (default `"blue-light"`) rather than rendering an unthemed page, and logs a `console.error` naming the reason and the exact `configureThemes` call that would permit it.
 
 ---
 
@@ -2697,15 +2705,79 @@ A few illustrative examples:
 --component-date-z-index                /* stacking order of the popup (default: 200) */
 ```
 
-To create a custom theme, define these CSS variables in a stylesheet and point y-theme at it:
+To create a custom theme, define these CSS variables in a stylesheet. You can either register it as a named theme (no network request, works with the default policy):
+```javascript
+import { registerTheme } from "@waggylabs/yumekit";
+registerTheme("my-brand", myThemeCssString, { font: null });
+```
+```html
+<y-theme theme="my-brand"></y-theme>
+```
+
+...or load it from a URL, which is **disabled by default since 0.5.6** and must be opted into:
+```javascript
+import { configureThemes } from "@waggylabs/yumekit";
+configureThemes({ allowUrls: true });
+```
 ```html
 <y-theme theme="/custom-theme.css"></y-theme>
 ```
 
-For cross-origin theme files, add the `cross-origin` attribute:
+Cross-origin theme files need the app-level opt-in *and* the per-element attribute:
+```javascript
+configureThemes({ allowUrls: true, allowCrossOriginUrls: true });
+```
 ```html
 <y-theme theme="https://example.com/theme.css" cross-origin></y-theme>
 ```
+
+---
+
+## Theme Registry API
+
+```javascript
+import {
+  registerTheme, registerThemes, getTheme, getThemeFont, getThemeNames,
+  getThemePolicy, hasTheme, configureThemes,
+} from "@waggylabs/yumekit";
+
+// Register one theme. `font` is the Google Fonts `family=` query, or null for
+// a native system-font stack. Omit it to use the default (Lexend).
+registerTheme("my-brand", cssString, { font: "Inter:wght@400;500;700" });
+
+// Register many at once — plain CSS strings, or { css, font } entries.
+registerThemes({
+  "brand-light": lightCss,
+  "brand-dark": { css: darkCss, font: null },
+});
+
+getTheme("my-brand");       // registered CSS, or "" when not registered
+getThemeFont("my-brand");   // font query, or null for a system-font stack
+getThemeNames();            // registered names in registration order
+hasTheme("my-brand");       // boolean
+```
+
+`getThemeNames()` is the intended source for a theme picker, so the list stays in sync with what the app actually registered:
+```javascript
+const options = getThemeNames().map((name) => ({ value: name, label: name }));
+```
+
+### Theme policy
+
+```javascript
+configureThemes({
+  allow: ["waggy", "waggy-dark"],  // permitted names; null (default) = any registered theme
+  fallback: "waggy",               // applied when a request is refused (default "blue-light")
+  allowUrls: false,                // treat an unregistered value as a URL (default false)
+  allowCrossOriginUrls: false,     // permit URLs from another origin (default false)
+});
+```
+
+Call it once at startup. Repeated calls **merge** over the previous config — omitted keys are left unchanged. The policy lives in module scope, not on the element, so markup cannot override it. `getThemePolicy()` returns a copy for inspection.
+
+Both `allowUrls` and `allowCrossOriginUrls` default to `false`: the `theme` attribute is no longer an arbitrary CSS loader unless you opt in. Where untrusted input can reach it — a `?theme=` query param, a CMS field, a stored user preference — that default is what keeps it from being a CSS injection path.
+
+**This is an application guardrail, not a security boundary.** Anyone with devtools can edit or monkey-patch anything reachable from the page, and could paste a `<style>` tag regardless. What the registry gives you is narrower and more durable: a theme that was never registered cannot be applied, because its CSS is not present in the bundle. The policy layer constrains application behavior and injected input; do not rely on it as tamper-proof.
 
 ---
 

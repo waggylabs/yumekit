@@ -1,5 +1,6 @@
 import variablesCSS from "../styles/variables.css";
 import "./icons/all.js";
+import "./themes/all.js";
 
 if (
     typeof document !== "undefined" &&
@@ -43,6 +44,16 @@ export * from "./components/y-gauge/y-gauge.js";
 export * from "./components/y-grid/y-grid.js";
 export * from "./components/y-icon/y-icon.js";
 export { registerIcon, registerIcons, getIcon } from "./icons/registry.js";
+export {
+    configureThemes,
+    getTheme,
+    getThemeFont,
+    getThemeNames,
+    getThemePolicy,
+    hasTheme,
+    registerTheme,
+    registerThemes,
+} from "./themes/registry.js";
 export * from "./components/y-input/y-input.js";
 export * from "./components/y-textarea/y-textarea.js";
 export * from "./components/y-key/y-key.js";

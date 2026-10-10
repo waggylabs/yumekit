@@ -281,6 +281,10 @@
                 "$type": "borderRadius",
                 "$value": "{radii.x-small}"
             },
+            "outline-border-color": {
+                "$type": "other",
+                "$value": "initial"
+            },
             "border-radius-outer": {
                 "$type": "borderRadius",
                 "$value": "{radii.small}"
@@ -1370,6 +1374,10 @@
             "accent-width": {
                 "$type": "borderWidth",
                 "$value": "2px"
+            },
+            "inactive-background": {
+                "$type": "other",
+                "$value": "initial"
             }
         },
         "toggle": {
